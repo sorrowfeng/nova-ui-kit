@@ -99,6 +99,24 @@ flowchart TD
 - `src-tauri/src/main.rs` uses the Windows GUI subsystem in release mode, so double-clicking the exe does not show a console window.
 - `src-tauri/src/lib.rs` initializes the Tauri app and plugins.
 
+### Backend Logic Strategy
+
+The current backend layer is Rust, provided by Tauri. For most native desktop logic, the recommended path is:
+
+1. Keep UI, interaction, and design-system state in React/TypeScript.
+2. Put filesystem, project generation, native OS integration, build orchestration, and performance-sensitive local logic in Rust Tauri commands.
+3. Call those commands from the frontend through Tauri's invoke API.
+
+Rust fits this project well because it is already part of Tauri, produces small native binaries, has strong safety guarantees, and can call into platform APIs without shipping a separate runtime.
+
+C++ is still a good option when you already have an existing C++ library, need a specialized native engine, or want to share core logic with another C++ product. The usual integration paths are:
+
+- Rust FFI wrapper around a C/C++ static or dynamic library.
+- A dedicated sidecar executable that the Tauri app launches and talks to over stdin/stdout, HTTP, gRPC, or a local socket.
+- A thin C ABI boundary if the C++ module should stay independent from the Tauri app internals.
+
+Other languages can also work as sidecars. Go is a strong fit for small local services, Python is useful for scripting or AI/data workflows, and Node.js can be useful when reusing existing JavaScript tooling. For this repository, Rust should remain the default backend unless there is a concrete reason to introduce another runtime.
+
 ## Project Structure
 
 ```text
