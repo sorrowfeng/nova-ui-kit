@@ -175,6 +175,8 @@ Output:
 src-tauri/target/release/nova-ui-kit.exe
 ```
 
+The repository also includes a GitHub Actions workflow. Pushes to `main` and manual workflow runs build the Windows exe and upload it as the `nova-ui-kit-windows-exe` artifact.
+
 Build the full Tauri bundle:
 
 ```bash
