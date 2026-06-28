@@ -13,6 +13,7 @@ export type ProjectJumpActionId =
   | "duplicate-ui-file"
   | "delete-ui-file"
   | "insert-component"
+  | "bind-control-event"
   | "add-rust-command"
   | "add-state-variable"
   | "sync-rust"
@@ -140,6 +141,12 @@ export const projectTaskDefinitions: Record<
     title: "Insert component",
     detail: "Place a reusable UI component on the active design canvas.",
     kind: "design",
+    mode: "design",
+  },
+  "bind-control-event": {
+    title: "Bind control event",
+    detail: "Create a Rust command and bind it to the selected control event.",
+    kind: "logic",
     mode: "design",
   },
   "add-rust-command": {

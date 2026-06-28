@@ -1971,6 +1971,16 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       searchable: projectJumpSearchText(["add create rust command invoke backend logic event"]),
     },
     {
+      id: "action-bind-control-event",
+      kind: "action",
+      title: "Bind selected control event",
+      subtitle: "Create a Rust command and connect it to the selected control event.",
+      badge: "bind",
+      mode: "design",
+      actionId: "bind-control-event",
+      searchable: projectJumpSearchText(["bind selected control event create connection rust command signal slot"]),
+    },
+    {
       id: "action-add-state-variable",
       kind: "action",
       title: "Add state variable",
@@ -8837,22 +8847,31 @@ export function BuilderShowcase() {
     });
   };
 
-  const createAndBindBackendIntegrationCommand = () => {
+  const createAndBindBackendIntegrationCommand = (options: { recordTask?: boolean } = {}) => {
     if (!selectedItem || !selectedEventName) {
-      return;
+      if (options.recordTask !== false) {
+        recordInstantProjectAction("bind-control-event", "Select a control with an event before creating a binding.", "skipped");
+      }
+      return null;
     }
 
     const selectedItemId = selectedItem.id;
+    const selectedItemName = getItemSummary(selectedItem);
     const eventName = selectedEventName;
-    updateActiveProject((project) => {
-      const integration =
-        project.backendIntegrations.find((candidate) => candidate.id === project.activeBackendIntegrationId) ??
-        project.backendIntegrations[0];
-      if (!integration) {
-        return project;
+    const integration =
+      activeProject.backendIntegrations.find((candidate) => candidate.id === activeProject.activeBackendIntegrationId) ??
+      activeProject.backendIntegrations[0];
+    if (!integration) {
+      if (options.recordTask !== false) {
+        recordInstantProjectAction("bind-control-event", "No backend integration is available for the selected event.", "skipped");
       }
-      const method = activeBackendMethod(integration);
-      const command = createBackendIntegrationCommand(integration, project.rustCommands.length + 1, method);
+      return null;
+    }
+    const method = activeBackendMethod(integration);
+    const command = createBackendIntegrationCommand(integration, activeProject.rustCommands.length + 1, method);
+    const createdCommandName = sanitizeRustCommandName(command.name);
+
+    updateActiveProject((project) => {
       const commands = normalizeRustCommands([...project.rustCommands, command]);
       const resultStateId = project.stateVariables[0]?.id ?? "";
       const schemaFields = method ? backendSchemaFields(method.requestSchema, method.samplePayload) : [];
@@ -8896,8 +8915,12 @@ export function BuilderShowcase() {
       };
     });
     setSimulatorTrace([]);
-    setMode("preview");
+    setMode("design");
     setRightDockTab("connections");
+    if (options.recordTask !== false) {
+      recordInstantProjectAction("bind-control-event", `Bound ${selectedItemName} ${eventName} to ${createdCommandName}.`);
+    }
+    return createdCommandName;
   };
 
   const deleteActiveRustCommand = () => {
@@ -9986,6 +10009,14 @@ export function BuilderShowcase() {
           setRightDockTab("properties");
           return { summary: `Inserted ${definition.title} into ${activeFile.name}.` };
         }
+      case "bind-control-event":
+        {
+          const commandName = createAndBindBackendIntegrationCommand({ recordTask: false });
+          if (!commandName) {
+            return { status: "skipped", summary: "Select a control with an event before creating a binding." };
+          }
+          return { summary: `Bound the selected control event to ${commandName}.` };
+        }
       case "add-rust-command":
         createRustCommandInProject();
         setMode("logic");
@@ -10482,6 +10513,11 @@ export function BuilderShowcase() {
       setMode("design");
       setLeftDockTab("navigator");
       requestDeleteActiveFile();
+      return true;
+    }
+
+    if (actionId === "bind-control-event") {
+      createAndBindBackendIntegrationCommand();
       return true;
     }
 
@@ -13741,7 +13777,7 @@ export function BuilderShowcase() {
                 <Button
                   className="w-full"
                   data-builder-bind-backend-command=""
-                  onClick={createAndBindBackendIntegrationCommand}
+                  onClick={() => createAndBindBackendIntegrationCommand()}
                   disabled={!selectedItem || !selectedEventName}
                 >
                   <MousePointer2 aria-hidden className="size-4" />
@@ -13749,7 +13785,7 @@ export function BuilderShowcase() {
                 </Button>
                 <p className="text-xs leading-5 text-on-surface-variant">
                   {selectedItem && selectedEventName
-                    ? `会绑定 ${getItemSummary(selectedItem)} 的 ${selectedEventName} 事件，并切到 Preview 模拟调用。`
+                    ? `会绑定 ${getItemSummary(selectedItem)} 的 ${selectedEventName} 事件，并打开 Connections 继续检查或模拟。`
                     : "选择 Button、Input、Switch、Select 等控件后，可以一键生成 command 并绑定事件。"}
                 </p>
                 <Button variant="ghost" className="w-full" data-builder-delete-backend-integration="" onClick={deleteActiveBackendIntegration}>
@@ -17429,7 +17465,7 @@ export function BuilderShowcase() {
                       variant={selectedEventCommand ? "secondary" : "default"}
                       data-builder-actionbar-connections=""
                       disabled={!selectedItem || !selectedEventName}
-                      onClick={selectedEventCommand ? openSelectedConnections : createAndBindBackendIntegrationCommand}
+                      onClick={selectedEventCommand ? openSelectedConnections : () => createAndBindBackendIntegrationCommand()}
                     >
                       <Braces aria-hidden className="size-4" />
                       {selectedEventCommand ? "Connections" : "Create Binding"}
@@ -17693,7 +17729,7 @@ export function BuilderShowcase() {
                         size="sm"
                         variant={selectedEventCommand ? "ghost" : "secondary"}
                         data-builder-connection-path-create=""
-                        onClick={createAndBindBackendIntegrationCommand}
+                        onClick={() => createAndBindBackendIntegrationCommand()}
                       >
                         <Plus aria-hidden className="size-4" />
                         Create
@@ -18690,7 +18726,7 @@ export function BuilderShowcase() {
                           <Play aria-hidden className="size-4" />
                           Simulate
                         </Button>
-                        <Button size="sm" variant="secondary" data-builder-connection-new-command="" onClick={createAndBindBackendIntegrationCommand}>
+                        <Button size="sm" variant="secondary" data-builder-connection-new-command="" onClick={() => createAndBindBackendIntegrationCommand()}>
                           <Plus aria-hidden className="size-4" />
                           Bind new
                         </Button>
