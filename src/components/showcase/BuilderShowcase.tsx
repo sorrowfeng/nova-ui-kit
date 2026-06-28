@@ -875,6 +875,40 @@ function parentPathFromPath(path = "") {
   return separatorIndex > 0 ? normalized.slice(0, separatorIndex) : "";
 }
 
+function normalizeComparablePath(path = "") {
+  return path.trim().replace(/^\\\\\?\\/, "").replace(/\//g, "\\").replace(/\\+$/, "").toLowerCase();
+}
+
+function samePathText(left = "", right = "") {
+  const normalizedLeft = normalizeComparablePath(left);
+  const normalizedRight = normalizeComparablePath(right);
+  return Boolean(normalizedLeft && normalizedRight && normalizedLeft === normalizedRight);
+}
+
+type WorkflowRuntimeSession = {
+  entryId?: string;
+  path: string;
+  pid: number;
+  startedAt: string;
+  logPath: string;
+  summary: string;
+  status: string;
+  checkedAt: string;
+};
+
+function workflowRuntimeSessionFromLaunch(result: LaunchExecutableResult, entryId?: string): WorkflowRuntimeSession {
+  return {
+    entryId,
+    path: result.path,
+    pid: result.pid,
+    startedAt: result.started_at,
+    logPath: result.log_path,
+    summary: result.summary,
+    status: "running",
+    checkedAt: result.started_at,
+  };
+}
+
 function createAssetFromPath(sourcePath: string, index = 0): DesignerAsset {
   const name = fileNameFromPath(sourcePath);
   return {
@@ -5630,7 +5664,10 @@ export function BuilderShowcase() {
     [workspace],
   );
   const latestRunSessionEntry = useMemo(
-    () => (activeProject.buildHistory ?? []).find((entry) => entry.outputExePath && entry.launchedPid) ?? null,
+    () =>
+      (activeProject.buildHistory ?? []).find((entry) => entry.outputExePath && entry.launchedPid && entry.runStatus === "running") ??
+      (activeProject.buildHistory ?? []).find((entry) => entry.outputExePath && entry.launchedPid) ??
+      null,
     [activeProject.buildHistory],
   );
   const activeFile = useMemo(
@@ -5690,6 +5727,7 @@ export function BuilderShowcase() {
   const [launchingExeId, setLaunchingExeId] = useState("");
   const [checkingRunId, setCheckingRunId] = useState("");
   const [stoppingRunId, setStoppingRunId] = useState("");
+  const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
   const [readingRuntimeLogId, setReadingRuntimeLogId] = useState("");
   const [testingBackendMethodId, setTestingBackendMethodId] = useState("");
   const [buildError, setBuildError] = useState("");
@@ -5722,6 +5760,9 @@ export function BuilderShowcase() {
   const [simulatorTrace, setSimulatorTrace] = useState<SimulatorTraceEntry[]>([]);
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
   const [dropIntent, setDropIntent] = useState<BuilderDropIntent | null>(null);
+  useEffect(() => {
+    setWorkflowRuntimeSession(null);
+  }, [activeProject.id]);
   const [rustDiagnosticTarget, setRustDiagnosticTarget] = useState<{
     file?: string;
     sourceFile?: string;
@@ -11174,6 +11215,7 @@ export function BuilderShowcase() {
         setBuildError("启动编译产物需要在 Tauri 桌面 app 中运行。");
         return;
       }
+      setWorkflowRuntimeSession(workflowRuntimeSessionFromLaunch(result, entry.id));
       updateActiveProject((project) => ({
         ...project,
         buildLog: `${project.buildLog ? `${project.buildLog}\n` : ""}${result.summary}`,
@@ -11219,11 +11261,18 @@ export function BuilderShowcase() {
         setBuildError("启动编译产物需要在 Tauri 桌面 app 中运行。");
         return;
       }
+      const activeOutputEntry =
+        (activeProject.buildHistory ?? []).find((entry) => entry.outputExePath && samePathText(entry.outputExePath, activeProject.outputExePath)) ??
+        (activeProject.buildHistory ?? []).find((entry) => entry.buildKind === "exe" && entry.outputExePath) ??
+        null;
+      setWorkflowRuntimeSession(workflowRuntimeSessionFromLaunch(result, activeOutputEntry?.id));
       updateActiveProject((project) => ({
         ...project,
         buildLog: `${project.buildLog ? `${project.buildLog}\n` : ""}${result.summary}`,
         buildHistory: (project.buildHistory ?? []).map((candidate) =>
-          candidate.outputExePath === result.path
+          candidate.id === activeOutputEntry?.id ||
+          samePathText(candidate.outputExePath ?? "", result.path) ||
+          samePathText(candidate.outputExePath ?? "", activeProject.outputExePath ?? "")
             ? {
                 ...candidate,
                 launchedPid: result.pid,
@@ -11250,11 +11299,27 @@ export function BuilderShowcase() {
   };
 
   const applyRunSessionResult = (entryId: string, result: RunSessionResult, stopped = false) => {
+    setWorkflowRuntimeSession((session) => {
+      if (!session || (session.entryId !== entryId && !samePathText(session.path, result.path))) {
+        return session;
+      }
+      if (result.status !== "running") {
+        return null;
+      }
+      return {
+        ...session,
+        path: result.path,
+        pid: result.pid,
+        status: result.status,
+        checkedAt: result.checked_at,
+        summary: result.summary,
+      };
+    });
     updateActiveProject((project) => ({
       ...project,
       buildLog: `${project.buildLog ? `${project.buildLog}\n` : ""}${result.summary}`,
       buildHistory: (project.buildHistory ?? []).map((candidate) =>
-        candidate.id === entryId
+        candidate.id === entryId || (candidate.launchedPid === result.pid && samePathText(candidate.outputExePath ?? "", result.path))
           ? {
               ...candidate,
               runStatus: result.status,
@@ -11309,6 +11374,54 @@ export function BuilderShowcase() {
         return;
       }
       applyRunSessionResult(entry.id, result, true);
+    } catch (error) {
+      setBuildError(String(error));
+    } finally {
+      setStoppingRunId("");
+    }
+  };
+
+  const stopWorkflowRuntimeSession = async (session: WorkflowRuntimeSession) => {
+    const historyEntry =
+      (activeProject.buildHistory ?? []).find((entry) => entry.id === session.entryId) ??
+      (activeProject.buildHistory ?? []).find(
+        (entry) => entry.launchedPid === session.pid && samePathText(entry.outputExePath ?? "", session.path),
+      ) ??
+      null;
+    if (historyEntry) {
+      await stopRunSession(historyEntry);
+      return;
+    }
+
+    const runId = session.entryId ?? "workflow-runtime";
+    setStoppingRunId(runId);
+    setBuildError("");
+    try {
+      const result = await invokeIfAvailable<RunSessionResult>("stop_run_session", {
+        path: session.path,
+        pid: session.pid,
+      });
+      if (!result) {
+        setBuildError("停止运行会话需要在 Tauri 桌面 app 中运行。");
+        return;
+      }
+      setWorkflowRuntimeSession(result.status === "running" ? { ...session, status: result.status, checkedAt: result.checked_at, summary: result.summary } : null);
+      updateActiveProject((project) => ({
+        ...project,
+        buildLog: `${project.buildLog ? `${project.buildLog}\n` : ""}${result.summary}`,
+        buildHistory: (project.buildHistory ?? []).map((candidate) =>
+          samePathText(candidate.outputExePath ?? "", result.path) || candidate.launchedPid === result.pid
+            ? {
+                ...candidate,
+                runStatus: result.status,
+                runCheckedAt: result.checked_at,
+                runSummary: result.summary,
+                stoppedAt: result.status === "stopped" ? result.checked_at : candidate.stoppedAt,
+                stopSummary: result.summary,
+              }
+            : candidate,
+        ),
+      }));
     } catch (error) {
       setBuildError(String(error));
     } finally {
@@ -12347,6 +12460,9 @@ export function BuilderShowcase() {
   const activeWorkflowStepState = editorWorkflowStepStates.find(({ status }) => status === "running" || status === "queued") ?? null;
   const workflowComplete =
     editorWorkflowStepStates.length > 0 && editorWorkflowStepStates.every(({ status }) => status === "succeeded");
+  const activeWorkflowRuntimeSession = workflowRuntimeSession?.status === "running" ? workflowRuntimeSession : null;
+  const activeWorkflowRuntimeStopId = activeWorkflowRuntimeSession?.entryId ?? "workflow-runtime";
+  const workflowRuntimeActive = Boolean(workflowComplete && activeWorkflowRuntimeSession?.pid && activeWorkflowRuntimeSession.status === "running");
   const nextWorkflowStepState =
     activeWorkflowStepState ??
     editorWorkflowStepStates.find(({ status }) => status === "failed") ??
@@ -12354,7 +12470,11 @@ export function BuilderShowcase() {
     null;
   const suggestedWorkflowStepId = nextWorkflowStepState?.step.id ?? null;
   const workflowPrimaryActionLabel =
-    workflowComplete && activeProject.outputExePath
+    workflowRuntimeActive
+      ? stoppingRunId === activeWorkflowRuntimeStopId
+        ? "Stopping"
+        : "Stop target"
+      : workflowComplete && activeProject.outputExePath
       ? launchingExeId === "active-output"
         ? "Launching"
         : "Run exe"
@@ -12365,16 +12485,20 @@ export function BuilderShowcase() {
           : nextWorkflowStepState?.status === "running"
             ? "Running"
             : "Continue";
-  const workflowPrimaryActionDisabled = workflowComplete
+  const workflowPrimaryActionDisabled = workflowRuntimeActive
+    ? Boolean(stoppingRunId)
+    : workflowComplete
     ? Boolean(activeProject.outputExePath && launchingExeId)
     : Boolean(!nextWorkflowStepState || runningProjectTask || queuedProjectTaskCount > 0);
-  const workflowRailStateLabel = activeWorkflowStepState ? "Active step" : workflowComplete ? "Workflow complete" : "Next step";
-  const workflowRailBadgeLabel = workflowComplete
+  const workflowRailStateLabel = activeWorkflowStepState ? "Active step" : workflowRuntimeActive ? "Target running" : workflowComplete ? "Workflow complete" : "Next step";
+  const workflowRailBadgeLabel = workflowRuntimeActive
+    ? "running"
+    : workflowComplete
     ? "done"
     : nextWorkflowStepState
       ? workflowStepStatusLabel(nextWorkflowStepState.status)
       : "ready";
-  const workflowRailBadgeVariant = nextWorkflowStepState?.status === "failed" ? "destructive" : workflowComplete ? "secondary" : "outline";
+  const workflowRailBadgeVariant = nextWorkflowStepState?.status === "failed" ? "destructive" : workflowComplete || workflowRuntimeActive ? "secondary" : "outline";
   const workflowActivityText = runningProjectTask
     ? `Running ${runningProjectTask.title}`
     : queuedProjectTaskCount > 0
@@ -12382,8 +12506,10 @@ export function BuilderShowcase() {
       : failedProjectTaskCount > 0
         ? `${failedProjectTaskCount} failed task(s)`
         : "Ready for the next editor action";
-  const workflowRailTitle = workflowComplete ? "Ready to run" : nextWorkflowStepState?.step.title ?? "Workflow ready";
-  const workflowRailDetail = workflowComplete
+  const workflowRailTitle = workflowRuntimeActive ? "Runtime active" : workflowComplete ? "Ready to run" : nextWorkflowStepState?.step.title ?? "Workflow ready";
+  const workflowRailDetail = workflowRuntimeActive
+    ? `pid ${activeWorkflowRuntimeSession?.pid} · ${activeWorkflowRuntimeSession?.status ?? "running"}`
+    : workflowComplete
     ? activeProject.outputExePath
       ? `Release exe ready: ${fileNameFromPath(activeProject.outputExePath)}`
       : latestReleasePipeline?.summary ?? "All editor workflow steps finished."
@@ -12422,6 +12548,12 @@ export function BuilderShowcase() {
   };
 
   const runWorkflowPrimaryAction = () => {
+    if (workflowRuntimeActive && activeWorkflowRuntimeSession) {
+      setMode("build");
+      openBottomDock("logs", false);
+      void stopWorkflowRuntimeSession(activeWorkflowRuntimeSession);
+      return;
+    }
     if (workflowComplete) {
       setMode("build");
       openBottomDock("output", false);
@@ -12690,7 +12822,7 @@ export function BuilderShowcase() {
                     disabled={workflowPrimaryActionDisabled}
                     onClick={runWorkflowPrimaryAction}
                   >
-                    <Play aria-hidden className="size-4" />
+                    {workflowRuntimeActive ? <Square aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
                     {workflowPrimaryActionLabel}
                   </Button>
                   <Button
