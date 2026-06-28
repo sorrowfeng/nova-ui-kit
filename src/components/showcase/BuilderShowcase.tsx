@@ -6169,6 +6169,44 @@ export function BuilderShowcase() {
       ),
     [activeProject, activeProjectSnapshotHash, generatedFilePreview, generatedFilePreviewSnapshotHash],
   );
+  const generatedPlanBusy = previewingGeneratedFiles || applyingGeneratedFiles || building || bundling || validatingWindow;
+  const generatedPlanPrimaryAction = projectChangeImpact.executionPlan.actions[0] ?? "preview-generated-files";
+  const generatedPlanPrimaryLabel =
+    generatedPlanPrimaryAction === "preview-generated-files"
+      ? "Preview first"
+      : generatedPlanPrimaryAction === "save-project"
+        ? "Save first"
+        : generatedPlanPrimaryAction === "apply-generated-changes"
+          ? "Apply changes"
+          : generatedPlanPrimaryAction === "quick-check-all"
+            ? "Run checks"
+            : generatedPlanPrimaryAction === "validate-window"
+              ? "Validate window"
+              : generatedPlanPrimaryAction === "build-exe"
+                ? "Build exe"
+                : projectTaskDefinitions[generatedPlanPrimaryAction].title;
+  const generatedPlanStatusTitle =
+    previewingGeneratedFiles
+      ? "Previewing generated targets"
+      : applyingGeneratedFiles
+        ? "Applying generated targets"
+        : projectChangeImpact.status === "needs-preview"
+          ? "Preview required"
+          : projectChangeImpact.status === "stale"
+            ? "Preview is stale"
+            : projectChangeImpact.status === "dirty"
+              ? `${projectChangeImpact.changedCount} target(s) ready to apply`
+              : "Generated targets are synced";
+  const generatedPlanStatusDetail =
+    previewingGeneratedFiles
+      ? "Nova is scanning manifest, UI, Rust, Cargo, assets, and Tauri targets."
+      : applyingGeneratedFiles
+        ? `${selectedGeneratedPreviewPaths.length || projectChangeImpact.changedCount} selected target(s) are being written to disk.`
+        : projectChangeImpact.status === "needs-preview" || projectChangeImpact.status === "stale"
+          ? projectChangeImpact.executionPlan.detail
+          : projectChangeImpact.status === "dirty"
+            ? `${projectChangeImpact.dirtyScopeCount} dirty scope(s). Apply generated changes before checks or release builds.`
+            : "Run checks, validate the window, then build the executable from the current generated output.";
   const projectDependencyValidity = useMemo(
     () => projectDependencyValidityViews(projectDependencyGraph, projectChangeImpact, activeProjectSnapshotHash),
     [activeProjectSnapshotHash, projectChangeImpact, projectDependencyGraph],
@@ -15942,6 +15980,61 @@ export function BuilderShowcase() {
                       <FileJson aria-hidden className="size-4" />
                       刷新预览
                     </Button>
+                  </div>
+                </div>
+                <div className="mb-4 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-generated-plan-status="">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span
+                        className={cn(
+                          "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border shadow-m3-1",
+                          projectChangeImpact.status === "dirty"
+                            ? "border-primary/30 bg-primary/10 text-primary"
+                            : projectChangeImpact.status === "clean"
+                              ? "border-primary/20 bg-surface-container-high text-primary"
+                              : "border-outline-variant bg-surface-container-high text-on-surface-variant",
+                        )}
+                      >
+                        {projectChangeImpact.status === "clean" ? (
+                          <CheckCircle2 aria-hidden className="size-4" />
+                        ) : projectChangeImpact.status === "dirty" ? (
+                          <Download aria-hidden className="size-4" />
+                        ) : (
+                          <FileJson aria-hidden className="size-4" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-on-surface">{generatedPlanStatusTitle}</p>
+                          <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
+                            {projectChangeImpactStatusLabel(projectChangeImpact.status)}
+                          </Badge>
+                          {generatedFilePreview ? <Badge variant="outline">{projectChangeImpact.totalCount} files</Badge> : null}
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{generatedPlanStatusDetail}</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        data-builder-generated-plan-primary=""
+                        loading={previewingGeneratedFiles || applyingGeneratedFiles}
+                        disabled={generatedPlanBusy}
+                        onClick={() => enqueueProjectTask(generatedPlanPrimaryAction)}
+                      >
+                        {projectChangeImpact.status === "dirty" ? <Download aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
+                        {generatedPlanPrimaryLabel}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-builder-generated-plan-tasks=""
+                        onClick={() => openBottomDock("tasks")}
+                      >
+                        <ClipboardCopy aria-hidden className="size-4" />
+                        Tasks
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="mb-4 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-change-impact="">
