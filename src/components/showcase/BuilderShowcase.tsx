@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type DragEvent,
+  type FormEvent as ReactFormEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -7474,36 +7475,57 @@ export function BuilderShowcase() {
     );
   };
 
-  const simulateSelectedEvent = () => {
-    if (!selectedItem || !selectedEventName || !selectedEventCommand || !selectedEventCommandId) {
+  const previewEventRawValue = (
+    item: BuilderItem,
+    eventName: BuilderEventName,
+    props: BuilderItemProps,
+    rawValue?: unknown,
+  ) => {
+    if (rawValue !== undefined) {
+      return rawValue;
+    }
+    if (eventName === "change" && (item.type === "checkbox" || item.type === "switch")) {
+      return !Boolean(props.checked);
+    }
+    return props.value ?? props.label ?? item.name;
+  };
+
+  const runSimulatorEventForItem = (item: BuilderItem, eventName: BuilderEventName, rawValue?: unknown) => {
+    setMode("preview");
+    const props = resolveSimulatorProps(item, simulatorStateValues);
+    const commandId = eventCommandId(item, eventName);
+    const command = commandId ? activeProject.rustCommands.find((candidate) => candidate.id === commandId) ?? null : null;
+    const itemName = getItemSummary(item);
+
+    if (!command || !commandId) {
+      setSimulatorTrace((current) =>
+        [
+          {
+            id: simulatorTraceId(),
+            time: simulatorTimeLabel(),
+            itemName,
+            eventName,
+            commandName: "Unbound event",
+            status: "error" as const,
+            rawResult: "",
+            message: `No Rust command bound to ${eventName}. Open Connections or create a command.`,
+            patch: {},
+          },
+          ...current,
+        ].slice(0, 10),
+      );
       return;
     }
 
-    setMode("preview");
-    const props = resolveSimulatorProps(selectedItem, simulatorStateValues);
     const binding: BuilderEventBinding = {
-      ...(selectedItem.props.events?.[selectedEventName] ?? {}),
-      commandId: selectedEventCommandId,
+      ...(item.props.events?.[eventName] ?? {}),
+      commandId,
     };
-    const rawValue =
-      selectedItem.type === "checkbox" || selectedItem.type === "switch"
-        ? Boolean(props.checked)
-        : props.value ?? props.label ?? selectedItem.name;
-    const args = simulatorArgsForEvent(
-      activeProject,
-      selectedEventCommand,
-      selectedItem,
-      props,
-      selectedEventName,
-      rawValue,
-      binding,
-      simulatorStateValues,
-    );
-    const commandName = sanitizeRustCommandName(selectedEventCommand.name);
-    const message = args
-      ? `${selectedEventCommand.response || DEFAULT_RUST_COMMAND_RESPONSE}: ${compactJson(args)}`
-      : selectedEventCommand.response || DEFAULT_RUST_COMMAND_RESPONSE;
-    const resultSchema = commandResultSchema(selectedEventCommand);
+    const eventRawValue = previewEventRawValue(item, eventName, props, rawValue);
+    const args = simulatorArgsForEvent(activeProject, command, item, props, eventName, eventRawValue, binding, simulatorStateValues);
+    const commandName = sanitizeRustCommandName(command.name);
+    const message = args ? `${command.response || DEFAULT_RUST_COMMAND_RESPONSE}: ${compactJson(args)}` : command.response || DEFAULT_RUST_COMMAND_RESPONSE;
+    const resultSchema = commandResultSchema(command);
     const resultPatchByName: Record<string, string> = {};
     if (resultSchema.mode === "json" && binding.applyJsonStatePatch && binding.resultStateId) {
       const state = activeProject.stateVariables.find((candidate) => candidate.id === binding.resultStateId);
@@ -7519,14 +7541,14 @@ export function BuilderShowcase() {
             patch: resultPatchByName,
           })
         : message;
-    const outcome = simulatorOutcomeFromResult(activeProject, selectedEventCommand, rawResult, binding);
+    const outcome = simulatorOutcomeFromResult(activeProject, command, rawResult, binding);
     const patch = { ...outcome.patch };
 
     if (!outcome.error && binding.resultStateId) {
       patch[binding.resultStateId] = outcome.message;
     }
 
-    const targetItem = binding.resultTargetItemId ? items.find((item) => item.id === binding.resultTargetItemId) : null;
+    const targetItem = binding.resultTargetItemId ? items.find((candidate) => candidate.id === binding.resultTargetItemId) : null;
     const target = targetItem && binding.resultTargetProp ? `${getItemSummary(targetItem)}.${binding.resultTargetProp}` : undefined;
     const traceStatus: SimulatorTraceEntry["status"] = outcome.error ? "error" : "success";
 
@@ -7542,8 +7564,8 @@ export function BuilderShowcase() {
         {
           id: simulatorTraceId(),
           time: simulatorTimeLabel(),
-          itemName: getItemSummary(selectedItem),
-          eventName: selectedEventName,
+          itemName,
+          eventName,
           commandName,
           status: traceStatus,
           args,
@@ -7555,6 +7577,13 @@ export function BuilderShowcase() {
         ...current,
       ].slice(0, 10),
     );
+  };
+
+  const simulateSelectedEvent = () => {
+    if (!selectedItem || !selectedEventName) {
+      return;
+    }
+    runSimulatorEventForItem(selectedItem, selectedEventName);
   };
 
   const applyLayoutPatchForActiveBreakpoint = (item: BuilderItem, patch: ResponsiveOverride, current: BuilderItem[]) => {
@@ -11669,6 +11698,40 @@ export function BuilderShowcase() {
     window.addEventListener("mouseup", onMouseUp);
   };
 
+  const handlePreviewCanvasClick = (item: BuilderItem) => {
+    if (mode !== "preview") {
+      return;
+    }
+    const eventName = eventNameForItem(item);
+    if (!eventName || item.type === "input" || item.type === "textarea") {
+      return;
+    }
+    if (eventName === "change" && (item.type === "checkbox" || item.type === "switch")) {
+      const props = resolveSimulatorProps(item, simulatorStateValues);
+      runSimulatorEventForItem(item, eventName, !Boolean(props.checked));
+      return;
+    }
+    runSimulatorEventForItem(item, eventName);
+  };
+
+  const handlePreviewCanvasChange = (item: BuilderItem, event: ReactFormEvent<HTMLDivElement>) => {
+    if (mode !== "preview") {
+      return;
+    }
+    const eventName = eventNameForItem(item);
+    if (eventName !== "change") {
+      return;
+    }
+
+    event.stopPropagation();
+    const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+    const rawValue =
+      (item.type === "checkbox" || item.type === "switch") && "checked" in target
+        ? Boolean((target as HTMLInputElement).checked)
+        : target.value;
+    runSimulatorEventForItem(item, eventName, rawValue);
+  };
+
   const canvasStageStyle: CSSProperties = {
     width: page.width * page.zoom,
     height: page.height * page.zoom,
@@ -11691,6 +11754,7 @@ export function BuilderShowcase() {
     const frameIntent = isFrameDropTarget && dropIntent?.kind === "frame" ? dropIntent : null;
     const dropIndex = frameIntent?.index ?? 0;
     const dropCount = frameIntent?.childCount ?? 0;
+    const itemEventName = eventNameForItem(item);
     const nodeStyle: CSSProperties = managedByParentLayout
       ? {
           width: item.width,
@@ -11716,6 +11780,7 @@ export function BuilderShowcase() {
           mode === "design" && !item.locked && "cursor-grab active:cursor-grabbing",
           mode === "design" && selectedIds.includes(item.id) && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
           mode === "design" && !selectedIds.includes(item.id) && "hover:ring-1 hover:ring-outline",
+          mode === "preview" && itemEventName && item.type !== "input" && item.type !== "textarea" && "cursor-pointer",
           isFrameDropTarget && "ring-2 ring-primary ring-offset-2 ring-offset-surface",
           item.locked && mode === "design" && "cursor-not-allowed opacity-90",
         )}
@@ -11726,7 +11791,9 @@ export function BuilderShowcase() {
         onClick={(event) => {
           event.stopPropagation();
           selectItem(item.id, event);
+          handlePreviewCanvasClick(item);
         }}
+        onChange={(event) => handlePreviewCanvasChange(item, event)}
       >
         <div className={cn("h-full w-full overflow-hidden", mode === "design" && "pointer-events-none")}>
           {renderBuilderPreview(item, mode, activeProject.assets)}
