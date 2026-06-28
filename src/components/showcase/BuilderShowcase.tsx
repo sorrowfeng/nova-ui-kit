@@ -12314,18 +12314,29 @@ export function BuilderShowcase() {
       actions: ["build-exe"],
     },
   ];
-  const suggestedWorkflowStepId =
-    runningProjectTask
-      ? null
-      : !saved
-        ? "save"
-        : !latestGeneratedFileSummary
-          ? "generate"
-          : buildReadinessSummary.errorCount > 0
-            ? "check"
-            : !activeProject.validationHistory?.[0]
-              ? "validate"
-              : "build";
+  const editorWorkflowStepStates: Array<{
+    step: EditorWorkflowStep;
+    task: ProjectTaskEntry | null;
+    status: ProjectTaskStatus | "idle";
+  }> = editorWorkflowSteps.map((step) => {
+    const task = workflowTaskForActions(activeProjectTasks, step.actions);
+    return {
+      step,
+      task,
+      status: task?.status ?? "idle",
+    };
+  });
+  const activeWorkflowStepState = editorWorkflowStepStates.find(({ status }) => status === "running" || status === "queued") ?? null;
+  const nextWorkflowStepState =
+    activeWorkflowStepState ??
+    editorWorkflowStepStates.find(({ status }) => status === "failed") ??
+    editorWorkflowStepStates.find(({ status }) => status === "idle" || status === "skipped" || status === "canceled") ??
+    editorWorkflowStepStates[editorWorkflowStepStates.length - 1] ??
+    null;
+  const suggestedWorkflowStepId = nextWorkflowStepState?.step.id ?? null;
+  const workflowPrimaryActionLabel =
+    nextWorkflowStepState?.status === "failed" ? "Retry" : nextWorkflowStepState?.status === "running" ? "Running" : "Continue";
+  const workflowPrimaryActionDisabled = Boolean(!nextWorkflowStepState || runningProjectTask || queuedProjectTaskCount > 0);
   const workflowActivityText = runningProjectTask
     ? `Running ${runningProjectTask.title}`
     : queuedProjectTaskCount > 0
@@ -12568,34 +12579,78 @@ export function BuilderShowcase() {
         </div>
 
         <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5" data-builder-workflow-rail="">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2">
+          <div className="mx-auto flex max-w-[82rem] flex-col gap-2">
             <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
-              <div className="flex min-w-0 items-center gap-2 text-xs text-on-surface-variant xl:w-56">
-                <span
-                  className={cn(
-                    "size-2 shrink-0 rounded-full",
-                    runningProjectTask
-                      ? "bg-primary"
-                      : failedProjectTaskCount > 0
-                        ? "bg-destructive"
-                        : queuedProjectTaskCount > 0
-                          ? "bg-secondary"
-                          : "bg-outline",
-                  )}
-                />
-                <span className="truncate">{workflowActivityText}</span>
+              <div className="grid min-w-0 gap-2 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 xl:w-72">
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2 text-on-surface-variant">
+                    <span
+                      className={cn(
+                        "size-2 shrink-0 rounded-full",
+                        runningProjectTask
+                          ? "bg-primary"
+                          : failedProjectTaskCount > 0
+                            ? "bg-destructive"
+                            : queuedProjectTaskCount > 0
+                              ? "bg-secondary"
+                              : "bg-outline",
+                      )}
+                    />
+                    <span className="truncate">{activeWorkflowStepState ? "Active step" : "Next step"}</span>
+                  </div>
+                  <Badge variant={nextWorkflowStepState?.status === "failed" ? "destructive" : "outline"} className="shrink-0">
+                    {nextWorkflowStepState ? workflowStepStatusLabel(nextWorkflowStepState.status) : "ready"}
+                  </Badge>
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-on-surface">{nextWorkflowStepState?.step.title ?? "Workflow ready"}</p>
+                  <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
+                    {runningProjectTask
+                      ? workflowActivityText
+                      : nextWorkflowStepState?.task?.summary ?? nextWorkflowStepState?.step.detail ?? workflowActivityText}
+                  </p>
+                </div>
+                <div className="flex min-w-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="min-w-0 flex-1"
+                    data-builder-run-next-workflow-step=""
+                    disabled={workflowPrimaryActionDisabled}
+                    onClick={() => {
+                      if (nextWorkflowStepState) {
+                        runEditorWorkflowStep(nextWorkflowStepState.step);
+                      }
+                    }}
+                  >
+                    <Play aria-hidden className="size-4" />
+                    {workflowPrimaryActionLabel}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0"
+                    aria-label="Open workflow tasks"
+                    onClick={() => {
+                      setBottomDockTab("tasks");
+                      setBottomDockExpanded(true);
+                    }}
+                  >
+                    <ClipboardCopy aria-hidden className="size-4" />
+                    Tasks
+                  </Button>
+                </div>
               </div>
               <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 md:grid-cols-5">
-                {editorWorkflowSteps.map((step, index) => {
+                {editorWorkflowStepStates.map(({ step, task, status }, index) => {
                   const StepIcon = step.icon;
-                  const task = workflowTaskForActions(activeProjectTasks, step.actions);
-                  const status = task?.status ?? "idle";
                   const suggested = suggestedWorkflowStepId === step.id;
                   return (
                     <button
                       key={step.id}
                       type="button"
                       data-builder-workflow-step={step.id}
+                      aria-current={suggested ? "step" : undefined}
                       className={cn(
                         "focus-ring group grid min-h-[4rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
                         workflowStepStatusClassName(status, suggested),
