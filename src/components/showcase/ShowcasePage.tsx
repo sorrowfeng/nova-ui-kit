@@ -15,6 +15,10 @@ type ShowcasePageProps = {
 };
 
 export function ShowcasePage({ item, onOpenCommand, onToast }: ShowcasePageProps) {
+  if (item.id === "builder") {
+    return <BuilderShowcase />;
+  }
+
   return (
     <div className="space-y-[var(--panel-gap)] pb-10">
       <ShowcaseHeader
@@ -24,7 +28,6 @@ export function ShowcasePage({ item, onOpenCommand, onToast }: ShowcasePageProps
         tags={item.tags}
       />
 
-      {item.id === "builder" ? <BuilderShowcase /> : null}
       {item.id === "buttons" ? <ButtonsShowcase /> : null}
       {item.id === "forms" ? <FormControlsShowcase /> : null}
       {item.id === "navigation" ? <NavigationShowcase onOpenCommand={onOpenCommand} /> : null}

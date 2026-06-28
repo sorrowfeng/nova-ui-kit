@@ -59,10 +59,10 @@ export function Topbar({
       <div className="relative min-w-0 flex-1 md:max-w-xl">
         <Search aria-hidden className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant" />
         <Input
-          aria-label="筛选组件"
+          aria-label="筛选项目和 UI 文件"
           value={searchQuery}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="搜索组件、状态、模式..."
+          placeholder="搜索项目、UI 文件、编辑功能..."
           className="h-12 rounded-full bg-surface-container-high pl-12 pr-24 text-base"
         />
         <button
@@ -143,7 +143,7 @@ export function Topbar({
 
       <Button variant="secondary" className="hidden gap-2 md:inline-flex" onClick={onToast}>
         <LayoutGrid aria-hidden />
-        同步预览
+        同步画布
       </Button>
 
       <Button className="hidden gap-2 md:inline-flex" onClick={onToast}>

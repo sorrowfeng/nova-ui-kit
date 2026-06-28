@@ -66,10 +66,10 @@ export function NavigationRail({
         <Button variant="ghost" size="icon" aria-label="通知" onClick={onToast}>
           <Bell />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="组件库设置">
+        <Button variant="ghost" size="icon" aria-label="编辑器设置">
           <Settings />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="组件注册表">
+        <Button variant="ghost" size="icon" aria-label="项目文件">
           <Boxes />
         </Button>
       </div>

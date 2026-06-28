@@ -15,6 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 type AppShellProps = {
   activeId: ShowcaseId;
@@ -50,6 +51,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const builderWorkspace = activeId === "builder";
 
   const handleSelect = (id: ShowcaseId) => {
     onSelect(id);
@@ -102,18 +104,27 @@ export function AppShell({
           />
           <div className="flex min-h-0 flex-1">
             <main className="subtle-scrollbar min-h-0 flex-1 overflow-y-auto bg-surface-container-lowest">
-              <div className="mx-auto w-full max-w-[1180px] px-4 py-5 sm:px-6 lg:px-8">{children}</div>
+              <div
+                className={cn(
+                  "mx-auto w-full px-4 py-5 sm:px-6 lg:px-8",
+                  builderWorkspace ? "max-w-[1600px]" : "max-w-[1180px]",
+                )}
+              >
+                {children}
+              </div>
             </main>
-            <InspectorPanel
-              activeId={activeId}
-              theme={theme}
-              onThemeChange={onThemeChange}
-              scheme={scheme}
-              onSchemeChange={onSchemeChange}
-              density={density}
-              onDensityChange={onDensityChange}
-              onToast={onToast}
-            />
+            {builderWorkspace ? null : (
+              <InspectorPanel
+                activeId={activeId}
+                theme={theme}
+                onThemeChange={onThemeChange}
+                scheme={scheme}
+                onSchemeChange={onSchemeChange}
+                density={density}
+                onDensityChange={onDensityChange}
+                onToast={onToast}
+              />
+            )}
           </div>
           <StatusBar theme={theme} scheme={scheme} density={density} />
         </div>

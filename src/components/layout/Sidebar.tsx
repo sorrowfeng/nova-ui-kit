@@ -25,8 +25,8 @@ export function Sidebar({ activeId, filteredItems, onSelect, className }: Sideba
           <Sparkles aria-hidden className="size-5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-base font-medium">Nova UI Kit</p>
-          <p className="truncate text-sm text-on-surface-variant">Material 3 桌面实验室</p>
+          <p className="truncate text-base font-medium">Nova UI Editor</p>
+          <p className="truncate text-sm text-on-surface-variant">桌面 UI 设计器</p>
         </div>
       </div>
 
