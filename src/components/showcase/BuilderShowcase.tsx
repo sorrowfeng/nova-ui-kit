@@ -10414,7 +10414,19 @@ export function BuilderShowcase() {
     return runner;
   };
 
+  const releasePipelinePresetForAction = (actionId: ProjectJumpActionId) =>
+    actionId === "build-exe"
+      ? projectActionPresets.find((preset) => preset.id === "release-exe") ?? null
+      : actionId === "bundle-installer"
+        ? projectActionPresets.find((preset) => preset.id === "installer-bundle") ?? null
+        : null;
+
   const enqueueProjectTask = (actionId: ProjectJumpActionId, attempt = 1) => {
+    const releasePreset = attempt === 1 ? releasePipelinePresetForAction(actionId) : null;
+    if (releasePreset) {
+      runProjectActionsAsPipeline(releasePreset);
+      return;
+    }
     enqueueProjectTaskSequence([actionId], attempt);
   };
 
@@ -12738,7 +12750,7 @@ export function BuilderShowcase() {
             </Button>
             <Button variant="secondary" size="sm" data-builder-build="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
               <Download aria-hidden className="size-4" />
-              构建 exe
+              发布 exe
             </Button>
             <Button variant="ghost" size="sm" data-builder-bundle="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
               <Box aria-hidden className="size-4" />
@@ -14263,11 +14275,11 @@ export function BuilderShowcase() {
                   </Button>
                   <Button size="sm" data-builder-build-workspace="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
                     <Download aria-hidden className="size-4" />
-                    Build
+                    Release exe
                   </Button>
                   <Button size="sm" variant="secondary" data-builder-bundle-workspace="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
                     <Box aria-hidden className="size-4" />
-                    Bundle
+                    Installer
                   </Button>
                   <Button
                     size="sm"
@@ -15912,11 +15924,11 @@ export function BuilderShowcase() {
                 </Button>
                 <Button data-builder-run-build="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
                   <Download aria-hidden className="size-4" />
-                  exe
+                  发布
                 </Button>
                 <Button data-builder-run-bundle="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
                   <Box aria-hidden className="size-4" />
-                  打包
+                  安装包
                 </Button>
               </div>
             </aside>
