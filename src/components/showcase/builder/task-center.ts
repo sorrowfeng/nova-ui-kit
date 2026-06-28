@@ -423,7 +423,7 @@ function normalizeProjectTaskHistoryRecord(record: unknown): ProjectTaskEntry | 
     finishedAt: typeof source.finishedAt === "string" ? source.finishedAt : interrupted ? new Date().toISOString() : undefined,
     summary: interrupted ? "Task was interrupted when the editor session ended." : typeof source.summary === "string" ? source.summary : undefined,
     error: typeof source.error === "string" ? source.error : undefined,
-    logPreview: typeof source.logPreview === "string" ? source.logPreview : undefined,
+    logPreview: typeof source.logPreview === "string" ? projectTaskLogPreview(source.logPreview) : undefined,
     artifactPath: typeof source.artifactPath === "string" ? source.artifactPath : undefined,
     logPath: typeof source.logPath === "string" ? source.logPath : undefined,
     backendTaskId: typeof source.backendTaskId === "string" ? source.backendTaskId : undefined,
@@ -563,12 +563,97 @@ export function projectTaskProgress(status: ProjectTaskStatus) {
   return 0;
 }
 
+function isTaskLogRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function taskLogString(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function taskLogNumber(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function cargoDiagnosticLocation(message: Record<string, unknown>) {
+  const spans = Array.isArray(message.spans) ? message.spans.filter(isTaskLogRecord) : [];
+  const primarySpan = spans.find((span) => span.is_primary === true) ?? spans[0];
+  if (!primarySpan) {
+    return "";
+  }
+
+  const file = taskLogString(primarySpan, "file_name");
+  if (!file) {
+    return "";
+  }
+  const line = taskLogNumber(primarySpan, "line_start");
+  const column = taskLogNumber(primarySpan, "column_start");
+  return line && column ? `${file}:${line}:${column}` : file;
+}
+
+function cargoDiagnosticCode(message: Record<string, unknown>) {
+  const code = message.code;
+  return isTaskLogRecord(code) ? taskLogString(code, "code") : undefined;
+}
+
+function readableCargoDiagnostic(line: string) {
+  if (!line.startsWith("{") || !line.endsWith("}")) {
+    return line;
+  }
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(line);
+  } catch {
+    return line;
+  }
+
+  if (!isTaskLogRecord(payload)) {
+    return line;
+  }
+
+  if (payload.reason !== "compiler-message") {
+    return undefined;
+  }
+
+  const message = payload.message;
+  if (!isTaskLogRecord(message)) {
+    return undefined;
+  }
+
+  const level = taskLogString(message, "level") ?? "diagnostic";
+  const summary = taskLogString(message, "message") ?? "Cargo diagnostic";
+  const code = cargoDiagnosticCode(message);
+  const location = cargoDiagnosticLocation(message);
+  return [
+    `${level}${code ? ` [${code}]` : ""}: ${summary}`,
+    location ? `--> ${location}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function readableTaskLogPreview(log: string) {
+  return log
+    .split(/\r?\n/)
+    .map((line) => readableCargoDiagnostic(line.trim()))
+    .filter((line): line is string => Boolean(line?.trim()))
+    .join("\n")
+    .trim();
+}
+
 export function projectTaskLogPreview(log?: string | null) {
   const normalized = (log ?? "").trim();
   if (!normalized) {
     return undefined;
   }
-  return normalized.length > 4000 ? normalized.slice(-4000) : normalized;
+  const readable = readableTaskLogPreview(normalized);
+  if (!readable) {
+    return "Machine log contained no user-facing diagnostics.";
+  }
+  return readable.length > 4000 ? readable.slice(-4000) : readable;
 }
 
 export function projectTaskKindLabel(kind: ProjectTaskKind) {
