@@ -584,6 +584,7 @@ type WindowVisualAuditSummary = {
 
 const LEGACY_BUILDER_STORAGE_KEY = "nova-ui-kit-builder-freeform-v2";
 const DESIGNER_WORKSPACE_STORAGE_KEY = "nova-ui-kit-designer-workspace-v1";
+const PROJECT_JUMP_RECENTS_STORAGE_KEY = "nova-ui-kit-project-jump-recents-v1";
 
 const canvasPresets: Array<{ id: CanvasPresetId; title: string; description: string; width: number; height: number; icon: typeof Monitor }> = [
   { id: "desktop", title: "Desktop", description: "1440 x 900", width: 1440, height: 900, icon: Monitor },
@@ -2257,6 +2258,18 @@ function workflowStepStatusClassName(status: ProjectTaskStatus | "idle", suggest
     return "border-primary/60 bg-surface-container-high text-on-surface shadow-m3-1";
   }
   return "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high hover:text-on-surface";
+}
+
+function loadProjectJumpRecentIds() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(PROJECT_JUMP_RECENTS_STORAGE_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string" && id.length > 0).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
 }
 
 function createPropertyMaintenanceEntry(summary: BuilderPropertyAutoFixSummary): ProjectMaintenanceEntry {
@@ -5516,6 +5529,9 @@ export function BuilderShowcase() {
   const [checkpointDiffLoadingId, setCheckpointDiffLoadingId] = useState("");
   const [checkpointLabel, setCheckpointLabel] = useState("");
   const [projectJumpQuery, setProjectJumpQuery] = useState("");
+  const [projectJumpFocused, setProjectJumpFocused] = useState(false);
+  const [projectJumpActiveIndex, setProjectJumpActiveIndex] = useState(0);
+  const [projectJumpRecentIds, setProjectJumpRecentIds] = useState<string[]>(() => loadProjectJumpRecentIds());
   const [projectTasks, setProjectTasks] = useState<ProjectTaskEntry[]>(() => loadInitialProjectTaskHistory());
   const [projectTaskSearchQuery, setProjectTaskSearchQuery] = useState("");
   const [projectTaskStatusFilter, setProjectTaskStatusFilter] = useState<ProjectTaskStatusFilter>("all");
@@ -5551,6 +5567,7 @@ export function BuilderShowcase() {
   const [clipboardVersion, setClipboardVersion] = useState(0);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const canvasViewportRef = useRef<HTMLDivElement | null>(null);
+  const projectJumpInputRef = useRef<HTMLInputElement | null>(null);
   const rustLogicRef = useRef<HTMLTextAreaElement | null>(null);
   const itemsRef = useRef<BuilderItem[]>(items);
   const historyRef = useRef<Record<string, HistoryEntry>>({});
@@ -5794,6 +5811,30 @@ export function BuilderShowcase() {
     () => filterProjectJumpResults(projectJumpResults, projectJumpQuery),
     [projectJumpQuery, projectJumpResults],
   );
+  const recentProjectJumpResults = useMemo(
+    () =>
+      projectJumpRecentIds
+        .map((id) => projectJumpResults.find((result) => result.id === id) ?? null)
+        .filter((result): result is ProjectJumpResult => Boolean(result)),
+    [projectJumpRecentIds, projectJumpResults],
+  );
+  const projectJumpPanelResults = useMemo(() => {
+    if (projectJumpQuery.trim()) {
+      return visibleProjectJumpResults;
+    }
+    const recommendedResults = projectJumpResults.filter((result) => result.kind === "action" || result.kind === "settings").slice(0, 8);
+    const seen = new Set<string>();
+    return [...recentProjectJumpResults, ...recommendedResults]
+      .filter((result) => {
+        if (seen.has(result.id)) {
+          return false;
+        }
+        seen.add(result.id);
+        return true;
+      })
+      .slice(0, 10);
+  }, [projectJumpQuery, projectJumpResults, recentProjectJumpResults, visibleProjectJumpResults]);
+  const projectJumpPanelOpen = projectJumpFocused || projectJumpQuery.trim().length > 0;
   const stateVariableFingerprint = useMemo(
     () => activeProject.stateVariables.map((state) => `${state.id}:${state.name}:${state.initialValue}`).join("|"),
     [activeProject.stateVariables],
@@ -6025,6 +6066,36 @@ export function BuilderShowcase() {
     }
     saveProjectTaskHistory(projectTasks);
   }, [projectTasks]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem(PROJECT_JUMP_RECENTS_STORAGE_KEY, JSON.stringify(projectJumpRecentIds.slice(0, 8)));
+  }, [projectJumpRecentIds]);
+
+  useEffect(() => {
+    setProjectJumpActiveIndex(0);
+  }, [projectJumpQuery, projectJumpPanelResults.length]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isCommand = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+      if (!isCommand || (key !== "p" && key !== "k")) {
+        return;
+      }
+      event.preventDefault();
+      setProjectJumpFocused(true);
+      window.requestAnimationFrame(() => {
+        projectJumpInputRef.current?.focus();
+        projectJumpInputRef.current?.select();
+      });
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -10171,8 +10242,14 @@ export function BuilderShowcase() {
     enqueueProjectTask(actionId);
   };
 
+  const rememberProjectJumpResult = (result: ProjectJumpResult) => {
+    setProjectJumpRecentIds((current) => [result.id, ...current.filter((id) => id !== result.id)].slice(0, 8));
+  };
+
   const openProjectJumpResult = (result: ProjectJumpResult) => {
+    rememberProjectJumpResult(result);
     setProjectJumpQuery("");
+    setProjectJumpFocused(false);
     setBuildError("");
 
     if (result.kind === "action" && result.actionId) {
@@ -11803,16 +11880,36 @@ export function BuilderShowcase() {
             <div className="relative">
               <Search aria-hidden className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
               <Input
+                ref={projectJumpInputRef}
                 value={projectJumpQuery}
                 inputSize="sm"
                 aria-label="Project Locator"
                 placeholder="Locator: file, control, Rust command, action, artifact, settings..."
                 className="h-10 rounded-2xl pl-10 pr-20"
+                onFocus={() => setProjectJumpFocused(true)}
+                onBlur={() => window.setTimeout(() => setProjectJumpFocused(false), 120)}
                 onChange={(event) => setProjectJumpQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && visibleProjectJumpResults[0]) {
+                  if (event.key === "ArrowDown") {
                     event.preventDefault();
-                    openProjectJumpResult(visibleProjectJumpResults[0]);
+                    setProjectJumpActiveIndex((current) => Math.min(current + 1, Math.max(projectJumpPanelResults.length - 1, 0)));
+                    return;
+                  }
+                  if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setProjectJumpActiveIndex((current) => Math.max(current - 1, 0));
+                    return;
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    setProjectJumpQuery("");
+                    setProjectJumpFocused(false);
+                    projectJumpInputRef.current?.blur();
+                    return;
+                  }
+                  if (event.key === "Enter" && projectJumpPanelResults[projectJumpActiveIndex]) {
+                    event.preventDefault();
+                    openProjectJumpResult(projectJumpPanelResults[projectJumpActiveIndex]);
                   }
                 }}
               />
@@ -11820,18 +11917,28 @@ export function BuilderShowcase() {
                 Enter
               </span>
             </div>
-            {projectJumpQuery.trim() ? (
+            {projectJumpPanelOpen ? (
             <div className="absolute left-4 right-4 top-[calc(100%-0.35rem)] z-50 mx-auto max-h-[360px] max-w-5xl overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-1 shadow-m3-2">
-              {visibleProjectJumpResults.length > 0 ? (
-                visibleProjectJumpResults.map((result) => (
+              <div className="flex items-center justify-between px-3 py-2 text-[0.68rem] text-on-surface-variant">
+                <span>{projectJumpQuery.trim() ? "Search results" : recentProjectJumpResults.length > 0 ? "Recent and recommended" : "Recommended commands"}</span>
+                <span className="font-mono">Ctrl+P / Ctrl+K</span>
+              </div>
+              {projectJumpPanelResults.length > 0 ? (
+                projectJumpPanelResults.map((result, index) => (
                   <button
                     key={result.id}
                     type="button"
                     data-builder-project-jump-result={result.kind}
-                    className="focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-surface-container-high"
+                    aria-selected={index === projectJumpActiveIndex}
+                    className={cn(
+                      "focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-surface-container-high",
+                      index === projectJumpActiveIndex && "bg-secondary-container text-secondary-container-foreground",
+                    )}
+                    onMouseEnter={() => setProjectJumpActiveIndex(index)}
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={() => openProjectJumpResult(result)}
                   >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-primary">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
                       <ProjectJumpIcon kind={result.kind} />
                     </span>
                     <span className="min-w-0 flex-1">
