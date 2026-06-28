@@ -415,6 +415,21 @@ type BuilderLeftDockTab = "project" | "navigator" | "components" | "assets";
 type BuilderRightDockTab = "properties" | "connections" | "responsive" | "impact";
 type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs";
 
+function buildDiagnosticKey(diagnostic: BuildDiagnostic, index: number) {
+  return [
+    diagnostic.severity,
+    diagnostic.origin ?? "",
+    diagnostic.code ?? "",
+    diagnostic.file ?? "",
+    diagnostic.line ?? "",
+    diagnostic.column ?? "",
+    diagnostic.sourceFile ?? "",
+    diagnostic.sourceLine ?? "",
+    diagnostic.message,
+    index,
+  ].join("::");
+}
+
 type PalettePointerDrag = {
   type: BuilderComponentType;
   title: string;
@@ -5634,6 +5649,7 @@ export function BuilderShowcase() {
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
+  const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
   const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
@@ -5915,6 +5931,15 @@ export function BuilderShowcase() {
     () => parseBuildDiagnostics(combinedBuildLog, activeRustSourceMap),
     [combinedBuildLog, activeRustSourceMap],
   );
+  const selectedBuildDiagnostic = useMemo(() => {
+    if (buildDiagnostics.length === 0) {
+      return null;
+    }
+    return (
+      buildDiagnostics.find((diagnostic, index) => buildDiagnosticKey(diagnostic, index) === selectedBuildDiagnosticKey) ??
+      buildDiagnostics[0]
+    );
+  }, [buildDiagnostics, selectedBuildDiagnosticKey]);
   const rustEditorLines = useMemo(() => activeProject.rustLogic.split(/\r?\n/), [activeProject.rustLogic]);
   const rustDiagnosticsBySourceLine = useMemo(() => {
     const diagnosticsByLine = new Map<number, BuildDiagnostic[]>();
@@ -8765,6 +8790,15 @@ export function BuilderShowcase() {
     });
     setBuildError("");
     setMode("logic");
+  };
+
+  const openBuildDiagnostic = (diagnostic: BuildDiagnostic, index: number, focusEditable = true) => {
+    setSelectedBuildDiagnosticKey(buildDiagnosticKey(diagnostic, index));
+    setBottomDockTab("issues");
+    setBottomDockExpanded(true);
+    if (focusEditable && isEditableRustDiagnostic(diagnostic)) {
+      focusRustDiagnostic(diagnostic);
+    }
   };
 
   const selectRustCommand = (commandId: string) => {
@@ -14849,13 +14883,12 @@ export function BuilderShowcase() {
                             </div>
                             <Button
                               size="sm"
-                              variant="secondary"
+                              variant={canFocusDiagnostic ? "secondary" : "outline"}
                               data-builder-focus-build-diagnostic={`${index}`}
-                              disabled={!canFocusDiagnostic}
-                              onClick={() => focusRustDiagnostic(diagnostic)}
+                              onClick={() => openBuildDiagnostic(diagnostic, index, canFocusDiagnostic)}
                             >
-                              <MousePointer2 aria-hidden className="size-4" />
-                              定位
+                              {canFocusDiagnostic ? <MousePointer2 aria-hidden className="size-4" /> : <Search aria-hidden className="size-4" />}
+                              {canFocusDiagnostic ? "定位" : "详情"}
                             </Button>
                           </div>
                           <p className="leading-5">{diagnostic.message}</p>
@@ -18922,34 +18955,165 @@ export function BuilderShowcase() {
               onExpandedChange={setBottomDockExpanded}
             >
               {bottomDockTab === "issues" ? (
-                <div className="grid gap-2 text-xs xl:grid-cols-2">
-                  {buildError ? (
-                    <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive">
-                      {buildError}
+                bottomDockExpanded ? (
+                  <div className="grid gap-3 text-xs xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                    <div className="max-h-56 space-y-2 overflow-auto pr-1">
+                      {buildError ? (
+                        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+                          <div className="mb-1 flex items-center gap-2">
+                            <AlertTriangle aria-hidden className="size-4" />
+                            <span className="font-medium">Build error</span>
+                          </div>
+                          <p className="line-clamp-2 leading-5">{buildError}</p>
+                        </div>
+                      ) : null}
+                      {buildDiagnostics.length > 0 ? (
+                        buildDiagnostics.slice(0, 16).map((diagnostic, index) => {
+                          const isSelected = diagnostic === selectedBuildDiagnostic;
+                          const canFocusDiagnostic = isEditableRustDiagnostic(diagnostic);
+                          return (
+                            <button
+                              key={`${diagnostic.message}-${index}`}
+                              type="button"
+                              aria-selected={isSelected}
+                              className={cn(
+                                "focus-ring w-full rounded-xl border p-3 text-left transition",
+                                isSelected
+                                  ? "border-primary bg-primary/10"
+                                  : "border-outline-variant bg-surface-container-high hover:border-outline",
+                              )}
+                              onClick={() => openBuildDiagnostic(diagnostic, index, false)}
+                            >
+                              <span className="mb-1 flex min-w-0 items-center gap-2">
+                                <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
+                                {diagnostic.code ? <Badge variant="outline">{diagnostic.code}</Badge> : null}
+                                {!canFocusDiagnostic ? <Badge variant="secondary">log</Badge> : null}
+                                {diagnostic.file ? (
+                                  <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">
+                                    {diagnostic.file}:{diagnostic.line ?? "-"}
+                                  </span>
+                                ) : null}
+                              </span>
+                              <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                            </button>
+                          );
+                        })
+                      ) : !buildError ? (
+                        <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                          No active issues. Build diagnostics and validation problems will appear here.
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                  {buildDiagnostics.length > 0 ? (
-                    buildDiagnostics.slice(0, bottomDockExpanded ? 8 : 4).map((diagnostic, index) => (
+                    <div className="min-h-44 rounded-xl border border-outline-variant bg-surface-container-high p-3">
+                      {selectedBuildDiagnostic ? (
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                              <Badge variant={selectedBuildDiagnostic.severity === "error" ? "destructive" : "outline"}>
+                                {selectedBuildDiagnostic.severity}
+                              </Badge>
+                              {selectedBuildDiagnostic.code ? <Badge variant="outline">{selectedBuildDiagnostic.code}</Badge> : null}
+                              {selectedBuildDiagnostic.origin ? <Badge variant="secondary">{selectedBuildDiagnostic.origin}</Badge> : null}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              {isEditableRustDiagnostic(selectedBuildDiagnostic) ? (
+                                <Button size="sm" variant="secondary" onClick={() => focusRustDiagnostic(selectedBuildDiagnostic)}>
+                                  <MousePointer2 aria-hidden className="size-4" />
+                                  定位源码
+                                </Button>
+                              ) : null}
+                              <Button size="sm" variant="ghost" onClick={() => setBottomDockTab("logs")}>
+                                <FileJson aria-hidden className="size-4" />
+                                完整日志
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="leading-5 text-on-surface">{selectedBuildDiagnostic.message}</p>
+                          <div className="grid gap-2 md:grid-cols-2">
+                            <PathRow label="File" value={selectedBuildDiagnostic.file || "Cargo output"} />
+                            <PathRow
+                              label="Location"
+                              value={
+                                selectedBuildDiagnostic.line
+                                  ? `line ${selectedBuildDiagnostic.line}, column ${selectedBuildDiagnostic.column ?? 1}`
+                                  : "No direct source location"
+                              }
+                            />
+                            <PathRow label="Mapped source" value={selectedBuildDiagnostic.sourceFile || "Not mapped to editor source"} />
+                            <PathRow
+                              label="Source line"
+                              value={
+                                selectedBuildDiagnostic.sourceLine
+                                  ? `line ${selectedBuildDiagnostic.sourceLine}, column ${selectedBuildDiagnostic.sourceColumn ?? 1}`
+                                  : "Unavailable"
+                              }
+                            />
+                          </div>
+                          {!isEditableRustDiagnostic(selectedBuildDiagnostic) ? (
+                            <p className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 leading-5 text-on-surface-variant">
+                              这个诊断来自生成 app、依赖或 Cargo 输出，当前无法安全映射到编辑器里的 Rust 逻辑源码。
+                            </p>
+                          ) : null}
+                          {selectedBuildDiagnostic.rendered ? (
+                            <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-low p-3 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
+                              {selectedBuildDiagnostic.rendered}
+                            </pre>
+                          ) : null}
+                        </div>
+                      ) : buildError ? (
+                        <div className="space-y-3">
+                          <Badge variant="destructive">build error</Badge>
+                          <p className="leading-5 text-destructive">{buildError}</p>
+                          <Button size="sm" variant="secondary" onClick={() => setBottomDockTab("logs")}>
+                            <FileJson aria-hidden className="size-4" />
+                            完整日志
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex h-full min-h-36 items-center justify-center rounded-xl border border-dashed border-outline-variant text-center text-on-surface-variant">
+                          No issue selected.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-2 text-xs xl:grid-cols-2">
+                    {buildError ? (
                       <button
-                        key={`${diagnostic.message}-${index}`}
                         type="button"
-                        className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high p-3 text-left"
-                        onClick={() => focusRustDiagnostic(diagnostic)}
-                        disabled={!isEditableRustDiagnostic(diagnostic)}
+                        className="focus-ring rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-left text-destructive"
+                        onClick={() => setBottomDockExpanded(true)}
                       >
-                        <span className="mb-1 flex items-center gap-2">
-                          <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
-                          {diagnostic.file ? <span className="truncate font-mono text-[0.68rem]">{diagnostic.file}</span> : null}
+                        <span className="mb-1 flex items-center gap-2 font-medium">
+                          <AlertTriangle aria-hidden className="size-4" />
+                          Build error
                         </span>
-                        <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                        <span className="line-clamp-2 leading-5">{buildError}</span>
                       </button>
-                    ))
-                  ) : !buildError ? (
-                    <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                      No active issues. Build diagnostics and validation problems will appear here.
-                    </div>
-                  ) : null}
-                </div>
+                    ) : null}
+                    {buildDiagnostics.length > 0 ? (
+                      buildDiagnostics.slice(0, 4).map((diagnostic, index) => (
+                        <button
+                          key={`${diagnostic.message}-${index}`}
+                          type="button"
+                          className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high p-3 text-left transition hover:border-outline"
+                          onClick={() => openBuildDiagnostic(diagnostic, index, false)}
+                        >
+                          <span className="mb-1 flex min-w-0 items-center gap-2">
+                            <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
+                            {!isEditableRustDiagnostic(diagnostic) ? <Badge variant="secondary">log</Badge> : null}
+                            {diagnostic.file ? <span className="min-w-0 truncate font-mono text-[0.68rem]">{diagnostic.file}</span> : null}
+                          </span>
+                          <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                        </button>
+                      ))
+                    ) : !buildError ? (
+                      <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                        No active issues. Build diagnostics and validation problems will appear here.
+                      </div>
+                    ) : null}
+                  </div>
+                )
               ) : bottomDockTab === "output" ? (
                 <div className="grid gap-2 text-xs xl:grid-cols-3">
                   <PathRow label="Pipeline" value={latestReleasePipeline ? latestReleasePipeline.summary : "No release pipeline yet"} />
