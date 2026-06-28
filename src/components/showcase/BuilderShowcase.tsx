@@ -5018,6 +5018,24 @@ function compactJson(value: unknown) {
   }
 }
 
+function simulatorStateValuesForArgs(
+  project: DesignerProject,
+  binding: BuilderEventBinding,
+  stateValues: Record<string, string>,
+) {
+  if (!binding.resultStateId || !project.stateVariables.some((state) => state.id === binding.resultStateId)) {
+    return stateValues;
+  }
+  const nextStateValues = { ...stateValues };
+  delete nextStateValues[binding.resultStateId];
+  return nextStateValues;
+}
+
+function simulatorRunMessage(commandResponse: string | undefined, eventName: BuilderEventName, commandName: string) {
+  const response = commandResponse?.trim() || DEFAULT_RUST_COMMAND_RESPONSE;
+  return `${response} completed for ${eventName} -> ${commandName}.`;
+}
+
 function prettyJson(value: unknown) {
   if (typeof value === "string") {
     const trimmed = value.trim();
@@ -7624,7 +7642,6 @@ export function BuilderShowcase() {
 
   const runSimulatorEventForItem = (item: BuilderItem, eventName: BuilderEventName, rawValue?: unknown): SimulatorTraceEntry => {
     setMode("preview");
-    const props = resolveSimulatorProps(item, simulatorStateValues);
     const commandId = eventCommandId(item, eventName);
     const command = commandId ? activeProject.rustCommands.find((candidate) => candidate.id === commandId) ?? null : null;
     const itemName = getItemSummary(item);
@@ -7654,10 +7671,12 @@ export function BuilderShowcase() {
       ...(item.props.events?.[eventName] ?? {}),
       commandId,
     };
+    const argumentStateValues = simulatorStateValuesForArgs(activeProject, binding, simulatorStateValues);
+    const props = resolveSimulatorProps(item, argumentStateValues);
     const eventRawValue = previewEventRawValue(item, eventName, props, rawValue);
-    const args = simulatorArgsForEvent(activeProject, command, item, props, eventName, eventRawValue, binding, simulatorStateValues);
+    const args = simulatorArgsForEvent(activeProject, command, item, props, eventName, eventRawValue, binding, argumentStateValues);
     const commandName = sanitizeRustCommandName(command.name);
-    const message = args ? `${command.response || DEFAULT_RUST_COMMAND_RESPONSE}: ${compactJson(args)}` : command.response || DEFAULT_RUST_COMMAND_RESPONSE;
+    const message = simulatorRunMessage(command.response, eventName, commandName);
     const resultSchema = commandResultSchema(command);
     const resultPatchByName: Record<string, string> = {};
     if (resultSchema.mode === "json" && binding.applyJsonStatePatch && binding.resultStateId) {
