@@ -5633,6 +5633,7 @@ export function BuilderShowcase() {
   const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("project");
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
+  const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
   const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
@@ -10304,6 +10305,7 @@ export function BuilderShowcase() {
     setProjectTasks((current) => [...tasks, ...current].slice(0, 100));
     setSelectedProjectTaskId(tasks[0].id);
     setBottomDockTab("tasks");
+    setBottomDockExpanded(true);
     setMode(projectTaskDefinitions[tasks[tasks.length - 1].actionId].mode);
     if (autoStart && !projectTaskQueuePausedRef.current) {
       void drainProjectTaskQueue();
@@ -12622,6 +12624,7 @@ export function BuilderShowcase() {
                     onClick={() => {
                       setMode("build");
                       setBottomDockTab("tasks");
+                      setBottomDockExpanded(true);
                       if (operationMonitorTask) {
                         setSelectedProjectTaskId(operationMonitorTask.id);
                       }
@@ -12637,6 +12640,7 @@ export function BuilderShowcase() {
                     onClick={() => {
                       setMode("build");
                       setBottomDockTab("issues");
+                      setBottomDockExpanded(true);
                     }}
                   >
                     <AlertTriangle aria-hidden className="size-4" />
@@ -12649,6 +12653,7 @@ export function BuilderShowcase() {
                     onClick={() => {
                       setMode("build");
                       setBottomDockTab("output");
+                      setBottomDockExpanded(true);
                     }}
                   >
                     <Terminal aria-hidden className="size-4" />
@@ -18909,7 +18914,13 @@ export function BuilderShowcase() {
           </DesignWorkspace>
         )}
         </div>
-            <OutputDock tabs={bottomDockTabs} activeTab={bottomDockTab} onTabChange={setBottomDockTab}>
+            <OutputDock
+              tabs={bottomDockTabs}
+              activeTab={bottomDockTab}
+              onTabChange={setBottomDockTab}
+              expanded={bottomDockExpanded}
+              onExpandedChange={setBottomDockExpanded}
+            >
               {bottomDockTab === "issues" ? (
                 <div className="grid gap-2 text-xs xl:grid-cols-2">
                   {buildError ? (
@@ -18918,7 +18929,7 @@ export function BuilderShowcase() {
                     </div>
                   ) : null}
                   {buildDiagnostics.length > 0 ? (
-                    buildDiagnostics.slice(0, 4).map((diagnostic, index) => (
+                    buildDiagnostics.slice(0, bottomDockExpanded ? 8 : 4).map((diagnostic, index) => (
                       <button
                         key={`${diagnostic.message}-${index}`}
                         type="button"
@@ -18946,30 +18957,112 @@ export function BuilderShowcase() {
                   <PathRow label="Bundle" value={activeBundlePath || activeBundleDir || "Bundle output pending"} />
                 </div>
               ) : bottomDockTab === "tasks" ? (
-                <div className="grid gap-2 text-xs xl:grid-cols-4">
-                  {visibleProjectTasks.slice(0, 4).map((task) => (
-                    <button
-                      key={task.id}
-                      type="button"
-                      className={cn(
-                        "focus-ring rounded-xl border p-3 text-left transition",
-                        selectedProjectTask?.id === task.id ? "border-primary bg-primary/10" : "border-outline-variant bg-surface-container-high hover:border-outline",
-                      )}
-                      onClick={() => setSelectedProjectTaskId(task.id)}
-                    >
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="truncate font-medium">{task.title}</span>
-                        <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
-                      </span>
-                      <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
-                    </button>
-                  ))}
-                  {visibleProjectTasks.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                      No tasks yet.
+                bottomDockExpanded ? (
+                  <div className="grid gap-3 text-xs xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                    <div className="max-h-56 space-y-2 overflow-auto pr-1">
+                      {visibleProjectTasks.slice(0, 8).map((task) => (
+                        <button
+                          key={task.id}
+                          type="button"
+                          className={cn(
+                            "focus-ring w-full rounded-xl border p-3 text-left transition",
+                            selectedProjectTask?.id === task.id ? "border-primary bg-primary/10" : "border-outline-variant bg-surface-container-high hover:border-outline",
+                          )}
+                          onClick={() => {
+                            setSelectedProjectTaskId(task.id);
+                            setProjectTaskLogSearchQuery("");
+                          }}
+                        >
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate font-medium">{task.title}</span>
+                            <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                          </span>
+                          <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
+                          <span className="mt-1 block line-clamp-1 text-[0.68rem] text-on-surface-variant">{task.summary ?? task.detail}</span>
+                        </button>
+                      ))}
+                      {visibleProjectTasks.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                          No tasks yet.
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
+                    <div className="min-h-0 rounded-xl border border-outline-variant bg-surface-container-high p-3">
+                      {selectedProjectTask ? (
+                        <div className="min-h-0">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-on-surface">{selectedProjectTask.title}</p>
+                              <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">
+                                {selectedProjectTask.summary ?? selectedProjectTask.detail}
+                              </p>
+                            </div>
+                            <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{selectedProjectTask.status}</Badge>
+                          </div>
+                          {selectedProjectTask.error ? (
+                            <p className="mt-2 line-clamp-2 rounded-xl bg-destructive/10 p-2 font-mono text-[0.68rem] leading-4 text-destructive">
+                              {selectedProjectTask.error}
+                            </p>
+                          ) : null}
+                          <div className="mt-3 grid grid-cols-3 gap-2 text-[0.68rem]">
+                            <PathRow label="Kind" value={projectTaskKindLabel(selectedProjectTask.kind)} />
+                            <PathRow label="Elapsed" value={projectTaskElapsedLabel(selectedProjectTask)} />
+                            <PathRow label="Source" value={selectedProjectTask.backendTaskId ? "Rust task" : "Editor queue"} />
+                          </div>
+                          {selectedProjectTask.logPreview ? (
+                            <div className="mt-3 max-h-24 overflow-auto rounded-xl bg-surface-container-low py-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
+                              {selectedProjectTaskLogLines.slice(0, 8).map((line) => (
+                                <div
+                                  key={line.id}
+                                  className={cn(
+                                    "grid grid-cols-[2.5rem_minmax(0,1fr)] gap-2 px-2 py-0.5",
+                                    line.matched && "bg-primary/10 text-on-surface",
+                                  )}
+                                >
+                                  <span className="select-none text-right text-on-surface-variant">{line.number}</span>
+                                  <span className="whitespace-pre-wrap break-words">{line.text}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="mt-3 rounded-xl border border-dashed border-outline-variant p-3 text-center leading-5 text-on-surface-variant">
+                              No log preview for this task.
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                          Select a task to inspect it.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid gap-2 text-xs xl:grid-cols-4">
+                    {visibleProjectTasks.slice(0, 4).map((task) => (
+                      <button
+                        key={task.id}
+                        type="button"
+                        className={cn(
+                          "focus-ring rounded-xl border p-3 text-left transition",
+                          selectedProjectTask?.id === task.id ? "border-primary bg-primary/10" : "border-outline-variant bg-surface-container-high hover:border-outline",
+                        )}
+                        onClick={() => setSelectedProjectTaskId(task.id)}
+                      >
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate font-medium">{task.title}</span>
+                          <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                        </span>
+                        <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
+                      </button>
+                    ))}
+                    {visibleProjectTasks.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                        No tasks yet.
+                      </div>
+                    ) : null}
+                  </div>
+                )
               ) : (
                 <pre className="max-h-36 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-5 text-on-surface-variant">
                   {selectedProjectTask?.logPreview ||
