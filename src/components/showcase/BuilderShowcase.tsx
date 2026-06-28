@@ -5712,6 +5712,7 @@ export function BuilderShowcase() {
   const [generatedFilePreviewSnapshotHash, setGeneratedFilePreviewSnapshotHash] = useState("");
   const [activeGeneratedPreviewPath, setActiveGeneratedPreviewPath] = useState("");
   const [selectedGeneratedPreviewPaths, setSelectedGeneratedPreviewPaths] = useState<string[]>([]);
+  const [showGeneratedPlanAdvanced, setShowGeneratedPlanAdvanced] = useState(false);
   const [generatedFileApplyResult, setGeneratedFileApplyResult] = useState<ApplyGeneratedFilesResult | null>(null);
   const [projectDependencyGraph, setProjectDependencyGraph] = useState<ProjectDependencyGraphRecord | null>(null);
   const [refreshingDependencyGraph, setRefreshingDependencyGraph] = useState(false);
@@ -15928,57 +15929,17 @@ export function BuilderShowcase() {
                       构建前预览 Nova 将写入的 manifest、UI、Rust module、Cargo 和 Tauri app 文件，并标记新增或更新。
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Badge variant="outline">Guided flow</Badge>
                     <Button
                       size="sm"
                       variant="ghost"
-                      data-builder-select-changed-generated-files=""
-                      disabled={!generatedFilePreview || applyingGeneratedFiles}
-                      onClick={selectChangedGeneratedPreviewPaths}
+                      data-builder-generated-plan-advanced-toggle=""
+                      aria-expanded={showGeneratedPlanAdvanced}
+                      onClick={() => setShowGeneratedPlanAdvanced((current) => !current)}
                     >
-                      选中变更
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-clear-generated-file-selection=""
-                      disabled={!generatedFilePreview || applyingGeneratedFiles}
-                      onClick={() => setSelectedGeneratedPreviewPaths([])}
-                    >
-                      清空
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      data-builder-apply-generated-files=""
-                      loading={applyingGeneratedFiles}
-                      disabled={applyingGeneratedFiles || previewingGeneratedFiles || selectedGeneratedPreviewPaths.length === 0}
-                      onClick={() => enqueueProjectTask("apply-generated-files")}
-                    >
-                      <Save aria-hidden className="size-4" />
-                      应用选中 {selectedGeneratedPreviewPaths.length}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      data-builder-apply-generated-changes=""
-                      loading={applyingGeneratedFiles || previewingGeneratedFiles}
-                      disabled={applyingGeneratedFiles || previewingGeneratedFiles || building || bundling || validatingWindow}
-                      onClick={() => enqueueProjectTask("apply-generated-changes")}
-                    >
-                      <Download aria-hidden className="size-4" />
-                      应用全部变更
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      data-builder-refresh-generated-file-preview=""
-                      loading={previewingGeneratedFiles}
-                      disabled={previewingGeneratedFiles || applyingGeneratedFiles || building || bundling || validatingWindow}
-                      onClick={() => enqueueProjectTask("preview-generated-files")}
-                    >
-                      <FileJson aria-hidden className="size-4" />
-                      刷新预览
+                      <Settings2 aria-hidden className="size-4" />
+                      Advanced
                     </Button>
                   </div>
                 </div>
@@ -16037,6 +15998,88 @@ export function BuilderShowcase() {
                     </div>
                   </div>
                 </div>
+                {showGeneratedPlanAdvanced ? (
+                  <div className="mb-4 border-t border-outline-variant pt-3" data-builder-generated-plan-advanced="">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Advanced file controls</p>
+                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                          Fine tune selected generated targets, rerun the preview, or execute the full computed plan when you need more control than the guided next step.
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          data-builder-select-changed-generated-files=""
+                          disabled={!generatedFilePreview || applyingGeneratedFiles}
+                          onClick={selectChangedGeneratedPreviewPaths}
+                        >
+                          选中变更
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          data-builder-clear-generated-file-selection=""
+                          disabled={!generatedFilePreview || applyingGeneratedFiles}
+                          onClick={() => setSelectedGeneratedPreviewPaths([])}
+                        >
+                          清空
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          data-builder-apply-generated-files=""
+                          loading={applyingGeneratedFiles}
+                          disabled={applyingGeneratedFiles || previewingGeneratedFiles || selectedGeneratedPreviewPaths.length === 0}
+                          onClick={() => enqueueProjectTask("apply-generated-files")}
+                        >
+                          <Save aria-hidden className="size-4" />
+                          应用选中 {selectedGeneratedPreviewPaths.length}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          data-builder-apply-generated-changes=""
+                          loading={applyingGeneratedFiles || previewingGeneratedFiles}
+                          disabled={applyingGeneratedFiles || previewingGeneratedFiles || building || bundling || validatingWindow}
+                          onClick={() => enqueueProjectTask("apply-generated-changes")}
+                        >
+                          <Download aria-hidden className="size-4" />
+                          应用全部变更
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          data-builder-refresh-generated-file-preview=""
+                          loading={previewingGeneratedFiles}
+                          disabled={previewingGeneratedFiles || applyingGeneratedFiles || building || bundling || validatingWindow}
+                          onClick={() => enqueueProjectTask("preview-generated-files")}
+                        >
+                          <FileJson aria-hidden className="size-4" />
+                          刷新预览
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          data-builder-run-change-impact-plan=""
+                          disabled={
+                            !projectChangeImpact.executionPlan.ready ||
+                            previewingGeneratedFiles ||
+                            applyingGeneratedFiles ||
+                            building ||
+                            bundling ||
+                            validatingWindow
+                          }
+                          onClick={runProjectChangeImpactPlan}
+                        >
+                          <Play aria-hidden className="size-4" />
+                          Run full plan
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mb-4 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-change-impact="">
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <div className="min-w-0">
@@ -16055,40 +16098,10 @@ export function BuilderShowcase() {
                         </p>
                       ) : null}
                     </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        data-builder-run-change-impact-plan=""
-                        disabled={
-                          !projectChangeImpact.executionPlan.ready ||
-                          previewingGeneratedFiles ||
-                          applyingGeneratedFiles ||
-                          building ||
-                          bundling ||
-                          validatingWindow
-                        }
-                        onClick={runProjectChangeImpactPlan}
-                      >
-                        <Play aria-hidden className="size-4" />
-                        Run plan
-                      </Button>
-                      {projectChangeImpact.recommendedActions.slice(0, 4).map((actionId) => (
-                        <Button
-                          key={actionId}
-                          size="sm"
-                          variant={actionId === "apply-generated-changes" ? "secondary" : "ghost"}
-                          data-builder-change-impact-action={actionId}
-                          disabled={
-                            (actionId === "apply-generated-changes" && (!generatedFilePreview || projectChangeImpact.previewIsStale)) ||
-                            previewingGeneratedFiles ||
-                            applyingGeneratedFiles
-                          }
-                          onClick={() => enqueueProjectTask(actionId)}
-                        >
-                          {projectTaskDefinitions[actionId].title}
-                        </Button>
-                      ))}
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-on-surface-variant">
+                      <span className="rounded-full bg-surface-container-high px-2.5 py-1">
+                        Execute from the guided action above
+                      </span>
                     </div>
                   </div>
                   <div className="mt-3 rounded-xl bg-surface-container-low px-3 py-2 text-xs" data-builder-change-impact-plan="">
