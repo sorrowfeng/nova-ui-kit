@@ -508,6 +508,13 @@ type EditorWorkflowStep = {
   actions: ProjectJumpActionId[];
 };
 
+type DestructiveActionRequest = {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+};
+
 type SimulatorTraceEntry = {
   id: string;
   time: string;
@@ -5541,6 +5548,7 @@ export function BuilderShowcase() {
   const [projectTaskQueuePaused, setProjectTaskQueuePaused] = useState(() => loadProjectTaskQueueState().paused);
   const [projectTaskQueueVersion, setProjectTaskQueueVersion] = useState(0);
   const [customProjectActionPresets, setCustomProjectActionPresets] = useState<ProjectActionPresetDefinition[]>(() => loadProjectActionPresets());
+  const [destructiveAction, setDestructiveAction] = useState<DestructiveActionRequest | null>(null);
   const [customPresetTitle, setCustomPresetTitle] = useState("Custom release flow");
   const [customPresetDetail, setCustomPresetDetail] = useState("Reusable project build flow.");
   const [customPresetDraftActionId, setCustomPresetDraftActionId] = useState<ProjectJumpActionId>("save-project");
@@ -10589,6 +10597,64 @@ export function BuilderShowcase() {
     setMode("design");
   };
 
+  const requestDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      return;
+    }
+    const unlockedCount = selectedItems.filter((item) => !item.locked).length;
+    setDestructiveAction({
+      title: `Delete ${unlockedCount || selectedItems.length} selected control${selectedItems.length === 1 ? "" : "s"}?`,
+      description:
+        unlockedCount === 0
+          ? "The current selection is locked, so this action will not remove anything. Unlock the controls first if you need to delete them."
+          : `This removes the selected control${unlockedCount === 1 ? "" : "s"} and any child controls from ${activeFile.name}. You can still use Undo after the deletion.`,
+      confirmLabel: unlockedCount === 0 ? "Close" : "Delete selection",
+      onConfirm: unlockedCount === 0 ? () => undefined : deleteSelected,
+    });
+  };
+
+  const requestResetCurrentFile = () => {
+    setDestructiveAction({
+      title: `Clear ${activeFile.name}?`,
+      description: `This removes every control from the current UI file and resets the page settings to a blank canvas. Project settings and other files are kept.`,
+      confirmLabel: "Clear UI file",
+      onConfirm: resetCurrentFile,
+    });
+  };
+
+  const requestDeleteActiveFile = () => {
+    setDestructiveAction({
+      title: activeProject.files.length <= 1 ? `Clear ${activeFile.name}?` : `Delete ${activeFile.name}?`,
+      description:
+        activeProject.files.length <= 1
+          ? "This is the only UI file in the project, so Nova will clear it instead of removing the file record."
+          : `This removes ${activeFile.name} from ${activeProject.name}. Other project files, Rust logic, and release settings are kept.`,
+      confirmLabel: activeProject.files.length <= 1 ? "Clear file" : "Delete file",
+      onConfirm: deleteActiveFile,
+    });
+  };
+
+  const requestDeleteActiveProject = () => {
+    setDestructiveAction({
+      title: workspace.projects.length <= 1 ? `Reset ${activeProject.name}?` : `Delete ${activeProject.name}?`,
+      description:
+        workspace.projects.length <= 1
+          ? "This is the only project in the workspace, so Nova will replace it with a fresh blank project."
+          : "This removes the project from the local editor workspace. Files already written on disk are not deleted by this action.",
+      confirmLabel: workspace.projects.length <= 1 ? "Reset project" : "Delete project",
+      onConfirm: deleteActiveProject,
+    });
+  };
+
+  const confirmDestructiveAction = () => {
+    const action = destructiveAction;
+    if (!action) {
+      return;
+    }
+    setDestructiveAction(null);
+    action.onConfirm();
+  };
+
   const validateGeneratedWindow = async () => {
     setMode("build");
     setValidatingWindow(true);
@@ -11812,6 +11878,24 @@ export function BuilderShowcase() {
 
   return (
     <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">
+      <Dialog open={Boolean(destructiveAction)} onOpenChange={(open) => !open && setDestructiveAction(null)}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>{destructiveAction?.title ?? "Confirm action"}</DialogTitle>
+            <DialogDescription>
+              {destructiveAction?.description ?? "Review this action before applying it to the current workspace."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setDestructiveAction(null)}>
+              Cancel
+            </Button>
+            <Button type="button" variant="destructive" onClick={confirmDestructiveAction}>
+              {destructiveAction?.confirmLabel ?? "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
         <div className="grid h-full min-h-0 grid-cols-[56px_minmax(0,1fr)]">
           <nav className="flex flex-col items-center gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="Editor modes">
             <span className="mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
@@ -11869,7 +11953,7 @@ export function BuilderShowcase() {
             <Button variant="ghost" size="icon-sm" data-builder-load="" aria-label="重载本地工作区" onClick={loadWorkspace}>
               <FolderOpen aria-hidden />
             </Button>
-            <Button variant="ghost" size="icon-sm" data-builder-reset="" aria-label="清空当前 UI 文件" onClick={resetCurrentFile}>
+            <Button variant="ghost" size="icon-sm" data-builder-reset="" aria-label="清空当前 UI 文件" onClick={requestResetCurrentFile}>
               <RotateCcw aria-hidden />
             </Button>
           </div>
@@ -16606,7 +16690,7 @@ export function BuilderShowcase() {
                     打开
                   </Button>
                 </div>
-                <Button size="sm" variant="ghost" className="w-full" data-builder-delete-project="" onClick={deleteActiveProject}>
+                <Button size="sm" variant="ghost" className="w-full" data-builder-delete-project="" onClick={requestDeleteActiveProject}>
                   <Trash2 aria-hidden className="size-4" />
                   删除当前项目
                 </Button>
@@ -16648,7 +16732,7 @@ export function BuilderShowcase() {
                   <Button size="icon-sm" variant="secondary" data-builder-duplicate-file="" aria-label="复制当前 UI 文件" onClick={duplicateActiveFile}>
                     <Copy aria-hidden />
                   </Button>
-                  <Button size="icon-sm" variant="ghost" data-builder-delete-file="" aria-label="删除当前 UI 文件" onClick={deleteActiveFile}>
+                  <Button size="icon-sm" variant="ghost" data-builder-delete-file="" aria-label="删除当前 UI 文件" onClick={requestDeleteActiveFile}>
                     <Trash2 aria-hidden />
                   </Button>
                 </div>
@@ -16997,7 +17081,7 @@ export function BuilderShowcase() {
                     <Braces aria-hidden className="size-4" />
                     Bind
                   </Button>
-                  <Button size="sm" variant="destructive" disabled={selectedItems.length === 0} onClick={deleteSelected}>
+                  <Button size="sm" variant="destructive" disabled={selectedItems.length === 0} onClick={requestDeleteSelected}>
                     <Trash2 aria-hidden className="size-4" />
                     Delete
                   </Button>
@@ -17237,7 +17321,7 @@ export function BuilderShowcase() {
                         <Copy aria-hidden className="size-4" />
                         复制
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={deleteSelected}>
+                      <Button variant="destructive" size="sm" onClick={requestDeleteSelected}>
                         <Trash2 aria-hidden className="size-4" />
                         删除
                       </Button>
@@ -17916,7 +18000,7 @@ export function BuilderShowcase() {
                         <Copy aria-hidden className="size-4" />
                         复制
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={deleteSelected}>
+                      <Button variant="destructive" size="sm" onClick={requestDeleteSelected}>
                         <Trash2 aria-hidden className="size-4" />
                         删除
                       </Button>
