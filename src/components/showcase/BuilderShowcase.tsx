@@ -12345,16 +12345,36 @@ export function BuilderShowcase() {
     };
   });
   const activeWorkflowStepState = editorWorkflowStepStates.find(({ status }) => status === "running" || status === "queued") ?? null;
+  const workflowComplete =
+    editorWorkflowStepStates.length > 0 && editorWorkflowStepStates.every(({ status }) => status === "succeeded");
   const nextWorkflowStepState =
     activeWorkflowStepState ??
     editorWorkflowStepStates.find(({ status }) => status === "failed") ??
     editorWorkflowStepStates.find(({ status }) => status === "idle" || status === "skipped" || status === "canceled") ??
-    editorWorkflowStepStates[editorWorkflowStepStates.length - 1] ??
     null;
   const suggestedWorkflowStepId = nextWorkflowStepState?.step.id ?? null;
   const workflowPrimaryActionLabel =
-    nextWorkflowStepState?.status === "failed" ? "Retry" : nextWorkflowStepState?.status === "running" ? "Running" : "Continue";
-  const workflowPrimaryActionDisabled = Boolean(!nextWorkflowStepState || runningProjectTask || queuedProjectTaskCount > 0);
+    workflowComplete && activeProject.outputExePath
+      ? launchingExeId === "active-output"
+        ? "Launching"
+        : "Run exe"
+      : workflowComplete
+        ? "Open output"
+        : nextWorkflowStepState?.status === "failed"
+          ? "Retry"
+          : nextWorkflowStepState?.status === "running"
+            ? "Running"
+            : "Continue";
+  const workflowPrimaryActionDisabled = workflowComplete
+    ? Boolean(activeProject.outputExePath && launchingExeId)
+    : Boolean(!nextWorkflowStepState || runningProjectTask || queuedProjectTaskCount > 0);
+  const workflowRailStateLabel = activeWorkflowStepState ? "Active step" : workflowComplete ? "Workflow complete" : "Next step";
+  const workflowRailBadgeLabel = workflowComplete
+    ? "done"
+    : nextWorkflowStepState
+      ? workflowStepStatusLabel(nextWorkflowStepState.status)
+      : "ready";
+  const workflowRailBadgeVariant = nextWorkflowStepState?.status === "failed" ? "destructive" : workflowComplete ? "secondary" : "outline";
   const workflowActivityText = runningProjectTask
     ? `Running ${runningProjectTask.title}`
     : queuedProjectTaskCount > 0
@@ -12362,6 +12382,14 @@ export function BuilderShowcase() {
       : failedProjectTaskCount > 0
         ? `${failedProjectTaskCount} failed task(s)`
         : "Ready for the next editor action";
+  const workflowRailTitle = workflowComplete ? "Ready to run" : nextWorkflowStepState?.step.title ?? "Workflow ready";
+  const workflowRailDetail = workflowComplete
+    ? activeProject.outputExePath
+      ? `Release exe ready: ${fileNameFromPath(activeProject.outputExePath)}`
+      : latestReleasePipeline?.summary ?? "All editor workflow steps finished."
+    : runningProjectTask
+      ? workflowActivityText
+      : nextWorkflowStepState?.task?.summary ?? nextWorkflowStepState?.step.detail ?? workflowActivityText;
   const operationMonitorTitle = operationMonitorTask
     ? operationMonitorTask.pipelinePresetTitle
       ? `${operationMonitorTask.pipelinePresetTitle} / ${operationMonitorTask.title}`
@@ -12391,6 +12419,20 @@ export function BuilderShowcase() {
       actions: step.actions,
       custom: true,
     });
+  };
+
+  const runWorkflowPrimaryAction = () => {
+    if (workflowComplete) {
+      setMode("build");
+      openBottomDock("output", false);
+      if (activeProject.outputExePath) {
+        void launchActiveOutputExecutable();
+      }
+      return;
+    }
+    if (nextWorkflowStepState) {
+      runEditorWorkflowStep(nextWorkflowStepState.step);
+    }
   };
 
   const openSelectedProperties = () => {
@@ -12627,18 +12669,16 @@ export function BuilderShowcase() {
                               : "bg-outline",
                       )}
                     />
-                    <span className="truncate">{activeWorkflowStepState ? "Active step" : "Next step"}</span>
+                    <span className="truncate">{workflowRailStateLabel}</span>
                   </div>
-                  <Badge variant={nextWorkflowStepState?.status === "failed" ? "destructive" : "outline"} className="shrink-0">
-                    {nextWorkflowStepState ? workflowStepStatusLabel(nextWorkflowStepState.status) : "ready"}
+                  <Badge variant={workflowRailBadgeVariant} className="shrink-0">
+                    {workflowRailBadgeLabel}
                   </Badge>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-on-surface">{nextWorkflowStepState?.step.title ?? "Workflow ready"}</p>
+                  <p className="truncate font-medium text-on-surface">{workflowRailTitle}</p>
                   <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
-                    {runningProjectTask
-                      ? workflowActivityText
-                      : nextWorkflowStepState?.task?.summary ?? nextWorkflowStepState?.step.detail ?? workflowActivityText}
+                    {workflowRailDetail}
                   </p>
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
@@ -12648,11 +12688,7 @@ export function BuilderShowcase() {
                     className="min-w-0 flex-1"
                     data-builder-run-next-workflow-step=""
                     disabled={workflowPrimaryActionDisabled}
-                    onClick={() => {
-                      if (nextWorkflowStepState) {
-                        runEditorWorkflowStep(nextWorkflowStepState.step);
-                      }
-                    }}
+                    onClick={runWorkflowPrimaryAction}
                   >
                     <Play aria-hidden className="size-4" />
                     {workflowPrimaryActionLabel}
