@@ -34,13 +34,15 @@ export function DockTabList<T extends string>({
   tabs,
   activeTab,
   onTabChange,
+  layout = "grid",
 }: {
   tabs: BuilderDockTab<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
+  layout?: "grid" | "inline";
 }) {
   return (
-    <div className="grid grid-cols-2 gap-1">
+    <div className={cn(layout === "inline" ? "flex min-w-0 flex-wrap gap-1" : "grid grid-cols-2 gap-1")}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const active = activeTab === tab.value;
@@ -50,6 +52,7 @@ export function DockTabList<T extends string>({
             type="button"
             className={cn(
               "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-[0.68rem] font-medium transition",
+              layout === "inline" && "min-h-9 flex-1 basis-24",
               active
                 ? "bg-secondary-container text-secondary-container-foreground shadow-m3-1"
                 : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",

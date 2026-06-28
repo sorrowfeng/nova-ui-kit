@@ -5649,6 +5649,12 @@ export function BuilderShowcase() {
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
+  const [bottomDockMinimized, setBottomDockMinimized] = useState(false);
+  const openBottomDock = (tab: BuilderBottomDockTab, expanded = true) => {
+    setBottomDockTab(tab);
+    setBottomDockExpanded(expanded);
+    setBottomDockMinimized(false);
+  };
   const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
@@ -8795,8 +8801,7 @@ export function BuilderShowcase() {
 
   const openBuildDiagnostic = (diagnostic: BuildDiagnostic, index: number, focusEditable = true) => {
     setSelectedBuildDiagnosticKey(buildDiagnosticKey(diagnostic, index));
-    setBottomDockTab("issues");
-    setBottomDockExpanded(true);
+    openBottomDock("issues");
     if (focusEditable && isEditableRustDiagnostic(diagnostic)) {
       focusRustDiagnostic(diagnostic);
     }
@@ -10339,8 +10344,7 @@ export function BuilderShowcase() {
     bumpProjectTaskQueueVersion();
     setProjectTasks((current) => [...tasks, ...current].slice(0, 100));
     setSelectedProjectTaskId(tasks[0].id);
-    setBottomDockTab("tasks");
-    setBottomDockExpanded(true);
+    openBottomDock("tasks");
     setMode(projectTaskDefinitions[tasks[tasks.length - 1].actionId].mode);
     if (autoStart && !projectTaskQueuePausedRef.current) {
       void drainProjectTaskQueue();
@@ -12658,10 +12662,7 @@ export function BuilderShowcase() {
                     variant="ghost"
                     className="shrink-0"
                     aria-label="Open workflow tasks"
-                    onClick={() => {
-                      setBottomDockTab("tasks");
-                      setBottomDockExpanded(true);
-                    }}
+                    onClick={() => openBottomDock("tasks")}
                   >
                     <ClipboardCopy aria-hidden className="size-4" />
                     Tasks
@@ -12739,8 +12740,7 @@ export function BuilderShowcase() {
                     data-builder-monitor-open-tasks=""
                     onClick={() => {
                       setMode("build");
-                      setBottomDockTab("tasks");
-                      setBottomDockExpanded(true);
+                      openBottomDock("tasks");
                       if (operationMonitorTask) {
                         setSelectedProjectTaskId(operationMonitorTask.id);
                       }
@@ -12755,8 +12755,7 @@ export function BuilderShowcase() {
                     data-builder-monitor-open-issues=""
                     onClick={() => {
                       setMode("build");
-                      setBottomDockTab("issues");
-                      setBottomDockExpanded(true);
+                      openBottomDock("issues");
                     }}
                   >
                     <AlertTriangle aria-hidden className="size-4" />
@@ -12768,8 +12767,7 @@ export function BuilderShowcase() {
                     data-builder-monitor-open-output=""
                     onClick={() => {
                       setMode("build");
-                      setBottomDockTab("output");
-                      setBottomDockExpanded(true);
+                      openBottomDock("output");
                     }}
                   >
                     <Terminal aria-hidden className="size-4" />
@@ -19034,7 +19032,12 @@ export function BuilderShowcase() {
               activeTab={bottomDockTab}
               onTabChange={setBottomDockTab}
               expanded={bottomDockExpanded}
-              onExpandedChange={setBottomDockExpanded}
+              onExpandedChange={(expanded) => {
+                setBottomDockExpanded(expanded);
+                setBottomDockMinimized(false);
+              }}
+              minimized={bottomDockMinimized}
+              onMinimizedChange={setBottomDockMinimized}
             >
               {bottomDockTab === "issues" ? (
                 bottomDockExpanded ? (
@@ -19214,10 +19217,7 @@ export function BuilderShowcase() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => {
-                          setBottomDockTab("tasks");
-                          setBottomDockExpanded(true);
-                        }}
+                        onClick={() => openBottomDock("tasks")}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
                         Tasks
