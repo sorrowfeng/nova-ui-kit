@@ -5633,6 +5633,35 @@ export function BuilderShowcase() {
     () => activeProjectTasks.filter((task) => ["succeeded", "failed", "skipped", "canceled"].includes(task.status)).length,
     [activeProjectTasks],
   );
+  const latestQueuedProjectTask = useMemo(
+    () =>
+      activeProjectTasks
+        .filter((task) => task.status === "queued")
+        .reduce<ProjectTaskEntry | null>(
+          (latest, task) => (!latest || projectTaskTimestamp(task) > projectTaskTimestamp(latest) ? task : latest),
+          null,
+        ),
+    [activeProjectTasks],
+  );
+  const latestFailedProjectTask = useMemo(
+    () =>
+      activeProjectTasks
+        .filter((task) => task.status === "failed")
+        .reduce<ProjectTaskEntry | null>(
+          (latest, task) => (!latest || projectTaskTimestamp(task) > projectTaskTimestamp(latest) ? task : latest),
+          null,
+        ),
+    [activeProjectTasks],
+  );
+  const latestProjectTask = useMemo(
+    () =>
+      activeProjectTasks.reduce<ProjectTaskEntry | null>(
+        (latest, task) => (!latest || projectTaskTimestamp(task) > projectTaskTimestamp(latest) ? task : latest),
+        null,
+      ),
+    [activeProjectTasks],
+  );
+  const operationMonitorTask = runningProjectTask ?? latestQueuedProjectTask ?? latestFailedProjectTask ?? latestProjectTask;
   const allProjectActionPresets = useMemo(
     () => [...projectActionPresets, ...customProjectActionPresets],
     [customProjectActionPresets],
@@ -11860,6 +11889,21 @@ export function BuilderShowcase() {
       : failedProjectTaskCount > 0
         ? `${failedProjectTaskCount} failed task(s)`
         : "Ready for the next editor action";
+  const operationMonitorTitle = operationMonitorTask
+    ? operationMonitorTask.pipelinePresetTitle
+      ? `${operationMonitorTask.pipelinePresetTitle} / ${operationMonitorTask.title}`
+      : operationMonitorTask.title
+    : buildError
+      ? "Editor message"
+      : "Editor operations";
+  const operationMonitorDetail =
+    operationMonitorTask?.error ??
+    operationMonitorTask?.summary ??
+    operationMonitorTask?.detail ??
+    buildError ??
+    "Run Save, Generate, Check, Validate, or Build to see live task evidence here.";
+  const operationMonitorStatus = operationMonitorTask?.status ?? (buildError ? "failed" : "queued");
+  const operationMonitorVisible = Boolean(operationMonitorTask || buildError || queuedProjectTaskCount > 0 || failedProjectTaskCount > 0);
   const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
     setBuildError("");
     if (step.actions.length === 1) {
@@ -12051,56 +12095,137 @@ export function BuilderShowcase() {
         </div>
 
         <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5" data-builder-workflow-rail="">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 xl:flex-row xl:items-center">
-            <div className="flex min-w-0 items-center gap-2 text-xs text-on-surface-variant xl:w-56">
-              <span
-                className={cn(
-                  "size-2 shrink-0 rounded-full",
-                  runningProjectTask
-                    ? "bg-primary"
-                    : failedProjectTaskCount > 0
-                      ? "bg-destructive"
-                      : queuedProjectTaskCount > 0
-                        ? "bg-secondary"
-                        : "bg-outline",
-                )}
-              />
-              <span className="truncate">{workflowActivityText}</span>
-            </div>
-            <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 md:grid-cols-5">
-              {editorWorkflowSteps.map((step, index) => {
-                const StepIcon = step.icon;
-                const task = workflowTaskForActions(activeProjectTasks, step.actions);
-                const status = task?.status ?? "idle";
-                const suggested = suggestedWorkflowStepId === step.id;
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    data-builder-workflow-step={step.id}
-                    className={cn(
-                      "focus-ring group grid min-h-[4rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
-                      workflowStepStatusClassName(status, suggested),
-                    )}
-                    onClick={() => runEditorWorkflowStep(step)}
-                  >
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
-                      <StepIcon aria-hidden className="size-4" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <span className="font-mono text-[0.68rem] text-on-surface-variant">{index + 1}</span>
-                        <span className="truncate font-medium text-on-surface">{step.title}</span>
+          <div className="mx-auto flex max-w-6xl flex-col gap-2">
+            <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
+              <div className="flex min-w-0 items-center gap-2 text-xs text-on-surface-variant xl:w-56">
+                <span
+                  className={cn(
+                    "size-2 shrink-0 rounded-full",
+                    runningProjectTask
+                      ? "bg-primary"
+                      : failedProjectTaskCount > 0
+                        ? "bg-destructive"
+                        : queuedProjectTaskCount > 0
+                          ? "bg-secondary"
+                          : "bg-outline",
+                  )}
+                />
+                <span className="truncate">{workflowActivityText}</span>
+              </div>
+              <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 md:grid-cols-5">
+                {editorWorkflowSteps.map((step, index) => {
+                  const StepIcon = step.icon;
+                  const task = workflowTaskForActions(activeProjectTasks, step.actions);
+                  const status = task?.status ?? "idle";
+                  const suggested = suggestedWorkflowStepId === step.id;
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      data-builder-workflow-step={step.id}
+                      className={cn(
+                        "focus-ring group grid min-h-[4rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
+                        workflowStepStatusClassName(status, suggested),
+                      )}
+                      onClick={() => runEditorWorkflowStep(step)}
+                    >
+                      <span className="flex size-8 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
+                        <StepIcon aria-hidden className="size-4" />
                       </span>
-                      <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">{task?.summary ?? step.detail}</span>
-                    </span>
-                    <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0">
-                      {workflowStepStatusLabel(status)}
-                    </Badge>
-                  </button>
-                );
-              })}
+                      <span className="min-w-0">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="font-mono text-[0.68rem] text-on-surface-variant">{index + 1}</span>
+                          <span className="truncate font-medium text-on-surface">{step.title}</span>
+                        </span>
+                        <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">{task?.summary ?? step.detail}</span>
+                      </span>
+                      <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0">
+                        {workflowStepStatusLabel(status)}
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+            {operationMonitorVisible ? (
+              <div
+                className={cn(
+                  "grid min-w-0 gap-3 rounded-2xl border bg-surface-container px-3 py-3 shadow-m3-1 xl:grid-cols-[minmax(0,1fr)_auto]",
+                  operationMonitorStatus === "failed"
+                    ? "border-destructive/35"
+                    : operationMonitorStatus === "running"
+                      ? "border-primary/35"
+                      : "border-outline-variant",
+                )}
+                data-builder-operation-monitor=""
+              >
+                <div className="min-w-0">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <Badge variant={projectTaskStatusVariant(operationMonitorStatus)}>{operationMonitorStatus}</Badge>
+                    <span className="truncate text-xs font-medium text-on-surface">{operationMonitorTitle}</span>
+                    {operationMonitorTask?.pipelineStepCount ? (
+                      <span className="rounded-full border border-outline-variant px-2 py-0.5 font-mono text-[0.66rem] text-on-surface-variant">
+                        step {(operationMonitorTask.pipelineStepIndex ?? 0) + 1}/{operationMonitorTask.pipelineStepCount}
+                      </span>
+                    ) : null}
+                    {operationMonitorTask ? (
+                      <span className="rounded-full border border-outline-variant px-2 py-0.5 font-mono text-[0.66rem] text-on-surface-variant">
+                        {projectTaskElapsedLabel(operationMonitorTask)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{operationMonitorDetail}</p>
+                  {operationMonitorTask ? <Progress className="mt-2 h-1.5" value={projectTaskProgress(operationMonitorTask.status)} /> : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+                  <Button
+                    size="sm"
+                    variant={bottomDockTab === "tasks" ? "secondary" : "ghost"}
+                    data-builder-monitor-open-tasks=""
+                    onClick={() => {
+                      setMode("build");
+                      setBottomDockTab("tasks");
+                      if (operationMonitorTask) {
+                        setSelectedProjectTaskId(operationMonitorTask.id);
+                      }
+                    }}
+                  >
+                    <ClipboardCopy aria-hidden className="size-4" />
+                    Tasks
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={bottomDockTab === "issues" ? "secondary" : "ghost"}
+                    data-builder-monitor-open-issues=""
+                    onClick={() => {
+                      setMode("build");
+                      setBottomDockTab("issues");
+                    }}
+                  >
+                    <AlertTriangle aria-hidden className="size-4" />
+                    Issues
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={bottomDockTab === "output" ? "secondary" : "ghost"}
+                    data-builder-monitor-open-output=""
+                    onClick={() => {
+                      setMode("build");
+                      setBottomDockTab("output");
+                    }}
+                  >
+                    <Terminal aria-hidden className="size-4" />
+                    Output
+                  </Button>
+                  {operationMonitorTask?.status === "failed" ? (
+                    <Button size="sm" data-builder-monitor-retry-task="" onClick={() => retryProjectTask(operationMonitorTask)}>
+                      <RotateCcw aria-hidden className="size-4" />
+                      Retry
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
