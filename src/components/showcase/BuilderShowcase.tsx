@@ -471,6 +471,7 @@ type ProjectActivityEntry = {
 type ProjectJumpKind =
   | "action"
   | "file"
+  | "component"
   | "control"
   | "rust-command"
   | "state"
@@ -496,6 +497,7 @@ type ProjectJumpResult = {
   stateId?: string;
   assetId?: string;
   actionId?: ProjectJumpActionId;
+  insertComponentType?: BuilderComponentType;
   path?: string;
   secondaryPath?: string;
 };
@@ -824,6 +826,8 @@ const palette: ComponentDefinition[] = [
 function getDefinition(type: BuilderComponentType) {
   return palette.find((item) => item.type === type) ?? palette[0];
 }
+
+const emptyCanvasQuickStarts = ["button", "input", "frame"] as const satisfies readonly BuilderComponentType[];
 
 function escapeText(value = "") {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -1820,6 +1824,7 @@ function projectJumpKindLabel(kind: ProjectJumpKind) {
   const labels: Record<ProjectJumpKind, string> = {
     action: "Action",
     file: "UI file",
+    component: "Component",
     control: "Control",
     "rust-command": "Rust",
     state: "State",
@@ -2107,6 +2112,24 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     },
   ];
   results.push(...actionResults);
+
+  for (const definition of palette) {
+    results.push({
+      id: `component-${definition.type}`,
+      kind: "component",
+      title: `Insert ${definition.title}`,
+      subtitle: `${definition.description} Adds it to the active UI file and selects it on the canvas.`,
+      badge: definition.type,
+      mode: "design",
+      insertComponentType: definition.type,
+      searchable: projectJumpSearchText([
+        "insert add create component control palette toolbox canvas",
+        definition.type,
+        definition.title,
+        definition.description,
+      ]),
+    });
+  }
 
   for (const file of project.files) {
     results.push({
@@ -7096,6 +7119,17 @@ export function BuilderShowcase() {
     setMode("design");
   };
 
+  const insertComponentFromShortcut = (type: BuilderComponentType, options: { centered?: boolean; revealPalette?: boolean } = {}) => {
+    const definition = getDefinition(type);
+    const position = options.centered ? { x: page.width / 2, y: page.height / 2 } : undefined;
+    addComponent(type, position);
+    setRightDockTab("properties");
+    if (options.revealPalette) {
+      setLeftDockTab("components");
+    }
+    recordInstantProjectAction("insert-component", `Inserted ${definition.title} into ${activeFile.name}.`);
+  };
+
   const handlePaletteDragStart = (event: DragEvent, type: BuilderComponentType) => {
     event.dataTransfer.setData("application/x-nova-component", type);
     event.dataTransfer.effectAllowed = "copy";
@@ -9944,6 +9978,14 @@ export function BuilderShowcase() {
         setLeftDockTab("navigator");
         requestDeleteActiveFile();
         return { status: "skipped", summary: "Delete UI file requires confirmation in the Navigator." };
+      case "insert-component":
+        {
+          const definition = getDefinition("button");
+          addComponent("button", items.length === 0 ? { x: page.width / 2, y: page.height / 2 } : undefined);
+          setLeftDockTab("components");
+          setRightDockTab("properties");
+          return { summary: `Inserted ${definition.title} into ${activeFile.name}.` };
+        }
       case "add-rust-command":
         createRustCommandInProject();
         setMode("logic");
@@ -10495,6 +10537,11 @@ export function BuilderShowcase() {
 
     if (result.kind === "action" && result.actionId) {
       runProjectJumpAction(result.actionId);
+      return;
+    }
+
+    if (result.kind === "component" && result.insertComponentType) {
+      insertComponentFromShortcut(result.insertComponentType, { centered: items.length === 0, revealPalette: true });
       return;
     }
 
@@ -17448,10 +17495,57 @@ export function BuilderShowcase() {
                   >
                     {items.length === 0 ? (
                       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div className="rounded-[24px] border border-dashed border-outline-variant bg-surface-container-lowest/90 px-6 py-5 text-center shadow-m3-1">
+                        <div
+                          className="pointer-events-auto w-[min(420px,calc(100%-48px))] rounded-[24px] border border-dashed border-outline-variant bg-surface-container-lowest/95 px-5 py-4 text-center shadow-m3-2 backdrop-blur"
+                          style={{
+                            transform: `scale(${Math.min(2.4, 1 / Math.max(page.zoom, 0.42))})`,
+                            transformOrigin: "center",
+                          }}
+                          onClick={(event) => event.stopPropagation()}
+                          onPointerDown={(event) => event.stopPropagation()}
+                        >
                           <MousePointer2 aria-hidden className="mx-auto mb-3 size-5 text-primary" />
-                          <p className="text-sm font-medium">空白画布</p>
-                          <p className="mt-1 text-xs text-on-surface-variant">从左侧拖入控件，或单击控件快速添加。</p>
+                          <p className="text-sm font-semibold">Start this UI file</p>
+                          <p className="mx-auto mt-1 max-w-[320px] text-xs leading-5 text-on-surface-variant">
+                            Insert a first control here, or open the component library for the full toolbox.
+                          </p>
+                          <div className="mt-4 grid grid-cols-3 gap-2">
+                            {emptyCanvasQuickStarts.map((type) => {
+                              const definition = getDefinition(type);
+                              const Icon = definition.icon;
+                              return (
+                                <Button
+                                  key={type}
+                                  type="button"
+                                  size="sm"
+                                  variant="secondary"
+                                  className="min-w-0 px-2"
+                                  data-builder-empty-insert={type}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    insertComponentFromShortcut(type, { centered: true });
+                                  }}
+                                >
+                                  <Icon aria-hidden className="size-4" />
+                                  <span className="truncate">{definition.title}</span>
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="mt-2 w-full"
+                            data-builder-empty-open-components=""
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setLeftDockTab("components");
+                            }}
+                          >
+                            <Layers aria-hidden className="size-4" />
+                            Open components
+                          </Button>
                         </div>
                       </div>
                     ) : null}
@@ -18826,6 +18920,9 @@ function ProjectJumpIcon({ kind }: { kind: ProjectJumpKind }) {
   }
   if (kind === "control") {
     return <MousePointer2 aria-hidden className="size-4" />;
+  }
+  if (kind === "component") {
+    return <Layers aria-hidden className="size-4" />;
   }
   if (kind === "rust-command") {
     return <Braces aria-hidden className="size-4" />;

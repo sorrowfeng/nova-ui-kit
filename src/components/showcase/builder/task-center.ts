@@ -12,6 +12,7 @@ export type ProjectJumpActionId =
   | "new-ui-file"
   | "duplicate-ui-file"
   | "delete-ui-file"
+  | "insert-component"
   | "add-rust-command"
   | "add-state-variable"
   | "sync-rust"
@@ -132,6 +133,12 @@ export const projectTaskDefinitions: Record<
   "delete-ui-file": {
     title: "Delete UI file",
     detail: "Delete or clear the active managed UI file after confirmation.",
+    kind: "design",
+    mode: "design",
+  },
+  "insert-component": {
+    title: "Insert component",
+    detail: "Place a reusable UI component on the active design canvas.",
     kind: "design",
     mode: "design",
   },
