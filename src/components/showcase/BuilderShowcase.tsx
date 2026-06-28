@@ -1842,16 +1842,65 @@ function projectJumpFuzzyMatch(text: string, token: string) {
   if (text.includes(token)) {
     return true;
   }
-
-  let cursor = 0;
-  for (const character of token) {
-    cursor = text.indexOf(character, cursor);
-    if (cursor === -1) {
-      return false;
-    }
-    cursor += 1;
+  if (token.length < 3) {
+    return false;
   }
-  return true;
+
+  return text
+    .split(/[^a-z0-9]+/i)
+    .filter(Boolean)
+    .some((word) => {
+      if (!word.startsWith(token[0])) {
+        return false;
+      }
+      let cursor = 0;
+      for (const character of token) {
+        cursor = word.indexOf(character, cursor);
+        if (cursor === -1) {
+          return false;
+        }
+        cursor += 1;
+      }
+      return true;
+    });
+}
+
+function projectJumpResultScore(result: ProjectJumpResult, tokens: string[], query: string) {
+  const title = result.title.toLowerCase();
+  const subtitle = result.subtitle.toLowerCase();
+  const badge = result.badge.toLowerCase();
+  const searchable = result.searchable.toLowerCase();
+  let score = 0;
+
+  if (title === query) {
+    score += 1000;
+  } else if (title.startsWith(query)) {
+    score += 800;
+  } else if (title.includes(query)) {
+    score += 600;
+  }
+  if (badge === query) {
+    score += 120;
+  }
+
+  for (const token of tokens) {
+    if (title.split(/\s+/).some((word) => word.startsWith(token))) {
+      score += 120;
+    } else if (title.includes(token)) {
+      score += 90;
+    }
+    if (badge.includes(token)) {
+      score += 40;
+    }
+    if (subtitle.includes(token)) {
+      score += 20;
+    }
+    if (searchable.includes(token)) {
+      score += 8;
+    }
+  }
+
+  return score;
 }
 
 function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorProjectCheckpoint[]): ProjectJumpResult[] {
@@ -2215,7 +2264,16 @@ function filterProjectJumpResults(results: ProjectJumpResult[], query: string) {
   if (tokens.length === 0) {
     return results.slice(0, 8);
   }
-  return results.filter((result) => tokens.every((token) => projectJumpFuzzyMatch(result.searchable, token))).slice(0, 12);
+  return results
+    .filter((result) => tokens.every((token) => projectJumpFuzzyMatch(result.searchable, token)))
+    .map((result, index) => ({
+      result,
+      index,
+      score: projectJumpResultScore(result, tokens, tokens.join(" ")),
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ result }) => result)
+    .slice(0, 12);
 }
 
 function projectTaskTimestamp(task: ProjectTaskEntry) {
@@ -8364,10 +8422,10 @@ export function BuilderShowcase() {
     return asset;
   };
 
-  const chooseImageAsset = async () => {
+  const chooseImageAsset = async (): Promise<DesignerAsset | null> => {
     if (!isTauriRuntime()) {
       setBuildError("导入本地图片资源需要在 Tauri 桌面 app 中运行。");
-      return;
+      return null;
     }
 
     setDiskBusy(true);
@@ -8385,11 +8443,12 @@ export function BuilderShowcase() {
       });
       const sourcePath = Array.isArray(selected) ? selected[0] : selected;
       if (!sourcePath) {
-        return;
+        return null;
       }
-      addAssetToProject(sourcePath);
+      return addAssetToProject(sourcePath);
     } catch (error) {
       setBuildError(String(error));
+      return null;
     } finally {
       setDiskBusy(false);
     }
@@ -10311,8 +10370,71 @@ export function BuilderShowcase() {
     );
   };
 
+  const recordInstantProjectAction = (
+    actionId: ProjectJumpActionId,
+    summary: string,
+    status: Exclude<ProjectTaskStatus, "queued" | "running"> = "succeeded",
+  ) => {
+    const timestamp = new Date().toISOString();
+    const task = createProjectTask(actionId, activeProject, 1);
+    const finishedTask: ProjectTaskEntry = {
+      ...task,
+      status,
+      startedAt: timestamp,
+      finishedAt: timestamp,
+      summary,
+    };
+    setProjectTasks((current) => [finishedTask, ...current].slice(0, 100));
+    setSelectedProjectTaskId(finishedTask.id);
+  };
+
+  const runInstantProjectJumpAction = async (actionId: ProjectJumpActionId) => {
+    if (actionId === "new-ui-file") {
+      const fileName = `Window ${activeProject.files.length + 1}.ui`;
+      createNewFile();
+      setLeftDockTab("navigator");
+      recordInstantProjectAction(actionId, `Created ${fileName} and opened it on the canvas.`);
+      return true;
+    }
+
+    if (actionId === "add-rust-command") {
+      const commandName = `project_command_${activeProject.rustCommands.length + 1}`;
+      createRustCommandInProject();
+      setMode("logic");
+      recordInstantProjectAction(actionId, `Created ${commandName} and opened the Logic workspace.`);
+      return true;
+    }
+
+    if (actionId === "add-state-variable") {
+      const stateName = activeProject.stateVariables.length === 0 ? "statusText" : `stateValue${activeProject.stateVariables.length + 1}`;
+      createStateVariableInProject();
+      setMode("logic");
+      recordInstantProjectAction(actionId, `Created ${stateName} for bindings and command results.`);
+      return true;
+    }
+
+    if (actionId === "add-image-asset") {
+      setMode("design");
+      setLeftDockTab("assets");
+      const asset = await chooseImageAsset();
+      recordInstantProjectAction(
+        actionId,
+        asset ? `Imported ${asset.name} into project assets.` : "Image asset import was canceled or unavailable.",
+        asset ? "succeeded" : "skipped",
+      );
+      return true;
+    }
+
+    return false;
+  };
+
   const runProjectJumpAction = (actionId: ProjectJumpActionId) => {
-    enqueueProjectTask(actionId);
+    void (async () => {
+      const handled = await runInstantProjectJumpAction(actionId);
+      if (!handled) {
+        enqueueProjectTask(actionId);
+      }
+    })();
   };
 
   const rememberProjectJumpResult = (result: ProjectJumpResult) => {
