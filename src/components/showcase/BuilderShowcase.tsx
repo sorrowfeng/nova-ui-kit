@@ -1936,6 +1936,26 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       searchable: projectJumpSearchText(["new create ui file window canvas screen"]),
     },
     {
+      id: "action-duplicate-ui-file",
+      kind: "action",
+      title: "Duplicate current UI file",
+      subtitle: "Copy the active UI file, controls, page settings, and responsive overrides.",
+      badge: "UI",
+      mode: "design",
+      actionId: "duplicate-ui-file",
+      searchable: projectJumpSearchText(["duplicate copy clone current ui file window canvas screen"]),
+    },
+    {
+      id: "action-delete-ui-file",
+      kind: "action",
+      title: "Delete current UI file",
+      subtitle: "Open a confirmation before removing or clearing the active UI file.",
+      badge: "UI",
+      mode: "design",
+      actionId: "delete-ui-file",
+      searchable: projectJumpSearchText(["delete remove clear current ui file window canvas screen"]),
+    },
+    {
       id: "action-add-rust-command",
       kind: "action",
       title: "Add Rust command",
@@ -9426,6 +9446,7 @@ export function BuilderShowcase() {
     }));
     setSelectedId("");
     setMode("design");
+    return nextFile;
   };
 
   const selectFile = (fileId: string) => {
@@ -9909,8 +9930,20 @@ export function BuilderShowcase() {
         await saveWorkspace();
         return { summary: "Project workspace saved to the current editor storage target." };
       case "new-ui-file":
-        createNewFile();
-        return { summary: "Created a managed UI file inside the active project." };
+        {
+          const file = createNewFile();
+          return { summary: `Created ${file.name} inside the active project.` };
+        }
+      case "duplicate-ui-file":
+        {
+          const file = duplicateActiveFile();
+          return { summary: `Duplicated the active UI file as ${file.name}.` };
+        }
+      case "delete-ui-file":
+        setMode("design");
+        setLeftDockTab("navigator");
+        requestDeleteActiveFile();
+        return { status: "skipped", summary: "Delete UI file requires confirmation in the Navigator." };
       case "add-rust-command":
         createRustCommandInProject();
         setMode("logic");
@@ -10390,10 +10423,23 @@ export function BuilderShowcase() {
 
   const runInstantProjectJumpAction = async (actionId: ProjectJumpActionId) => {
     if (actionId === "new-ui-file") {
-      const fileName = `Window ${activeProject.files.length + 1}.ui`;
-      createNewFile();
+      const file = createNewFile();
       setLeftDockTab("navigator");
-      recordInstantProjectAction(actionId, `Created ${fileName} and opened it on the canvas.`);
+      recordInstantProjectAction(actionId, `Created ${file.name} and opened it on the canvas.`);
+      return true;
+    }
+
+    if (actionId === "duplicate-ui-file") {
+      const file = duplicateActiveFile();
+      setLeftDockTab("navigator");
+      recordInstantProjectAction(actionId, `Duplicated the active UI file as ${file.name}.`);
+      return true;
+    }
+
+    if (actionId === "delete-ui-file") {
+      setMode("design");
+      setLeftDockTab("navigator");
+      requestDeleteActiveFile();
       return true;
     }
 
@@ -10764,6 +10810,19 @@ export function BuilderShowcase() {
     }));
     setSelectedId(nextFile.items[0]?.id ?? "");
     setMode("design");
+    return nextFile;
+  };
+
+  const createNewFileFromNavigator = () => {
+    const file = createNewFile();
+    setLeftDockTab("navigator");
+    recordInstantProjectAction("new-ui-file", `Created ${file.name} and opened it on the canvas.`);
+  };
+
+  const duplicateActiveFileFromNavigator = () => {
+    const file = duplicateActiveFile();
+    setLeftDockTab("navigator");
+    recordInstantProjectAction("duplicate-ui-file", `Duplicated the active UI file as ${file.name}.`);
   };
 
   const deleteActiveFile = () => {
@@ -10810,14 +10869,20 @@ export function BuilderShowcase() {
   };
 
   const requestDeleteActiveFile = () => {
+    const fileName = activeFile.name;
+    const clearingOnlyFile = activeProject.files.length <= 1;
     setDestructiveAction({
-      title: activeProject.files.length <= 1 ? `Clear ${activeFile.name}?` : `Delete ${activeFile.name}?`,
+      title: clearingOnlyFile ? `Clear ${fileName}?` : `Delete ${fileName}?`,
       description:
-        activeProject.files.length <= 1
+        clearingOnlyFile
           ? "This is the only UI file in the project, so Nova will clear it instead of removing the file record."
-          : `This removes ${activeFile.name} from ${activeProject.name}. Other project files, Rust logic, and release settings are kept.`,
-      confirmLabel: activeProject.files.length <= 1 ? "Clear file" : "Delete file",
-      onConfirm: deleteActiveFile,
+          : `This removes ${fileName} from ${activeProject.name}. Other project files, Rust logic, and release settings are kept.`,
+      confirmLabel: clearingOnlyFile ? "Clear file" : "Delete file",
+      onConfirm: () => {
+        deleteActiveFile();
+        setLeftDockTab("navigator");
+        recordInstantProjectAction("delete-ui-file", clearingOnlyFile ? `Cleared ${fileName}.` : `Deleted ${fileName}.`);
+      },
     });
   };
 
@@ -17076,10 +17141,10 @@ export function BuilderShowcase() {
                   ))}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button size="icon-sm" variant="secondary" data-builder-new-file="" aria-label="新建 UI 文件" onClick={createNewFile}>
+                  <Button size="icon-sm" variant="secondary" data-builder-new-file="" aria-label="新建 UI 文件" onClick={createNewFileFromNavigator}>
                     <Plus aria-hidden />
                   </Button>
-                  <Button size="icon-sm" variant="secondary" data-builder-duplicate-file="" aria-label="复制当前 UI 文件" onClick={duplicateActiveFile}>
+                  <Button size="icon-sm" variant="secondary" data-builder-duplicate-file="" aria-label="复制当前 UI 文件" onClick={duplicateActiveFileFromNavigator}>
                     <Copy aria-hidden />
                   </Button>
                   <Button size="icon-sm" variant="ghost" data-builder-delete-file="" aria-label="删除当前 UI 文件" onClick={requestDeleteActiveFile}>

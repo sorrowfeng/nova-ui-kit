@@ -10,6 +10,8 @@ import type {
 export type ProjectJumpActionId =
   | "save-project"
   | "new-ui-file"
+  | "duplicate-ui-file"
+  | "delete-ui-file"
   | "add-rust-command"
   | "add-state-variable"
   | "sync-rust"
@@ -118,6 +120,18 @@ export const projectTaskDefinitions: Record<
   "new-ui-file": {
     title: "New UI file",
     detail: "Create another managed window inside this Nova project.",
+    kind: "design",
+    mode: "design",
+  },
+  "duplicate-ui-file": {
+    title: "Duplicate UI file",
+    detail: "Copy the active managed UI file and open the duplicate.",
+    kind: "design",
+    mode: "design",
+  },
+  "delete-ui-file": {
+    title: "Delete UI file",
+    detail: "Delete or clear the active managed UI file after confirmation.",
     kind: "design",
     mode: "design",
   },
