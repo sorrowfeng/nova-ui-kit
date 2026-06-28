@@ -12400,6 +12400,19 @@ export function BuilderShowcase() {
     setRightDockTab("connections");
   };
 
+  const openSelectedConnectionTarget = () => {
+    if (!selectedItem || !selectedEventName) {
+      return;
+    }
+    if (selectedEventCommand) {
+      selectRustCommand(selectedEventCommand.id);
+      setBuildError("");
+      setMode("logic");
+      return;
+    }
+    setRightDockTab("connections");
+  };
+
   const previewSelectedControl = () => {
     if (!selectedItem) {
       return;
@@ -17891,10 +17904,10 @@ export function BuilderShowcase() {
                         size="sm"
                         variant="secondary"
                         data-builder-connection-path-open=""
-                        onClick={() => setRightDockTab("connections")}
+                        onClick={openSelectedConnectionTarget}
                       >
                         <Braces aria-hidden className="size-4" />
-                        Open
+                        {selectedEventCommand ? "Open command" : "Open"}
                       </Button>
                       <Button
                         size="sm"
