@@ -128,14 +128,14 @@ export function WindowTitlebar() {
           onMouseDown={startWindowDrag}
           onDoubleClick={() => runWindowAction("toggleMaximize")}
         >
-          <span className="shrink-0 font-medium text-on-surface">Nova UI Kit</span>
-          <span className="truncate">Material 3 桌面组件工作台</span>
+          <span className="shrink-0 font-medium text-on-surface">Nova UI Editor</span>
+          <span className="truncate">Desktop UI project editor</span>
         </div>
         <div className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex">
-          <TitleMenu label="文件" items={["新建组件", "复制当前组件", "恢复默认视图"]} />
-          <TitleMenu label="编辑" items={["复制样式", "复制令牌", "重置交互状态"]} />
-          <TitleMenu label="视图" items={["显示检查器", "切换密度", "刷新预览"]} />
-          <TitleMenu label="组件" items={["打开注册表", "导出清单", "校验组件"]} />
+          <TitleMenu label="文件" items={["新建项目", "打开项目", "保存到磁盘"]} />
+          <TitleMenu label="编辑" items={["撤销", "重做", "复制选中控件"]} />
+          <TitleMenu label="视图" items={["Design 模式", "Logic 模式", "Build 模式"]} />
+          <TitleMenu label="构建" items={["运行检查", "构建 exe", "打包安装器"]} />
           <WindowMenu />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -149,11 +149,11 @@ export function WindowTitlebar() {
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem>
                 <HelpCircle aria-hidden className="size-4" />
-                Material 3 指南
+                Nova 编辑器指南
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <FilePlus2 aria-hidden className="size-4" />
-                新建示例
+                新建项目模板
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <FileDown aria-hidden className="size-4" />

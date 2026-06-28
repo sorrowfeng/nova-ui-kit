@@ -5,8 +5,10 @@ import {
   useState,
   type CSSProperties,
   type DragEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  type WheelEvent as ReactWheelEvent,
 } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -32,6 +34,7 @@ import {
   FileImage,
   FolderOpen,
   Grid3x3,
+  Hand,
   Heading1,
   Layers,
   Lock,
@@ -62,6 +65,8 @@ import {
   Type,
   Undo2,
   Wand2,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,6 +93,13 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { BuildWorkspace } from "./builder/BuildWorkspace";
+import { DesignWorkspace } from "./builder/DesignWorkspace";
+import { InspectorDock } from "./builder/InspectorDock";
+import { LogicWorkspace } from "./builder/LogicWorkspace";
+import { NavigatorDock } from "./builder/NavigatorDock";
+import { OutputDock } from "./builder/OutputDock";
+import { ProjectDock, type BuilderDockTab } from "./builder/ProjectDock";
 import {
   MIN_ITEM_HEIGHT,
   MIN_ITEM_WIDTH,
@@ -398,6 +410,23 @@ type BuilderPropertyIssue = {
   message: string;
 };
 
+type BuilderLeftDockTab = "project" | "navigator" | "components" | "assets";
+type BuilderRightDockTab = "properties" | "connections" | "responsive" | "impact";
+type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs";
+
+type PalettePointerDrag = {
+  type: BuilderComponentType;
+  title: string;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  currentClientX: number;
+  currentClientY: number;
+  dragging: boolean;
+};
+
+const canvasZoomLevels = [0.25, 0.35, 0.5, 0.65, 0.8, 1, 1.25, 1.5, 2] as const;
+
 type BuilderPropertyAutoFixTarget = {
   fileId: string;
   fileName: string;
@@ -449,6 +478,7 @@ type ProjectJumpKind =
   | "validation"
   | "pipeline"
   | "maintenance"
+  | "settings"
   | "checkpoint";
 
 type ProjectJumpResult = {
@@ -469,6 +499,14 @@ type ProjectJumpResult = {
   secondaryPath?: string;
 };
 
+type EditorWorkflowStep = {
+  id: "save" | "generate" | "check" | "validate" | "build";
+  title: string;
+  detail: string;
+  badge: string;
+  icon: typeof Save;
+  actions: ProjectJumpActionId[];
+};
 
 type SimulatorTraceEntry = {
   id: string;
@@ -1781,6 +1819,7 @@ function projectJumpKindLabel(kind: ProjectJumpKind) {
     validation: "Validation",
     pipeline: "Pipeline",
     maintenance: "Repair",
+    settings: "Settings",
     checkpoint: "Checkpoint",
   };
   return labels[kind];
@@ -1790,9 +1829,34 @@ function projectJumpSearchText(parts: Array<string | number | undefined | null>)
   return parts.filter((part) => part !== undefined && part !== null).join(" ").toLowerCase();
 }
 
+function projectJumpFuzzyMatch(text: string, token: string) {
+  if (text.includes(token)) {
+    return true;
+  }
+
+  let cursor = 0;
+  for (const character of token) {
+    cursor = text.indexOf(character, cursor);
+    if (cursor === -1) {
+      return false;
+    }
+    cursor += 1;
+  }
+  return true;
+}
+
 function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorProjectCheckpoint[]): ProjectJumpResult[] {
   const results: ProjectJumpResult[] = [];
   const actionResults: ProjectJumpResult[] = [
+    {
+      id: "settings-release",
+      kind: "settings",
+      title: "Project release settings",
+      subtitle: "Edit app name, bundle id, version, bundle target, and window behavior.",
+      badge: "settings",
+      mode: "design",
+      searchable: projectJumpSearchText(["project settings release config app name bundle identifier version target window"]),
+    },
     {
       id: "action-save-project",
       kind: "action",
@@ -2142,7 +2206,57 @@ function filterProjectJumpResults(results: ProjectJumpResult[], query: string) {
   if (tokens.length === 0) {
     return results.slice(0, 8);
   }
-  return results.filter((result) => tokens.every((token) => result.searchable.includes(token))).slice(0, 12);
+  return results.filter((result) => tokens.every((token) => projectJumpFuzzyMatch(result.searchable, token))).slice(0, 12);
+}
+
+function projectTaskTimestamp(task: ProjectTaskEntry) {
+  const timestamp = new Date(task.startedAt ?? task.createdAt).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function workflowTaskForActions(tasks: ProjectTaskEntry[], actions: ProjectJumpActionId[]) {
+  const actionSet = new Set(actions);
+  const relatedTasks = tasks.filter((task) => actionSet.has(task.actionId));
+  return (
+    relatedTasks.find((task) => task.status === "running") ??
+    relatedTasks.find((task) => task.status === "queued") ??
+    relatedTasks.reduce<ProjectTaskEntry | null>(
+      (latest, task) => (!latest || projectTaskTimestamp(task) > projectTaskTimestamp(latest) ? task : latest),
+      null,
+    )
+  );
+}
+
+function workflowStepStatusLabel(status: ProjectTaskStatus | "idle") {
+  const labels: Record<ProjectTaskStatus | "idle", string> = {
+    idle: "ready",
+    queued: "queued",
+    running: "running",
+    succeeded: "done",
+    failed: "failed",
+    skipped: "skipped",
+    canceled: "canceled",
+  };
+  return labels[status];
+}
+
+function workflowStepStatusClassName(status: ProjectTaskStatus | "idle", suggested: boolean) {
+  if (status === "running") {
+    return "border-primary bg-primary/10 text-primary";
+  }
+  if (status === "queued") {
+    return "border-secondary bg-secondary/10 text-secondary-foreground";
+  }
+  if (status === "failed") {
+    return "border-destructive bg-destructive/10 text-destructive";
+  }
+  if (status === "succeeded") {
+    return "border-primary/40 bg-primary/5 text-primary";
+  }
+  if (suggested) {
+    return "border-primary/60 bg-surface-container-high text-on-surface shadow-m3-1";
+  }
+  return "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high hover:text-on-surface";
 }
 
 function createPropertyMaintenanceEntry(summary: BuilderPropertyAutoFixSummary): ProjectMaintenanceEntry {
@@ -2232,7 +2346,7 @@ function normalizeBuilderState(value: unknown): SavedBuilderState | null {
   page.width = clamp(Number(page.width), 320, 2400);
   page.height = clamp(Number(page.height), 240, 1800);
   page.gridSize = clamp(Number(page.gridSize), 4, 32);
-  page.zoom = clamp(Number(page.zoom), 0.35, 1.25);
+  page.zoom = clamp(Number(page.zoom), 0.25, 2);
   page.activeBreakpoint = normalizeBreakpoint(page.activeBreakpoint);
 
   if (!Array.isArray(state.items)) {
@@ -5356,6 +5470,12 @@ export function BuilderShowcase() {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => (activeFile.items[0]?.id ? [activeFile.items[0].id] : []));
   const [selectedProjectTemplateId, setSelectedProjectTemplateId] = useState<ProjectTemplateId>("dashboard");
   const [mode, setMode] = useState<BuilderMode>("design");
+  const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("project");
+  const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
+  const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
+  const [canvasPanMode, setCanvasPanMode] = useState(false);
+  const [spacePanActive, setSpacePanActive] = useState(false);
+  const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
   const [exportKind, setExportKind] = useState<"json" | "jsx">("json");
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -5430,11 +5550,21 @@ export function BuilderShowcase() {
   const [projectSnapshotVersion, setProjectSnapshotVersion] = useState(0);
   const [clipboardVersion, setClipboardVersion] = useState(0);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const canvasViewportRef = useRef<HTMLDivElement | null>(null);
   const rustLogicRef = useRef<HTMLTextAreaElement | null>(null);
   const itemsRef = useRef<BuilderItem[]>(items);
   const historyRef = useRef<Record<string, HistoryEntry>>({});
   const projectSnapshotsRef = useRef<Record<string, ProjectSnapshotEntry[]>>({});
   const clipboardRef = useRef<BuilderItem[]>([]);
+  const palettePointerDragRef = useRef<PalettePointerDrag | null>(null);
+  const suppressPaletteClickRef = useRef(false);
+  const canvasPanSessionRef = useRef<{
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    startScrollLeft: number;
+    startScrollTop: number;
+  } | null>(null);
   const projectTaskQueueRef = useRef<ProjectTaskEntry[]>(loadProjectTaskQueueState().tasks);
   const projectTaskQueuePausedRef = useRef(projectTaskQueuePaused);
   const projectTaskRunnerRef = useRef<Promise<void> | null>(null);
@@ -6437,6 +6567,107 @@ export function BuilderShowcase() {
     updatePage({ activeBreakpoint: breakpoint }, { history: false });
   };
 
+  const setCanvasZoom = (zoom: number) => {
+    updatePage({ zoom: Math.round(clamp(zoom, 0.25, 2) * 100) / 100 }, { history: false });
+  };
+
+  const zoomCanvasBy = (delta: number) => {
+    if (delta > 0) {
+      setCanvasZoom(canvasZoomLevels.find((zoom) => zoom > page.zoom + 0.001) ?? 2);
+      return;
+    }
+    setCanvasZoom([...canvasZoomLevels].reverse().find((zoom) => zoom < page.zoom - 0.001) ?? 0.25);
+  };
+
+  const resetCanvasView = () => {
+    setCanvasZoom(1);
+    window.requestAnimationFrame(() => {
+      const viewport = canvasViewportRef.current;
+      if (!viewport) {
+        return;
+      }
+      viewport.scrollTo({
+        left: Math.max(0, (page.width - viewport.clientWidth) / 2),
+        top: Math.max(0, (page.height - viewport.clientHeight) / 2),
+        behavior: "smooth",
+      });
+    });
+  };
+
+  const fitCanvasToViewport = () => {
+    const viewport = canvasViewportRef.current;
+    if (!viewport) {
+      return;
+    }
+    const nextZoom = Math.min((viewport.clientWidth - 64) / page.width, (viewport.clientHeight - 64) / page.height);
+    setCanvasZoom(clamp(nextZoom, 0.25, 2));
+    window.requestAnimationFrame(() => {
+      viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    });
+  };
+
+  const centerCanvasView = () => {
+    const viewport = canvasViewportRef.current;
+    if (!viewport) {
+      return;
+    }
+    viewport.scrollTo({
+      left: Math.max(0, (page.width * page.zoom - viewport.clientWidth) / 2),
+      top: Math.max(0, (page.height * page.zoom - viewport.clientHeight) / 2),
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      const element = target as HTMLElement | null;
+      return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
+      if (event.code === "Space" && mode === "design") {
+        event.preventDefault();
+        setSpacePanActive(true);
+        return;
+      }
+
+      if (!(event.ctrlKey || event.metaKey) || mode !== "design") {
+        return;
+      }
+
+      if (event.key === "+" || event.key === "=") {
+        event.preventDefault();
+        zoomCanvasBy(0.1);
+      } else if (event.key === "-" || event.key === "_") {
+        event.preventDefault();
+        zoomCanvasBy(-0.1);
+      } else if (event.key === "0") {
+        event.preventDefault();
+        resetCanvasView();
+      } else if (event.key === "1") {
+        event.preventDefault();
+        fitCanvasToViewport();
+      }
+    };
+
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        setSpacePanActive(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [mode, page.height, page.width, page.zoom]);
+
   const getCanvasPoint = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -6690,6 +6921,209 @@ export function BuilderShowcase() {
     setDropIntent(null);
   };
 
+  const handlePalettePointerDown = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    definition: ComponentDefinition,
+  ) => {
+    if (event.button !== 0) {
+      return;
+    }
+    const session: PalettePointerDrag = {
+      type: definition.type,
+      title: definition.title,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      currentClientX: event.clientX,
+      currentClientY: event.clientY,
+      dragging: false,
+    };
+    palettePointerDragRef.current = session;
+    setPalettePointerDrag(session);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePalettePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const session = palettePointerDragRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const distance = Math.hypot(event.clientX - session.startClientX, event.clientY - session.startClientY);
+    const nextSession: PalettePointerDrag = {
+      ...session,
+      currentClientX: event.clientX,
+      currentClientY: event.clientY,
+      dragging: session.dragging || distance > 6,
+    };
+    palettePointerDragRef.current = nextSession;
+    setPalettePointerDrag(nextSession);
+
+    if (!nextSession.dragging) {
+      return;
+    }
+
+    event.preventDefault();
+    const frameIntent = getFrameDropIntentFromClientPoint(event.clientX, event.clientY);
+    if (frameIntent) {
+      setDropIntent(frameIntent);
+      return;
+    }
+
+    if (isClientPointInsideCanvas(event.clientX, event.clientY)) {
+      setDropIntent({
+        kind: "canvas",
+        ...getCanvasPoint(event.clientX, event.clientY),
+        itemCount: 1,
+      });
+      return;
+    }
+
+    setDropIntent(null);
+  };
+
+  const finishPalettePointerDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const session = palettePointerDragRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    palettePointerDragRef.current = null;
+    setPalettePointerDrag(null);
+    setDropIntent(null);
+
+    if (!session.dragging) {
+      return;
+    }
+
+    suppressPaletteClickRef.current = true;
+    window.setTimeout(() => {
+      suppressPaletteClickRef.current = false;
+    }, 0);
+    event.preventDefault();
+    event.stopPropagation();
+
+    const intent = getFrameDropIntentFromClientPoint(event.clientX, event.clientY);
+    if (!intent && !isClientPointInsideCanvas(event.clientX, event.clientY)) {
+      return;
+    }
+    const targetFrame = intent ? itemsRef.current.find((item) => item.id === intent.frameId) : null;
+    addComponent(session.type, getRelativeDropPoint(event.clientX, event.clientY, targetFrame), intent?.frameId, intent?.index);
+  };
+
+  const cancelPalettePointerDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    palettePointerDragRef.current = null;
+    setPalettePointerDrag(null);
+    setDropIntent(null);
+  };
+
+  const updatePaletteDragFromClientPoint = (clientX: number, clientY: number) => {
+    const session = palettePointerDragRef.current;
+    if (!session) {
+      return null;
+    }
+
+    const distance = Math.hypot(clientX - session.startClientX, clientY - session.startClientY);
+    const nextSession: PalettePointerDrag = {
+      ...session,
+      currentClientX: clientX,
+      currentClientY: clientY,
+      dragging: session.dragging || distance > 6,
+    };
+    palettePointerDragRef.current = nextSession;
+    setPalettePointerDrag(nextSession);
+
+    if (!nextSession.dragging) {
+      return nextSession;
+    }
+
+    const frameIntent = getFrameDropIntentFromClientPoint(clientX, clientY);
+    if (frameIntent) {
+      setDropIntent(frameIntent);
+      return nextSession;
+    }
+
+    if (isClientPointInsideCanvas(clientX, clientY)) {
+      setDropIntent({
+        kind: "canvas",
+        ...getCanvasPoint(clientX, clientY),
+        itemCount: 1,
+      });
+      return nextSession;
+    }
+
+    setDropIntent(null);
+    return nextSession;
+  };
+
+  const commitPaletteDragAtClientPoint = (clientX: number, clientY: number) => {
+    const session = palettePointerDragRef.current;
+    palettePointerDragRef.current = null;
+    setPalettePointerDrag(null);
+    setDropIntent(null);
+
+    if (!session?.dragging) {
+      return false;
+    }
+
+    const intent = getFrameDropIntentFromClientPoint(clientX, clientY);
+    if (!intent && !isClientPointInsideCanvas(clientX, clientY)) {
+      return true;
+    }
+
+    const targetFrame = intent ? itemsRef.current.find((item) => item.id === intent.frameId) : null;
+    addComponent(session.type, getRelativeDropPoint(clientX, clientY, targetFrame), intent?.frameId, intent?.index);
+    return true;
+  };
+
+  const handlePaletteMouseDown = (event: ReactMouseEvent<HTMLButtonElement>, definition: ComponentDefinition) => {
+    if (event.button !== 0 || palettePointerDragRef.current) {
+      return;
+    }
+
+    const session: PalettePointerDrag = {
+      type: definition.type,
+      title: definition.title,
+      pointerId: -1,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      currentClientX: event.clientX,
+      currentClientY: event.clientY,
+      dragging: false,
+    };
+    palettePointerDragRef.current = session;
+    setPalettePointerDrag(session);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const nextSession = updatePaletteDragFromClientPoint(moveEvent.clientX, moveEvent.clientY);
+      if (nextSession?.dragging) {
+        moveEvent.preventDefault();
+      }
+    };
+
+    const onMouseUp = (upEvent: MouseEvent) => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      if (commitPaletteDragAtClientPoint(upEvent.clientX, upEvent.clientY)) {
+        suppressPaletteClickRef.current = true;
+        window.setTimeout(() => {
+          suppressPaletteClickRef.current = false;
+        }, 0);
+        upEvent.preventDefault();
+      }
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
   const reparentMovedItemsToFrame = (movingIds: string[], frameId: string, insertionIndex: number) => {
     const movingSet = new Set(movingIds);
     updateActiveItems((current) => {
@@ -6769,7 +7203,7 @@ export function BuilderShowcase() {
   };
 
   const startMove = (event: ReactPointerEvent<HTMLDivElement>, item: BuilderItem) => {
-    if (mode !== "design" || item.locked || event.button !== 0) {
+    if (mode !== "design" || item.locked || event.button !== 0 || canvasPanMode || spacePanActive || event.altKey) {
       return;
     }
     const target = event.target as HTMLElement;
@@ -9501,6 +9935,7 @@ export function BuilderShowcase() {
     bumpProjectTaskQueueVersion();
     setProjectTasks((current) => [...tasks, ...current].slice(0, 100));
     setSelectedProjectTaskId(tasks[0].id);
+    setBottomDockTab("tasks");
     setMode(projectTaskDefinitions[tasks[tasks.length - 1].actionId].mode);
     if (autoStart && !projectTaskQueuePausedRef.current) {
       void drainProjectTaskQueue();
@@ -9742,6 +10177,12 @@ export function BuilderShowcase() {
 
     if (result.kind === "action" && result.actionId) {
       runProjectJumpAction(result.actionId);
+      return;
+    }
+
+    if (result.kind === "settings") {
+      setMode("design");
+      setLeftDockTab("project");
       return;
     }
 
@@ -10966,6 +11407,89 @@ export function BuilderShowcase() {
     setMode("build");
   };
 
+  const canvasPanActive = canvasPanMode || spacePanActive;
+
+  const startCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const shouldPan = canvasPanActive || event.button === 1 || event.altKey;
+    const viewport = canvasViewportRef.current;
+    if (!shouldPan || !viewport) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    viewport.setPointerCapture(event.pointerId);
+    canvasPanSessionRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startScrollLeft: viewport.scrollLeft,
+      startScrollTop: viewport.scrollTop,
+    };
+  };
+
+  const moveCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const session = canvasPanSessionRef.current;
+    const viewport = canvasViewportRef.current;
+    if (!session || !viewport || session.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    viewport.scrollLeft = session.startScrollLeft - (event.clientX - session.startClientX);
+    viewport.scrollTop = session.startScrollTop - (event.clientY - session.startClientY);
+  };
+
+  const stopCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const session = canvasPanSessionRef.current;
+    const viewport = canvasViewportRef.current;
+    if (viewport?.hasPointerCapture(event.pointerId)) {
+      viewport.releasePointerCapture(event.pointerId);
+    }
+    if (session?.pointerId === event.pointerId) {
+      canvasPanSessionRef.current = null;
+    }
+  };
+
+  const handleCanvasViewportWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    if (!(event.ctrlKey || event.metaKey)) {
+      return;
+    }
+    event.preventDefault();
+    zoomCanvasBy(event.deltaY < 0 ? 0.1 : -0.1);
+  };
+
+  const startCanvasMousePan = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const shouldPan = canvasPanActive || event.button === 1 || event.altKey;
+    const viewport = canvasViewportRef.current;
+    if (!shouldPan || !viewport) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const session = {
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startScrollLeft: viewport.scrollLeft,
+      startScrollTop: viewport.scrollTop,
+    };
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      viewport.scrollLeft = session.startScrollLeft - (moveEvent.clientX - session.startClientX);
+      viewport.scrollTop = session.startScrollTop - (moveEvent.clientY - session.startClientY);
+      moveEvent.preventDefault();
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
   const canvasStageStyle: CSSProperties = {
     width: page.width * page.zoom,
     height: page.height * page.zoom,
@@ -11102,37 +11626,157 @@ export function BuilderShowcase() {
     );
   };
 
+  const modeBarItems: Array<{ mode: BuilderMode; label: string; detail: string; icon: typeof Layers }> = [
+    { mode: "design", label: "Design", detail: "Canvas", icon: MousePointer2 },
+    { mode: "logic", label: "Logic", detail: "Rust", icon: Braces },
+    { mode: "build", label: "Build", detail: "Run", icon: Download },
+    { mode: "preview", label: "Preview", detail: "Sim", icon: Monitor },
+    { mode: "export", label: "Export", detail: "Code", icon: FileJson },
+  ];
+  const activeModeItem = modeBarItems.find((item) => item.mode === mode) ?? modeBarItems[0];
+  const leftDockTabs: BuilderDockTab<BuilderLeftDockTab>[] = [
+    { value: "project", label: "Project", icon: FolderOpen },
+    { value: "navigator", label: "Navigator", icon: FileJson, badge: <Badge variant="outline">{activeProject.files.length}</Badge> },
+    { value: "components", label: "Components", icon: Layers, badge: <Badge variant="outline">{palette.length}</Badge> },
+    { value: "assets", label: "Assets", icon: FileImage, badge: <Badge variant="outline">{activeProject.assets.length}</Badge> },
+  ];
+  const rightDockTabs: BuilderDockTab<BuilderRightDockTab>[] = [
+    { value: "properties", label: "Properties", icon: Settings2 },
+    { value: "connections", label: "Connections", icon: Braces },
+    { value: "responsive", label: "Responsive", icon: Monitor },
+    { value: "impact", label: "Impact", icon: AlertTriangle },
+  ];
+  const bottomDockTabs: BuilderDockTab<BuilderBottomDockTab>[] = [
+    { value: "issues", label: "Issues", icon: AlertTriangle, badge: <Badge variant={buildDiagnostics.length > 0 || buildError ? "destructive" : "outline"}>{buildDiagnostics.length + (buildError ? 1 : 0)}</Badge> },
+    { value: "output", label: "Output", icon: Terminal },
+    { value: "tasks", label: "Tasks", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
+    { value: "logs", label: "Logs", icon: FileJson },
+  ];
+  const editorWorkflowSteps: EditorWorkflowStep[] = [
+    {
+      id: "save",
+      title: "Save",
+      detail: saved ? "Workspace clean" : "Persist project changes",
+      badge: saved ? "clean" : "dirty",
+      icon: Save,
+      actions: ["save-project"],
+    },
+    {
+      id: "generate",
+      title: "Generate",
+      detail: latestGeneratedFileSummary
+        ? `${latestGeneratedFileSummary.changed_count} changed / ${latestGeneratedFileSummary.total_count} targets`
+        : "Preview and apply target files",
+      badge: "files",
+      icon: FileJson,
+      actions: ["preview-generated-files", "apply-generated-changes"],
+    },
+    {
+      id: "check",
+      title: "Check",
+      detail: buildReadinessSummary.errorCount > 0 ? `${buildReadinessSummary.errorCount} blocker(s) to resolve` : "Run backend and quick checks",
+      badge: buildReadinessSummary.errorCount > 0 ? "blocked" : "checks",
+      icon: Terminal,
+      actions: ["build-backend-artifacts", "quick-check-all"],
+    },
+    {
+      id: "validate",
+      title: "Validate",
+      detail: activeProject.validationHistory?.[0]
+        ? `${activeProject.validationHistory[0].status} · ${activeProject.validationHistory[0].score}%`
+        : "Audit generated window",
+      badge: "audit",
+      icon: Monitor,
+      actions: ["validate-window"],
+    },
+    {
+      id: "build",
+      title: "Build",
+      detail: latestBuildEntry ? `${latestBuildEntry.releaseAppName} v${latestBuildEntry.releaseVersion}` : "Compile release exe",
+      badge: "exe",
+      icon: Download,
+      actions: ["build-exe"],
+    },
+  ];
+  const suggestedWorkflowStepId =
+    runningProjectTask
+      ? null
+      : !saved
+        ? "save"
+        : !latestGeneratedFileSummary
+          ? "generate"
+          : buildReadinessSummary.errorCount > 0
+            ? "check"
+            : !activeProject.validationHistory?.[0]
+              ? "validate"
+              : "build";
+  const workflowActivityText = runningProjectTask
+    ? `Running ${runningProjectTask.title}`
+    : queuedProjectTaskCount > 0
+      ? `${queuedProjectTaskCount} queued task(s)`
+      : failedProjectTaskCount > 0
+        ? `${failedProjectTaskCount} failed task(s)`
+        : "Ready for the next editor action";
+  const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
+    setBuildError("");
+    if (step.actions.length === 1) {
+      enqueueProjectTask(step.actions[0]);
+      return;
+    }
+    runProjectActionsAsPipeline({
+      id: `workflow-${step.id}-${Date.now()}`,
+      title: step.title,
+      detail: step.detail,
+      badge: step.badge,
+      actions: step.actions,
+      custom: true,
+    });
+  };
+
   return (
-    <div className="space-y-[var(--panel-gap)]">
-      <section className="rounded-[28px] border border-outline-variant bg-surface-container-lowest shadow-m3-1">
+    <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">
+        <div className="grid h-full min-h-0 grid-cols-[56px_minmax(0,1fr)]">
+          <nav className="flex flex-col items-center gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="Editor modes">
+            <span className="mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
+              <MousePointer2 aria-hidden className="size-4" />
+            </span>
+            {modeBarItems.map((item) => (
+              <button
+                key={item.mode}
+                type="button"
+                aria-label={`${item.label} mode`}
+                aria-current={mode === item.mode ? "page" : undefined}
+                className={cn(
+                  "focus-ring group flex size-10 items-center justify-center rounded-2xl transition",
+                  mode === item.mode
+                    ? "bg-secondary-container text-secondary-container-foreground shadow-m3-1"
+                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                )}
+                title={`${item.label} · ${item.detail}`}
+                onClick={() => setMode(item.mode)}
+              >
+                <item.icon aria-hidden className="size-4" />
+              </button>
+            ))}
+          </nav>
+          <div className="flex min-h-0 min-w-0 flex-col">
         <div className="flex flex-col gap-4 border-b border-outline-variant p-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <MousePointer2 aria-hidden className="size-4" />
+              <span className="flex size-8 items-center justify-center rounded-full bg-secondary-container text-secondary-container-foreground">
+                <activeModeItem.icon aria-hidden className="size-4" />
               </span>
               <div>
                 <h1 className="text-base font-semibold tracking-normal">Nova UI Editor</h1>
                 <p className="text-xs text-on-surface-variant">
-                  {activeProject.name} / {activeFile.path} · 自由画布 · 多 UI 文件管理
+                  {activeModeItem.label} / {activeProject.name} / {activeFile.path}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <SegmentedControl
-              aria-label="编辑器模式"
-              value={mode}
-              onValueChange={(value) => setMode(value as BuilderMode)}
-              options={[
-                { value: "design", label: "设计" },
-                { value: "logic", label: "Rust" },
-                { value: "build", label: "构建" },
-                { value: "preview", label: "预览" },
-                { value: "export", label: "导出" },
-              ]}
-            />
+            <Badge variant="secondary">{activeModeItem.label}</Badge>
             <Button variant="ghost" size="sm" data-builder-save="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy}>
               {saved ? <CheckCircle2 aria-hidden className="size-4" /> : <Save aria-hidden className="size-4" />}
               {saved ? "已保存" : "保存到磁盘"}
@@ -11154,16 +11798,16 @@ export function BuilderShowcase() {
           </div>
         </div>
 
-        <div className="border-b border-outline-variant bg-surface-container-low px-4 py-3" data-builder-project-jump="">
-          <div className="grid gap-3 xl:grid-cols-[minmax(260px,360px)_minmax(0,1fr)] xl:items-center">
+        <div className="relative z-30 border-b border-outline-variant bg-surface-container-low px-4 py-3" data-builder-project-jump="" data-builder-locator="">
+          <div className="mx-auto max-w-5xl">
             <div className="relative">
               <Search aria-hidden className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
               <Input
                 value={projectJumpQuery}
                 inputSize="sm"
-                aria-label="Project Jump"
-                placeholder="Project Jump: files, controls, Rust, state, artifacts..."
-                className="h-10 rounded-full pl-10"
+                aria-label="Project Locator"
+                placeholder="Locator: file, control, Rust command, action, artifact, settings..."
+                className="h-10 rounded-2xl pl-10 pr-20"
                 onChange={(event) => setProjectJumpQuery(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && visibleProjectJumpResults[0]) {
@@ -11172,18 +11816,22 @@ export function BuilderShowcase() {
                   }
                 }}
               />
+              <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-0.5 font-mono text-[0.66rem] text-on-surface-variant sm:inline-flex">
+                Enter
+              </span>
             </div>
-            <div className="subtle-scrollbar flex min-w-0 gap-2 overflow-x-auto pb-1 xl:pb-0">
+            {projectJumpQuery.trim() ? (
+            <div className="absolute left-4 right-4 top-[calc(100%-0.35rem)] z-50 mx-auto max-h-[360px] max-w-5xl overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-1 shadow-m3-2">
               {visibleProjectJumpResults.length > 0 ? (
                 visibleProjectJumpResults.map((result) => (
                   <button
                     key={result.id}
                     type="button"
                     data-builder-project-jump-result={result.kind}
-                    className="focus-ring flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2 text-left text-xs transition hover:border-outline hover:bg-surface"
+                    className="focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-surface-container-high"
                     onClick={() => openProjectJumpResult(result)}
                   >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary-container text-primary">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-primary">
                       <ProjectJumpIcon kind={result.kind} />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -11195,20 +11843,79 @@ export function BuilderShowcase() {
                       </span>
                       <span className="mt-1 block truncate text-on-surface-variant">{result.subtitle}</span>
                     </span>
-                    <ArrowRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                    <span className="hidden items-center gap-2 text-[0.68rem] text-on-surface-variant sm:flex">
+                      {projectJumpKindLabel(result.kind)}
+                      <ArrowRight aria-hidden className="size-3.5 shrink-0" />
+                    </span>
                   </button>
                 ))
               ) : (
-                <div className="flex min-h-10 flex-1 items-center rounded-2xl border border-dashed border-outline-variant px-4 text-xs text-on-surface-variant">
+                <div className="flex min-h-10 flex-1 items-center rounded-xl border border-dashed border-outline-variant px-4 text-xs text-on-surface-variant">
                   No project matches
                 </div>
               )}
             </div>
+            ) : null}
           </div>
         </div>
 
+        <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5" data-builder-workflow-rail="">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 xl:flex-row xl:items-center">
+            <div className="flex min-w-0 items-center gap-2 text-xs text-on-surface-variant xl:w-56">
+              <span
+                className={cn(
+                  "size-2 shrink-0 rounded-full",
+                  runningProjectTask
+                    ? "bg-primary"
+                    : failedProjectTaskCount > 0
+                      ? "bg-destructive"
+                      : queuedProjectTaskCount > 0
+                        ? "bg-secondary"
+                        : "bg-outline",
+                )}
+              />
+              <span className="truncate">{workflowActivityText}</span>
+            </div>
+            <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 md:grid-cols-5">
+              {editorWorkflowSteps.map((step, index) => {
+                const StepIcon = step.icon;
+                const task = workflowTaskForActions(activeProjectTasks, step.actions);
+                const status = task?.status ?? "idle";
+                const suggested = suggestedWorkflowStepId === step.id;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    data-builder-workflow-step={step.id}
+                    className={cn(
+                      "focus-ring group grid min-h-[4rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
+                      workflowStepStatusClassName(status, suggested),
+                    )}
+                    onClick={() => runEditorWorkflowStep(step)}
+                  >
+                    <span className="flex size-8 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
+                      <StepIcon aria-hidden className="size-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="font-mono text-[0.68rem] text-on-surface-variant">{index + 1}</span>
+                        <span className="truncate font-medium text-on-surface">{step.title}</span>
+                      </span>
+                      <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">{task?.summary ?? step.detail}</span>
+                    </span>
+                    <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0">
+                      {workflowStepStatusLabel(status)}
+                    </Badge>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
         {mode === "logic" ? (
-          <div className="grid min-h-[780px] grid-cols-1 gap-4 p-4 xl:grid-cols-[280px_minmax(0,1fr)_340px]">
+          <LogicWorkspace>
             <aside className="space-y-4 rounded-[24px] border border-outline-variant bg-surface-container p-4">
               <PanelTitle icon={Braces} title="命令注册表" description="管理会写入 Tauri invoke handler 的项目级 Rust commands。" />
               <div className="space-y-2">
@@ -12424,9 +13131,62 @@ export function BuilderShowcase() {
                 </Button>
               </section>
             </aside>
-          </div>
+          </LogicWorkspace>
         ) : mode === "build" ? (
-          <div className="grid min-h-[780px] grid-cols-1 gap-4 p-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+          <BuildWorkspace
+            toolbar={
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Download aria-hidden className="size-4 text-primary" />
+                    <h2 className="text-sm font-semibold">Build / Run</h2>
+                    <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
+                      {latestReleasePipeline ? latestReleasePipeline.status : "idle"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 truncate text-xs text-on-surface-variant">
+                    Pipeline, Problems, Output and Artifacts for {activeProject.releaseConfig.appName}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    data-builder-run-generated-app=""
+                    loading={launchingExeId === "active-output"}
+                    disabled={!activeProject.outputExePath || Boolean(launchingExeId)}
+                    onClick={() => void launchActiveOutputExecutable()}
+                  >
+                    <Play aria-hidden className="size-4" />
+                    Run
+                  </Button>
+                  <Button size="sm" data-builder-build-workspace="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
+                    <Download aria-hidden className="size-4" />
+                    Build
+                  </Button>
+                  <Button size="sm" variant="secondary" data-builder-bundle-workspace="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
+                    <Box aria-hidden className="size-4" />
+                    Bundle
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    data-builder-stop-run-workspace=""
+                    loading={Boolean(latestRunSessionEntry && stoppingRunId === latestRunSessionEntry.id)}
+                    disabled={!latestRunSessionEntry?.launchedPid || latestRunSessionEntry.runStatus === "stopped" || Boolean(stoppingRunId)}
+                    onClick={() => {
+                      if (latestRunSessionEntry) {
+                        void stopRunSession(latestRunSessionEntry);
+                      }
+                    }}
+                  >
+                    <Square aria-hidden className="size-4" />
+                    Stop
+                  </Button>
+                </div>
+              </div>
+            }
+          >
             <aside className="space-y-4 rounded-[24px] border border-outline-variant bg-surface-container p-4">
               <PanelTitle icon={Download} title="构建输出" description="生成目标 Tauri 应用并输出 exe 或安装包。" />
               <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3 text-xs">
@@ -12581,7 +13341,36 @@ export function BuilderShowcase() {
                   </div>
                 ) : null}
               </div>
-              <section className="space-y-3 rounded-[22px] bg-surface-container-low p-3" data-builder-release-config="">
+              <section className="space-y-3 rounded-[22px] border border-outline-variant bg-surface-container-low p-3" data-builder-release-settings-shortcut="">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Project Settings</h3>
+                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                      Release config 已移动到 Project Dock；Build 页只保留运行、构建、输出和证据。
+                    </p>
+                  </div>
+                  <Badge variant="outline">{normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
+                </div>
+                <div className="rounded-2xl bg-surface-container-high p-3 text-xs">
+                  <PathRow label="App" value={activeProject.releaseConfig.appName} />
+                  <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
+                  <PathRow label="Target" value={activeProject.releaseConfig.bundleTargets} />
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-full"
+                  data-builder-open-project-release-settings=""
+                  onClick={() => {
+                    setMode("design");
+                    setLeftDockTab("project");
+                  }}
+                >
+                  <Settings2 aria-hidden className="size-4" />
+                  Open Project Settings
+                </Button>
+              </section>
+              <section className="hidden" data-builder-release-config="">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布配置</h3>
@@ -15340,7 +16129,7 @@ export function BuilderShowcase() {
                 />
               </div>
             </section>
-          </div>
+          </BuildWorkspace>
         ) : mode === "export" ? (
           <div className="space-y-4 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -15367,8 +16156,10 @@ export function BuilderShowcase() {
             <Textarea data-builder-export-output="" readOnly value={exportText} className="min-h-[640px] resize-none font-mono text-xs leading-5" />
           </div>
         ) : (
-          <div className="grid min-h-[780px] grid-cols-1 xl:grid-cols-[236px_minmax(0,1fr)_292px]">
-            <aside className="subtle-scrollbar max-h-[780px] overflow-y-auto border-b border-outline-variant bg-surface-container p-4 xl:border-b-0 xl:border-r">
+          <DesignWorkspace>
+            <ProjectDock tabs={leftDockTabs} activeTab={leftDockTab} onTabChange={setLeftDockTab}>
+              {leftDockTab === "project" ? (
+                <>
               <PanelTitle icon={FolderOpen} title="项目" description="管理本地 UI 编辑器项目。" />
               <div className="mb-5 space-y-3 rounded-[22px] bg-surface-container-low p-3">
                 <Field label="当前项目">
@@ -15622,6 +16413,78 @@ export function BuilderShowcase() {
                     onChange={(event) => updateProjectRootPath(event.target.value)}
                   />
                 </Field>
+                <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-project-release-settings="">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Project Settings / Release</h3>
+                      <p className="mt-1 text-xs leading-5 text-on-surface-variant">Build 页只负责运行流水线；发布元数据在这里维护。</p>
+                    </div>
+                    <Badge variant="outline">settings</Badge>
+                  </div>
+                  <Field label="应用名称">
+                    <Input
+                      inputSize="sm"
+                      data-builder-project-release-app-name=""
+                      value={activeProject.releaseConfig.appName}
+                      onChange={(event) => updateReleaseConfig({ appName: event.target.value })}
+                    />
+                  </Field>
+                  <Field label="Bundle identifier">
+                    <Input
+                      inputSize="sm"
+                      data-builder-project-release-identifier=""
+                      value={activeProject.releaseConfig.bundleIdentifier}
+                      spellCheck={false}
+                      className="font-mono text-xs"
+                      onChange={(event) => updateReleaseConfig({ bundleIdentifier: event.target.value })}
+                    />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="版本号">
+                      <Input
+                        inputSize="sm"
+                        data-builder-project-release-version=""
+                        value={activeProject.releaseConfig.version}
+                        spellCheck={false}
+                        className="font-mono text-xs"
+                        onChange={(event) => updateReleaseConfig({ version: event.target.value })}
+                      />
+                    </Field>
+                    <Field label="窗口标题">
+                      <Input
+                        inputSize="sm"
+                        data-builder-project-release-window-title=""
+                        value={activeProject.releaseConfig.windowTitle}
+                        onChange={(event) => updateReleaseConfig({ windowTitle: event.target.value })}
+                      />
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="安装包目标">
+                      <Select
+                        value={activeProject.releaseConfig.bundleTargets}
+                        onValueChange={(bundleTargets) => updateReleaseConfig({ bundleTargets: bundleTargets as ReleaseBundleTarget })}
+                      >
+                        <SelectTrigger inputSize="sm" data-builder-project-release-targets="">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {releaseBundleTargets.map((target) => (
+                            <SelectItem key={target.value} value={target.value}>
+                              {target.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <div className="flex items-end">
+                      <label className="flex h-[var(--control-sm)] w-full items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 text-xs">
+                        允许缩放
+                        <Switch checked={activeProject.releaseConfig.resizable} onCheckedChange={(resizable) => updateReleaseConfig({ resizable })} />
+                      </label>
+                    </div>
+                  </div>
+                </section>
                 <Button size="sm" variant="secondary" className="w-full" data-builder-choose-project-dir="" onClick={chooseProjectDirectory} loading={diskBusy}>
                   <FolderOpen aria-hidden className="size-4" />
                   选择项目目录
@@ -15641,7 +16504,11 @@ export function BuilderShowcase() {
                   删除当前项目
                 </Button>
               </div>
+                </>
+              ) : null}
 
+              {leftDockTab === "navigator" ? (
+                <NavigatorDock>
               <PanelTitle icon={FileJson} title="UI 文件" description="一个项目可以包含多个界面文件。" />
               <div className="mb-5 space-y-3 rounded-[22px] bg-surface-container-low p-3">
                 <Field label="文件名">
@@ -15679,7 +16546,11 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
               </div>
+                </NavigatorDock>
+              ) : null}
 
+              {leftDockTab === "assets" ? (
+                <>
               <PanelTitle icon={FileImage} title="资源" description="项目级图片资源，可绑定到 Image 控件。" />
               <div className="mb-5 space-y-3 rounded-[22px] bg-surface-container-low p-3">
                 <Button size="sm" variant="secondary" className="w-full" data-builder-import-asset="" onClick={chooseImageAsset} loading={diskBusy}>
@@ -15718,7 +16589,11 @@ export function BuilderShowcase() {
                   </div>
                 )}
               </div>
+                </>
+              ) : null}
 
+              {leftDockTab === "components" ? (
+                <>
               <PanelTitle icon={Layers} title="控件工具箱" description="拖到画布任意位置，也可以单击快速添加。" />
               <div className="grid gap-2">
                 {palette.map((definition) => {
@@ -15728,10 +16603,14 @@ export function BuilderShowcase() {
                       key={definition.type}
                       type="button"
                       data-builder-palette-type={definition.type}
-                      draggable
-                      onDragStart={(event) => handlePaletteDragStart(event, definition.type)}
-                      onDragEnd={() => setDropIntent(null)}
-                      onClick={() => addComponent(definition.type)}
+                      draggable={false}
+                      onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
+                      onClick={() => {
+                        if (suppressPaletteClickRef.current) {
+                          return;
+                        }
+                        addComponent(definition.type);
+                      }}
                       className="focus-ring m3-state-layer flex w-full items-start gap-3 rounded-[18px] border border-transparent bg-surface-container-low p-3 text-left transition-colors hover:border-outline-variant hover:bg-surface-container-high"
                     >
                       <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-container-highest text-primary">
@@ -15745,9 +16624,11 @@ export function BuilderShowcase() {
                   );
                 })}
               </div>
-            </aside>
+                </>
+              ) : null}
+            </ProjectDock>
 
-            <main className="relative min-w-0 overflow-hidden bg-surface-container-low">
+            <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface-container-low">
               <div className="flex flex-col gap-3 border-b border-outline-variant bg-surface-container-lowest p-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
                   <Select value={page.preset} onValueChange={(value) => applyCanvasPreset(value as CanvasPresetId)}>
@@ -15792,13 +16673,36 @@ export function BuilderShowcase() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[0.35, 0.45, 0.5, 0.65, 0.8, 1, 1.25].map((zoom) => (
+                      {canvasZoomLevels.map((zoom) => (
                         <SelectItem key={zoom} value={String(zoom)}>
                           {Math.round(zoom * 100)}%
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <div className="flex items-center gap-1 rounded-full border border-outline bg-surface-container-high p-1">
+                    <Button size="icon-sm" variant="ghost" data-builder-zoom-out="" aria-label="缩小画布 Ctrl+-" onClick={() => zoomCanvasBy(-0.1)}>
+                      <ZoomOut aria-hidden />
+                    </Button>
+                    <Button size="icon-sm" variant="ghost" data-builder-zoom-in="" aria-label="放大画布 Ctrl++" onClick={() => zoomCanvasBy(0.1)}>
+                      <ZoomIn aria-hidden />
+                    </Button>
+                    <Button size="icon-sm" variant="ghost" data-builder-fit-canvas="" aria-label="适配画布 Ctrl+1" onClick={fitCanvasToViewport}>
+                      <Maximize2 aria-hidden />
+                    </Button>
+                    <Button size="icon-sm" variant="ghost" data-builder-reset-canvas-view="" aria-label="重置画布视图 Ctrl+0" onClick={resetCanvasView}>
+                      <RotateCcw aria-hidden />
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant={canvasPanMode ? "secondary" : "ghost"}
+                      data-builder-pan-canvas=""
+                      aria-label="移动画布 Space"
+                      onClick={() => setCanvasPanMode((enabled) => !enabled)}
+                    >
+                      <Hand aria-hidden />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -15831,14 +16735,28 @@ export function BuilderShowcase() {
                 </div>
               </div>
 
-              <div className="relative h-[720px] overflow-auto p-8">
+              <div
+                ref={canvasViewportRef}
+                data-builder-canvas-viewport=""
+                className={cn(
+                  "subtle-scrollbar relative min-h-0 flex-1 overflow-auto p-8",
+                  canvasPanActive ? "cursor-grab active:cursor-grabbing" : "cursor-default",
+                )}
+                onMouseDown={startCanvasMousePan}
+                onPointerDown={startCanvasPan}
+                onPointerMove={moveCanvasPan}
+                onPointerUp={stopCanvasPan}
+                onPointerCancel={stopCanvasPan}
+                onWheel={handleCanvasViewportWheel}
+              >
                 <div className="relative" style={canvasStageStyle}>
                   <div
                     ref={canvasRef}
                     data-builder-canvas=""
                     className={cn(
                       "relative overflow-hidden rounded-[18px] border border-outline-variant shadow-m3-2",
-                      mode === "design" && "cursor-crosshair",
+                      mode === "design" && !canvasPanActive && "cursor-crosshair",
+                      mode === "design" && canvasPanActive && "cursor-grab",
                     )}
                     style={canvasStyle}
                     onClick={clearSelection}
@@ -15886,7 +16804,9 @@ export function BuilderShowcase() {
               </div>
             </main>
 
-            <aside className="subtle-scrollbar relative z-10 max-h-[780px] overflow-y-auto border-t border-outline-variant bg-surface-container p-4 xl:border-l xl:border-t-0">
+            <InspectorDock tabs={rightDockTabs} activeTab={rightDockTab} onTabChange={setRightDockTab}>
+              {rightDockTab === "properties" ? (
+                <>
               <PanelTitle icon={Settings2} title="检查器" description="页面、图层、坐标和控件属性。" />
 
               <div className="space-y-4">
@@ -16809,10 +17729,239 @@ export function BuilderShowcase() {
                   </section>
                 )}
               </div>
-            </aside>
-          </div>
+                </>
+              ) : rightDockTab === "connections" ? (
+                <section className="space-y-4">
+                  <PanelTitle icon={Braces} title="Connections" description="把控件事件绑定到 Rust command，并设置结果回写。" />
+                  {selectedItem && selectedEventName ? (
+                    <div className="space-y-4 rounded-[22px] bg-surface-container-low p-3">
+                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
+                        <p className="truncate text-sm font-medium">{getItemSummary(selectedItem)}</p>
+                        <p className="mt-1 text-xs text-on-surface-variant">
+                          {selectedItem.name} · {selectedItem.type} · event {selectedEventName}
+                        </p>
+                      </div>
+                      <Field label="Rust command">
+                        <Select
+                          value={
+                            selectedEventCommandId && activeProject.rustCommands.some((command) => command.id === selectedEventCommandId)
+                              ? selectedEventCommandId
+                              : "__none"
+                          }
+                          onValueChange={(value) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
+                        >
+                          <SelectTrigger data-builder-inspector-event-command="">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none">No command</SelectItem>
+                            {activeProject.rustCommands.map((command) => (
+                              <SelectItem key={command.id} value={command.id}>
+                                {sanitizeRustCommandName(command.name)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          size="sm"
+                          data-builder-connection-simulate=""
+                          onClick={simulateSelectedEvent}
+                          disabled={!selectedEventCommand}
+                        >
+                          <Play aria-hidden className="size-4" />
+                          Simulate
+                        </Button>
+                        <Button size="sm" variant="secondary" data-builder-connection-new-command="" onClick={createAndBindBackendIntegrationCommand}>
+                          <Plus aria-hidden className="size-4" />
+                          Bind new
+                        </Button>
+                      </div>
+                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
+                        {selectedEventCommand
+                          ? `${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result · ${selectedEventBinding?.resultStateId ? "writes state" : "no state write"}`
+                          : "选择或创建 Rust command 后，Preview 模式可以真实模拟事件调用。"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-[22px] border border-dashed border-outline-variant p-6 text-center text-sm text-on-surface-variant">
+                      选择 Button、Input、Switch、Select 等可交互控件后，可以管理事件连接。
+                    </div>
+                  )}
+                </section>
+              ) : rightDockTab === "responsive" ? (
+                <section className="space-y-4">
+                  <PanelTitle icon={Monitor} title="Responsive" description="查看当前断点、画布尺寸和选中控件的响应式状态。" />
+                  <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3">
+                    <SegmentedControl
+                      aria-label="Inspector responsive breakpoint"
+                      value={activeBreakpoint}
+                      onValueChange={(value) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
+                      options={[
+                        { value: "desktop", label: "Desktop" },
+                        { value: "tablet", label: "Tablet" },
+                        { value: "mobile", label: "Mobile" },
+                      ]}
+                    />
+                    <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
+                      <PathRow label="Canvas" value={`${page.width} x ${page.height} · ${responsiveBreakpointSize(activeBreakpoint, page).width}px guide`} />
+                      <PathRow label="Preset" value={page.preset} />
+                      <PathRow label="Zoom" value={`${Math.round(page.zoom * 100)}%`} />
+                    </div>
+                    {selectedItem ? (
+                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
+                        <PathRow label="Selected" value={getItemSummary(selectedItem)} />
+                        <PathRow label="Bounds" value={`x ${selectedItem.x}, y ${selectedItem.y}, ${selectedItem.width} x ${selectedItem.height}`} />
+                        <PathRow
+                          label="Constraints"
+                          value={
+                            Object.entries(itemConstraints(selectedItem))
+                              .filter(([, enabled]) => enabled)
+                              .map(([name]) => name)
+                              .join(", ") || "none"
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs text-on-surface-variant">
+                        选中控件后会显示响应式覆盖与约束摘要。
+                      </div>
+                    )}
+                  </div>
+                </section>
+              ) : (
+                <section className="space-y-4">
+                  <PanelTitle icon={AlertTriangle} title="Impact" description="反向查看当前选择会影响哪些生成文件、检查和构建动作。" />
+                  <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3">
+                    {selectedControlReverseDependency ? (
+                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{selectedControlReverseDependency.target?.label ?? "Selected control"}</p>
+                            <p className="mt-1 text-xs leading-5 text-on-surface-variant">{selectedControlReverseDependency.summary}</p>
+                          </div>
+                          <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
+                            {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
+                          </Badge>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId) => (
+                            <Badge key={scopeId} variant="outline">
+                              {scopeId}
+                            </Badge>
+                          ))}
+                        </div>
+                        <Button
+                          size="sm"
+                          className="mt-3 w-full"
+                          variant="secondary"
+                          onClick={() => selectProjectReverseDependencyOutputs(selectedControlReverseDependency)}
+                        >
+                          <ArrowRight aria-hidden className="size-4" />
+                          Select generated outputs
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs leading-5 text-on-surface-variant">
+                        当前没有选中控件；选择画布节点后会显示依赖影响。
+                      </div>
+                    )}
+                    <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
+                      <PathRow label="Tracked" value={`${reverseDependencySummaries.length} source(s)`} />
+                      <PathRow label="Graph" value={projectDependencyGraph ? "loaded" : "not loaded"} />
+                    </div>
+                  </div>
+                </section>
+              )}
+            </InspectorDock>
+          </DesignWorkspace>
         )}
-      </section>
+        </div>
+            <OutputDock tabs={bottomDockTabs} activeTab={bottomDockTab} onTabChange={setBottomDockTab}>
+              {bottomDockTab === "issues" ? (
+                <div className="grid gap-2 text-xs xl:grid-cols-2">
+                  {buildError ? (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+                      {buildError}
+                    </div>
+                  ) : null}
+                  {buildDiagnostics.length > 0 ? (
+                    buildDiagnostics.slice(0, 4).map((diagnostic, index) => (
+                      <button
+                        key={`${diagnostic.message}-${index}`}
+                        type="button"
+                        className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high p-3 text-left"
+                        onClick={() => focusRustDiagnostic(diagnostic)}
+                        disabled={!isEditableRustDiagnostic(diagnostic)}
+                      >
+                        <span className="mb-1 flex items-center gap-2">
+                          <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
+                          {diagnostic.file ? <span className="truncate font-mono text-[0.68rem]">{diagnostic.file}</span> : null}
+                        </span>
+                        <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                      </button>
+                    ))
+                  ) : !buildError ? (
+                    <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                      No active issues. Build diagnostics and validation problems will appear here.
+                    </div>
+                  ) : null}
+                </div>
+              ) : bottomDockTab === "output" ? (
+                <div className="grid gap-2 text-xs xl:grid-cols-3">
+                  <PathRow label="Pipeline" value={latestReleasePipeline ? latestReleasePipeline.summary : "No release pipeline yet"} />
+                  <PathRow label="Executable" value={activeProject.outputExePath || "Build output pending"} />
+                  <PathRow label="Bundle" value={activeBundlePath || activeBundleDir || "Bundle output pending"} />
+                </div>
+              ) : bottomDockTab === "tasks" ? (
+                <div className="grid gap-2 text-xs xl:grid-cols-4">
+                  {visibleProjectTasks.slice(0, 4).map((task) => (
+                    <button
+                      key={task.id}
+                      type="button"
+                      className={cn(
+                        "focus-ring rounded-xl border p-3 text-left transition",
+                        selectedProjectTask?.id === task.id ? "border-primary bg-primary/10" : "border-outline-variant bg-surface-container-high hover:border-outline",
+                      )}
+                      onClick={() => setSelectedProjectTaskId(task.id)}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate font-medium">{task.title}</span>
+                        <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                      </span>
+                      <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
+                    </button>
+                  ))}
+                  {visibleProjectTasks.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
+                      No tasks yet.
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <pre className="max-h-36 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-5 text-on-surface-variant">
+                  {selectedProjectTask?.logPreview ||
+                    latestRunSessionEntry?.runtimeLogPreview ||
+                    "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                </pre>
+              )}
+            </OutputDock>
+          </div>
+        </div>
+        {palettePointerDrag?.dragging ? (
+          <div
+            className="pointer-events-none fixed z-[9999] flex items-center gap-2 rounded-2xl border border-primary/30 bg-surface-container-lowest/95 px-3 py-2 text-xs font-medium text-on-surface shadow-m3-2 backdrop-blur"
+            style={{
+              left: palettePointerDrag.currentClientX + 14,
+              top: palettePointerDrag.currentClientY + 14,
+            }}
+          >
+            <Layers aria-hidden className="size-4 text-primary" />
+            <span>{palettePointerDrag.title}</span>
+            <Badge variant={dropIntent ? "secondary" : "outline"}>{dropIntent ? "Drop" : "Drag"}</Badge>
+          </div>
+        ) : null}
     </div>
   );
 }
@@ -16845,6 +17994,9 @@ function ProjectJumpIcon({ kind }: { kind: ProjectJumpKind }) {
     return <Braces aria-hidden className="size-4" />;
   }
   if (kind === "state") {
+    return <Settings2 aria-hidden className="size-4" />;
+  }
+  if (kind === "settings") {
     return <Settings2 aria-hidden className="size-4" />;
   }
   if (kind === "asset") {

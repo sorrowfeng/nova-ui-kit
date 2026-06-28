@@ -25,6 +25,27 @@ Repository: https://github.com/sorrowfeng/nova-ui-kit
 
 The editor is the default first screen. It is designed to work more like a lightweight Qt Designer than a component gallery.
 
+The current editor shell follows a Qt Creator / Qt Design Studio-style workbench model:
+
+```text
+Tauri-style window titlebar
+  -> application menu and native window controls
+Mode Bar
+  -> Design / Logic / Build / Preview / Export
+Project Locator
+  -> files, controls, Rust commands, actions, build artifacts, and settings pages
+Left Dock
+  -> Project / Navigator / Components / Assets
+Center Workspace
+  -> Canvas, Rust editor, Build/Run workspace, Preview, or Export
+Right Dock
+  -> Properties / Connections / Responsive / Impact
+Bottom Dock
+  -> Issues / Output / Tasks / Logs
+```
+
+When the active workspace is the editor, Nova bypasses the old component-gallery navigation shell. There is no outer sidebar, marketing-style page wrapper, or rounded card around the editor; the workbench fills the desktop window directly below the titlebar.
+
 Current editor capabilities:
 
 - Create, switch, rename, and delete local editor projects.
@@ -38,7 +59,7 @@ Current editor capabilities:
 - Save projects to managed disk folders under `Documents/Nova UI Projects`.
 - Keep persistent project history in `.nova/checkpoints/*.json` so UI files, Rust logic, command schemas, state bindings, and project metadata can be compared and restored as a unit.
 - Generate project files: `nova.project.json`, `ui/*.json`, `assets/*`, `rust/logic.rs`, `rust/modules/*.rs`, `rust/source-map.json`, `rust/commands.json`, `rust/dependencies.json`, `backend/integrations.json`, backend handoff notes, generated Rust backend wrapper/launcher templates, generated-app `nova_source_map.json`, and a buildable Tauri app under `app/`.
-- Configure release metadata including app name, bundle identifier, semantic version, release notes, patch/minor/major version bumps with pre-bump checkpoints, installer/bundle target, release icon asset, Windows/custom signing settings, Windows certificate-store inspection, PFX/P12 certificate file selection, password environment-variable handoff, bundle smoke threshold, installer smoke runner mode, VM/sandbox handoff metadata, generated window title, default window size, minimum window size, and resizable behavior.
+- Configure release metadata from Project Settings, including app name, bundle identifier, semantic version, release notes, patch/minor/major version bumps with pre-bump checkpoints, installer/bundle target, release icon asset, Windows/custom signing settings, Windows certificate-store inspection, PFX/P12 certificate file selection, password environment-variable handoff, bundle smoke threshold, installer smoke runner mode, VM/sandbox handoff metadata, generated window title, default window size, minimum window size, and resizable behavior. The Build workspace focuses on Run, Build, Bundle, Stop, pipeline status, output paths, problems, tasks, logs, and artifacts.
 - Import image resources into the project, bind them to Image controls, and copy them into the generated app's `public/assets/` folder.
 - Manage project-level Rust commands, Rust modules, Cargo dependencies, and backend integration plans for Rust native logic, C++ FFI, sidecars, or local services; generate matching `#[tauri::command]` functions, module declarations, `Cargo.toml` dependency entries, backend handoff files, create-only C++/Go/Python/Node starter scaffolds for non-Rust integrations, editor-triggered C++/Go starter artifact builds, `backend_integrations.rs`, bundled backend resource targets, generated backend status/probe commands, bindable command presets for UI events, and a one-click flow that creates a backend command, binds it to the selected control, and opens Preview simulation.
 - Manage project-level state variables and bind control props to shared state from the inspector.
@@ -58,7 +79,7 @@ Current editor capabilities:
 - Keep a project-level build artifact history with timestamp, build kind, release app/version/target/signing metadata, release notes, exe path, installer/bundle paths, bundle smoke status, optional installer smoke script/result paths, guarded local artifact-only smoke runner, optional VM/sandbox handoff JSON, Windows Sandbox `.wsb` handoff generation, safe launch of generated `target/release/*.exe` artifacts, run-session status/stop controls, bounded Runtime Console log previews, installer smoke status refresh, bundle manifest path, output directory, readiness score, visual audit score, validation status, and project size metrics for recent successful builds.
 - Review a release readiness dashboard that aggregates build readiness, visual audit, generated-window validation, build artifacts, signing, installer smoke evidence, run sessions, recovery checkpoints, and activity traceability into one release score with clickable next actions.
 - Review a project-level Activity Timeline that aggregates validation runs, exe builds, bundle builds, run sessions, Runtime Console logs, installer smoke results, disk checkpoints, and maintenance/repair events into one chronological feed.
-- Use Project Jump to search across UI files, canvas controls, Rust commands, state variables, assets, build artifacts, validation records, maintenance records, and checkpoints, then jump directly to the right editor mode or local artifact; it also works as an action center for saving, creating UI files, adding Rust commands/state, syncing Rust source, importing assets, previewing/applying generated files, running checks, validating windows, building exe output, bundling installers, and applying safe property repairs.
+- Use Project Locator to search across UI files, canvas controls, Rust commands, state variables, assets, build artifacts, settings pages, validation records, maintenance records, and checkpoints, then jump directly to the right editor mode or local artifact; it also works as an action center for saving, creating UI files, adding Rust commands/state, syncing Rust source, importing assets, previewing/applying generated files, running checks, validating windows, building exe output, bundling installers, and applying safe property repairs.
 - Run build readiness checks before compiling, covering project structure, control property contracts, Rust command/source sync, Rust modules, Cargo dependencies, backend artifact existence, event bindings, state links, Frame hierarchy, image assets, and desktop runtime availability, with locate actions for item-scoped issues plus a project-level property repair plan and maintenance history.
 - Run target window visual audits before compiling, covering off-canvas controls, clipping, overlap risk, undersized controls, text fit, image placeholders, and Frame auto-layout capacity, with one-click navigation back to the affected UI file/control.
 - Validate the generated app window from the desktop editor by saving the project, generating the target app, running its frontend build, capturing browser-backed screenshots when Edge/Chrome is available, running machine screenshot analysis, running DOM-level runtime audits, running desktop/tablet/mobile breakpoint validation, extracting locatable breakpoint issues, offering single-item or batch responsive override quick fixes, optionally revalidating immediately after a fix or batch fix, and writing/opening `validation/generated-window-validation.html`, `validation/generated-window-runtime.png`, `validation/generated-window-screenshot-analysis.json`, `validation/generated-window-runtime-audit.json`, `validation/generated-window-breakpoint-validation.json`, `validation/breakpoints/*`, and `validation/generated-window-snapshot.svg`.
@@ -151,9 +172,11 @@ flowchart TD
   D --> G["Sidebar / Topbar"]
   D --> H["ShowcasePage"]
   H --> I["BuilderShowcase"]
-  I --> J["Project Manager / UI File Manager"]
-  I --> K["Palette / Canvas / Frame Layouts / Object Tree / Property Inspector"]
-  I --> M["Rust Command Registry / Logic Editor / Build Panel"]
+  I --> W["Qt-style Workbench Shell"]
+  W --> X["Mode Bar / Project Locator / Bottom Output Dock"]
+  W --> J["Project / Navigator / Components / Assets Docks"]
+  W --> K["Canvas / Frame Layouts / Property Inspector"]
+  W --> M["Rust Logic Workspace / Build-Run Workspace"]
   I --> N["builder/types + project-templates + event-bindings + simulator + backend + rust-commands + diagnostics + build-results + task-center + release + responsive/layout/ids helpers"]
   K --> L["Reusable UI Components"]
   E --> L
@@ -164,10 +187,10 @@ flowchart TD
 `src/` contains the React application:
 
 - `src/App.tsx` manages the editor shell, search, theme, color scheme, density, command palette, and toast state.
-- `src/components/layout/` contains the desktop shell UI: custom titlebar, rail navigation, sidebar, topbar, and status bar.
+- `src/components/layout/` contains the desktop shell UI. The editor route uses the lean shell (`WindowTitlebar` plus the workbench content). The legacy rail/sidebar/topbar/status-bar pieces remain for non-editor showcase screens.
 - `src/components/ui/` contains reusable shadcn/ui-style primitives.
-- `src/components/showcase/BuilderShowcase.tsx` orchestrates the project manager, UI file manager, canvas editor, Frame layout controls, object tree, inspector, and export views.
-- `src/components/showcase/builder/` contains reusable editor types, release-pipeline models, generated-target change impact and reverse dependency analysis, project template seeds, event binding rules, preview simulator helpers, Rust/Cargo/backend integration model normalization, Rust command argument/result/source generation helpers, shared ID creation, build-result normalization, Rust/Cargo diagnostics parsing, source-map mapping, release config normalization, Task Center queue/preset helpers, and pure responsive/layout helpers used by the canvas editor.
+- `src/components/showcase/BuilderShowcase.tsx` orchestrates editor state, project actions, canvas behavior, Rust logic editing, build flows, preview, and export views.
+- `src/components/showcase/builder/` contains reusable editor workbench components (`DesignWorkspace`, `LogicWorkspace`, `BuildWorkspace`, `ProjectDock`, `NavigatorDock`, `InspectorDock`, `OutputDock`), editor types, release-pipeline models, generated-target change impact and reverse dependency analysis, project template seeds, event binding rules, preview simulator helpers, Rust/Cargo/backend integration model normalization, Rust command argument/result/source generation helpers, shared ID creation, build-result normalization, Rust/Cargo diagnostics parsing, source-map mapping, release config normalization, Task Center queue/preset helpers, and pure responsive/layout helpers used by the canvas editor.
 - `src/data/` contains the editor navigation registry.
 - `src/index.css` and `tailwind.config.ts` define design tokens, themes, density variables, shadows, radius, and animations.
 
@@ -296,6 +319,13 @@ nova-ui-kit/
 │     ├─ layout/
 │     └─ showcase/
 │        ├─ builder/
+│        │  ├─ DesignWorkspace.tsx
+│        │  ├─ LogicWorkspace.tsx
+│        │  ├─ BuildWorkspace.tsx
+│        │  ├─ ProjectDock.tsx
+│        │  ├─ NavigatorDock.tsx
+│        │  ├─ InspectorDock.tsx
+│        │  ├─ OutputDock.tsx
 │        │  ├─ types.ts
 │        │  ├─ backend.ts
 │        │  ├─ rust-commands.ts

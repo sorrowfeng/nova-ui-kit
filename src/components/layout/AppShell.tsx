@@ -58,6 +58,17 @@ export function AppShell({
     setMobileOpen(false);
   };
 
+  if (builderWorkspace) {
+    return (
+      <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface-container-lowest text-on-surface" data-density={density}>
+        <WindowTitlebar />
+        <main className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface text-on-surface" data-density={density}>
       <WindowTitlebar />
