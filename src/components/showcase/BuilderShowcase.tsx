@@ -16912,6 +16912,98 @@ export function BuilderShowcase() {
             </main>
 
             <InspectorDock tabs={rightDockTabs} activeTab={rightDockTab} onTabChange={setRightDockTab}>
+              <section className="mb-4 rounded-[22px] border border-outline-variant bg-surface-container-low p-3" data-builder-inspector-context="">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-primary">
+                        {selectedItems.length > 1 ? (
+                          <Layers aria-hidden className="size-4" />
+                        ) : selectedItem ? (
+                          <MousePointer2 aria-hidden className="size-4" />
+                        ) : (
+                          <FileJson aria-hidden className="size-4" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <h2 className="truncate text-sm font-semibold">
+                          {selectedItems.length > 1 ? `${selectedItems.length} controls selected` : selectedItem ? getItemSummary(selectedItem) : activeFile.name}
+                        </h2>
+                        <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
+                          {selectedItems.length > 1
+                            ? `${selectedItems.filter((item) => item.locked).length} locked · ${activeFile.name}`
+                            : selectedItem
+                              ? `${selectedItem.type} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
+                              : `${activeFile.items.length} controls · ${page.width} x ${page.height}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <Badge variant={selectedPropertyIssues.length > 0 ? "outline" : "secondary"}>
+                        {selectedItem ? `${selectedPropertyIssues.length} issue(s)` : "page"}
+                      </Badge>
+                      {selectedItem && selectedEventName ? (
+                        <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
+                          {selectedEventCommand ? "event bound" : "event ready"}
+                        </Badge>
+                      ) : null}
+                      {selectedControlReverseDependency ? (
+                        <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
+                          {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
+                        </Badge>
+                      ) : null}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={selectedItem?.locked ? "解锁控件" : "锁定控件"}
+                    disabled={!selectedItem}
+                    onClick={toggleSelectedLock}
+                  >
+                    {selectedItem?.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                  </Button>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-1.5">
+                  {rightDockTabs.map((tab) => {
+                    const TabIcon = tab.icon;
+                    return (
+                      <button
+                        key={tab.value}
+                        type="button"
+                        data-builder-inspector-jump={tab.value}
+                        className={cn(
+                          "focus-ring flex min-w-0 items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
+                          rightDockTab === tab.value
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                        )}
+                        onClick={() => setRightDockTab(tab.value)}
+                      >
+                        <TabIcon aria-hidden className="size-3.5 shrink-0" />
+                        <span className="truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-1.5">
+                  <Button size="sm" variant="secondary" disabled={selectedItems.length === 0} onClick={duplicateSelected}>
+                    <Copy aria-hidden className="size-4" />
+                    Duplicate
+                  </Button>
+                  <Button size="sm" variant="secondary" disabled={!selectedItem || !selectedEventName} onClick={() => setRightDockTab("connections")}>
+                    <Braces aria-hidden className="size-4" />
+                    Bind
+                  </Button>
+                  <Button size="sm" variant="destructive" disabled={selectedItems.length === 0} onClick={deleteSelected}>
+                    <Trash2 aria-hidden className="size-4" />
+                    Delete
+                  </Button>
+                </div>
+              </section>
+
               {rightDockTab === "properties" ? (
                 <>
               <PanelTitle icon={Settings2} title="检查器" description="页面、图层、坐标和控件属性。" />
