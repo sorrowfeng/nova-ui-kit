@@ -11994,6 +11994,35 @@ export function BuilderShowcase() {
     });
   };
 
+  const openSelectedProperties = () => {
+    setRightDockTab("properties");
+  };
+
+  const openSelectedConnections = () => {
+    if (!selectedItem || !selectedEventName) {
+      return;
+    }
+    setRightDockTab("connections");
+  };
+
+  const previewSelectedControl = () => {
+    if (!selectedItem) {
+      return;
+    }
+    setMode("preview");
+    if (selectedEventName) {
+      setRightDockTab("connections");
+    }
+  };
+
+  const runSelectedEventFromActionBar = () => {
+    if (!selectedItem || !selectedEventName) {
+      return;
+    }
+    setRightDockTab("connections");
+    simulateSelectedEvent();
+  };
+
   return (
     <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">
       <Dialog open={Boolean(destructiveAction)} onOpenChange={(open) => !open && setDestructiveAction(null)}>
@@ -17124,6 +17153,74 @@ export function BuilderShowcase() {
                   <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} selected</Badge>
                 </div>
               </div>
+
+              {selectedItems.length > 0 ? (
+                <section
+                  className="flex min-h-[4.25rem] min-w-0 flex-col gap-2 border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5 lg:flex-row lg:items-center lg:justify-between"
+                  data-builder-selection-action-bar=""
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-high text-primary shadow-m3-1">
+                      {selectedItems.length > 1 ? <Layers aria-hidden className="size-4" /> : <MousePointer2 aria-hidden className="size-4" />}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <h3 className="truncate text-sm font-semibold text-on-surface">
+                          {selectedItems.length > 1 ? `${selectedItems.length} controls selected` : selectedItem ? getItemSummary(selectedItem) : "Selection"}
+                        </h3>
+                        {selectedItem ? <Badge variant="outline">{selectedItem.type}</Badge> : null}
+                        {selectedItem && selectedEventName ? (
+                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
+                            {selectedEventCommand ? `${selectedEventName} bound` : `${selectedEventName} ready`}
+                          </Badge>
+                        ) : null}
+                        {selectedPropertyIssues.length > 0 ? <Badge variant="destructive">{selectedPropertyIssues.length} issue(s)</Badge> : null}
+                      </div>
+                      <p className="mt-1 truncate text-xs text-on-surface-variant">
+                        {selectedItems.length > 1
+                          ? "Batch actions are available for duplication, delete, and shared layout edits."
+                          : selectedItem
+                            ? `${activeFile.name} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
+                            : activeFile.name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5 lg:justify-end">
+                    <Button size="sm" variant="secondary" data-builder-actionbar-properties="" onClick={openSelectedProperties}>
+                      <Settings2 aria-hidden className="size-4" />
+                      Properties
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={selectedEventCommand ? "secondary" : "default"}
+                      data-builder-actionbar-connections=""
+                      disabled={!selectedItem || !selectedEventName}
+                      onClick={selectedEventCommand ? openSelectedConnections : createAndBindBackendIntegrationCommand}
+                    >
+                      <Braces aria-hidden className="size-4" />
+                      {selectedEventCommand ? "Connections" : "Create Binding"}
+                    </Button>
+                    <Button size="sm" variant="secondary" data-builder-actionbar-preview="" disabled={!selectedItem} onClick={previewSelectedControl}>
+                      <Monitor aria-hidden className="size-4" />
+                      Preview
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      data-builder-actionbar-run-event=""
+                      disabled={!selectedItem || !selectedEventName || !selectedEventCommand}
+                      onClick={runSelectedEventFromActionBar}
+                    >
+                      <Play aria-hidden className="size-4" />
+                      Run Event
+                    </Button>
+                    <Button size="sm" variant="ghost" data-builder-actionbar-impact="" onClick={() => setRightDockTab("impact")}>
+                      <AlertTriangle aria-hidden className="size-4" />
+                      Impact
+                    </Button>
+                  </div>
+                </section>
+              ) : null}
 
               <div
                 ref={canvasViewportRef}
