@@ -1981,6 +1981,16 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       searchable: projectJumpSearchText(["bind selected control event create connection rust command signal slot"]),
     },
     {
+      id: "action-run-selected-event",
+      kind: "action",
+      title: "Run selected event",
+      subtitle: "Simulate the selected control event and inspect the latest result.",
+      badge: "run",
+      mode: "preview",
+      actionId: "run-selected-event",
+      searchable: projectJumpSearchText(["run simulate selected control event preview invoke command result"]),
+    },
+    {
       id: "action-add-state-variable",
       kind: "action",
       title: "Add state variable",
@@ -7612,7 +7622,7 @@ export function BuilderShowcase() {
     return props.value ?? props.label ?? item.name;
   };
 
-  const runSimulatorEventForItem = (item: BuilderItem, eventName: BuilderEventName, rawValue?: unknown) => {
+  const runSimulatorEventForItem = (item: BuilderItem, eventName: BuilderEventName, rawValue?: unknown): SimulatorTraceEntry => {
     setMode("preview");
     const props = resolveSimulatorProps(item, simulatorStateValues);
     const commandId = eventCommandId(item, eventName);
@@ -7620,23 +7630,24 @@ export function BuilderShowcase() {
     const itemName = getItemSummary(item);
 
     if (!command || !commandId) {
+      const trace: SimulatorTraceEntry = {
+        id: simulatorTraceId(),
+        time: simulatorTimeLabel(),
+        itemName,
+        eventName,
+        commandName: "Unbound event",
+        status: "error",
+        rawResult: "",
+        message: `No Rust command bound to ${eventName}. Open Connections or create a command.`,
+        patch: {},
+      };
       setSimulatorTrace((current) =>
         [
-          {
-            id: simulatorTraceId(),
-            time: simulatorTimeLabel(),
-            itemName,
-            eventName,
-            commandName: "Unbound event",
-            status: "error" as const,
-            rawResult: "",
-            message: `No Rust command bound to ${eventName}. Open Connections or create a command.`,
-            patch: {},
-          },
+          trace,
           ...current,
         ].slice(0, 10),
       );
-      return;
+      return trace;
     }
 
     const binding: BuilderEventBinding = {
@@ -7681,31 +7692,45 @@ export function BuilderShowcase() {
       }));
     }
 
+    const trace: SimulatorTraceEntry = {
+      id: simulatorTraceId(),
+      time: simulatorTimeLabel(),
+      itemName,
+      eventName,
+      commandName,
+      status: traceStatus,
+      args,
+      rawResult,
+      message: outcome.message,
+      patch,
+      target,
+    };
+
     setSimulatorTrace((current) =>
       [
-        {
-          id: simulatorTraceId(),
-          time: simulatorTimeLabel(),
-          itemName,
-          eventName,
-          commandName,
-          status: traceStatus,
-          args,
-          rawResult,
-          message: outcome.message,
-          patch,
-          target,
-        },
+        trace,
         ...current,
       ].slice(0, 10),
     );
+    return trace;
   };
 
-  const simulateSelectedEvent = () => {
+  const simulateSelectedEvent = (options: { recordTask?: boolean } = {}) => {
     if (!selectedItem || !selectedEventName) {
+      if (options.recordTask !== false) {
+        recordInstantProjectAction("run-selected-event", "Select a control with an event before running it.", "skipped");
+      }
       return;
     }
-    runSimulatorEventForItem(selectedItem, selectedEventName);
+    const trace = runSimulatorEventForItem(selectedItem, selectedEventName);
+    if (options.recordTask !== false) {
+      const summary =
+        trace.status === "success"
+          ? `Ran ${trace.itemName} ${trace.eventName} with ${trace.commandName}.`
+          : `Failed to run ${trace.itemName} ${trace.eventName}: ${trace.message}`;
+      recordInstantProjectAction("run-selected-event", summary, trace.status === "success" ? "succeeded" : "failed");
+    }
+    return trace;
   };
 
   const applyLayoutPatchForActiveBreakpoint = (item: BuilderItem, patch: ResponsiveOverride, current: BuilderItem[]) => {
@@ -10017,6 +10042,21 @@ export function BuilderShowcase() {
           }
           return { summary: `Bound the selected control event to ${commandName}.` };
         }
+      case "run-selected-event":
+        {
+          const trace = simulateSelectedEvent({ recordTask: false });
+          if (!trace) {
+            return { status: "skipped", summary: "Select a control with an event before running it." };
+          }
+          return {
+            status: trace.status === "success" ? "succeeded" : "failed",
+            summary:
+              trace.status === "success"
+                ? `Ran ${trace.itemName} ${trace.eventName} with ${trace.commandName}.`
+                : `Failed to run ${trace.itemName} ${trace.eventName}: ${trace.message}`,
+            logPreview: trace.rawResult || trace.message,
+          };
+        }
       case "add-rust-command":
         createRustCommandInProject();
         setMode("logic");
@@ -10518,6 +10558,11 @@ export function BuilderShowcase() {
 
     if (actionId === "bind-control-event") {
       createAndBindBackendIntegrationCommand();
+      return true;
+    }
+
+    if (actionId === "run-selected-event") {
+      simulateSelectedEvent();
       return true;
     }
 
@@ -17739,7 +17784,7 @@ export function BuilderShowcase() {
                         variant="ghost"
                         data-builder-connection-path-simulate=""
                         disabled={!selectedEventCommand}
-                        onClick={simulateSelectedEvent}
+                        onClick={() => simulateSelectedEvent()}
                       >
                         <Play aria-hidden className="size-4" />
                         Simulate
@@ -17821,7 +17866,7 @@ export function BuilderShowcase() {
                       <Button
                         size="sm"
                         data-builder-simulate-event=""
-                        onClick={simulateSelectedEvent}
+                        onClick={() => simulateSelectedEvent()}
                         disabled={!selectedItem || !selectedEventName || !selectedEventCommand}
                       >
                         <Braces aria-hidden className="size-4" />
@@ -18720,7 +18765,7 @@ export function BuilderShowcase() {
                         <Button
                           size="sm"
                           data-builder-connection-simulate=""
-                          onClick={simulateSelectedEvent}
+                          onClick={() => simulateSelectedEvent()}
                           disabled={!selectedEventCommand}
                         >
                           <Play aria-hidden className="size-4" />

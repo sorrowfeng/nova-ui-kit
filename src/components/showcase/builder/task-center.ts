@@ -14,6 +14,7 @@ export type ProjectJumpActionId =
   | "delete-ui-file"
   | "insert-component"
   | "bind-control-event"
+  | "run-selected-event"
   | "add-rust-command"
   | "add-state-variable"
   | "sync-rust"
@@ -148,6 +149,12 @@ export const projectTaskDefinitions: Record<
     detail: "Create a Rust command and bind it to the selected control event.",
     kind: "logic",
     mode: "design",
+  },
+  "run-selected-event": {
+    title: "Run selected event",
+    detail: "Simulate the selected control event and show the latest runtime result.",
+    kind: "logic",
+    mode: "preview",
   },
   "add-rust-command": {
     title: "Add Rust command",
