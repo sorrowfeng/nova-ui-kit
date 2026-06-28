@@ -5655,6 +5655,7 @@ export function BuilderShowcase() {
   const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
   const [exportKind, setExportKind] = useState<"json" | "jsx">("json");
   const [copied, setCopied] = useState(false);
+  const [copiedArtifactPath, setCopiedArtifactPath] = useState("");
   const [saved, setSaved] = useState(false);
   const [diskBusy, setDiskBusy] = useState(false);
   const [refreshingPipelineRecords, setRefreshingPipelineRecords] = useState(false);
@@ -11138,6 +11139,19 @@ export function BuilderShowcase() {
       }
     } catch (error) {
       setBuildError(String(error));
+    }
+  };
+
+  const copyArtifactPath = async (path: string) => {
+    if (!path) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(path);
+      setCopiedArtifactPath(path);
+      window.setTimeout(() => setCopiedArtifactPath((current) => (current === path ? "" : current)), 1400);
+    } catch (error) {
+      setBuildError(`无法复制路径：${String(error)}`);
     }
   };
 
@@ -19170,10 +19184,117 @@ export function BuilderShowcase() {
                   </div>
                 )
               ) : bottomDockTab === "output" ? (
-                <div className="grid gap-2 text-xs xl:grid-cols-3">
-                  <PathRow label="Pipeline" value={latestReleasePipeline ? latestReleasePipeline.summary : "No release pipeline yet"} />
-                  <PathRow label="Executable" value={activeProject.outputExePath || "Build output pending"} />
-                  <PathRow label="Bundle" value={activeBundlePath || activeBundleDir || "Bundle output pending"} />
+                <div className="grid gap-3 text-xs xl:grid-cols-3">
+                  <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Pipeline</p>
+                        <p className={cn("mt-1 leading-5 text-on-surface", bottomDockExpanded ? "line-clamp-2" : "line-clamp-1")}>
+                          {latestReleasePipeline ? latestReleasePipeline.summary : "No release pipeline yet"}
+                        </p>
+                      </div>
+                      <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
+                        {latestReleasePipeline?.status ?? "idle"}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setBottomDockTab("tasks");
+                          setBottomDockExpanded(true);
+                        }}
+                      >
+                        <ClipboardCopy aria-hidden className="size-4" />
+                        Tasks
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setBottomDockTab("logs")}>
+                        <FileJson aria-hidden className="size-4" />
+                        Logs
+                      </Button>
+                    </div>
+                  </div>
+                  <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Executable</p>
+                        <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">
+                          {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "Build output pending"}
+                        </p>
+                      </div>
+                      <Badge variant={activeProject.outputExePath ? "secondary" : "outline"}>{activeProject.outputExePath ? "exe" : "pending"}</Badge>
+                    </div>
+                    {bottomDockExpanded ? (
+                      <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
+                        {activeProject.outputExePath || "Run Build to produce a desktop executable."}
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Button size="sm" variant="secondary" disabled={!activeProject.outputExePath} onClick={() => void openLocalArtifact(activeProject.outputExePath || "")}>
+                        <Play aria-hidden className="size-4" />
+                        {bottomDockExpanded ? "Run exe" : "Run"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!activeProject.outputExePath}
+                        onClick={() => void openLocalArtifact(parentPathFromPath(activeProject.outputExePath || ""))}
+                      >
+                        <FolderOpen aria-hidden className="size-4" />
+                        {bottomDockExpanded ? "Folder" : "Dir"}
+                      </Button>
+                      <Button size="sm" variant="ghost" disabled={!activeProject.outputExePath} onClick={() => void copyArtifactPath(activeProject.outputExePath || "")}>
+                        <ClipboardCopy aria-hidden className="size-4" />
+                        {copiedArtifactPath === activeProject.outputExePath ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Bundle</p>
+                        <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">
+                          {activeBundlePath ? fileNameFromPath(activeBundlePath) : activeBundleDir ? fileNameFromPath(activeBundleDir) : "Bundle output pending"}
+                        </p>
+                      </div>
+                      <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"}>{activeBundlePath ? "installer" : activeBundleDir ? "folder" : "pending"}</Badge>
+                    </div>
+                    {bottomDockExpanded ? (
+                      <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
+                        {activeBundlePath || activeBundleDir || "Run Installer bundle to produce distributable artifacts."}
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={!(activeBundlePath || activeBundleDir)}
+                        onClick={() => void openLocalArtifact(activeBundlePath || activeBundleDir || "")}
+                      >
+                        <FolderOpen aria-hidden className="size-4" />
+                        Open
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!(activeBundlePath || activeBundleDir)}
+                        onClick={() => void openLocalArtifact(activeBundleDir || parentPathFromPath(activeBundlePath || ""))}
+                      >
+                        <FolderOpen aria-hidden className="size-4" />
+                        {bottomDockExpanded ? "Folder" : "Dir"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!(activeBundlePath || activeBundleDir)}
+                        onClick={() => void copyArtifactPath(activeBundlePath || activeBundleDir || "")}
+                      >
+                        <ClipboardCopy aria-hidden className="size-4" />
+                        {copiedArtifactPath === (activeBundlePath || activeBundleDir) ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ) : bottomDockTab === "tasks" ? (
                 bottomDockExpanded ? (
