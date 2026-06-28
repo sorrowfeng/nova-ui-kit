@@ -6039,6 +6039,28 @@ export function BuilderShowcase() {
     latestSimulatorTrace && selectedItem && selectedEventName && latestSimulatorTrace.itemName === getItemSummary(selectedItem) && latestSimulatorTrace.eventName === selectedEventName
       ? latestSimulatorTrace
       : null;
+  const selectedActionFeedback = selectedItem && selectedEventName
+    ? selectedLatestSimulatorTrace
+      ? {
+          tone: selectedLatestSimulatorTrace.status,
+          title: selectedLatestSimulatorTrace.status === "success" ? "Last event succeeded" : "Last event failed",
+          detail: `${selectedLatestSimulatorTrace.commandName}: ${selectedLatestSimulatorTrace.message}`,
+          badge: selectedLatestSimulatorTrace.status,
+        }
+      : selectedEventCommand
+        ? {
+            tone: "ready",
+            title: `Ready to run ${selectedEventName}`,
+            detail: `${sanitizeRustCommandName(selectedEventCommand.name)} · ${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result`,
+            badge: "ready",
+          }
+        : {
+            tone: "unbound",
+            title: `${selectedEventName} has no command`,
+            detail: "Create a binding before this control can run a live event.",
+            badge: "needs binding",
+          }
+    : null;
   const eventResultTargets = useMemo(
     () =>
       items
@@ -17803,6 +17825,47 @@ export function BuilderShowcase() {
                             ? `${activeFile.name} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
                             : activeFile.name}
                       </p>
+                      {selectedActionFeedback ? (
+                        <div
+                          className={cn(
+                            "mt-2 flex min-w-0 items-center gap-2 rounded-xl border px-2 py-1.5 text-xs",
+                            selectedActionFeedback.tone === "success" && "border-primary/30 bg-primary/10 text-on-surface",
+                            selectedActionFeedback.tone === "error" && "border-destructive/30 bg-destructive/10 text-on-surface",
+                            selectedActionFeedback.tone === "ready" && "border-outline-variant bg-surface-container-high text-on-surface",
+                            selectedActionFeedback.tone === "unbound" && "border-outline-variant bg-surface-container-low text-on-surface",
+                          )}
+                          data-builder-action-feedback=""
+                        >
+                          <span
+                            className={cn(
+                              "flex size-6 shrink-0 items-center justify-center rounded-lg",
+                              selectedActionFeedback.tone === "success" && "bg-primary/10 text-primary",
+                              selectedActionFeedback.tone === "error" && "bg-destructive/10 text-destructive",
+                              selectedActionFeedback.tone !== "success" && selectedActionFeedback.tone !== "error" && "bg-surface-container-high text-primary",
+                            )}
+                          >
+                            {selectedActionFeedback.tone === "success" ? (
+                              <CheckCircle2 aria-hidden className="size-3.5" />
+                            ) : selectedActionFeedback.tone === "error" || selectedActionFeedback.tone === "unbound" ? (
+                              <AlertTriangle aria-hidden className="size-3.5" />
+                            ) : (
+                              <Braces aria-hidden className="size-3.5" />
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">{selectedActionFeedback.title}</p>
+                            <p className="truncate text-[0.68rem] text-on-surface-variant">{selectedActionFeedback.detail}</p>
+                          </div>
+                          <Badge variant={selectedActionFeedback.tone === "error" ? "destructive" : "secondary"} className="hidden shrink-0 sm:inline-flex">
+                            {selectedActionFeedback.badge}
+                          </Badge>
+                          {selectedLatestSimulatorTrace ? (
+                            <Button size="sm" variant="ghost" className="h-7 shrink-0 px-2 text-xs" onClick={openSelectedConnections}>
+                              Trace
+                            </Button>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex min-w-0 flex-wrap items-center gap-1.5 lg:justify-end">
