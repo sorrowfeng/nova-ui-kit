@@ -5820,6 +5820,11 @@ export function BuilderShowcase() {
   const selectedEventBinding = selectedItem && selectedEventName ? selectedItem.props.events?.[selectedEventName] ?? null : null;
   const selectedEventCommand = selectedEventCommandId ? activeProject.rustCommands.find((command) => command.id === selectedEventCommandId) ?? null : null;
   const selectedEventCommandArgs = selectedEventCommand ? rustCommandParameters(selectedEventCommand) : [];
+  const latestSimulatorTrace = simulatorTrace[0] ?? null;
+  const selectedLatestSimulatorTrace =
+    latestSimulatorTrace && selectedItem && selectedEventName && latestSimulatorTrace.itemName === getItemSummary(selectedItem) && latestSimulatorTrace.eventName === selectedEventName
+      ? latestSimulatorTrace
+      : null;
   const eventResultTargets = useMemo(
     () =>
       items
@@ -7474,6 +7479,7 @@ export function BuilderShowcase() {
       return;
     }
 
+    setMode("preview");
     const props = resolveSimulatorProps(selectedItem, simulatorStateValues);
     const binding: BuilderEventBinding = {
       ...(selectedItem.props.events?.[selectedEventName] ?? {}),
@@ -8749,6 +8755,7 @@ export function BuilderShowcase() {
     });
     setSimulatorTrace([]);
     setMode("preview");
+    setRightDockTab("connections");
   };
 
   const deleteActiveRustCommand = () => {
@@ -17211,6 +17218,63 @@ export function BuilderShowcase() {
                     Delete
                   </Button>
                 </div>
+
+                {selectedItem && selectedEventName ? (
+                  <div className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-connection-path="">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-on-surface">Connection path</p>
+                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                          {selectedLatestSimulatorTrace
+                            ? `Last ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
+                            : selectedEventCommand
+                              ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
+                              : `${selectedEventName} event is ready for a Rust command`}
+                        </p>
+                      </div>
+                      <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
+                    </div>
+                    <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        data-builder-connection-path-open=""
+                        onClick={() => setRightDockTab("connections")}
+                      >
+                        <Braces aria-hidden className="size-4" />
+                        Open
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={selectedEventCommand ? "ghost" : "secondary"}
+                        data-builder-connection-path-create=""
+                        onClick={createAndBindBackendIntegrationCommand}
+                      >
+                        <Plus aria-hidden className="size-4" />
+                        Create
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-builder-connection-path-simulate=""
+                        disabled={!selectedEventCommand}
+                        onClick={simulateSelectedEvent}
+                      >
+                        <Play aria-hidden className="size-4" />
+                        Simulate
+                      </Button>
+                    </div>
+                    {selectedLatestSimulatorTrace ? (
+                      <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs" data-builder-connection-path-last-run="">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate font-medium text-on-surface">{`${selectedLatestSimulatorTrace.eventName} -> ${selectedLatestSimulatorTrace.commandName}`}</span>
+                          <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </section>
 
               {rightDockTab === "properties" ? (
@@ -18191,6 +18255,20 @@ export function BuilderShowcase() {
                           ? `${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result · ${selectedEventBinding?.resultStateId ? "writes state" : "no state write"}`
                           : "选择或创建 Rust command 后，Preview 模式可以真实模拟事件调用。"}
                       </div>
+                      {selectedLatestSimulatorTrace ? (
+                        <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs" data-builder-connection-last-run="">
+                          <div className="mb-2 flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{selectedLatestSimulatorTrace.commandName}</p>
+                              <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                                {selectedLatestSimulatorTrace.itemName} · {selectedLatestSimulatorTrace.eventName} · {selectedLatestSimulatorTrace.time}
+                              </p>
+                            </div>
+                            <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
+                          </div>
+                          <p className="line-clamp-3 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
+                        </div>
+                      ) : null}
                     </div>
                   ) : (
                     <div className="rounded-[22px] border border-dashed border-outline-variant p-6 text-center text-sm text-on-surface-variant">
