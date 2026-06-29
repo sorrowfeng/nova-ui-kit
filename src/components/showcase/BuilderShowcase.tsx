@@ -7271,20 +7271,37 @@ export function BuilderShowcase() {
     updatePage({ activeBreakpoint: breakpoint }, { history: false });
   };
 
+  const normalizeCanvasZoom = (zoom: number) => Math.round(clamp(zoom, 0.25, 2) * 100) / 100;
+
+  const formatCanvasZoom = (zoom: number) => `${Math.round(zoom * 100)}%`;
+
   const setCanvasZoom = (zoom: number) => {
-    updatePage({ zoom: Math.round(clamp(zoom, 0.25, 2) * 100) / 100 }, { history: false });
+    const nextZoom = normalizeCanvasZoom(zoom);
+    updatePage({ zoom: nextZoom }, { history: false });
+    return nextZoom;
   };
 
   const zoomCanvasBy = (delta: number) => {
-    if (delta > 0) {
-      setCanvasZoom(canvasZoomLevels.find((zoom) => zoom > page.zoom + 0.001) ?? 2);
+    const nextZoom = delta > 0 ? (canvasZoomLevels.find((zoom) => zoom > page.zoom + 0.001) ?? 2) : ([...canvasZoomLevels].reverse().find((zoom) => zoom < page.zoom - 0.001) ?? 0.25);
+    const appliedZoom = setCanvasZoom(nextZoom);
+    if (Math.abs(appliedZoom - page.zoom) < 0.001) {
+      showProjectJumpFeedback(
+        "warning",
+        delta > 0 ? "Maximum zoom reached" : "Minimum zoom reached",
+        `Canvas is already at ${formatCanvasZoom(appliedZoom)}.`,
+      );
       return;
     }
-    setCanvasZoom([...canvasZoomLevels].reverse().find((zoom) => zoom < page.zoom - 0.001) ?? 0.25);
+    showProjectJumpFeedback("success", "Canvas zoom updated", `${formatCanvasZoom(page.zoom)} -> ${formatCanvasZoom(appliedZoom)}.`);
+  };
+
+  const chooseCanvasZoom = (zoom: number) => {
+    const appliedZoom = setCanvasZoom(zoom);
+    showProjectJumpFeedback("success", "Canvas zoom selected", `Canvas viewport is now ${formatCanvasZoom(appliedZoom)}.`);
   };
 
   const resetCanvasView = () => {
-    setCanvasZoom(1);
+    const nextZoom = setCanvasZoom(1);
     window.requestAnimationFrame(() => {
       const viewport = canvasViewportRef.current;
       if (!viewport) {
@@ -7296,18 +7313,31 @@ export function BuilderShowcase() {
         behavior: "smooth",
       });
     });
+    showProjectJumpFeedback("success", "Canvas view reset", `Zoom restored to ${formatCanvasZoom(nextZoom)} and the canvas was centered.`);
   };
 
   const fitCanvasToViewport = () => {
     const viewport = canvasViewportRef.current;
     if (!viewport) {
+      showProjectJumpFeedback("warning", "Cannot fit canvas", "The canvas viewport is not ready yet.");
       return;
     }
     const nextZoom = Math.min((viewport.clientWidth - 64) / page.width, (viewport.clientHeight - 64) / page.height);
-    setCanvasZoom(clamp(nextZoom, 0.25, 2));
+    const appliedZoom = setCanvasZoom(nextZoom);
     window.requestAnimationFrame(() => {
       viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
     });
+    showProjectJumpFeedback("success", "Canvas fit to viewport", `${page.width} x ${page.height} canvas shown at ${formatCanvasZoom(appliedZoom)}.`);
+  };
+
+  const toggleCanvasPanMode = () => {
+    const nextEnabled = !canvasPanMode;
+    setCanvasPanMode(nextEnabled);
+    showProjectJumpFeedback(
+      nextEnabled ? "success" : "warning",
+      nextEnabled ? "Pan mode enabled" : "Pan mode disabled",
+      nextEnabled ? "Drag the canvas viewport to move around the design surface." : "Canvas clicks will select and edit controls again.",
+    );
   };
 
   const centerCanvasView = () => {
@@ -19436,7 +19466,7 @@ export function BuilderShowcase() {
                     disabled={activeBreakpoint !== "desktop"}
                     onChange={(value) => updatePage({ preset: "custom", height: numberFromInput(value, page.height, 240, 1800) })}
                   />
-                  <Select value={String(page.zoom)} onValueChange={(value) => updatePage({ zoom: Number(value) })}>
+                  <Select value={String(page.zoom)} onValueChange={(value) => chooseCanvasZoom(Number(value))}>
                     <SelectTrigger className="w-[104px]" inputSize="sm">
                       <SelectValue />
                     </SelectTrigger>
@@ -19466,7 +19496,7 @@ export function BuilderShowcase() {
                       variant={canvasPanMode ? "secondary" : "ghost"}
                       data-builder-pan-canvas=""
                       aria-label="移动画布 Space"
-                      onClick={() => setCanvasPanMode((enabled) => !enabled)}
+                      onClick={toggleCanvasPanMode}
                     >
                       <Hand aria-hidden />
                     </Button>
