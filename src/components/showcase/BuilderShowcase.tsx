@@ -490,6 +490,17 @@ type PalettePointerDrag = {
   dragging: boolean;
 };
 
+type SelectionMarquee = {
+  pointerId: number;
+  originX: number;
+  originY: number;
+  currentX: number;
+  currentY: number;
+  additive: boolean;
+  moved: boolean;
+  baseSelectedIds: string[];
+};
+
 const canvasZoomLevels = [0.25, 0.35, 0.5, 0.65, 0.8, 1, 1.25, 1.5, 2] as const;
 
 type BuilderPropertyAutoFixTarget = {
@@ -5982,7 +5993,7 @@ export function BuilderShowcase() {
     setFeedbackPanelOpen(true);
     setBottomDockMinimized(false);
   };
-  const outputDockWorkspacePadding = bottomDockMinimized ? "pb-16" : bottomDockExpanded ? "pb-72" : "pb-32";
+  const outputDockWorkspacePadding = bottomDockMinimized ? "pb-2" : bottomDockExpanded ? "pb-[19rem]" : "pb-[9rem]";
   const outputDockWorkspaceState = bottomDockMinimized ? "minimized" : bottomDockExpanded ? "expanded" : "standard";
   const toggleOutputDockVisibility = () => {
     setBottomDockMinimized((minimized) => {
@@ -6077,6 +6088,7 @@ export function BuilderShowcase() {
   const [simulatorTrace, setSimulatorTrace] = useState<SimulatorTraceEntry[]>([]);
   const [dragSession, setDragSession] = useState<DragSession | null>(null);
   const [dropIntent, setDropIntent] = useState<BuilderDropIntent | null>(null);
+  const [selectionMarquee, setSelectionMarquee] = useState<SelectionMarquee | null>(null);
   useEffect(() => {
     setWorkflowRuntimeSession(null);
   }, [activeProject.id]);
@@ -6106,6 +6118,8 @@ export function BuilderShowcase() {
   const clipboardRef = useRef<BuilderItem[]>([]);
   const palettePointerDragRef = useRef<PalettePointerDrag | null>(null);
   const suppressPaletteClickRef = useRef(false);
+  const selectionMarqueeRef = useRef<SelectionMarquee | null>(null);
+  const suppressCanvasClickRef = useRef(false);
   const canvasPanSessionRef = useRef<{
     pointerId: number;
     startClientX: number;
@@ -7641,6 +7655,125 @@ export function BuilderShowcase() {
     const rect = canvas.getBoundingClientRect();
     return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
   };
+
+  const getSelectionMarqueeRect = (marquee: SelectionMarquee) => {
+    const left = Math.min(marquee.originX, marquee.currentX);
+    const top = Math.min(marquee.originY, marquee.currentY);
+    const right = Math.max(marquee.originX, marquee.currentX);
+    const bottom = Math.max(marquee.originY, marquee.currentY);
+    return {
+      left,
+      top,
+      width: right - left,
+      height: bottom - top,
+      right,
+      bottom,
+    };
+  };
+
+  const getItemIdsInsideMarquee = (marquee: SelectionMarquee) => {
+    const rect = getSelectionMarqueeRect(marquee);
+    const nextSelected = new Set(marquee.additive ? marquee.baseSelectedIds : []);
+
+    itemsRef.current.forEach((item) => {
+      const position = getAbsolutePosition(item, itemsRef.current);
+      const itemRight = position.x + item.width;
+      const itemBottom = position.y + item.height;
+      const intersects = rect.left <= itemRight && rect.right >= position.x && rect.top <= itemBottom && rect.bottom >= position.y;
+      if (intersects) {
+        nextSelected.add(item.id);
+      }
+    });
+
+    return Array.from(nextSelected);
+  };
+
+  const startSelectionMarquee = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (mode !== "design" || event.button !== 0 || canvasPanMode || spacePanActive || event.altKey || dragSession) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-builder-node-id], [data-builder-resize-handle], button, input, textarea, select, [contenteditable='true']")) {
+      return;
+    }
+
+    const point = getCanvasPoint(event.clientX, event.clientY);
+    const marquee: SelectionMarquee = {
+      pointerId: event.pointerId,
+      originX: point.x,
+      originY: point.y,
+      currentX: point.x,
+      currentY: point.y,
+      additive: event.ctrlKey || event.metaKey || event.shiftKey,
+      moved: false,
+      baseSelectedIds: selectedIds,
+    };
+
+    event.preventDefault();
+    event.stopPropagation();
+    selectionMarqueeRef.current = marquee;
+    setSelectionMarquee(marquee);
+    setDropIntent(null);
+    if (!marquee.additive) {
+      setSelectedIds([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectionMarquee) {
+      return;
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== selectionMarquee.pointerId) {
+        return;
+      }
+
+      const point = getCanvasPoint(event.clientX, event.clientY);
+      const moved = Math.hypot(point.x - selectionMarquee.originX, point.y - selectionMarquee.originY) > 3;
+      const nextMarquee = {
+        ...selectionMarquee,
+        currentX: point.x,
+        currentY: point.y,
+        moved,
+      };
+
+      event.preventDefault();
+      selectionMarqueeRef.current = nextMarquee;
+      setSelectionMarquee(nextMarquee);
+      if (moved) {
+        setSelectedIds(getItemIdsInsideMarquee(nextMarquee));
+      }
+    };
+
+    const onPointerUp = (event: PointerEvent) => {
+      if (event.pointerId !== selectionMarquee.pointerId) {
+        return;
+      }
+
+      const finalMarquee = selectionMarqueeRef.current ?? selectionMarquee;
+      if (finalMarquee.moved) {
+        setSelectedIds(getItemIdsInsideMarquee(finalMarquee));
+        setRightDockTab("properties");
+        suppressCanvasClickRef.current = true;
+        window.setTimeout(() => {
+          suppressCanvasClickRef.current = false;
+        }, 0);
+      }
+      selectionMarqueeRef.current = null;
+      setSelectionMarquee(null);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [selectionMarquee, mode, page.zoom, page.width, page.height, selectedIds]);
 
   const getNodeCanvasPosition = (item: BuilderItem) => {
     const canvas = canvasRef.current;
@@ -14586,7 +14719,7 @@ export function BuilderShowcase() {
             ? selectedEventCommand
               ? `${selectedEventName} 调用 ${sanitizeRustCommandName(selectedEventCommand.name)}；可预览或检查连接。`
               : `${selectedEventName} 可在连接面板中接入 Rust 命令。`
-            : `${activeFile.name} · ${selectedItem.type} · layout and content are editable.`
+            : `${activeFile.name} · ${selectedItem.type} · 可编辑布局与内容。`
         : "选择图层或画布节点后即可编辑。";
   const selectionStatusToneLabel =
     selectionStatusTone === "attention"
@@ -20471,16 +20604,19 @@ export function BuilderShowcase() {
                     吸附
                     <Switch className="h-5 w-9 border" checked={page.snapToGrid} onCheckedChange={(snapToGrid) => updatePage({ snapToGrid })} />
                   </label>
-                  <Badge variant="outline">{items.length} nodes</Badge>
-                  <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} selected</Badge>
+                  <Badge variant="outline">{items.length} 个节点</Badge>
+                  <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} 个已选</Badge>
                 </div>
               </div>
 
-              {selectedItems.length > 0 ? (
-                <section
-                  className="flex min-h-[4.25rem] min-w-0 flex-col gap-2 border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5 lg:flex-row lg:items-center lg:justify-between"
-                  data-builder-selection-action-bar=""
-                >
+              <section
+                className={cn(
+                  "flex min-h-[8.25rem] min-w-0 flex-col gap-2 border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5 lg:flex-row lg:items-center lg:justify-between",
+                  selectedItems.length === 0 && "text-on-surface-variant",
+                )}
+                data-builder-selection-action-bar=""
+                data-builder-selection-state={selectedItems.length > 0 ? "selected" : "empty"}
+              >
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-high text-primary shadow-m3-1">
                       {selectedItems.length > 1 ? <Layers aria-hidden className="size-4" /> : <MousePointer2 aria-hidden className="size-4" />}
@@ -20488,22 +20624,22 @@ export function BuilderShowcase() {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-semibold text-on-surface">
-                          {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : selectedItem ? getItemSummary(selectedItem) : "当前选择"}
+                          {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : selectedItem ? getItemSummary(selectedItem) : "未选择控件"}
                         </h3>
                         {selectedItem ? <Badge variant="outline">{selectedItem.type}</Badge> : null}
                         {selectedItem && selectedEventName ? (
                           <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
-                            {selectedEventCommand ? `${selectedEventName} bound` : `${selectedEventName} ready`}
+                            {selectedEventCommand ? `${selectedEventName} 已绑定` : `${selectedEventName} 就绪`}
                           </Badge>
                         ) : null}
-                        {selectedPropertyIssues.length > 0 ? <Badge variant="destructive">{selectedPropertyIssues.length} issue(s)</Badge> : null}
+                        {selectedPropertyIssues.length > 0 ? <Badge variant="destructive">{selectedPropertyIssues.length} 个问题</Badge> : null}
                       </div>
                       <p className="mt-1 truncate text-xs text-on-surface-variant">
                         {selectedItems.length > 1
-                          ? "Batch actions are available for duplication, delete, and shared layout edits."
+                          ? "可批量复制、删除，并在右侧属性面板编辑共享布局。"
                           : selectedItem
                             ? `${activeFile.name} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
-                            : activeFile.name}
+                            : "点击控件选择；按 Ctrl/Shift 点击追加选择；在空白画布拖拽可框选。"}
                       </p>
                       <div
                         className={cn(
@@ -20605,7 +20741,7 @@ export function BuilderShowcase() {
                   <div className="flex min-w-0 flex-wrap items-center gap-1.5 lg:justify-end">
                     <Button size="sm" variant="secondary" data-builder-actionbar-properties="" onClick={openSelectedProperties}>
                       <Settings2 aria-hidden className="size-4" />
-                      属性
+                      {selectedItems.length > 0 ? "属性" : "页面属性"}
                     </Button>
                     <Button
                       size="sm"
@@ -20637,7 +20773,6 @@ export function BuilderShowcase() {
                     </Button>
                   </div>
                 </section>
-              ) : null}
 
               <div
                 ref={canvasViewportRef}
@@ -20663,7 +20798,14 @@ export function BuilderShowcase() {
                       mode === "design" && canvasPanActive && "cursor-grab",
                     )}
                     style={canvasStyle}
-                    onClick={() => clearSelection({ feedback: true })}
+                    onPointerDown={startSelectionMarquee}
+                    onClick={() => {
+                      if (suppressCanvasClickRef.current) {
+                        suppressCanvasClickRef.current = false;
+                        return;
+                      }
+                      clearSelection({ feedback: true });
+                    }}
                     onDragOver={(event) => {
                       event.preventDefault();
                       event.dataTransfer.dropEffect = "copy";
@@ -20748,6 +20890,19 @@ export function BuilderShowcase() {
                         </div>
                       </div>
                     ) : null}
+
+                    {selectionMarquee?.moved
+                      ? (() => {
+                          const rect = getSelectionMarqueeRect(selectionMarquee);
+                          return (
+                            <div
+                              className="pointer-events-none absolute z-[9998] rounded-[10px] border border-primary/70 bg-primary/15 shadow-m3-1"
+                              data-builder-selection-marquee=""
+                              style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
+                            />
+                          );
+                        })()
+                      : null}
 
                     {topLevelItems.map((item) => renderCanvasNode(item))}
                   </div>

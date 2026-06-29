@@ -39,9 +39,9 @@ export function OutputDock<T extends string>({
   return (
     <section
       className={cn(
-        "fixed bottom-0 left-[88px] right-0 z-20 shrink-0 border-t border-outline-variant bg-surface-container-lowest shadow-m3-2 transition-[height,left,right]",
-        avoidDesignSideDocks && "xl:left-[348px] xl:right-[320px]",
-        minimized ? "h-[56px]" : expanded ? "h-[288px]" : "h-[128px]",
+        "fixed bottom-3 left-3 right-3 z-20 shrink-0 overflow-hidden rounded-[22px] border border-outline-variant bg-surface-container-lowest/95 shadow-m3-3 backdrop-blur transition-[height,left,right,bottom] md:left-[104px] md:right-4",
+        avoidDesignSideDocks && "xl:left-[360px] xl:right-[336px]",
+        minimized ? "h-[52px]" : expanded ? "h-[288px]" : "h-[132px]",
       )}
       data-builder-output-dock=""
       data-builder-output-dock-expanded={expanded ? "true" : "false"}
@@ -49,7 +49,7 @@ export function OutputDock<T extends string>({
       aria-label="Editor output dock"
     >
       {minimized ? (
-        <div className="grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 py-2">
+        <div className="grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2">
           <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
           <Button
             size="icon-sm"
@@ -63,7 +63,7 @@ export function OutputDock<T extends string>({
           </Button>
         </div>
       ) : (
-        <div className="grid h-full min-h-0 gap-3 px-4 py-3 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
+        <div className="grid h-full min-h-0 gap-3 px-3 py-3 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
           <div className="grid min-h-0 gap-2">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
               <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
