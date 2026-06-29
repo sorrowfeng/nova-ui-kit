@@ -8080,19 +8080,34 @@ export function BuilderShowcase() {
 
   const applySelectedPropertyAutoFix = () => {
     if (!selectedItem || selectedPropertyAutoFixCount === 0) {
+      showProjectJumpFeedback("warning", "No property fixes", "The selected control has no safe automatic property repair available.");
       return;
     }
+    const fixedCount = selectedPropertyAutoFixCount;
+    const issueCount = selectedPropertyIssues.length;
+    const patchedLabels = selectedPropertySchema
+      .filter((field) => Object.prototype.hasOwnProperty.call(selectedPropertyAutoFixPatch, field.prop))
+      .map((field) => field.label);
     updateSelectedProps(selectedPropertyAutoFixPatch);
+    setRightDockTab("properties");
+    setOpenPropertySections((current) => ({ ...current, state: true, content: true }));
+    showProjectJumpFeedback(
+      "success",
+      "Property fixes applied",
+      `${fixedCount} propert${fixedCount === 1 ? "y" : "ies"} repaired on ${getItemSummary(selectedItem)}${patchedLabels.length ? `: ${patchedLabels.join(", ")}` : ""}. ${Math.max(0, issueCount - fixedCount)} issue(s) may still need review.`,
+    );
   };
 
   const applyProjectPropertyAutoFixes = () => {
     if (projectPropertyAutoFixSummary.targets.length === 0) {
+      showProjectJumpFeedback("warning", "No project property fixes", "No safe automatic property repairs are available across the project.");
       return;
     }
 
+    const summary = projectPropertyAutoFixSummary;
     pushProjectSnapshot("批量属性 schema 修复前");
-    const maintenanceEntry = createPropertyMaintenanceEntry(projectPropertyAutoFixSummary);
-    const patchesByFileAndItem = new Map(projectPropertyAutoFixSummary.targets.map((target) => [`${target.fileId}:${target.itemId}`, target.patch]));
+    const maintenanceEntry = createPropertyMaintenanceEntry(summary);
+    const patchesByFileAndItem = new Map(summary.targets.map((target) => [`${target.fileId}:${target.itemId}`, target.patch]));
     updateActiveProject((project) => ({
       ...project,
       files: project.files.map((file) => ({
@@ -8105,6 +8120,13 @@ export function BuilderShowcase() {
       maintenanceHistory: [maintenanceEntry, ...(project.maintenanceHistory ?? [])].slice(0, 12),
       buildLog: `${project.buildLog ? `${project.buildLog}\n` : ""}${maintenanceEntry.summary}`,
     }));
+    setRightDockTab("properties");
+    setBottomDockTab(summary.manualIssueCount > 0 ? "issues" : "tasks");
+    showProjectJumpFeedback(
+      "success",
+      "Project properties repaired",
+      `${summary.propertyCount} propert${summary.propertyCount === 1 ? "y" : "ies"} fixed across ${summary.targets.length} control(s) in ${summary.fileCount} file(s). ${summary.manualIssueCount} issue(s) remain for manual review.`,
+    );
   };
 
   const updateSelectedEventCommand = (eventName: BuilderEventName, commandId: string) => {
