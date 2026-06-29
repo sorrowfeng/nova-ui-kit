@@ -5697,6 +5697,7 @@ export function BuilderShowcase() {
   const [spacePanActive, setSpacePanActive] = useState(false);
   const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
   const [exportKind, setExportKind] = useState<"json" | "jsx">("json");
+  const [exportFeedback, setExportFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedArtifactPath, setCopiedArtifactPath] = useState("");
   const [saved, setSaved] = useState(false);
@@ -6759,6 +6760,8 @@ export function BuilderShowcase() {
   );
 
   const exportText = exportKind === "json" ? exportJson : exportJsx;
+  const exportFileName = `${activeFile.name.replace(/\.ui$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "nova-interface"}.${exportKind === "json" ? "json" : "tsx"}`;
+  const exportLineCount = exportText.split(/\r?\n/).length;
 
   const getFileHistory = (fileId: string) => {
     historyRef.current[fileId] ??= { undo: [], redo: [] };
@@ -12102,9 +12105,11 @@ export function BuilderShowcase() {
     try {
       await navigator.clipboard.writeText(exportText);
       setCopied(true);
+      setExportFeedback({ tone: "success", message: "Export copied to clipboard." });
       window.setTimeout(() => setCopied(false), 1400);
-    } catch {
+    } catch (error) {
       setCopied(false);
+      setExportFeedback({ tone: "error", message: `Copy failed: ${String(error)}` });
     }
   };
 
@@ -12113,9 +12118,15 @@ export function BuilderShowcase() {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${activeFile.name.replace(/\.ui$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "nova-interface"}.${exportKind === "json" ? "json" : "tsx"}`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.download = exportFileName;
+    try {
+      anchor.click();
+      setExportFeedback({ tone: "success", message: `Download started: ${exportFileName}` });
+    } catch (error) {
+      setExportFeedback({ tone: "error", message: `Download failed: ${String(error)}` });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   };
 
   const releaseReadinessActionItems = releaseReadinessSummary.items
@@ -12471,6 +12482,13 @@ export function BuilderShowcase() {
     { mode: "preview", label: "Preview", detail: "Sim", icon: Monitor },
     { mode: "export", label: "Export", detail: "Code", icon: FileJson },
   ];
+  const switchEditorMode = (nextMode: BuilderMode) => {
+    setMode(nextMode);
+    if (nextMode === "export") {
+      setBottomDockExpanded(false);
+      setBottomDockMinimized(true);
+    }
+  };
   const activeModeItem = modeBarItems.find((item) => item.mode === mode) ?? modeBarItems[0];
   const leftDockTabs: BuilderDockTab<BuilderLeftDockTab>[] = [
     { value: "project", label: "Project", icon: FolderOpen },
@@ -12740,7 +12758,7 @@ export function BuilderShowcase() {
                     : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
                 )}
                 title={`${item.label} · ${item.detail}`}
-                onClick={() => setMode(item.mode)}
+                onClick={() => switchEditorMode(item.mode)}
               >
                 <item.icon aria-hidden className="size-4" />
               </button>
@@ -12876,6 +12894,7 @@ export function BuilderShowcase() {
           </div>
         </div>
 
+        {mode !== "export" ? (
         <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5" data-builder-workflow-rail="">
           <div className="mx-auto flex max-w-[82rem] flex-col gap-2">
             <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
@@ -13045,6 +13064,7 @@ export function BuilderShowcase() {
             ) : null}
           </div>
         </div>
+        ) : null}
 
         <div className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
         {mode === "logic" ? (
@@ -17330,29 +17350,65 @@ export function BuilderShowcase() {
             </section>
           </BuildWorkspace>
         ) : mode === "export" ? (
-          <div className="space-y-4 p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <SegmentedControl
-                aria-label="导出格式"
-                value={exportKind}
-                onValueChange={(value) => setExportKind(value as "json" | "jsx")}
-                options={[
-                  { value: "json", label: "JSON" },
-                  { value: "jsx", label: "React" },
-                ]}
-              />
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={downloadExport}>
-                  <Download aria-hidden className="size-4" />
-                  下载文件
-                </Button>
-                <Button variant="secondary" onClick={copyExport}>
-                  <Copy aria-hidden className="size-4" />
-                  {copied ? "已复制" : "复制导出"}
-                </Button>
+          <div className="subtle-scrollbar h-full min-h-0 overflow-auto p-4" data-builder-export-workspace="">
+            <section className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4 shadow-m3-1" data-builder-export-summary="">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <FileJson aria-hidden className="size-4 text-primary" />
+                    <h2 className="truncate text-sm font-semibold">Export active UI file</h2>
+                    <Badge variant="secondary">{exportKind === "json" ? "JSON" : "React TSX"}</Badge>
+                  </div>
+                  <p className="mt-1 truncate text-xs text-on-surface-variant">
+                    {activeFile.path}{" -> "}{exportFileName}
+                  </p>
+                </div>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <SegmentedControl
+                    aria-label="导出格式"
+                    value={exportKind}
+                    onValueChange={(value) => setExportKind(value as "json" | "jsx")}
+                    options={[
+                      { value: "json", label: "JSON" },
+                      { value: "jsx", label: "React" },
+                    ]}
+                  />
+                  <Button variant="ghost" data-builder-export-download="" onClick={downloadExport}>
+                    <Download aria-hidden className="size-4" />
+                    下载文件
+                  </Button>
+                  <Button variant="secondary" data-builder-export-copy="" onClick={copyExport}>
+                    <Copy aria-hidden className="size-4" />
+                    {copied ? "已复制" : "复制导出"}
+                  </Button>
+                </div>
               </div>
-            </div>
-            <Textarea data-builder-export-output="" readOnly value={exportText} className="min-h-[640px] resize-none font-mono text-xs leading-5" />
+              <div className="mt-4 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
+                <PathRow label="Controls" value={`${items.length}`} />
+                <PathRow label="Lines" value={`${exportLineCount}`} />
+                <PathRow label="States" value={`${activeProject.stateVariables.length}`} />
+                <PathRow label="Commands" value={`${activeProject.rustCommands.length}`} />
+              </div>
+              {exportFeedback ? (
+                <div
+                  className={cn(
+                    "mt-3 rounded-2xl border px-3 py-2 text-xs",
+                    exportFeedback.tone === "success"
+                      ? "border-primary/25 bg-primary/10 text-on-surface"
+                      : "border-destructive/30 bg-destructive/10 text-destructive",
+                  )}
+                  data-builder-export-status=""
+                >
+                  {exportFeedback.message}
+                </div>
+              ) : null}
+            </section>
+            <Textarea
+              data-builder-export-output=""
+              readOnly
+              value={exportText}
+              className="min-h-[560px] resize-none font-mono text-xs leading-5"
+            />
           </div>
         ) : (
           <DesignWorkspace>
