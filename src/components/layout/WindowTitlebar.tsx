@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Check, Copy, FileDown, FilePlus2, HelpCircle, Minus, RotateCcw, Settings, Sparkles, Square, X } from "lucide-react";
+import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,8 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { dispatchNovaEditorCommand, type NovaEditorCommand } from "@/lib/editor-commands";
 
 type WindowAction = "minimize" | "toggleMaximize" | "close";
+type TitleMenuItem = {
+  label: string;
+  command: NovaEditorCommand;
+  icon: typeof Check;
+  shortcut?: string;
+};
 
 async function runWindowAction(action: WindowAction) {
   try {
@@ -43,7 +50,7 @@ async function startWindowDrag(event: MouseEvent<HTMLElement>) {
   }
 }
 
-function TitleMenu({ label, items }: { label: string; items: string[] }) {
+function TitleMenu({ label, items }: { label: string; items: TitleMenuItem[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -54,20 +61,24 @@ function TitleMenu({ label, items }: { label: string; items: string[] }) {
           {label}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
+      <DropdownMenuContent align="start" className="w-56">
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
-        {items.map((item, index) => (
-          <DropdownMenuItem key={item}>
-            {index === 0 ? <Check aria-hidden className="size-4" /> : null}
-            {index === 1 ? <Copy aria-hidden className="size-4" /> : null}
-            {index === 2 ? <RotateCcw aria-hidden className="size-4" /> : null}
-            {item}
-          </DropdownMenuItem>
-        ))}
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <DropdownMenuItem key={item.command} onSelect={() => dispatchNovaEditorCommand(item.command)}>
+              <Icon aria-hidden className="size-4" />
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              {item.shortcut ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">{item.shortcut}</span> : null}
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("help-guide")}>
           <Settings aria-hidden className="size-4" />
-          偏好设置
+          <span className="min-w-0 flex-1 truncate">命令说明</span>
+          <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -132,10 +143,40 @@ export function WindowTitlebar() {
           <span className="truncate">Desktop UI project editor</span>
         </div>
         <div className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex">
-          <TitleMenu label="文件" items={["新建项目", "打开项目", "保存到磁盘"]} />
-          <TitleMenu label="编辑" items={["撤销", "重做", "复制选中控件"]} />
-          <TitleMenu label="视图" items={["Design 模式", "Logic 模式", "Build 模式"]} />
-          <TitleMenu label="构建" items={["运行检查", "构建 exe", "打包安装器"]} />
+          <TitleMenu
+            label="文件"
+            items={[
+              { label: "新建项目", command: "new-project", icon: FilePlus2 },
+              { label: "打开项目", command: "open-project", icon: FolderOpen },
+              { label: "保存到磁盘", command: "save-project", icon: Save, shortcut: "Ctrl+S" },
+            ]}
+          />
+          <TitleMenu
+            label="编辑"
+            items={[
+              { label: "撤销", command: "undo", icon: Undo2, shortcut: "Ctrl+Z" },
+              { label: "重做", command: "redo", icon: RotateCcw, shortcut: "Ctrl+Y" },
+              { label: "复制选中控件", command: "copy-selection", icon: Copy, shortcut: "Ctrl+C" },
+            ]}
+          />
+          <TitleMenu
+            label="视图"
+            items={[
+              { label: "Design 模式", command: "mode-design", icon: Sparkles },
+              { label: "Logic 模式", command: "mode-logic", icon: Settings },
+              { label: "Build 模式", command: "mode-build", icon: Terminal },
+              { label: "Preview 模式", command: "mode-preview", icon: Monitor },
+              { label: "Export 模式", command: "mode-export", icon: FileDown },
+            ]}
+          />
+          <TitleMenu
+            label="构建"
+            items={[
+              { label: "运行检查", command: "quick-check-all", icon: Terminal },
+              { label: "构建 exe", command: "build-exe", icon: Download },
+              { label: "打包安装器", command: "bundle-installer", icon: Box },
+            ]}
+          />
           <WindowMenu />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -147,15 +188,15 @@ export function WindowTitlebar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("help-guide")}>
                 <HelpCircle aria-hidden className="size-4" />
                 Nova 编辑器指南
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("project-templates")}>
                 <FilePlus2 aria-hidden className="size-4" />
                 新建项目模板
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("bundle-installer")}>
                 <FileDown aria-hidden className="size-4" />
                 导出桌面包
               </DropdownMenuItem>

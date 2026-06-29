@@ -93,6 +93,7 @@ import {
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { NOVA_EDITOR_COMMAND_EVENT, type NovaEditorCommandEventDetail } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
 import { BuildWorkspace } from "./builder/BuildWorkspace";
 import { DesignWorkspace } from "./builder/DesignWorkspace";
@@ -12732,6 +12733,98 @@ export function BuilderShowcase() {
     setRightDockTab("connections");
     simulateSelectedEvent();
   };
+
+  useEffect(() => {
+    const handleEditorCommand = (event: Event) => {
+      const command = (event as CustomEvent<NovaEditorCommandEventDetail>).detail?.command;
+      if (!command) {
+        return;
+      }
+
+      if (command === "new-project") {
+        createNewProject();
+        return;
+      }
+      if (command === "open-project") {
+        void chooseProjectDirectory();
+        return;
+      }
+      if (command === "save-project") {
+        enqueueProjectTask("save-project");
+        return;
+      }
+      if (command === "undo") {
+        if (!canUndo) {
+          setBuildError("没有可撤销的画布操作。");
+          return;
+        }
+        undoCanvas();
+        return;
+      }
+      if (command === "redo") {
+        if (!canRedo) {
+          setBuildError("没有可重做的画布操作。");
+          return;
+        }
+        redoCanvas();
+        return;
+      }
+      if (command === "copy-selection") {
+        if (selectedItems.length === 0) {
+          setBuildError("请先选中一个控件，再复制。");
+          return;
+        }
+        copySelectionToClipboard();
+        return;
+      }
+      if (command === "mode-design") {
+        switchEditorMode("design");
+        return;
+      }
+      if (command === "mode-logic") {
+        switchEditorMode("logic");
+        return;
+      }
+      if (command === "mode-build") {
+        switchEditorMode("build");
+        return;
+      }
+      if (command === "mode-preview") {
+        switchEditorMode("preview");
+        return;
+      }
+      if (command === "mode-export") {
+        switchEditorMode("export");
+        return;
+      }
+      if (command === "quick-check-all") {
+        enqueueProjectTask("quick-check-all");
+        return;
+      }
+      if (command === "build-exe") {
+        enqueueProjectTask("build-exe");
+        return;
+      }
+      if (command === "bundle-installer") {
+        enqueueProjectTask("bundle-installer");
+        return;
+      }
+      if (command === "help-guide") {
+        setProjectJumpQuery("action build command settings");
+        setProjectJumpFocused(true);
+        projectJumpInputRef.current?.focus();
+        return;
+      }
+      if (command === "project-templates") {
+        switchEditorMode("design");
+        setLeftDockTab("project");
+        return;
+      }
+    };
+
+    window.addEventListener(NOVA_EDITOR_COMMAND_EVENT, handleEditorCommand);
+    return () => window.removeEventListener(NOVA_EDITOR_COMMAND_EVENT, handleEditorCommand);
+  });
 
   return (
     <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">

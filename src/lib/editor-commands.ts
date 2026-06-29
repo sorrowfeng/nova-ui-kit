@@ -1,0 +1,31 @@
+export const NOVA_EDITOR_COMMAND_EVENT = "nova-editor-command";
+
+export type NovaEditorCommand =
+  | "new-project"
+  | "open-project"
+  | "save-project"
+  | "undo"
+  | "redo"
+  | "copy-selection"
+  | "mode-design"
+  | "mode-logic"
+  | "mode-build"
+  | "mode-preview"
+  | "mode-export"
+  | "quick-check-all"
+  | "build-exe"
+  | "bundle-installer"
+  | "help-guide"
+  | "project-templates";
+
+export type NovaEditorCommandEventDetail = {
+  command: NovaEditorCommand;
+};
+
+export function dispatchNovaEditorCommand(command: NovaEditorCommand) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.dispatchEvent(new CustomEvent<NovaEditorCommandEventDetail>(NOVA_EDITOR_COMMAND_EVENT, { detail: { command } }));
+}
+
