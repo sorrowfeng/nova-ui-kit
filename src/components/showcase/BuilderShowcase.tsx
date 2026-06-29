@@ -8354,6 +8354,61 @@ export function BuilderShowcase() {
   };
 
   const runSelectedEventAndRevealLogs = () => {
+    if (!selectedItem) {
+      setMode("design");
+      setLeftDockTab("navigator");
+      setRightDockTab("properties");
+      setFeedbackPanelOpen(true);
+      openBottomDock("issues", false);
+      showProjectJumpFeedback("warning", "Select a control first", "Run Event needs a selected control with a supported event.");
+      recordInstantProjectAction(
+        "run-selected-event",
+        "Select a control with an event before running it.",
+        "skipped",
+        "Run selected event skipped: no control is selected.",
+      );
+      return;
+    }
+
+    if (!selectedEventName) {
+      setMode("design");
+      setRightDockTab("properties");
+      setFeedbackPanelOpen(true);
+      openBottomDock("issues", false);
+      showProjectJumpFeedback(
+        "warning",
+        "Selected control is static",
+        `${getItemSummary(selectedItem)} does not expose an event. Select a button, input, switch, select, or checkbox.`,
+      );
+      recordInstantProjectAction(
+        "run-selected-event",
+        `${getItemSummary(selectedItem)} does not expose an event to run.`,
+        "skipped",
+        "Run selected event skipped: selected control has no supported event.",
+      );
+      return;
+    }
+
+    if (!selectedEventCommand) {
+      setMode("design");
+      setRightDockTab("connections");
+      setFeedbackPanelOpen(false);
+      setBottomDockExpanded(false);
+      setBottomDockMinimized(true);
+      showProjectJumpFeedback(
+        "warning",
+        "Bind event before running",
+        `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command. Connections is open with Bind new ready.`,
+      );
+      recordInstantProjectAction(
+        "run-selected-event",
+        `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command before it can run.`,
+        "skipped",
+        "Run selected event skipped: open Connections and create a binding first.",
+      );
+      return;
+    }
+
     const trace = simulateSelectedEvent();
     setMode("preview");
     setRightDockTab("connections");
@@ -10864,6 +10919,21 @@ export function BuilderShowcase() {
         }
       case "run-selected-event":
         {
+          if (!selectedItem || !selectedEventName) {
+            setMode("design");
+            setLeftDockTab("navigator");
+            setRightDockTab("properties");
+            return { status: "skipped", summary: "Select a control with an event before running it." };
+          }
+          if (!selectedEventCommand) {
+            setMode("design");
+            setRightDockTab("connections");
+            return {
+              status: "skipped",
+              summary: `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command before it can run.`,
+              logPreview: "Open Connections and use Bind new, then run the event again.",
+            };
+          }
           const trace = simulateSelectedEvent({ recordTask: false });
           if (!trace) {
             return { status: "skipped", summary: "Select a control with an event before running it." };
