@@ -1,6 +1,7 @@
-import { SearchX, Sparkles } from "lucide-react";
+import { SearchX, Settings, Sparkles } from "lucide-react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
 import { workspaceSections, utilityNavItems } from "@/data/components";
+import type { AppCopy } from "@/lib/i18n";
 import type { NovaEditorCommand } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
 
@@ -8,11 +9,13 @@ type SidebarProps = {
   activeId: ShowcaseId;
   filteredItems: ShowcaseNavItem[];
   onSelect: (id: ShowcaseId) => void;
+  onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
+  copy: AppCopy;
   className?: string;
 };
 
-export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand, className }: SidebarProps) {
+export function Sidebar({ activeId, filteredItems, onSelect, onOpenSettings, onRunEditorCommand, copy, className }: SidebarProps) {
   const filteredIds = new Set(filteredItems.map((item) => item.id));
 
   return (
@@ -27,8 +30,8 @@ export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand,
           <Sparkles aria-hidden className="size-5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-base font-medium">Nova UI Editor</p>
-          <p className="truncate text-sm text-on-surface-variant">桌面 UI 设计器</p>
+          <p className="truncate text-base font-medium">{copy.appName}</p>
+          <p className="truncate text-sm text-on-surface-variant">{copy.appSubtitle}</p>
         </div>
       </div>
 
@@ -36,7 +39,7 @@ export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand,
         {filteredItems.length === 0 ? (
           <div className="mt-8 flex flex-col items-center gap-2 rounded-3xl border border-dashed border-outline-variant bg-surface-container p-5 text-center text-sm text-on-surface-variant">
             <SearchX aria-hidden className="size-5" />
-            没有匹配的组件
+            {copy.sidebar.empty}
           </div>
         ) : (
           <div className="space-y-5">
@@ -50,7 +53,7 @@ export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand,
                 <div key={section.title} className="space-y-2">
                   <div className="flex items-center gap-2 px-4 text-xs font-medium text-on-surface-variant">
                     <SectionIcon aria-hidden className="size-3.5" />
-                    {section.title}
+                    {section.title === "工作区" ? copy.sidebar.workspace : section.title}
                   </div>
                   <div className="space-y-1">
                     {visibleItems.map((item) => {
@@ -89,8 +92,17 @@ export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand,
 
       <div className="shrink-0 p-3">
         <div className="space-y-1">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="focus-ring m3-state-layer flex w-full items-center gap-3 rounded-full px-4 py-3 text-left text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+          >
+            <Settings aria-hidden className="size-5" />
+            <span className="truncate">{copy.sidebar.appSettings}</span>
+          </button>
           {utilityNavItems.map((item) => {
             const Icon = item.icon;
+            const title = item.command === "open-project-settings" ? copy.sidebar.projectSettings : item.command === "open-build-output" ? copy.sidebar.buildOutput : item.title;
             return (
               <button
                 type="button"
@@ -99,7 +111,7 @@ export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand,
                 className="focus-ring m3-state-layer flex w-full items-center gap-3 rounded-full px-4 py-3 text-left text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 <Icon aria-hidden className="size-5" />
-                <span className="truncate">{item.title}</span>
+                <span className="truncate">{title}</span>
               </button>
             );
           })}

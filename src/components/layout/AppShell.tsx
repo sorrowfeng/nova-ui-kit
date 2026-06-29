@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
-import type { Density, ThemeMode, ThemeScheme } from "@/App";
+import type { AppCopy } from "@/lib/i18n";
+import type { AppLanguage, Density, ThemeMode, ThemeScheme } from "@/lib/preferences";
 import { InspectorPanel } from "@/components/layout/InspectorPanel";
 import { NavigationRail } from "@/components/layout/NavigationRail";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -24,13 +25,17 @@ type AppShellProps = {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onSelect: (id: ShowcaseId) => void;
+  copy: AppCopy;
+  language: AppLanguage;
   theme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
   scheme: ThemeScheme;
   onSchemeChange: (scheme: ThemeScheme) => void;
   density: Density;
   onDensityChange: (value: Density) => void;
+  statusBarVisible: boolean;
   onOpenCommand: () => void;
+  onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
   onSaveProject: () => void;
   onExportProject: () => void;
@@ -44,13 +49,17 @@ export function AppShell({
   searchQuery,
   onSearchChange,
   onSelect,
+  copy,
+  language,
   theme,
   onThemeChange,
   scheme,
   onSchemeChange,
   density,
   onDensityChange,
+  statusBarVisible,
   onOpenCommand,
+  onOpenSettings,
   onRunEditorCommand,
   onSaveProject,
   onExportProject,
@@ -68,17 +77,18 @@ export function AppShell({
   if (builderWorkspace) {
     return (
       <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface-container-lowest text-on-surface" data-density={density}>
-        <WindowTitlebar onRunEditorCommand={onRunEditorCommand} />
+        <WindowTitlebar copy={copy} onOpenSettings={onOpenSettings} onRunEditorCommand={onRunEditorCommand} />
         <main className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
           {children}
         </main>
+        {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} /> : null}
       </div>
     );
   }
 
   return (
     <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface text-on-surface" data-density={density}>
-      <WindowTitlebar onRunEditorCommand={onRunEditorCommand} />
+      <WindowTitlebar copy={copy} onOpenSettings={onOpenSettings} onRunEditorCommand={onRunEditorCommand} />
 
       <div className="flex min-h-0 flex-1">
         <NavigationRail
@@ -86,15 +96,19 @@ export function AppShell({
           items={filteredItems}
           onSelect={onSelect}
           onOpenCommand={onOpenCommand}
+          onOpenSettings={onOpenSettings}
           onRunEditorCommand={onRunEditorCommand}
           onToast={onToast}
+          copy={copy}
         />
 
         <Sidebar
           activeId={activeId}
           filteredItems={filteredItems}
           onSelect={onSelect}
+          onOpenSettings={onOpenSettings}
           onRunEditorCommand={onRunEditorCommand}
+          copy={copy}
           className="hidden lg:flex"
         />
 
@@ -108,7 +122,9 @@ export function AppShell({
               activeId={activeId}
               filteredItems={filteredItems}
               onSelect={handleSelect}
+              onOpenSettings={onOpenSettings}
               onRunEditorCommand={onRunEditorCommand}
+              copy={copy}
               className="w-full border-r-0"
             />
           </SheetContent>
@@ -122,9 +138,12 @@ export function AppShell({
             onThemeChange={onThemeChange}
             scheme={scheme}
             onSchemeChange={onSchemeChange}
+            language={language}
+            copy={copy}
             density={density}
             onDensityChange={onDensityChange}
             onOpenCommand={onOpenCommand}
+            onOpenSettings={onOpenSettings}
             onSaveProject={onSaveProject}
             onExportProject={onExportProject}
             onOpenMobileNav={() => setMobileOpen(true)}
@@ -144,6 +163,8 @@ export function AppShell({
             {builderWorkspace ? null : (
               <InspectorPanel
                 activeId={activeId}
+                copy={copy}
+                language={language}
                 theme={theme}
                 onThemeChange={onThemeChange}
                 scheme={scheme}
@@ -154,7 +175,7 @@ export function AppShell({
               />
             )}
           </div>
-          <StatusBar theme={theme} scheme={scheme} density={density} />
+          {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} /> : null}
         </div>
       </div>
     </div>

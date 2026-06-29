@@ -1,5 +1,6 @@
 import { Bell, Boxes, Command, Palette, Settings } from "lucide-react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
+import type { AppCopy } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { NovaEditorCommand } from "@/lib/editor-commands";
@@ -10,8 +11,10 @@ type NavigationRailProps = {
   items: ShowcaseNavItem[];
   onSelect: (id: ShowcaseId) => void;
   onOpenCommand: () => void;
+  onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
   onToast: () => void;
+  copy: AppCopy;
 };
 
 export function NavigationRail({
@@ -19,8 +22,10 @@ export function NavigationRail({
   items,
   onSelect,
   onOpenCommand,
+  onOpenSettings,
   onRunEditorCommand,
   onToast,
+  copy,
 }: NavigationRailProps) {
   return (
     <nav className="hidden h-full w-24 shrink-0 flex-col items-center gap-4 bg-surface px-3 py-4 lg:flex">
@@ -28,7 +33,7 @@ export function NavigationRail({
         <Palette aria-hidden className="size-6" />
       </div>
 
-      <Button aria-label="打开命令面板" className="size-14 rounded-2xl p-0" onClick={onOpenCommand}>
+      <Button aria-label={copy.nav.command} className="size-14 rounded-2xl p-0" onClick={onOpenCommand}>
         <Command aria-hidden className="size-5" />
       </Button>
 
@@ -66,13 +71,13 @@ export function NavigationRail({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button variant="ghost" size="icon" aria-label="通知" onClick={onToast}>
+        <Button variant="ghost" size="icon" aria-label={copy.nav.notification} onClick={onToast}>
           <Bell />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="项目设置" onClick={() => onRunEditorCommand("open-project-settings")}>
+        <Button variant="ghost" size="icon" aria-label={copy.nav.appSettings} onClick={onOpenSettings}>
           <Settings />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="项目文件" onClick={() => onRunEditorCommand("open-project-files")}>
+        <Button variant="ghost" size="icon" aria-label={copy.nav.projectFiles} onClick={() => onRunEditorCommand("open-project-files")}>
           <Boxes />
         </Button>
       </div>

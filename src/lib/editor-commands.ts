@@ -16,6 +16,7 @@ export type NovaEditorCommand =
   | "run-selected-event"
   | "build-exe"
   | "bundle-installer"
+  | "open-app-settings"
   | "open-project-settings"
   | "open-build-output"
   | "open-project-files"

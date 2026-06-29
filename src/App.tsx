@@ -14,6 +14,7 @@ import {
   Sparkles,
   Terminal,
 } from "lucide-react";
+import { AppSettingsPanel } from "@/components/layout/AppSettingsPanel";
 import { AppShell } from "@/components/layout/AppShell";
 import { CommandPalette, type CommandPaletteAction } from "@/components/layout/CommandPalette";
 import { ShowcasePage } from "@/components/showcase/ShowcasePage";
@@ -27,118 +28,126 @@ import {
 } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { showcaseNavItems, type ShowcaseId } from "@/data/components";
+import { getAppCopy, type AppCopy } from "@/lib/i18n";
 import { dispatchNovaEditorCommand, type NovaEditorCommand } from "@/lib/editor-commands";
+import type { AppLanguage, Density, MotionPreference, ThemeMode, ThemeScheme } from "@/lib/preferences";
 
-export type ThemeMode = "light" | "dark" | "system";
-export type ThemeScheme = "violet" | "blue" | "green";
-export type Density = "compact" | "cozy" | "comfortable";
-
-const editorCommandActions: CommandPaletteAction[] = [
+function createEditorCommandActions(copy: AppCopy): CommandPaletteAction[] {
+  return [
   {
     id: "editor-action-new-project",
-    title: "新建项目",
-    description: "从模板创建新的桌面 UI 项目。",
-    category: "Project",
+    title: copy.commands.newProject[0],
+    description: copy.commands.newProject[1],
+    category: copy.commands.categories.project,
     icon: FilePlus2,
     tags: ["new", "project", "template", "新建", "模板"],
     command: "new-project",
   },
   {
     id: "editor-action-open-project",
-    title: "打开项目",
-    description: "选择已有项目目录并恢复编辑状态。",
-    category: "Project",
+    title: copy.commands.openProject[0],
+    description: copy.commands.openProject[1],
+    category: copy.commands.categories.project,
     icon: FolderOpen,
     tags: ["open", "workspace", "folder", "打开", "项目"],
     command: "open-project",
   },
   {
     id: "editor-action-save-project",
-    title: "保存项目",
-    description: "保存当前项目、UI 文件、逻辑和元数据。",
-    category: "Project",
+    title: copy.commands.saveProject[0],
+    description: copy.commands.saveProject[1],
+    category: copy.commands.categories.project,
     icon: Save,
     tags: ["save", "sync", "disk", "保存", "同步"],
     command: "save-project",
     shortcut: "Ctrl+S",
   },
   {
+    id: "editor-action-app-settings",
+    title: copy.commands.appSettings[0],
+    description: copy.commands.appSettings[1],
+    category: copy.commands.categories.app,
+    icon: Settings,
+    tags: ["settings", "preferences", "language", "theme", "设置", "语言", "主题"],
+    command: "open-app-settings",
+  },
+  {
     id: "editor-action-mode-design",
-    title: "Design 模式",
-    description: "回到画布、组件和属性编辑工作区。",
-    category: "Mode",
+    title: copy.commands.modeDesign[0],
+    description: copy.commands.modeDesign[1],
+    category: copy.commands.categories.mode,
     icon: Sparkles,
     tags: ["design", "canvas", "navigator", "设计", "画布"],
     command: "mode-design",
   },
   {
     id: "editor-action-mode-logic",
-    title: "Logic 模式",
-    description: "编辑 Rust commands、状态和后端集成。",
-    category: "Mode",
+    title: copy.commands.modeLogic[0],
+    description: copy.commands.modeLogic[1],
+    category: copy.commands.categories.mode,
     icon: Settings,
     tags: ["logic", "rust", "state", "backend", "逻辑", "后端"],
     command: "mode-logic",
   },
   {
     id: "editor-action-mode-build",
-    title: "Build 模式",
-    description: "查看任务、检查、构建输出和发布配置。",
-    category: "Mode",
+    title: copy.commands.modeBuild[0],
+    description: copy.commands.modeBuild[1],
+    category: copy.commands.categories.mode,
     icon: Terminal,
     tags: ["build", "tasks", "checks", "构建", "任务"],
     command: "mode-build",
   },
   {
     id: "editor-action-project-settings",
-    title: "打开项目设置",
-    description: "切到 Project Dock，编辑模板、文件和 release 配置。",
-    category: "Project",
+    title: copy.commands.projectSettings[0],
+    description: copy.commands.projectSettings[1],
+    category: copy.commands.categories.project,
     icon: Settings,
     tags: ["project", "settings", "release", "项目", "设置", "发布"],
     command: "open-project-settings",
   },
   {
     id: "editor-action-project-files",
-    title: "打开项目文件",
-    description: "切到 Navigator，查看和切换当前项目 UI 文件。",
-    category: "Project",
+    title: copy.commands.projectFiles[0],
+    description: copy.commands.projectFiles[1],
+    category: copy.commands.categories.project,
     icon: FolderOpen,
     tags: ["project", "files", "navigator", "ui files", "项目文件", "导航"],
     command: "open-project-files",
   },
   {
     id: "editor-action-build-output",
-    title: "打开构建输出",
-    description: "切到 Build 模式并展开 Output 面板。",
-    category: "Build",
+    title: copy.commands.buildOutput[0],
+    description: copy.commands.buildOutput[1],
+    category: copy.commands.categories.build,
     icon: Terminal,
     tags: ["build", "output", "logs", "构建", "输出"],
     command: "open-build-output",
   },
   {
     id: "editor-action-mode-preview",
-    title: "Preview 模式",
-    description: "预览当前 UI 并模拟已绑定的交互。",
-    category: "Mode",
+    title: copy.commands.modePreview[0],
+    description: copy.commands.modePreview[1],
+    category: copy.commands.categories.mode,
     icon: Monitor,
     tags: ["preview", "simulate", "预览", "模拟"],
     command: "mode-preview",
   },
   {
     id: "editor-action-mode-export",
-    title: "Export 模式",
-    description: "查看生成代码、导出格式和目标文件。",
-    category: "Mode",
+    title: copy.commands.modeExport[0],
+    description: copy.commands.modeExport[1],
+    category: copy.commands.categories.mode,
     icon: FileDown,
     tags: ["export", "code", "files", "导出", "代码"],
     command: "mode-export",
   },
   {
     id: "editor-action-run-event",
-    title: "运行当前事件",
-    description: "模拟选中控件的事件并打开日志。",
-    category: "Run",
+    title: copy.commands.runEvent[0],
+    description: copy.commands.runEvent[1],
+    category: copy.commands.categories.run,
     icon: Play,
     tags: ["run", "event", "simulate", "logs", "运行", "事件"],
     command: "run-selected-event",
@@ -146,18 +155,18 @@ const editorCommandActions: CommandPaletteAction[] = [
   },
   {
     id: "editor-action-check-all",
-    title: "运行全部检查",
-    description: "执行前端和 Rust 检查，准备发布构建。",
-    category: "Build",
+    title: copy.commands.checkAll[0],
+    description: copy.commands.checkAll[1],
+    category: copy.commands.categories.build,
     icon: Terminal,
     tags: ["check", "frontend", "rust", "检查"],
     command: "quick-check-all",
   },
   {
     id: "editor-action-build-exe",
-    title: "构建 release exe",
-    description: "编译当前目标应用的桌面可执行文件。",
-    category: "Build",
+    title: copy.commands.buildExe[0],
+    description: copy.commands.buildExe[1],
+    category: copy.commands.categories.build,
     icon: Download,
     tags: ["build", "exe", "release", "构建", "发布"],
     command: "build-exe",
@@ -165,23 +174,24 @@ const editorCommandActions: CommandPaletteAction[] = [
   },
   {
     id: "editor-action-bundle-installer",
-    title: "打包安装器",
-    description: "生成 MSI / NSIS 等安装包输出。",
-    category: "Build",
+    title: copy.commands.bundleInstaller[0],
+    description: copy.commands.bundleInstaller[1],
+    category: copy.commands.categories.build,
     icon: Box,
     tags: ["bundle", "installer", "msi", "nsis", "安装包"],
     command: "bundle-installer",
   },
   {
     id: "editor-action-help",
-    title: "编辑器指南",
-    description: "在 Locator 中打开可用命令和构建入口。",
-    category: "Help",
+    title: copy.commands.help[0],
+    description: copy.commands.help[1],
+    category: copy.commands.categories.help,
     icon: HelpCircle,
     tags: ["help", "guide", "commands", "帮助", "指南"],
     command: "help-guide",
   },
-];
+  ];
+}
 
 function getInitialTheme(): ThemeMode {
   if (typeof window === "undefined") {
@@ -205,6 +215,53 @@ function getInitialScheme(): ThemeScheme {
   return "violet";
 }
 
+function getInitialLanguage(): AppLanguage {
+  if (typeof window === "undefined") {
+    return "zh-CN";
+  }
+  const stored = window.localStorage.getItem("nova-language");
+  if (stored === "zh-CN" || stored === "en-US") {
+    return stored;
+  }
+  return "zh-CN";
+}
+
+function getInitialDensity(): Density {
+  if (typeof window === "undefined") {
+    return "cozy";
+  }
+  const stored = window.localStorage.getItem("nova-density");
+  if (stored === "compact" || stored === "cozy" || stored === "comfortable") {
+    return stored;
+  }
+  return "cozy";
+}
+
+function getInitialMotion(): MotionPreference {
+  if (typeof window === "undefined") {
+    return "full";
+  }
+  const stored = window.localStorage.getItem("nova-motion");
+  if (stored === "full" || stored === "reduced") {
+    return stored;
+  }
+  return "full";
+}
+
+function getInitialBoolean(key: string, fallback: boolean) {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+  const stored = window.localStorage.getItem(key);
+  if (stored === "true") {
+    return true;
+  }
+  if (stored === "false") {
+    return false;
+  }
+  return fallback;
+}
+
 function isPrimaryShortcut(event: KeyboardEvent) {
   return (event.metaKey || event.ctrlKey) && !event.altKey;
 }
@@ -212,17 +269,28 @@ function isPrimaryShortcut(event: KeyboardEvent) {
 function App() {
   const [activeId, setActiveId] = useState<ShowcaseId>("builder");
   const [searchQuery, setSearchQuery] = useState("");
+  const [language, setLanguage] = useState<AppLanguage>(() => getInitialLanguage());
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
   const [scheme, setScheme] = useState<ThemeScheme>(() => getInitialScheme());
-  const [density, setDensity] = useState<Density>("cozy");
+  const [density, setDensity] = useState<Density>(() => getInitialDensity());
+  const [motion, setMotion] = useState<MotionPreference>(() => getInitialMotion());
+  const [statusBarVisible, setStatusBarVisible] = useState(() => getInitialBoolean("nova-status-bar-visible", true));
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [pendingEditorCommand, setPendingEditorCommand] = useState<NovaEditorCommand | null>(null);
   const [systemDark, setSystemDark] = useState(() =>
     typeof window === "undefined" ? false : window.matchMedia("(prefers-color-scheme: dark)").matches,
   );
+  const copy = useMemo(() => getAppCopy(language), [language]);
+  const editorCommandActions = useMemo(() => createEditorCommandActions(copy), [copy]);
 
-  const runBuilderCommand = useCallback((command: NovaEditorCommand) => {
+  const runEditorCommand = useCallback((command: NovaEditorCommand) => {
+    if (command === "open-app-settings") {
+      setCommandOpen(false);
+      setSettingsOpen(true);
+      return;
+    }
     setActiveId("builder");
     setPendingEditorCommand(command);
   }, []);
@@ -238,9 +306,24 @@ function App() {
     const resolvedTheme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
     document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
     document.documentElement.dataset.theme = scheme;
+    document.documentElement.dataset.motion = motion;
+    document.documentElement.lang = language;
     window.localStorage.setItem("nova-theme-mode", theme);
     window.localStorage.setItem("nova-theme-scheme", scheme);
-  }, [scheme, systemDark, theme]);
+    window.localStorage.setItem("nova-density", density);
+    window.localStorage.setItem("nova-language", language);
+    window.localStorage.setItem("nova-motion", motion);
+    window.localStorage.setItem("nova-status-bar-visible", String(statusBarVisible));
+  }, [density, language, motion, scheme, statusBarVisible, systemDark, theme]);
+
+  const resetPreferences = useCallback(() => {
+    setLanguage("zh-CN");
+    setTheme("system");
+    setScheme("violet");
+    setDensity("cozy");
+    setMotion("full");
+    setStatusBarVisible(true);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -260,7 +343,7 @@ function App() {
       const routeEditorShortcut = (command: NovaEditorCommand) => {
         event.preventDefault();
         setCommandOpen(false);
-        runBuilderCommand(command);
+        runEditorCommand(command);
       };
 
       if (primaryShortcut && key === "s") {
@@ -279,7 +362,7 @@ function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeId, runBuilderCommand]);
+  }, [activeId, runEditorCommand]);
 
   useEffect(() => {
     if (activeId !== "builder" || !pendingEditorCommand) {
@@ -323,20 +406,43 @@ function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSelect={setActiveId}
+          copy={copy}
+          language={language}
           theme={theme}
           onThemeChange={setTheme}
           scheme={scheme}
           onSchemeChange={setScheme}
           density={density}
           onDensityChange={setDensity}
+          statusBarVisible={statusBarVisible}
           onOpenCommand={() => setCommandOpen(true)}
-          onRunEditorCommand={runBuilderCommand}
-          onSaveProject={() => runBuilderCommand("save-project")}
-          onExportProject={() => runBuilderCommand("mode-export")}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onRunEditorCommand={runEditorCommand}
+          onSaveProject={() => runEditorCommand("save-project")}
+          onExportProject={() => runEditorCommand("mode-export")}
           onToast={showToast}
         >
           <ShowcasePage item={activeItem} onOpenCommand={() => setCommandOpen(true)} onToast={showToast} />
         </AppShell>
+
+        <AppSettingsPanel
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          copy={copy}
+          language={language}
+          onLanguageChange={setLanguage}
+          theme={theme}
+          onThemeChange={setTheme}
+          scheme={scheme}
+          onSchemeChange={setScheme}
+          density={density}
+          onDensityChange={setDensity}
+          statusBarVisible={statusBarVisible}
+          onStatusBarVisibleChange={setStatusBarVisible}
+          motion={motion}
+          onMotionChange={setMotion}
+          onResetDefaults={resetPreferences}
+        />
 
         <CommandPalette
           open={commandOpen}
@@ -344,7 +450,8 @@ function App() {
           items={showcaseNavItems}
           onSelect={setActiveId}
           actions={editorCommandActions}
-          onRunAction={runBuilderCommand}
+          onRunAction={runEditorCommand}
+          copy={copy}
         />
 
         <Toast open={toastOpen} onOpenChange={setToastOpen}>
@@ -352,10 +459,10 @@ function App() {
             <CheckCircle2 aria-hidden className="size-4" />
           </div>
           <div>
-            <ToastTitle>预览已同步</ToastTitle>
-            <ToastDescription>Nova UI Kit 已更新本地交互状态。</ToastDescription>
+            <ToastTitle>{copy.toast.title}</ToastTitle>
+            <ToastDescription>{copy.toast.description}</ToastDescription>
           </div>
-          <ToastClose aria-label="关闭通知" />
+          <ToastClose aria-label={copy.toast.close} />
         </Toast>
         <ToastViewport />
       </ToastProvider>

@@ -1,7 +1,8 @@
-import type { MouseEvent, PointerEvent } from "react";
+import type { PointerEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, Play, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { AppCopy } from "@/lib/i18n";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,8 @@ type TitleMenuItem = {
   shortcut?: string;
 };
 type WindowTitlebarProps = {
+  copy: AppCopy;
+  onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
 };
 
@@ -73,10 +76,12 @@ function TitleMenu({
   label,
   items,
   onRunCommand,
+  commandHelpLabel,
 }: {
   label: string;
   items: TitleMenuItem[];
   onRunCommand: (command: NovaEditorCommand) => void;
+  commandHelpLabel: string;
 }) {
   return (
     <DropdownMenu>
@@ -104,7 +109,7 @@ function TitleMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => onRunCommand("help-guide")}>
           <Settings aria-hidden className="size-4" />
-          <span className="min-w-0 flex-1 truncate">命令说明</span>
+          <span className="min-w-0 flex-1 truncate">{commandHelpLabel}</span>
           <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -112,11 +117,11 @@ function TitleMenu({
   );
 }
 
-function WindowMenu() {
+function WindowMenu({ copy }: { copy: AppCopy }) {
   const items: Array<{ label: string; icon: typeof Minus; action: WindowAction }> = [
-    { label: "最小化", icon: Minus, action: "minimize" },
-    { label: "最大化/还原", icon: Square, action: "toggleMaximize" },
-    { label: "关闭窗口", icon: X, action: "close" },
+    { label: copy.titlebar.minimize, icon: Minus, action: "minimize" },
+    { label: copy.titlebar.maximize, icon: Square, action: "toggleMaximize" },
+    { label: copy.titlebar.close, icon: X, action: "close" },
   ];
 
   return (
@@ -126,11 +131,11 @@ function WindowMenu() {
           type="button"
           className="focus-ring rounded-md px-2 py-1 transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
         >
-          窗口
+          {copy.titlebar.window}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel>窗口</DropdownMenuLabel>
+        <DropdownMenuLabel>{copy.titlebar.window}</DropdownMenuLabel>
         {items.map((item) => {
           const Icon = item.icon;
 
@@ -146,7 +151,7 @@ function WindowMenu() {
   );
 }
 
-export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
+export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: WindowTitlebarProps) {
   return (
     <div
       data-tauri-drag-region=""
@@ -167,74 +172,83 @@ export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
         <div
           className="flex min-w-0 shrink-0 items-center gap-2"
         >
-          <span className="shrink-0 font-medium text-on-surface">Nova UI Editor</span>
-          <span className="truncate">Desktop UI project editor</span>
+          <span className="shrink-0 font-medium text-on-surface">{copy.appName}</span>
+          <span className="truncate">{copy.titlebar.subtitle}</span>
         </div>
         <div
           data-titlebar-interactive="true"
           className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex"
         >
           <TitleMenu
-            label="文件"
+            label={copy.titlebar.file}
             onRunCommand={onRunEditorCommand}
+            commandHelpLabel={copy.titlebar.commandHelp}
             items={[
-              { label: "新建项目", command: "new-project", icon: FilePlus2 },
-              { label: "打开项目", command: "open-project", icon: FolderOpen },
-              { label: "保存到磁盘", command: "save-project", icon: Save, shortcut: "Ctrl+S" },
+              { label: copy.titlebar.newProject, command: "new-project", icon: FilePlus2 },
+              { label: copy.titlebar.openProject, command: "open-project", icon: FolderOpen },
+              { label: copy.titlebar.saveProject, command: "save-project", icon: Save, shortcut: "Ctrl+S" },
+              { label: copy.titlebar.appSettings, command: "open-app-settings", icon: Settings },
             ]}
           />
           <TitleMenu
-            label="编辑"
+            label={copy.titlebar.edit}
             onRunCommand={onRunEditorCommand}
+            commandHelpLabel={copy.titlebar.commandHelp}
             items={[
-              { label: "撤销", command: "undo", icon: Undo2, shortcut: "Ctrl+Z" },
-              { label: "重做", command: "redo", icon: RotateCcw, shortcut: "Ctrl+Y" },
-              { label: "复制选中控件", command: "copy-selection", icon: Copy, shortcut: "Ctrl+C" },
+              { label: copy.titlebar.undo, command: "undo", icon: Undo2, shortcut: "Ctrl+Z" },
+              { label: copy.titlebar.redo, command: "redo", icon: RotateCcw, shortcut: "Ctrl+Y" },
+              { label: copy.titlebar.copySelection, command: "copy-selection", icon: Copy, shortcut: "Ctrl+C" },
             ]}
           />
           <TitleMenu
-            label="视图"
+            label={copy.titlebar.view}
             onRunCommand={onRunEditorCommand}
+            commandHelpLabel={copy.titlebar.commandHelp}
             items={[
-              { label: "Design 模式", command: "mode-design", icon: Sparkles },
-              { label: "Logic 模式", command: "mode-logic", icon: Settings },
-              { label: "Build 模式", command: "mode-build", icon: Terminal },
-              { label: "Preview 模式", command: "mode-preview", icon: Monitor },
-              { label: "Export 模式", command: "mode-export", icon: FileDown },
+              { label: copy.titlebar.designMode, command: "mode-design", icon: Sparkles },
+              { label: copy.titlebar.logicMode, command: "mode-logic", icon: Settings },
+              { label: copy.titlebar.buildMode, command: "mode-build", icon: Terminal },
+              { label: copy.titlebar.previewMode, command: "mode-preview", icon: Monitor },
+              { label: copy.titlebar.exportMode, command: "mode-export", icon: FileDown },
             ]}
           />
           <TitleMenu
-            label="构建"
+            label={copy.titlebar.build}
             onRunCommand={onRunEditorCommand}
+            commandHelpLabel={copy.titlebar.commandHelp}
             items={[
-              { label: "运行检查", command: "quick-check-all", icon: Terminal },
-              { label: "运行当前事件", command: "run-selected-event", icon: Play, shortcut: "F5" },
-              { label: "构建 exe", command: "build-exe", icon: Download, shortcut: "Ctrl+Shift+B" },
-              { label: "打包安装器", command: "bundle-installer", icon: Box },
+              { label: copy.titlebar.quickCheck, command: "quick-check-all", icon: Terminal },
+              { label: copy.titlebar.runEvent, command: "run-selected-event", icon: Play, shortcut: "F5" },
+              { label: copy.titlebar.buildExe, command: "build-exe", icon: Download, shortcut: "Ctrl+Shift+B" },
+              { label: copy.titlebar.bundleInstaller, command: "bundle-installer", icon: Box },
             ]}
           />
-          <WindowMenu />
+          <WindowMenu copy={copy} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
                 className="focus-ring rounded-md px-2 py-1 transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
               >
-                帮助
+                {copy.titlebar.help}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem onSelect={onOpenSettings}>
+                <Settings aria-hidden className="size-4" />
+                {copy.titlebar.appSettings}
+              </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onRunEditorCommand("help-guide")}>
                 <HelpCircle aria-hidden className="size-4" />
-                Nova 编辑器指南
+                {copy.titlebar.guide}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onRunEditorCommand("project-templates")}>
                 <FilePlus2 aria-hidden className="size-4" />
-                新建项目模板
+                {copy.titlebar.templates}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onRunEditorCommand("bundle-installer")}>
                 <FileDown aria-hidden className="size-4" />
-                导出桌面包
+                {copy.titlebar.exportPackage}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -250,7 +264,16 @@ export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
           variant="ghost"
           size="icon-sm"
           className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-          aria-label="最小化窗口"
+          aria-label={copy.titlebar.settingsAria}
+          onClick={onOpenSettings}
+        >
+          <Settings />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+          aria-label={copy.titlebar.minimizeAria}
           onClick={() => runWindowAction("minimize")}
         >
           <Minus />
@@ -259,7 +282,7 @@ export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
           variant="ghost"
           size="icon-sm"
           className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-          aria-label="最大化或还原窗口"
+          aria-label={copy.titlebar.maximizeAria}
           onClick={() => runWindowAction("toggleMaximize")}
         >
           <Square />
@@ -268,7 +291,7 @@ export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
           variant="ghost"
           size="icon-sm"
           className="rounded-lg text-on-surface-variant hover:bg-destructive hover:text-destructive-foreground"
-          aria-label="关闭窗口"
+          aria-label={copy.titlebar.closeAria}
           onClick={() => runWindowAction("close")}
         >
           <X />
