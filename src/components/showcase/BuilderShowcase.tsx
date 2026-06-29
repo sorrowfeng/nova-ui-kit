@@ -525,6 +525,13 @@ type ProjectJumpResult = {
   secondaryPath?: string;
 };
 
+type ProjectJumpFeedback = {
+  id: string;
+  tone: "success" | "warning" | "error";
+  title: string;
+  detail: string;
+};
+
 type EditorWorkflowStep = {
   id: "save" | "generate" | "check" | "validate" | "build";
   title: string;
@@ -5907,6 +5914,7 @@ export function BuilderShowcase() {
   const [projectJumpFocused, setProjectJumpFocused] = useState(false);
   const [projectJumpActiveIndex, setProjectJumpActiveIndex] = useState(0);
   const [projectJumpRecentIds, setProjectJumpRecentIds] = useState<string[]>(() => loadProjectJumpRecentIds());
+  const [projectJumpFeedback, setProjectJumpFeedback] = useState<ProjectJumpFeedback | null>(null);
   const [projectTasks, setProjectTasks] = useState<ProjectTaskEntry[]>(() => loadInitialProjectTaskHistory());
   const [projectTaskSearchQuery, setProjectTaskSearchQuery] = useState("");
   const [projectTaskStatusFilter, setProjectTaskStatusFilter] = useState<ProjectTaskStatusFilter>("all");
@@ -5948,6 +5956,7 @@ export function BuilderShowcase() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const canvasViewportRef = useRef<HTMLDivElement | null>(null);
   const projectJumpInputRef = useRef<HTMLInputElement | null>(null);
+  const projectJumpFeedbackTimeoutRef = useRef<number | null>(null);
   const rustLogicRef = useRef<HTMLTextAreaElement | null>(null);
   const itemsRef = useRef<BuilderItem[]>(items);
   const historyRef = useRef<Record<string, HistoryEntry>>({});
@@ -6666,6 +6675,15 @@ export function BuilderShowcase() {
     }
     window.localStorage.setItem(PROJECT_JUMP_RECENTS_STORAGE_KEY, JSON.stringify(projectJumpRecentIds.slice(0, 8)));
   }, [projectJumpRecentIds]);
+
+  useEffect(
+    () => () => {
+      if (projectJumpFeedbackTimeoutRef.current !== null) {
+        window.clearTimeout(projectJumpFeedbackTimeoutRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     setProjectJumpActiveIndex(0);
@@ -11140,6 +11158,26 @@ export function BuilderShowcase() {
     })();
   };
 
+  const clearProjectJumpFeedback = () => {
+    if (projectJumpFeedbackTimeoutRef.current !== null) {
+      window.clearTimeout(projectJumpFeedbackTimeoutRef.current);
+      projectJumpFeedbackTimeoutRef.current = null;
+    }
+    setProjectJumpFeedback(null);
+  };
+
+  const showProjectJumpFeedback = (tone: ProjectJumpFeedback["tone"], title: string, detail: string) => {
+    const id = createId();
+    if (projectJumpFeedbackTimeoutRef.current !== null) {
+      window.clearTimeout(projectJumpFeedbackTimeoutRef.current);
+    }
+    setProjectJumpFeedback({ id, tone, title, detail });
+    projectJumpFeedbackTimeoutRef.current = window.setTimeout(() => {
+      setProjectJumpFeedback((current) => (current?.id === id ? null : current));
+      projectJumpFeedbackTimeoutRef.current = null;
+    }, 3200);
+  };
+
   const rememberProjectJumpResult = (result: ProjectJumpResult) => {
     setProjectJumpRecentIds((current) => [result.id, ...current.filter((id) => id !== result.id)].slice(0, 8));
   };
@@ -11151,30 +11189,39 @@ export function BuilderShowcase() {
     setBuildError("");
 
     if (result.kind === "action" && result.actionId) {
+      setMode(result.mode);
+      if (result.mode === "build") {
+        openRelevantTaskDock(null, false);
+      }
       runProjectJumpAction(result.actionId);
+      showProjectJumpFeedback("success", "Action started", `${result.title} is visible in the workflow rail and task dock.`);
       return;
     }
 
     if (result.kind === "component" && result.insertComponentType) {
       insertComponentFromShortcut(result.insertComponentType, { centered: items.length === 0, revealPalette: true });
+      showProjectJumpFeedback("success", "Component inserted", `${result.title} was added to the active UI file and selected on the canvas.`);
       return;
     }
 
     if (result.kind === "settings") {
       setMode("design");
       setLeftDockTab("project");
+      showProjectJumpFeedback("success", "Opened project settings", "Release, bundle, version, and window settings are in the Project dock.");
       return;
     }
 
     if (result.kind === "rust-command" && result.commandId) {
       selectRustCommand(result.commandId);
       setMode("logic");
+      showProjectJumpFeedback("success", "Opened Rust command", `${result.title} is selected in the Logic workspace.`);
       return;
     }
 
     if (result.kind === "state" && result.stateId) {
       selectStateVariable(result.stateId);
       setMode("logic");
+      showProjectJumpFeedback("success", "Opened state variable", `${result.title} is selected in the Logic workspace.`);
       return;
     }
 
@@ -11193,27 +11240,51 @@ export function BuilderShowcase() {
           itemId: assetItem.item.id,
           itemName: getItemSummary(assetItem.item),
         });
+        showProjectJumpFeedback("success", "Focused asset usage", `${result.title} is used by ${getItemSummary(assetItem.item)} in ${assetItem.file.name}.`);
       } else {
         setMode("design");
+        setLeftDockTab("assets");
+        showProjectJumpFeedback("success", "Opened project assets", `${result.title} is selected from project assets; no canvas usage was found yet.`);
       }
       return;
     }
 
     if (result.fileId) {
       const targetFile = activeProject.files.find((file) => file.id === result.fileId);
+      if (!targetFile) {
+        const message = `Could not find UI file for ${result.title}.`;
+        setBuildError(message);
+        showProjectJumpFeedback("error", "Result target missing", message);
+        return;
+      }
       updateActiveProject((project) => ({
         ...project,
         activeFileId: result.fileId!,
       }));
       setSelectedId(result.itemId || targetFile?.items[0]?.id || "");
       setMode(result.mode);
+      setLeftDockTab("navigator");
+      setRightDockTab("properties");
+      showProjectJumpFeedback(
+        "success",
+        result.itemId ? "Focused control" : "Opened UI file",
+        result.itemId ? `${result.title} is selected in ${targetFile.name}.` : `${targetFile.name} is active on the canvas.`,
+      );
       return;
     }
 
     setMode(result.mode);
     if (result.path) {
-      void openLocalArtifact(result.path);
+      void openLocalArtifact(result.path).then((opened) => {
+        showProjectJumpFeedback(
+          opened ? "success" : "warning",
+          opened ? "Opening artifact" : "Artifact could not open",
+          opened ? result.path! : "Check the task output or run from the Tauri desktop app.",
+        );
+      });
+      return;
     }
+    showProjectJumpFeedback("warning", "Opened workspace", `${result.title} has no direct artifact path, so the ${result.mode} workspace is now active.`);
   };
 
   const focusBreakpointIssue = (issue: BreakpointValidationIssue) => {
@@ -11607,16 +11678,19 @@ export function BuilderShowcase() {
 
   const openLocalArtifact = async (path: string) => {
     if (!path) {
-      return;
+      return false;
     }
     setBuildError("");
     try {
       const opened = await invokeIfAvailable<void>("open_local_path", { path });
       if (opened === null) {
         setBuildError("打开验证产物需要在 Tauri 桌面 app 中运行。");
+        return false;
       }
+      return true;
     } catch (error) {
       setBuildError(String(error));
+      return false;
     }
   };
 
@@ -13613,7 +13687,12 @@ export function BuilderShowcase() {
         className="h-9 rounded-2xl bg-surface-container-low pl-9 pr-16 text-xs"
         onFocus={() => setProjectJumpFocused(true)}
         onBlur={() => window.setTimeout(() => setProjectJumpFocused(false), 120)}
-        onChange={(event) => setProjectJumpQuery(event.target.value)}
+        onChange={(event) => {
+          setProjectJumpQuery(event.target.value);
+          if (projectJumpFeedback) {
+            clearProjectJumpFeedback();
+          }
+        }}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
             event.preventDefault();
@@ -13685,6 +13764,33 @@ export function BuilderShowcase() {
               No project matches
             </div>
           )}
+        </div>
+      ) : projectJumpFeedback ? (
+        <div
+          role="status"
+          aria-live={projectJumpFeedback.tone === "error" ? "assertive" : "polite"}
+          data-builder-project-jump-feedback={projectJumpFeedback.tone}
+          className={cn(
+            "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-2xl border bg-surface-container px-3 py-2 text-xs shadow-m3-2",
+            projectJumpFeedback.tone === "success" && "border-primary/40",
+            projectJumpFeedback.tone === "warning" && "border-outline bg-surface-container-high",
+            projectJumpFeedback.tone === "error" && "border-destructive/50 bg-destructive/10",
+          )}
+        >
+          <span
+            className={cn(
+              "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-high",
+              projectJumpFeedback.tone === "success" && "text-primary",
+              projectJumpFeedback.tone === "warning" && "text-on-surface",
+              projectJumpFeedback.tone === "error" && "text-destructive",
+            )}
+          >
+            {projectJumpFeedback.tone === "success" ? <CheckCircle2 aria-hidden className="size-4" /> : <AlertTriangle aria-hidden className="size-4" />}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate font-medium text-on-surface">{projectJumpFeedback.title}</span>
+            <span className="mt-0.5 block line-clamp-2 text-on-surface-variant">{projectJumpFeedback.detail}</span>
+          </span>
         </div>
       ) : null}
     </div>
