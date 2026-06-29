@@ -93,7 +93,12 @@ import {
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { NOVA_EDITOR_COMMAND_EVENT, type NovaEditorCommandEventDetail } from "@/lib/editor-commands";
+import {
+  dispatchNovaEditorCommand,
+  NOVA_EDITOR_COMMAND_EVENT,
+  type NovaEditorCommand,
+  type NovaEditorCommandEventDetail,
+} from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
 import { BuildWorkspace } from "./builder/BuildWorkspace";
 import { DesignWorkspace } from "./builder/DesignWorkspace";
@@ -12760,6 +12765,84 @@ export function BuilderShowcase() {
     }
   };
 
+  useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      const element = target as HTMLElement | null;
+      return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
+    };
+
+    const runShortcut = (event: KeyboardEvent, action: () => void) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      action();
+    };
+
+    const runCommandShortcut = (event: KeyboardEvent, command: NovaEditorCommand) => {
+      runShortcut(event, () => dispatchNovaEditorCommand(command));
+    };
+
+    const focusProjectLocator = () => {
+      setProjectJumpFocused(true);
+      window.requestAnimationFrame(() => {
+        projectJumpInputRef.current?.focus();
+        projectJumpInputRef.current?.select();
+      });
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      const isCommand = event.ctrlKey || event.metaKey;
+      const commandOnly = isCommand && !event.altKey;
+
+      if (commandOnly && (key === "p" || key === "k")) {
+        runShortcut(event, focusProjectLocator);
+        return;
+      }
+
+      if (commandOnly && key === "s") {
+        runShortcut(event, () => {
+          setBuildError("");
+          setFeedbackPanelOpen(true);
+          setBottomDockTab("tasks");
+          enqueueProjectTask("save-project");
+        });
+        return;
+      }
+
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
+      if (commandOnly && key === "z") {
+        runCommandShortcut(event, event.shiftKey ? "redo" : "undo");
+        return;
+      }
+
+      if (commandOnly && key === "y") {
+        runCommandShortcut(event, "redo");
+        return;
+      }
+
+      if (commandOnly && key === "c" && selectedItems.length > 0) {
+        runCommandShortcut(event, "copy-selection");
+        return;
+      }
+
+      if (commandOnly && event.shiftKey && key === "b") {
+        runCommandShortcut(event, "build-exe");
+        return;
+      }
+
+      if (event.key === "F5" || (commandOnly && key === "r")) {
+        runCommandShortcut(event, "run-selected-event");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
+  }, [selectedItems.length]);
+
   const openSelectedProperties = () => {
     setRightDockTab("properties");
   };
@@ -12868,6 +12951,10 @@ export function BuilderShowcase() {
       }
       if (command === "quick-check-all") {
         enqueueProjectTask("quick-check-all");
+        return;
+      }
+      if (command === "run-selected-event") {
+        runSelectedEventAndRevealLogs();
         return;
       }
       if (command === "build-exe") {

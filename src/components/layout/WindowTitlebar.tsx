@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
+import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, Play, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -173,7 +173,8 @@ export function WindowTitlebar() {
             label="构建"
             items={[
               { label: "运行检查", command: "quick-check-all", icon: Terminal },
-              { label: "构建 exe", command: "build-exe", icon: Download },
+              { label: "运行当前事件", command: "run-selected-event", icon: Play, shortcut: "F5" },
+              { label: "构建 exe", command: "build-exe", icon: Download, shortcut: "Ctrl+Shift+B" },
               { label: "打包安装器", command: "bundle-installer", icon: Box },
             ]}
           />

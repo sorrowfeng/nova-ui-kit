@@ -13,6 +13,7 @@ export type NovaEditorCommand =
   | "mode-preview"
   | "mode-export"
   | "quick-check-all"
+  | "run-selected-event"
   | "build-exe"
   | "bundle-installer"
   | "help-guide"
@@ -28,4 +29,3 @@ export function dispatchNovaEditorCommand(command: NovaEditorCommand) {
   }
   window.dispatchEvent(new CustomEvent<NovaEditorCommandEventDetail>(NOVA_EDITOR_COMMAND_EVENT, { detail: { command } }));
 }
-
