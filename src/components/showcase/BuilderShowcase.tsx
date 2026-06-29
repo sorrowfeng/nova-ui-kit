@@ -5788,7 +5788,7 @@ export function BuilderShowcase() {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => (activeFile.items[0]?.id ? [activeFile.items[0].id] : []));
   const [selectedProjectTemplateId, setSelectedProjectTemplateId] = useState<ProjectTemplateId>("dashboard");
   const [mode, setMode] = useState<BuilderMode>("design");
-  const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("project");
+  const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("navigator");
   const [componentPaletteQuery, setComponentPaletteQuery] = useState("");
   const [componentPaletteCategory, setComponentPaletteCategory] = useState<ComponentPaletteCategoryId>("all");
   const [navigatorQuery, setNavigatorQuery] = useState("");
