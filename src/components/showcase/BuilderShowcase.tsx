@@ -19197,7 +19197,13 @@ export function BuilderShowcase() {
             </main>
 
             <InspectorDock tabs={rightDockTabs} activeTab={rightDockTab} onTabChange={setRightDockTab}>
-              <section className="mb-4 rounded-[22px] border border-outline-variant bg-surface-container-low p-3" data-builder-inspector-context="">
+              <section
+                className={cn(
+                  "mb-4 rounded-[22px] border border-outline-variant bg-surface-container-low p-3",
+                  rightDockTab === "properties" && selectedItem && "hidden",
+                )}
+                data-builder-inspector-context=""
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -19250,7 +19256,10 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
 
-                <div className="mt-3 space-y-2" data-builder-inspector-workflow="">
+                <div
+                  className={cn("mt-3 space-y-2", rightDockTab === "properties" && selectedItem && "hidden")}
+                  data-builder-inspector-workflow=""
+                >
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Next steps</p>
                     <Badge variant={selectedEventCommand || selectedItems.length > 1 ? "secondary" : "outline"}>{inspectorWorkflowBadge}</Badge>
@@ -19315,6 +19324,22 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
+                {rightDockTab === "properties" && selectedItem ? (
+                  <div className="mt-3 grid grid-cols-4 gap-1.5" data-builder-inspector-property-map="">
+                    {[
+                      { label: "Layout", value: `${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}` },
+                      { label: "Content", value: "text" in selectedItem.props ? String(selectedItem.props.text) : selectedItem.props.label ?? selectedItem.props.title ?? selectedItem.type },
+                      { label: "State", value: selectedBindableProps.length > 0 ? `${selectedBindableProps.length} bind` : "static" },
+                      { label: "Action", value: selectedEventCommand ? "bound" : selectedEventName ? "ready" : "none" },
+                    ].map((group) => (
+                      <div key={group.label} className="min-w-0 rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2">
+                        <p className="truncate text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{group.label}</p>
+                        <p className="mt-1 truncate text-[0.68rem] text-on-surface">{group.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
                 <div className="mt-3">
                   <div className="mb-1.5 flex items-center justify-between gap-2">
                     <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Views</p>
@@ -19350,6 +19375,401 @@ export function BuilderShowcase() {
               <PanelTitle icon={Settings2} title="检查器" description="页面、图层、坐标和控件属性。" />
 
               <div className="space-y-4">
+                {selectedItem ? (
+                  <section className="space-y-3 rounded-[22px] border border-primary/20 bg-surface-container-low p-3 shadow-m3-1" data-builder-selected-properties-quick="">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-sm font-semibold">{getItemSummary(selectedItem)}</h3>
+                          <Badge variant="outline">{selectedItem.type}</Badge>
+                          {selectedItem.locked ? <Badge variant="outline">locked</Badge> : null}
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
+                          常用属性优先显示；页面设置、对象树和高级检查项保留在后面。
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="icon-sm" aria-label={selectedItem.locked ? "解锁控件" : "锁定控件"} onClick={toggleSelectedLock}>
+                        {selectedItem.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" variant="secondary" onClick={openSelectedProperties}>
+                        <Settings2 aria-hidden className="size-4" />
+                        Properties
+                      </Button>
+                      <Button size="sm" variant="secondary" disabled={!selectedEventName} onClick={openSelectedConnections}>
+                        <Braces aria-hidden className="size-4" />
+                        Connections
+                      </Button>
+                    </div>
+
+                    <PropertySection
+                      icon={Move}
+                      title="Layout"
+                      description={activeBreakpoint === "desktop" ? "编辑基础坐标、尺寸和父容器。" : `正在编辑 ${activeBreakpoint} 断点覆盖。`}
+                      badge={activeBreakpoint}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field label="X">
+                          <Input
+                            type="number"
+                            inputSize="sm"
+                            value={selectedItem.x}
+                            onChange={(event) => updateSelectedLayout({ x: numberFromInput(event.target.value, selectedItem.x, 0, page.width) })}
+                          />
+                        </Field>
+                        <Field label="Y">
+                          <Input
+                            type="number"
+                            inputSize="sm"
+                            value={selectedItem.y}
+                            onChange={(event) => updateSelectedLayout({ y: numberFromInput(event.target.value, selectedItem.y, 0, page.height) })}
+                          />
+                        </Field>
+                        <Field label="宽度">
+                          <Input
+                            type="number"
+                            inputSize="sm"
+                            value={selectedItem.width}
+                            onChange={(event) => updateSelectedLayout({ width: numberFromInput(event.target.value, selectedItem.width, MIN_ITEM_WIDTH, page.width) })}
+                          />
+                        </Field>
+                        <Field label="高度">
+                          <Input
+                            type="number"
+                            inputSize="sm"
+                            value={selectedItem.height}
+                            onChange={(event) => updateSelectedLayout({ height: numberFromInput(event.target.value, selectedItem.height, MIN_ITEM_HEIGHT, page.height) })}
+                          />
+                        </Field>
+                      </div>
+                      <Field label="父容器">
+                        <Select value={selectedItem.parentId ?? "__canvas"} onValueChange={updateSelectedParent}>
+                          <SelectTrigger data-builder-parent-select="">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__canvas">Canvas</SelectItem>
+                            {availableParentFrames.map((frame) => (
+                              <SelectItem key={frame.id} value={frame.id}>
+                                {getItemSummary(frame)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      {activeBreakpoint !== "desktop" ? (
+                        <Button size="sm" variant="ghost" onClick={resetSelectedBreakpointOverride} disabled={!selectedBreakpointOverride}>
+                          <RotateCcw aria-hidden className="size-4" />
+                          Reset breakpoint override
+                        </Button>
+                      ) : null}
+                      {selectedParentAutoLayout ? (
+                        <p className="rounded-xl bg-surface-container-low p-2 text-xs leading-5 text-on-surface-variant">
+                          当前控件由父 Frame 的自动布局控制，坐标主要作为保存参考。
+                        </p>
+                      ) : null}
+                      {selectedConstraints ? (
+                        <div className="grid grid-cols-4 gap-1.5">
+                          <Button size="sm" variant={selectedConstraints.left ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintLeft")}>
+                            Left
+                          </Button>
+                          <Button size="sm" variant={selectedConstraints.right ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintRight")}>
+                            Right
+                          </Button>
+                          <Button size="sm" variant={selectedConstraints.top ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintTop")}>
+                            Top
+                          </Button>
+                          <Button size="sm" variant={selectedConstraints.bottom ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintBottom")}>
+                            Bottom
+                          </Button>
+                        </div>
+                      ) : null}
+                      {selectedItem.type === "frame" ? (
+                        <div className="space-y-3 rounded-xl bg-surface-container-low p-2">
+                          <Field label="Frame 布局模式">
+                            <SegmentedControl
+                              aria-label="Frame 布局模式"
+                              value={frameLayoutMode(selectedItem)}
+                              onValueChange={(value) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
+                              options={[
+                                { value: "free", label: "Free" },
+                                { value: "row", label: "Row" },
+                                { value: "column", label: "Column" },
+                                { value: "grid", label: "Grid" },
+                              ]}
+                            />
+                          </Field>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Field label="间距">
+                              <Input
+                                type="number"
+                                inputSize="sm"
+                                value={frameLayoutMetrics(selectedItem).gap}
+                                onChange={(event) => updateSelectedProps({ layoutGap: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).gap, 0, 80) })}
+                              />
+                            </Field>
+                            <Field label="内边距">
+                              <Input
+                                type="number"
+                                inputSize="sm"
+                                value={frameLayoutMetrics(selectedItem).padding}
+                                onChange={(event) => updateSelectedProps({ layoutPadding: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).padding, 0, 80) })}
+                              />
+                            </Field>
+                          </div>
+                        </div>
+                      ) : null}
+                    </PropertySection>
+
+                    <PropertySection icon={Type} title="Content" description="文本、图片和表单候选项。">
+                      {selectedItem.type === "image" ? (
+                        <>
+                          <Field label="绑定资源">
+                            <Select
+                              value={selectedItem.props.assetId || "__none"}
+                              onValueChange={(value) => {
+                                if (value === "__none") {
+                                  updateSelectedProps({ assetId: "", assetPath: "", label: "Image" });
+                                  return;
+                                }
+                                bindSelectedImageAsset(value);
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none">未绑定</SelectItem>
+                                {activeProject.assets.map((asset) => (
+                                  <SelectItem key={asset.id} value={asset.id}>
+                                    {asset.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </Field>
+                          <Field label="图片适配">
+                            <Select value={selectedItem.props.objectFit ?? "cover"} onValueChange={(value) => updateSelectedProps({ objectFit: value as ImageFit })}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="cover">Cover</SelectItem>
+                                <SelectItem value="contain">Contain</SelectItem>
+                                <SelectItem value="fill">Fill</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </Field>
+                          <Field label="替代文本">
+                            <Input value={selectedItem.props.alt ?? ""} onChange={(event) => updateSelectedProps({ alt: event.target.value })} />
+                          </Field>
+                        </>
+                      ) : null}
+                      {"title" in selectedItem.props ? (
+                        <Field label="标题">
+                          <Input value={selectedItem.props.title ?? ""} onChange={(event) => updateSelectedProps({ title: event.target.value })} />
+                        </Field>
+                      ) : null}
+                      {"label" in selectedItem.props ? (
+                        <Field label="标签">
+                          <Input data-builder-selected-label-input="" value={selectedItem.props.label ?? ""} onChange={(event) => updateSelectedProps({ label: event.target.value })} />
+                        </Field>
+                      ) : null}
+                      {"value" in selectedItem.props ? (
+                        <Field label="值">
+                          <Input value={selectedItem.props.value ?? ""} onChange={(event) => updateSelectedProps({ value: event.target.value })} />
+                        </Field>
+                      ) : null}
+                      {selectedItem.type === "select" ? (
+                        <div className="grid grid-cols-1 gap-2">
+                          <Field label="Option A">
+                            <Input value={selectedItem.props.optionA ?? ""} onChange={(event) => updateSelectedProps({ optionA: event.target.value })} />
+                          </Field>
+                          <Field label="Option B">
+                            <Input value={selectedItem.props.optionB ?? ""} onChange={(event) => updateSelectedProps({ optionB: event.target.value })} />
+                          </Field>
+                          <Field label="Option C">
+                            <Input value={selectedItem.props.optionC ?? ""} onChange={(event) => updateSelectedProps({ optionC: event.target.value })} />
+                          </Field>
+                        </div>
+                      ) : null}
+                      {"description" in selectedItem.props ? (
+                        <Field label="说明">
+                          <Textarea value={selectedItem.props.description ?? ""} onChange={(event) => updateSelectedProps({ description: event.target.value })} />
+                        </Field>
+                      ) : null}
+                      {"placeholder" in selectedItem.props ? (
+                        <Field label="占位文本">
+                          <Input value={selectedItem.props.placeholder ?? ""} onChange={(event) => updateSelectedProps({ placeholder: event.target.value })} />
+                        </Field>
+                      ) : null}
+                      {"helper" in selectedItem.props ? (
+                        <Field label="辅助说明">
+                          <Input value={selectedItem.props.helper ?? ""} onChange={(event) => updateSelectedProps({ helper: event.target.value })} />
+                        </Field>
+                      ) : null}
+                    </PropertySection>
+
+                    <PropertySection
+                      icon={ToggleLeft}
+                      title="State"
+                      description="项目状态绑定、默认值和属性校验。"
+                      badge={selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} issue(s)` : "ready"}
+                    >
+                      {selectedBindableProps.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-2">
+                          {selectedBindableProps.map((prop) => (
+                            <Field key={prop.value} label={prop.label}>
+                              <Select
+                                value={selectedItem.props.stateBindings?.[prop.value] || "__none"}
+                                onValueChange={(value) => updateSelectedStateBinding(prop.value, value === "__none" ? "" : value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__none">No state</SelectItem>
+                                  {activeProject.stateVariables.map((state) => (
+                                    <SelectItem key={state.id} value={state.id}>
+                                      {state.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </Field>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-xl bg-surface-container-low p-2 text-xs leading-5 text-on-surface-variant">当前控件没有可绑定的基础属性。</p>
+                      )}
+                      {selectedItem.type === "switch" || selectedItem.type === "checkbox" ? (
+                        <div className="flex items-center justify-between rounded-xl bg-surface-container-low p-3">
+                          <Label>默认选中</Label>
+                          <Switch checked={Boolean(selectedItem.props.checked)} onCheckedChange={(checked) => updateSelectedProps({ checked })} />
+                        </div>
+                      ) : null}
+                      {selectedPropertyIssues.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedPropertyIssues.slice(0, 2).map((issue) => (
+                            <div key={issue.id} className="flex min-w-0 items-start gap-2 rounded-xl bg-surface-container-low p-2 text-xs">
+                              <AlertTriangle
+                                aria-hidden
+                                className={cn("mt-0.5 size-3.5 shrink-0", issue.severity === "error" ? "text-destructive" : "text-on-surface-variant")}
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate font-medium text-on-surface">{issue.label}</p>
+                                <p className="mt-0.5 leading-5 text-on-surface-variant">{issue.message}</p>
+                              </div>
+                            </div>
+                          ))}
+                          {selectedPropertyAutoFixCount > 0 ? (
+                            <Button size="sm" variant="secondary" onClick={applySelectedPropertyAutoFix}>
+                              <Wand2 aria-hidden className="size-4" />
+                              Fix {selectedPropertyAutoFixCount}
+                            </Button>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </PropertySection>
+
+                    <PropertySection icon={Settings2} title="Appearance" description="视觉变体和控件尺寸。">
+                      {selectedItem.type === "button" || selectedItem.type === "badge" ? (
+                        <Field label="样式">
+                          <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value) => updateSelectedProps({ variant: value as ButtonVariant })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="default">Primary</SelectItem>
+                              <SelectItem value="secondary">Secondary</SelectItem>
+                              <SelectItem value="outline">Outline</SelectItem>
+                              <SelectItem value="ghost">Ghost</SelectItem>
+                              <SelectItem value="destructive">Destructive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      ) : null}
+                      {selectedItem.type === "button" ? (
+                        <Field label="按钮尺寸">
+                          <Select value={selectedItem.props.size ?? "md"} onValueChange={(value) => updateSelectedProps({ size: value as ControlSize })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sm">Small</SelectItem>
+                              <SelectItem value="md">Medium</SelectItem>
+                              <SelectItem value="lg">Large</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      ) : null}
+                      {selectedItem.type !== "button" && selectedItem.type !== "badge" ? (
+                        <p className="rounded-xl bg-surface-container-low p-2 text-xs leading-5 text-on-surface-variant">该控件暂时没有专属外观变体。</p>
+                      ) : null}
+                    </PropertySection>
+
+                    <PropertySection
+                      icon={Braces}
+                      title="Actions"
+                      description={selectedEventName ? `事件 ${selectedEventName} 绑定和常用图层动作。` : "当前控件没有可绑定事件。"}
+                      badge={selectedEventCommand ? "bound" : selectedEventName ? "ready" : "none"}
+                    >
+                      {selectedEventName ? (
+                        <Field label="Rust command">
+                          <Select
+                            value={
+                              selectedEventCommandId && activeProject.rustCommands.some((command) => command.id === selectedEventCommandId)
+                                ? selectedEventCommandId
+                                : "__none"
+                            }
+                            onValueChange={(value) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none">No command</SelectItem>
+                              {activeProject.rustCommands.map((command) => (
+                                <SelectItem key={command.id} value={command.id}>
+                                  {sanitizeRustCommandName(command.name)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      ) : null}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button size="sm" variant="secondary" disabled={!selectedItem || !selectedEventName || !selectedEventCommand} onClick={runSelectedEventAndRevealLogs}>
+                          <Play aria-hidden className="size-4" />
+                          Run Event
+                        </Button>
+                        <Button size="sm" variant="secondary" disabled={!selectedEventName} onClick={openSelectedConnections}>
+                          <Braces aria-hidden className="size-4" />
+                          Details
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={bringToFront}>
+                          <MoveUp aria-hidden className="size-4" />
+                          置顶
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={sendToBack}>
+                          <MoveDown aria-hidden className="size-4" />
+                          置底
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={duplicateSelected}>
+                          <Copy aria-hidden className="size-4" />
+                          复制
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={requestDeleteSelected}>
+                          <Trash2 aria-hidden className="size-4" />
+                          删除
+                        </Button>
+                      </div>
+                    </PropertySection>
+                  </section>
+                ) : null}
+
                 <section className="rounded-[22px] bg-surface-container-low p-3">
                   <div className="mb-3 flex items-center gap-2">
                     <FileJson aria-hidden className="size-4 text-primary" />
@@ -19585,7 +20005,7 @@ export function BuilderShowcase() {
                     </div>
                   </section>
                 ) : selectedItem ? (
-                  <section className="space-y-4 rounded-[22px] bg-surface-container-low p-3">
+                  <section className="hidden" aria-hidden="true">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h3 className="truncate text-sm font-medium">控件属性</h3>
@@ -21188,6 +21608,38 @@ function ProjectTaskIcon({ kind }: { kind: ProjectTaskKind }) {
     return <Wand2 aria-hidden className="size-4" />;
   }
   return <Save aria-hidden className="size-4" />;
+}
+
+function PropertySection({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  children,
+}: {
+  icon: typeof Layers;
+  title: string;
+  description: string;
+  badge?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-2">
+          <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Icon aria-hidden className="size-3.5" />
+          </span>
+          <div className="min-w-0">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">{title}</h4>
+            <p className="mt-1 text-xs leading-5 text-on-surface-variant">{description}</p>
+          </div>
+        </div>
+        {badge ? <Badge variant="outline" className="shrink-0">{badge}</Badge> : null}
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
 }
 
 function TemplateMiniPreview({ template, selected = false }: { template: ProjectTemplateDefinition; selected?: boolean }) {
