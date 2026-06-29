@@ -5852,8 +5852,9 @@ export function BuilderShowcase() {
     setBottomDockExpanded(expanded);
     setBottomDockMinimized(false);
   };
-  const openFeedbackPanel = (tab: BuilderBottomDockTab) => {
+  const openFeedbackPanel = (tab: BuilderBottomDockTab, expanded = false) => {
     setBottomDockTab(tab);
+    setBottomDockExpanded(expanded);
     setFeedbackPanelOpen(true);
     setBottomDockMinimized(false);
   };
@@ -13592,7 +13593,7 @@ export function BuilderShowcase() {
     selectRelevantProjectTask(preferredTask);
   };
   const handleBottomDockTabChange = (tab: BuilderBottomDockTab) => {
-    setBottomDockTab(tab);
+    openBottomDock(tab, bottomDockExpanded);
     if (tab === "tasks") {
       selectRelevantProjectTask();
     }
@@ -22186,7 +22187,7 @@ export function BuilderShowcase() {
                     <button
                       type="button"
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
-                      onClick={() => setBottomDockTab("issues")}
+                      onClick={() => openBottomDock("issues", false)}
                     >
                       <span className="block text-[0.66rem] text-on-surface-variant">Issues</span>
                       <span className="mt-0.5 block font-medium text-on-surface">{feedbackIssueCount}</span>
@@ -22202,14 +22203,14 @@ export function BuilderShowcase() {
                     <button
                       type="button"
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
-                      onClick={() => setBottomDockTab("output")}
+                      onClick={() => openBottomDock("output", false)}
                     >
                       <span className="block text-[0.66rem] text-on-surface-variant">Output</span>
                       <span className="mt-0.5 block font-medium text-on-surface">{activeProject.outputExePath ? "exe" : "idle"}</span>
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <Button size="sm" variant={bottomDockTab === "issues" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("issues")}>
+                    <Button size="sm" variant={bottomDockTab === "issues" ? "secondary" : "ghost"} onClick={() => openBottomDock("issues", false)}>
                       <AlertTriangle aria-hidden className="size-4" />
                       Issues
                     </Button>
@@ -22217,7 +22218,7 @@ export function BuilderShowcase() {
                       <ClipboardCopy aria-hidden className="size-4" />
                       Tasks
                     </Button>
-                    <Button size="sm" variant={bottomDockTab === "logs" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("logs")}>
+                    <Button size="sm" variant={bottomDockTab === "logs" ? "secondary" : "ghost"} onClick={() => openBottomDock("logs", false)}>
                       <FileJson aria-hidden className="size-4" />
                       Logs
                     </Button>
@@ -22293,7 +22294,7 @@ export function BuilderShowcase() {
                                   定位源码
                                 </Button>
                               ) : null}
-                              <Button size="sm" variant="ghost" onClick={() => setBottomDockTab("logs")}>
+                              <Button size="sm" variant="ghost" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                                 <FileJson aria-hidden className="size-4" />
                                 完整日志
                               </Button>
@@ -22335,7 +22336,7 @@ export function BuilderShowcase() {
                         <div className="space-y-3">
                           <Badge variant="destructive">build error</Badge>
                           <p className="leading-5 text-destructive">{buildError}</p>
-                          <Button size="sm" variant="secondary" onClick={() => setBottomDockTab("logs")}>
+                          <Button size="sm" variant="secondary" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                             <FileJson aria-hidden className="size-4" />
                             完整日志
                           </Button>
@@ -22408,7 +22409,7 @@ export function BuilderShowcase() {
                         <ClipboardCopy aria-hidden className="size-4" />
                         Tasks
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setBottomDockTab("logs")}>
+                      <Button size="sm" variant="ghost" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                         <FileJson aria-hidden className="size-4" />
                         Logs
                       </Button>
