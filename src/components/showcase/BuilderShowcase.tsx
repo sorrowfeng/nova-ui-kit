@@ -2733,6 +2733,21 @@ function buildTreeRows(items: BuilderItem[]) {
   return rows;
 }
 
+function getLayerSiblings(items: BuilderItem[], item: BuilderItem) {
+  const parentId = item.parentId || undefined;
+  return items.filter((candidate) => (candidate.parentId || undefined) === parentId).sort((a, b) => a.z - b.z);
+}
+
+function canMoveLayerWithinGroup(items: BuilderItem[], item: BuilderItem, direction: 1 | -1) {
+  if (item.locked) {
+    return false;
+  }
+  const siblings = getLayerSiblings(items, item);
+  const index = siblings.findIndex((candidate) => candidate.id === item.id);
+  const targetIndex = index + direction;
+  return index >= 0 && targetIndex >= 0 && targetIndex < siblings.length;
+}
+
 function navigatorTreeRowMatches(row: BuilderTreeRow, query: string) {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) {
@@ -5792,6 +5807,7 @@ export function BuilderShowcase() {
   const [componentPaletteQuery, setComponentPaletteQuery] = useState("");
   const [componentPaletteCategory, setComponentPaletteCategory] = useState<ComponentPaletteCategoryId>("all");
   const [navigatorQuery, setNavigatorQuery] = useState("");
+  const [navigatorLayerMessage, setNavigatorLayerMessage] = useState("");
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [openPropertySections, setOpenPropertySections] = useState<Record<BuilderPropertySectionId, boolean>>({
     layout: true,
@@ -8285,19 +8301,45 @@ export function BuilderShowcase() {
     updateActiveItems((current) => current.map((item) => (selectedIds.includes(item.id) ? { ...item, locked: !item.locked } : item)));
   };
 
+  const layerMoveTitle = (item: BuilderItem, direction: 1 | -1) => {
+    if (item.locked) {
+      return "锁定控件不能调整层级";
+    }
+    if (canMoveLayerWithinGroup(items, item, direction)) {
+      return direction > 0 ? "在同组中图层上移" : "在同组中图层下移";
+    }
+    return direction > 0 ? "已经在本组最上方" : "已经在本组最下方";
+  };
+
   const moveLayer = (id: string, direction: 1 | -1) => {
-    updateActiveItems((current) => {
-      const ordered = [...current].sort((a, b) => a.z - b.z);
-      const index = ordered.findIndex((item) => item.id === id);
-      const targetIndex = index + direction;
-      if (index < 0 || targetIndex < 0 || targetIndex >= ordered.length) {
-        return current;
-      }
-      const next = [...ordered];
-      const [item] = next.splice(index, 1);
-      next.splice(targetIndex, 0, item);
-      return next.map((node, nodeIndex) => ({ ...node, z: nodeIndex + 1 }));
-    });
+    const source = items.find((item) => item.id === id);
+    if (!source) {
+      return;
+    }
+
+    setSelectedIds([id]);
+
+    if (source.locked) {
+      setNavigatorLayerMessage(`已锁定：${getItemSummary(source)}，先解锁再调整层级。`);
+      return;
+    }
+
+    const siblings = getLayerSiblings(items, source);
+    const index = siblings.findIndex((item) => item.id === id);
+    const targetIndex = index + direction;
+    if (index < 0 || targetIndex < 0 || targetIndex >= siblings.length) {
+      setNavigatorLayerMessage(`已在本组${direction > 0 ? "最上方" : "最下方"}：${getItemSummary(source)}。`);
+      return;
+    }
+
+    const zSlots = siblings.map((item) => item.z).sort((a, b) => a - b);
+    const nextSiblingOrder = [...siblings];
+    const [movedItem] = nextSiblingOrder.splice(index, 1);
+    nextSiblingOrder.splice(targetIndex, 0, movedItem);
+    const nextZById = new Map(nextSiblingOrder.map((item, siblingIndex) => [item.id, zSlots[siblingIndex]]));
+
+    updateActiveItems((current) => current.map((item) => (nextZById.has(item.id) ? { ...item, z: nextZById.get(item.id)! } : item)));
+    setNavigatorLayerMessage(`已在同组${direction > 0 ? "上移" : "下移"}：${getItemSummary(source)}。`);
   };
 
   const bringToFront = () => {
@@ -18565,7 +18607,10 @@ export function BuilderShowcase() {
                       placeholder="Search layers..."
                       value={navigatorQuery}
                       className="h-9 rounded-2xl pl-9 text-xs"
-                      onChange={(event) => setNavigatorQuery(event.target.value)}
+                      onChange={(event) => {
+                        setNavigatorQuery(event.target.value);
+                        setNavigatorLayerMessage("");
+                      }}
                     />
                   </div>
 
@@ -18627,6 +18672,17 @@ export function BuilderShowcase() {
                     </Button>
                   </div>
 
+                  {navigatorLayerMessage ? (
+                    <div
+                      className="flex min-w-0 items-center gap-2 rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2 text-xs text-on-surface-variant"
+                      data-builder-navigator-layer-message=""
+                      role="status"
+                    >
+                      <Layers aria-hidden className="size-3.5 shrink-0 text-primary" />
+                      <span className="truncate">{navigatorLayerMessage}</span>
+                    </div>
+                  ) : null}
+
                   {treeRows.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs text-on-surface-variant">
                       当前文件还没有控件。去 Components 面板添加一个控件开始编辑。
@@ -18644,6 +18700,8 @@ export function BuilderShowcase() {
                       {visibleNavigatorTreeRows.map(({ item, depth }) => {
                         const Icon = getDefinition(item.type).icon;
                         const selected = selectedIds.includes(item.id);
+                        const canMoveUp = canMoveLayerWithinGroup(items, item, 1);
+                        const canMoveDown = canMoveLayerWithinGroup(items, item, -1);
                         return (
                           <div
                             key={item.id}
@@ -18674,18 +18732,22 @@ export function BuilderShowcase() {
                             </button>
                             <button
                               type="button"
-                              className="focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+                              className={cn(
+                                "focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant",
+                              )}
                               aria-label="图层上移"
-                              title="图层上移"
+                              title={layerMoveTitle(item, 1)}
+                              disabled={!canMoveUp}
                               onClick={() => moveLayer(item.id, 1)}
                             >
                               <MoveUp aria-hidden className="size-3.5" />
                             </button>
                             <button
                               type="button"
-                              className="focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+                              className="focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant"
                               aria-label="图层下移"
-                              title="图层下移"
+                              title={layerMoveTitle(item, -1)}
+                              disabled={!canMoveDown}
                               onClick={() => moveLayer(item.id, -1)}
                             >
                               <MoveDown aria-hidden className="size-3.5" />
@@ -19969,43 +20031,51 @@ export function BuilderShowcase() {
                     </div>
                   ) : (
                     <div className="max-h-52 space-y-1 overflow-auto pr-1">
-                      {treeRows.map(({ item, depth }) => (
-                        <div
-                          key={item.id}
-                          className={cn(
-                            "flex items-center gap-1 rounded-2xl p-1 transition-colors",
-                            selectedIds.includes(item.id) ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
-                          )}
-                          style={{ paddingLeft: depth * 14 + 4 }}
-                        >
-                          <button
-                            type="button"
-                            className="focus-ring min-w-0 flex-1 rounded-xl px-2 py-2 text-left"
-                            onClick={(event) => selectItem(item.id, event)}
+                      {treeRows.map(({ item, depth }) => {
+                        const canMoveUp = canMoveLayerWithinGroup(items, item, 1);
+                        const canMoveDown = canMoveLayerWithinGroup(items, item, -1);
+                        return (
+                          <div
+                            key={item.id}
+                            className={cn(
+                              "flex items-center gap-1 rounded-2xl p-1 transition-colors",
+                              selectedIds.includes(item.id) ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
+                            )}
+                            style={{ paddingLeft: depth * 14 + 4 }}
                           >
-                            <span className="block truncate text-xs font-medium">{getItemSummary(item)}</span>
-                            <span className="block truncate text-[0.68rem] opacity-70">
-                              {item.name} · {item.parentId ? "child" : "root"} · z {item.z}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            className="focus-ring rounded-full p-1 disabled:opacity-30"
-                            aria-label="图层上移"
-                            onClick={() => moveLayer(item.id, 1)}
-                          >
-                            <MoveUp aria-hidden className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            className="focus-ring rounded-full p-1 disabled:opacity-30"
-                            aria-label="图层下移"
-                            onClick={() => moveLayer(item.id, -1)}
-                          >
-                            <MoveDown aria-hidden className="size-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                            <button
+                              type="button"
+                              className="focus-ring min-w-0 flex-1 rounded-xl px-2 py-2 text-left"
+                              onClick={(event) => selectItem(item.id, event)}
+                            >
+                              <span className="block truncate text-xs font-medium">{getItemSummary(item)}</span>
+                              <span className="block truncate text-[0.68rem] opacity-70">
+                                {item.name} · {item.parentId ? "child" : "root"} · z {item.z}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              className="focus-ring rounded-full p-1 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant"
+                              aria-label="图层上移"
+                              title={layerMoveTitle(item, 1)}
+                              disabled={!canMoveUp}
+                              onClick={() => moveLayer(item.id, 1)}
+                            >
+                              <MoveUp aria-hidden className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              className="focus-ring rounded-full p-1 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant"
+                              aria-label="图层下移"
+                              title={layerMoveTitle(item, -1)}
+                              disabled={!canMoveDown}
+                              onClick={() => moveLayer(item.id, -1)}
+                            >
+                              <MoveDown aria-hidden className="size-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </section>
