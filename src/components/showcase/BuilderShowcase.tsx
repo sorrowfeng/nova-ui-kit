@@ -10773,7 +10773,7 @@ export function BuilderShowcase() {
         ? projectActionPresets.find((preset) => preset.id === "installer-bundle") ?? null
         : null;
 
-  const shouldRevealTaskWorkspaceForActions = (actionIds: ProjectJumpActionId[]) =>
+  const shouldSwitchTaskWorkspaceForActions = (actionIds: ProjectJumpActionId[]) =>
     !(actionIds.length === 1 && actionIds[0] === "save-project");
 
   const enqueueProjectTask = (actionId: ProjectJumpActionId, attempt = 1) => {
@@ -10818,8 +10818,9 @@ export function BuilderShowcase() {
         ? `Queued ${tasks[0].title}.`
         : `Queued ${tasks.length} task(s), starting with ${tasks[0].title}.`,
     );
-    if (shouldRevealTaskWorkspaceForActions(actionIds)) {
-      openBottomDock("tasks");
+    const switchTaskWorkspace = shouldSwitchTaskWorkspaceForActions(actionIds);
+    openBottomDock("tasks", switchTaskWorkspace);
+    if (switchTaskWorkspace) {
       setMode(projectTaskDefinitions[tasks[tasks.length - 1].actionId].mode);
     }
     if (autoStart && !projectTaskQueuePausedRef.current) {
