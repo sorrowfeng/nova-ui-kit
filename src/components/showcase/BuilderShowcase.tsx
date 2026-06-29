@@ -12999,6 +12999,40 @@ export function BuilderShowcase() {
     latestProjectTask?.summary ??
     (activeProject.outputExePath ? `Latest exe: ${fileNameFromPath(activeProject.outputExePath)}` : "Issues, tasks, output, and logs will appear here.");
   const feedbackStripVisible = mode !== "design" || feedbackPanelOpen;
+  const selectRelevantProjectTask = (preferredTask?: ProjectTaskEntry | null) => {
+    const task =
+      preferredTask ??
+      runningProjectTask ??
+      latestQueuedProjectTask ??
+      latestFailedProjectTask ??
+      latestProjectTask ??
+      selectedProjectTask ??
+      visibleProjectTasks[0] ??
+      null;
+
+    if (!task) {
+      return;
+    }
+
+    if (!visibleProjectTasks.some((visibleTask) => visibleTask.id === task.id)) {
+      setProjectTaskStatusFilter("all");
+      setProjectTaskKindFilter("all");
+      setProjectTaskSearchQuery("");
+    }
+    setSelectedProjectTaskId(task.id);
+    setProjectTaskLogSearchQuery("");
+  };
+  const openRelevantTaskDock = (preferredTask?: ProjectTaskEntry | null, expanded = true) => {
+    setMode("build");
+    openBottomDock("tasks", expanded);
+    selectRelevantProjectTask(preferredTask);
+  };
+  const handleBottomDockTabChange = (tab: BuilderBottomDockTab) => {
+    setBottomDockTab(tab);
+    if (tab === "tasks") {
+      selectRelevantProjectTask();
+    }
+  };
   const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
     setBuildError("");
     if (step.actions.length === 1) {
@@ -13324,7 +13358,7 @@ export function BuilderShowcase() {
               icon: Download,
               actionLabel: "Tasks",
               tone: nextWorkflowStepState?.status === "failed" ? "warning" : "muted",
-              onAction: () => openBottomDock("tasks"),
+              onAction: () => openRelevantTaskDock(),
             },
           ];
 
@@ -13697,7 +13731,7 @@ export function BuilderShowcase() {
                   variant="ghost"
                   className="shrink-0"
                   aria-label="Open workflow tasks"
-                  onClick={() => openBottomDock("tasks")}
+                  onClick={() => openRelevantTaskDock()}
                 >
                   <ClipboardCopy aria-hidden className="size-4" />
                   Tasks
@@ -13739,13 +13773,7 @@ export function BuilderShowcase() {
                     size="sm"
                     variant={bottomDockTab === "tasks" ? "secondary" : "ghost"}
                     data-builder-monitor-open-tasks=""
-                    onClick={() => {
-                      setMode("build");
-                      openBottomDock("tasks");
-                      if (operationMonitorTask) {
-                        setSelectedProjectTaskId(operationMonitorTask.id);
-                      }
-                    }}
+                    onClick={() => openRelevantTaskDock(operationMonitorTask)}
                   >
                     <ClipboardCopy aria-hidden className="size-4" />
                     Tasks
@@ -13812,7 +13840,7 @@ export function BuilderShowcase() {
                   <button
                     type="button"
                     className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                    onClick={() => openFeedbackPanel("tasks")}
+                    onClick={() => openRelevantTaskDock()}
                   >
                     <ClipboardCopy aria-hidden className="size-3.5" />
                     Tasks {activeProjectTasks.length}
@@ -13864,10 +13892,7 @@ export function BuilderShowcase() {
                               key={task.id}
                               type="button"
                               className="focus-ring inline-flex max-w-[16rem] items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                              onClick={() => {
-                                setSelectedProjectTaskId(task.id);
-                                openBottomDock("tasks");
-                              }}
+                              onClick={() => openRelevantTaskDock(task)}
                             >
                               <span className="truncate">{task.title}</span>
                               <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
@@ -16872,7 +16897,7 @@ export function BuilderShowcase() {
                         size="sm"
                         variant="ghost"
                         data-builder-generated-plan-tasks=""
-                        onClick={() => openBottomDock("tasks")}
+                        onClick={() => openRelevantTaskDock()}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
                         Tasks
@@ -21257,7 +21282,7 @@ export function BuilderShowcase() {
             <OutputDock
               tabs={bottomDockTabs}
               activeTab={bottomDockTab}
-              onTabChange={setBottomDockTab}
+              onTabChange={handleBottomDockTabChange}
               expanded={bottomDockExpanded}
               onExpandedChange={(expanded) => {
                 setBottomDockExpanded(expanded);
@@ -21306,7 +21331,7 @@ export function BuilderShowcase() {
                     <button
                       type="button"
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
-                      onClick={() => setBottomDockTab("tasks")}
+                      onClick={() => openRelevantTaskDock(null, false)}
                     >
                       <span className="block text-[0.66rem] text-on-surface-variant">Tasks</span>
                       <span className="mt-0.5 block font-medium text-on-surface">{activeProjectTasks.length}</span>
@@ -21325,7 +21350,7 @@ export function BuilderShowcase() {
                       <AlertTriangle aria-hidden className="size-4" />
                       Issues
                     </Button>
-                    <Button size="sm" variant={bottomDockTab === "tasks" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("tasks")}>
+                    <Button size="sm" variant={bottomDockTab === "tasks" ? "secondary" : "ghost"} onClick={() => openRelevantTaskDock(null, false)}>
                       <ClipboardCopy aria-hidden className="size-4" />
                       Tasks
                     </Button>
@@ -21515,7 +21540,7 @@ export function BuilderShowcase() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => openBottomDock("tasks")}
+                        onClick={() => openRelevantTaskDock()}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
                         Tasks
