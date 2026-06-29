@@ -10231,6 +10231,30 @@ export function BuilderShowcase() {
     );
   };
 
+  const fileCanvasSummary = (file: DesignerFile) => `${formatControlCount(file.items.length)} · ${file.page.width} x ${file.page.height}`;
+
+  const openFileEditingContext = (
+    file: DesignerFile,
+    options: {
+      detail?: string;
+      feedback?: boolean;
+      leftDockTab?: BuilderLeftDockTab;
+      selectedId?: string;
+      title?: string;
+    } = {},
+  ) => {
+    const nextSelectedId = options.selectedId ?? file.items[0]?.id ?? "";
+    setSelectedId(nextSelectedId);
+    setMode("design");
+    setRightDockTab("properties");
+    setNavigatorQuery("");
+    setNavigatorLayerMessage("");
+    setLeftDockTab(options.leftDockTab ?? (file.items.length > 0 ? "navigator" : "components"));
+    if (options.feedback) {
+      showProjectJumpFeedback("success", options.title ?? "Opened UI file", options.detail ?? `${file.name} is active. ${fileCanvasSummary(file)}.`);
+    }
+  };
+
   const createNewFile = () => {
     const nextFile = createBlankFile(`Window ${activeProject.files.length + 1}.ui`);
     updateActiveProject((project) => ({
@@ -10238,19 +10262,33 @@ export function BuilderShowcase() {
       files: [...project.files, nextFile],
       activeFileId: nextFile.id,
     }));
-    setSelectedId("");
-    setMode("design");
+    openFileEditingContext(nextFile, {
+      feedback: true,
+      leftDockTab: "components",
+      title: "UI file created",
+      detail: `${nextFile.name} is blank. Components is open for the first control.`,
+    });
     return nextFile;
   };
 
-  const selectFile = (fileId: string) => {
+  const selectFile = (fileId: string, options: { feedback?: boolean } = {}) => {
+    const nextFile = activeProject.files.find((file) => file.id === fileId);
+    if (!nextFile) {
+      const message = `Could not find UI file: ${fileId}.`;
+      setBuildError(message);
+      showProjectJumpFeedback("error", "UI file missing", message);
+      return;
+    }
     updateActiveProject((project) => ({
       ...project,
       activeFileId: fileId,
     }));
-    const nextFile = activeProject.files.find((file) => file.id === fileId);
-    setSelectedId(nextFile?.items[0]?.id ?? "");
-    setMode("design");
+    openFileEditingContext(nextFile, {
+      feedback: options.feedback,
+      leftDockTab: "navigator",
+      title: "Opened UI file",
+      detail: `${nextFile.name} is active. ${fileCanvasSummary(nextFile)}.`,
+    });
   };
 
   const focusVisualAuditIssue = (issue: WindowVisualAuditIssue) => {
@@ -11297,14 +11335,12 @@ export function BuilderShowcase() {
   const runInstantProjectJumpAction = async (actionId: ProjectJumpActionId) => {
     if (actionId === "new-ui-file") {
       const file = createNewFile();
-      setLeftDockTab("navigator");
       recordInstantProjectAction(actionId, `Created ${file.name} and opened it on the canvas.`);
       return true;
     }
 
     if (actionId === "duplicate-ui-file") {
       const file = duplicateActiveFile();
-      setLeftDockTab("navigator");
       recordInstantProjectAction(actionId, `Duplicated the active UI file as ${file.name}.`);
       return true;
     }
@@ -11734,13 +11770,41 @@ export function BuilderShowcase() {
   };
 
   const duplicateActiveFile = () => {
+    const idMap = new Map(activeFile.items.map((item) => [item.id, createId()]));
+    const remapItemId = (id: string | undefined) => (id ? idMap.get(id) ?? id : id);
+    const nextItems = activeFile.items.map((item) => {
+      const events = item.props.events
+        ? (Object.fromEntries(
+            Object.entries(item.props.events).map(([eventName, binding]) => [
+              eventName,
+              binding
+                ? {
+                    ...binding,
+                    resultTargetItemId: remapItemId(binding.resultTargetItemId),
+                  }
+                : binding,
+            ]),
+          ) as BuilderItemProps["events"])
+        : item.props.events;
+      return {
+        ...item,
+        id: idMap.get(item.id) ?? createId(),
+        parentId: remapItemId(item.parentId),
+        responsive: cloneResponsiveOverrides(item.responsive),
+        props: {
+          ...item.props,
+          events,
+        },
+      };
+    });
+    const selectedDuplicateId = selectedIds.map((id) => idMap.get(id)).find((id): id is string => Boolean(id));
     const nextFile: DesignerFile = {
       ...activeFile,
       id: createId(),
       name: `${activeFile.name.replace(/\.ui$/i, "")} Copy.ui`,
       path: `ui/${activeFile.name.replace(/\.ui$/i, "")} Copy.ui`,
       page: { ...activeFile.page },
-      items: activeFile.items.map((item) => ({ ...item, id: createId(), responsive: cloneResponsiveOverrides(item.responsive), props: { ...item.props } })),
+      items: nextItems,
       updatedAt: new Date().toISOString(),
     };
     updateActiveProject((project) => ({
@@ -11748,20 +11812,23 @@ export function BuilderShowcase() {
       files: [...project.files, nextFile],
       activeFileId: nextFile.id,
     }));
-    setSelectedId(nextFile.items[0]?.id ?? "");
-    setMode("design");
+    openFileEditingContext(nextFile, {
+      feedback: true,
+      leftDockTab: "navigator",
+      selectedId: selectedDuplicateId ?? nextFile.items[0]?.id ?? "",
+      title: "UI file duplicated",
+      detail: `${nextFile.name} opened with ${formatControlCount(nextFile.items.length)} and remapped layer links.`,
+    });
     return nextFile;
   };
 
   const createNewFileFromNavigator = () => {
     const file = createNewFile();
-    setLeftDockTab("navigator");
     recordInstantProjectAction("new-ui-file", `Created ${file.name} and opened it on the canvas.`);
   };
 
   const duplicateActiveFileFromNavigator = () => {
     const file = duplicateActiveFile();
-    setLeftDockTab("navigator");
     recordInstantProjectAction("duplicate-ui-file", `Duplicated the active UI file as ${file.name}.`);
   };
 
@@ -11771,6 +11838,8 @@ export function BuilderShowcase() {
       return;
     }
 
+    const deletedFileName = activeFile.name;
+    const nextFile = activeProject.files.find((file) => file.id !== activeFile.id) ?? activeProject.files[0];
     updateActiveProject((project) => {
       const nextFiles = project.files.filter((file) => file.id !== project.activeFileId);
       return {
@@ -11779,8 +11848,14 @@ export function BuilderShowcase() {
         activeFileId: nextFiles[0].id,
       };
     });
-    setSelectedId("");
-    setMode("design");
+    if (nextFile) {
+      openFileEditingContext(nextFile, {
+        feedback: true,
+        leftDockTab: "navigator",
+        title: "UI file deleted",
+        detail: `${deletedFileName} was removed. ${nextFile.name} is now active with ${fileCanvasSummary(nextFile)}.`,
+      });
+    }
   };
 
   const requestDeleteSelected = () => {
@@ -19140,7 +19215,7 @@ export function BuilderShowcase() {
                           "focus-ring m3-state-layer flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-left text-xs transition-colors",
                           file.id === activeFile.id ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
                         )}
-                        onClick={() => selectFile(file.id)}
+                        onClick={() => selectFile(file.id, { feedback: true })}
                       >
                         <span className="min-w-0">
                           <span className="block truncate font-medium">{file.name}</span>
