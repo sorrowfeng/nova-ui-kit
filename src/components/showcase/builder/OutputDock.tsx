@@ -13,6 +13,7 @@ export function OutputDock<T extends string>({
   onExpandedChange,
   minimized = false,
   onMinimizedChange,
+  summary,
   children,
 }: {
   tabs: BuilderDockTab<T>[];
@@ -22,6 +23,7 @@ export function OutputDock<T extends string>({
   onExpandedChange?: (expanded: boolean) => void;
   minimized?: boolean;
   onMinimizedChange?: (minimized: boolean) => void;
+  summary?: ReactNode;
   children: ReactNode;
 }) {
   const ExpandIcon = expanded ? Minimize2 : Maximize2;
@@ -35,7 +37,7 @@ export function OutputDock<T extends string>({
   return (
     <section
       className={cn(
-        "shrink-0 border-t border-outline-variant bg-surface-container-lowest transition-[height]",
+        "fixed bottom-0 left-[88px] right-0 z-20 shrink-0 border-t border-outline-variant bg-surface-container-lowest shadow-m3-2 transition-[height]",
         minimized ? "h-[56px]" : expanded ? "h-[288px]" : "h-[128px]",
       )}
       data-builder-output-dock=""
@@ -85,6 +87,7 @@ export function OutputDock<T extends string>({
                 ) : null}
               </div>
             </div>
+            {summary ? <div className="min-h-0 overflow-auto">{summary}</div> : null}
           </div>
           <div className="min-h-0 overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-3">
             {children}

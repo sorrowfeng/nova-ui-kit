@@ -5688,9 +5688,15 @@ export function BuilderShowcase() {
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
   const [bottomDockMinimized, setBottomDockMinimized] = useState(false);
+  const [feedbackPanelOpen, setFeedbackPanelOpen] = useState(false);
   const openBottomDock = (tab: BuilderBottomDockTab, expanded = true) => {
     setBottomDockTab(tab);
     setBottomDockExpanded(expanded);
+    setBottomDockMinimized(false);
+  };
+  const openFeedbackPanel = (tab: BuilderBottomDockTab) => {
+    setBottomDockTab(tab);
+    setFeedbackPanelOpen(true);
     setBottomDockMinimized(false);
   };
   const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
@@ -12653,7 +12659,32 @@ export function BuilderShowcase() {
     buildError ??
     "Run Save, Generate, Check, Validate, or Build to see live task evidence here.";
   const operationMonitorStatus = operationMonitorTask?.status ?? (buildError ? "failed" : "queued");
-  const operationMonitorVisible = Boolean(operationMonitorTask || buildError || queuedProjectTaskCount > 0 || failedProjectTaskCount > 0);
+  const operationMonitorVisible = Boolean(buildError || runningProjectTask || queuedProjectTaskCount > 0 || failedProjectTaskCount > 0);
+  const feedbackIssueCount = buildDiagnostics.length + (buildError ? 1 : 0);
+  const feedbackSummaryTone = buildError || failedProjectTaskCount > 0
+    ? "attention"
+    : runningProjectTask
+      ? "running"
+      : queuedProjectTaskCount > 0
+        ? "queued"
+        : "ready";
+  const feedbackSummaryTitle = buildError
+    ? "Editor needs attention"
+    : runningProjectTask
+      ? `Running ${runningProjectTask.title}`
+      : queuedProjectTaskCount > 0
+        ? `${queuedProjectTaskCount} task(s) queued`
+        : latestProjectTask
+          ? latestProjectTask.title
+          : "Feedback ready";
+  const feedbackSummaryDetail =
+    buildError ??
+    runningProjectTask?.summary ??
+    runningProjectTask?.detail ??
+    latestFailedProjectTask?.error ??
+    latestFailedProjectTask?.summary ??
+    latestProjectTask?.summary ??
+    (activeProject.outputExePath ? `Latest exe: ${fileNameFromPath(activeProject.outputExePath)}` : "Issues, tasks, output, and logs will appear here.");
   const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
     setBuildError("");
     if (step.actions.length === 1) {
@@ -12872,7 +12903,7 @@ export function BuilderShowcase() {
               </button>
             ))}
           </nav>
-          <div className="flex min-h-0 min-w-0 flex-col">
+          <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
         <div className="flex flex-col gap-4 border-b border-outline-variant p-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -13179,11 +13210,113 @@ export function BuilderShowcase() {
                 </div>
               </div>
             ) : null}
+            <div
+              className="flex min-w-0 flex-wrap items-center gap-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1"
+              data-builder-feedback-strip=""
+            >
+              <Badge
+                variant={
+                  feedbackSummaryTone === "attention"
+                    ? "destructive"
+                    : feedbackSummaryTone === "running" || feedbackSummaryTone === "ready"
+                      ? "secondary"
+                      : "outline"
+                }
+              >
+                {feedbackSummaryTone}
+              </Badge>
+              <span className="max-w-[18rem] truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
+              <button
+                type="button"
+                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                onClick={() => openFeedbackPanel("issues")}
+              >
+                <AlertTriangle aria-hidden className="size-3.5" />
+                Issues {feedbackIssueCount}
+              </button>
+              <button
+                type="button"
+                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                onClick={() => openFeedbackPanel("tasks")}
+              >
+                <ClipboardCopy aria-hidden className="size-3.5" />
+                Tasks {activeProjectTasks.length}
+              </button>
+              <button
+                type="button"
+                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                onClick={() => openFeedbackPanel("output")}
+              >
+                <Download aria-hidden className="size-3.5" />
+                Output
+              </button>
+              <button
+                type="button"
+                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                onClick={() => openFeedbackPanel("logs")}
+              >
+                <FileJson aria-hidden className="size-3.5" />
+                Logs
+              </button>
+              <span className="min-w-[12rem] flex-1 truncate text-on-surface-variant">{feedbackSummaryDetail}</span>
+            </div>
+            {feedbackPanelOpen ? (
+              <div
+                className="grid min-w-0 gap-2 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 md:grid-cols-[12rem_minmax(0,1fr)]"
+                data-builder-feedback-inline-panel={bottomDockTab}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <Badge variant="secondary">{bottomDockTab}</Badge>
+                  <span className="truncate text-on-surface-variant">
+                    {bottomDockTab === "issues"
+                      ? `${feedbackIssueCount} active`
+                      : bottomDockTab === "tasks"
+                        ? `${activeProjectTasks.length} total`
+                        : bottomDockTab === "output"
+                          ? activeProject.outputExePath ? "exe ready" : "pending"
+                          : selectedProjectTask?.logPreview ? "task log" : "waiting"}
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  {bottomDockTab === "issues" ? (
+                    <span className="block truncate text-on-surface-variant">
+                      {buildError || buildDiagnostics[0]?.message || "No active issues. Build diagnostics and validation problems will appear here."}
+                    </span>
+                  ) : bottomDockTab === "tasks" ? (
+                    <div className="flex min-w-0 flex-wrap gap-1.5">
+                      {visibleProjectTasks.slice(0, 3).map((task) => (
+                        <button
+                          key={task.id}
+                          type="button"
+                          className="focus-ring inline-flex max-w-[16rem] items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                          onClick={() => {
+                            setSelectedProjectTaskId(task.id);
+                            openBottomDock("tasks");
+                          }}
+                        >
+                          <span className="truncate">{task.title}</span>
+                          <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                        </button>
+                      ))}
+                      {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">No tasks yet.</span> : null}
+                    </div>
+                  ) : bottomDockTab === "output" ? (
+                    <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
+                      {activeProject.outputExePath || activeBundlePath || activeBundleDir || "Run Build or Bundle to produce desktop artifacts."}
+                    </span>
+                  ) : (
+                    <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
+                      {selectedProjectTask?.logPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
         ) : null}
 
-        <div className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
+        <div className="min-h-0 flex-1 basis-0 overflow-hidden bg-surface-container-lowest pb-32">
         {mode === "logic" ? (
           <LogicWorkspace>
             <aside className="space-y-4 rounded-[24px] border border-outline-variant bg-surface-container p-4">
@@ -19593,6 +19726,76 @@ export function BuilderShowcase() {
               }}
               minimized={bottomDockMinimized}
               onMinimizedChange={setBottomDockMinimized}
+              summary={
+                <div className="grid gap-2 text-xs" data-builder-feedback-summary="">
+                  <div
+                    className={cn(
+                      "rounded-xl border p-3",
+                      feedbackSummaryTone === "attention"
+                        ? "border-destructive/30 bg-destructive/10 text-destructive"
+                        : feedbackSummaryTone === "running"
+                          ? "border-primary/30 bg-primary/10 text-on-surface"
+                          : "border-outline-variant bg-surface-container-high text-on-surface",
+                    )}
+                  >
+                    <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
+                      <span className="truncate font-medium">{feedbackSummaryTitle}</span>
+                      <Badge
+                        variant={
+                          feedbackSummaryTone === "attention"
+                            ? "destructive"
+                            : feedbackSummaryTone === "running" || feedbackSummaryTone === "ready"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
+                        {feedbackSummaryTone}
+                      </Badge>
+                    </div>
+                    <p className="line-clamp-2 leading-5 text-on-surface-variant">{feedbackSummaryDetail}</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
+                      onClick={() => setBottomDockTab("issues")}
+                    >
+                      <span className="block text-[0.66rem] text-on-surface-variant">Issues</span>
+                      <span className="mt-0.5 block font-medium text-on-surface">{feedbackIssueCount}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
+                      onClick={() => setBottomDockTab("tasks")}
+                    >
+                      <span className="block text-[0.66rem] text-on-surface-variant">Tasks</span>
+                      <span className="mt-0.5 block font-medium text-on-surface">{activeProjectTasks.length}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
+                      onClick={() => setBottomDockTab("output")}
+                    >
+                      <span className="block text-[0.66rem] text-on-surface-variant">Output</span>
+                      <span className="mt-0.5 block font-medium text-on-surface">{activeProject.outputExePath ? "exe" : "idle"}</span>
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button size="sm" variant={bottomDockTab === "issues" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("issues")}>
+                      <AlertTriangle aria-hidden className="size-4" />
+                      Issues
+                    </Button>
+                    <Button size="sm" variant={bottomDockTab === "tasks" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("tasks")}>
+                      <ClipboardCopy aria-hidden className="size-4" />
+                      Tasks
+                    </Button>
+                    <Button size="sm" variant={bottomDockTab === "logs" ? "secondary" : "ghost"} onClick={() => setBottomDockTab("logs")}>
+                      <FileJson aria-hidden className="size-4" />
+                      Logs
+                    </Button>
+                  </div>
+                </div>
+              }
             >
               {bottomDockTab === "issues" ? (
                 bottomDockExpanded ? (
