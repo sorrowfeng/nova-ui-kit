@@ -11593,6 +11593,153 @@ export function BuilderShowcase() {
     enqueueProjectTask(task.actionId, task.attempt + 1);
   };
 
+  const projectTaskResolutionLabel = (task: ProjectTaskEntry) => {
+    if ((task.summary ?? "").toLowerCase().includes("readiness") || (task.error ?? "").toLowerCase().includes("readiness")) {
+      return "定位准备项";
+    }
+    if (task.actionId === "run-selected-event" || task.actionId === "bind-control-event") {
+      return "打开连接";
+    }
+    if (task.actionId === "add-rust-command" || task.actionId === "add-state-variable" || task.actionId === "sync-rust") {
+      return "打开逻辑";
+    }
+    if (task.actionId === "build-backend-artifacts") {
+      return "检查后端";
+    }
+    if (task.actionId === "add-image-asset") {
+      return "打开资源";
+    }
+    if (task.actionId === "new-ui-file" || task.actionId === "duplicate-ui-file" || task.actionId === "delete-ui-file") {
+      return "打开导航";
+    }
+    if (task.actionId === "insert-component") {
+      return "打开组件";
+    }
+    if (task.actionId === "preview-generated-files" || task.actionId === "apply-generated-files" || task.actionId === "apply-generated-changes") {
+      return "查看生成";
+    }
+    if (task.actionId === "save-project") {
+      return "项目设置";
+    }
+    return task.logPath || task.logPreview ? "查看日志" : "定位处理";
+  };
+
+  const openFirstReadinessIssue = (sourceTask: ProjectTaskEntry) => {
+    const issue =
+      buildReadinessSummary.items.find((item) => item.severity === "error") ??
+      buildReadinessSummary.items.find((item) => item.severity === "warning");
+
+    if (issue) {
+      openBuildReadinessItem(issue);
+      setProjectTaskQueueMessage(`${sourceTask.title} is waiting on ${issue.title}.`);
+      return true;
+    }
+
+    setMode("build");
+    openBottomDock("issues", false);
+    showProjectJumpFeedback("warning", "No readiness issue found", `${sourceTask.title} has no current blocker in Build readiness.`);
+    return false;
+  };
+
+  const openProjectTaskResolution = (task: ProjectTaskEntry) => {
+    const taskText = [task.summary, task.error, task.logPreview].filter(Boolean).join("\n").toLowerCase();
+    setSelectedProjectTaskId(task.id);
+    setProjectTaskLogSearchQuery("");
+    setBuildError("");
+
+    if (taskText.includes("readiness") || (READINESS_GATED_PROJECT_ACTIONS.has(task.actionId) && buildReadinessSummary.errorCount > 0)) {
+      openFirstReadinessIssue(task);
+      return;
+    }
+
+    if (task.actionId === "run-selected-event" || task.actionId === "bind-control-event") {
+      setMode("design");
+      if (!selectedItem) {
+        setLeftDockTab("navigator");
+        setRightDockTab("properties");
+        showProjectJumpFeedback("warning", "Select an event control", "Navigator is open. Pick a button, input, switch, select, or checkbox, then bind its event.");
+        return;
+      }
+      setRightDockTab(selectedEventName ? "connections" : "properties");
+      showProjectJumpFeedback(
+        selectedEventName ? "success" : "warning",
+        selectedEventName ? "Opened Connections" : "Selected control is static",
+        selectedEventName
+          ? `${getItemSummary(selectedItem)} is ready for event binding or simulation.`
+          : `${getItemSummary(selectedItem)} has no supported event; choose another control from Navigator.`,
+      );
+      return;
+    }
+
+    if (task.actionId === "new-ui-file" || task.actionId === "duplicate-ui-file" || task.actionId === "delete-ui-file") {
+      setMode("design");
+      setLeftDockTab("navigator");
+      showProjectJumpFeedback("success", "Opened Navigator", "UI files, layer selection, duplicate, and delete actions are available here.");
+      return;
+    }
+
+    if (task.actionId === "insert-component") {
+      setMode("design");
+      setLeftDockTab("components");
+      setRightDockTab("properties");
+      showProjectJumpFeedback("success", "Opened Components", "Insert a component, then tune it from Properties.");
+      return;
+    }
+
+    if (task.actionId === "add-image-asset") {
+      setMode("design");
+      setLeftDockTab("assets");
+      showProjectJumpFeedback("success", "Opened Assets", "Import or inspect project image resources here.");
+      return;
+    }
+
+    if (
+      task.actionId === "add-rust-command" ||
+      task.actionId === "add-state-variable" ||
+      task.actionId === "sync-rust" ||
+      task.actionId === "build-backend-artifacts"
+    ) {
+      setMode("logic");
+      if (task.actionId === "build-backend-artifacts") {
+        const backend = activeProject.backendIntegrations.find((integration) => integration.enabled) ?? activeProject.backendIntegrations[0];
+        if (backend) {
+          selectBackendIntegration(backend.id);
+        }
+      }
+      showProjectJumpFeedback(
+        "success",
+        task.actionId === "build-backend-artifacts" ? "Opened backend integrations" : "Opened Logic",
+        `${task.title} can be repaired from commands, state, dependencies, and backend integration settings.`,
+      );
+      return;
+    }
+
+    if (task.actionId === "preview-generated-files" || task.actionId === "apply-generated-files" || task.actionId === "apply-generated-changes") {
+      setMode("build");
+      openBottomDock("tasks", false);
+      showProjectJumpFeedback("success", "Opened generated workflow", "Use File Preview, Apply generated changes, and Task Center to inspect target-file output.");
+      return;
+    }
+
+    if (task.actionId === "save-project") {
+      setMode("design");
+      setLeftDockTab("project");
+      showProjectJumpFeedback("success", "Opened Project dock", "Review project root, release metadata, files, and template state before saving again.");
+      return;
+    }
+
+    if (task.logPath || task.logPreview || buildDiagnostics.length > 0 || buildError) {
+      setMode("build");
+      openBottomDock(task.logPath || task.logPreview ? "logs" : "issues", false);
+      setProjectTaskLogSearchQuery(task.error ? task.error.split(/\s+/).slice(0, 3).join(" ") : task.title);
+      showProjectJumpFeedback("success", task.logPath || task.logPreview ? "Opened logs" : "Opened issues", `${task.title} evidence is visible in the bottom dock.`);
+      return;
+    }
+
+    openRelevantTaskDock(task);
+    showProjectJumpFeedback("warning", "Task selected", `${task.title} has no deeper target, so its task evidence is open.`);
+  };
+
   const cancelProjectTask = async (task: ProjectTaskEntry) => {
     if (task.status === "queued") {
       projectTaskQueueRef.current = projectTaskQueueRef.current.filter((queuedTask) => queuedTask.id !== task.id);
@@ -17468,6 +17615,17 @@ export function BuilderShowcase() {
                           ) : null}
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
+                          {selectedProjectTask.status !== "succeeded" ? (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              data-builder-resolve-selected-task={selectedProjectTask.id}
+                              onClick={() => openProjectTaskResolution(selectedProjectTask)}
+                            >
+                              <ArrowRight aria-hidden className="size-4" />
+                              {projectTaskResolutionLabel(selectedProjectTask)}
+                            </Button>
+                          ) : null}
                           {selectedProjectTask.artifactPath ? (
                             <Button
                               size="sm"
