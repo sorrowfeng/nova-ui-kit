@@ -8858,6 +8858,7 @@ export function BuilderShowcase() {
   const loadWorkspace = () => {
     const savedWorkspace = loadDesignerWorkspace();
     if (!savedWorkspace) {
+      showProjectJumpFeedback("warning", "No local workspace", "Save the current editor workspace first, then Reload can restore it.");
       return;
     }
     setWorkspace(savedWorkspace);
@@ -8865,16 +8866,20 @@ export function BuilderShowcase() {
     const nextFile = nextProject.files.find((file) => file.id === nextProject.activeFileId) ?? nextProject.files[0];
     setSelectedId(nextFile.items[0]?.id ?? "");
     setMode("design");
+    showProjectJumpFeedback("success", "Workspace reloaded", `${nextProject.name} / ${nextFile.name} was restored from local editor storage.`);
   };
 
   const resetCurrentFile = () => {
+    const fileName = activeFile.name;
     updateActiveFile((file) => ({
       ...file,
       page: { ...defaultPage, title: file.name.replace(/\.ui$/i, "") || "Untitled Interface" },
       items: [],
     }));
     setSelectedId("");
+    setLeftDockTab("components");
     setMode("design");
+    showProjectJumpFeedback("success", "UI file cleared", `${fileName} is blank. Components is open for the next insert.`);
   };
 
   const createNewProject = () => {
@@ -8886,7 +8891,9 @@ export function BuilderShowcase() {
       activeProjectId: nextProject.id,
     }));
     setSelectedId("");
+    setLeftDockTab("project");
     setMode("design");
+    showProjectJumpFeedback("success", "Project created", `${nextProject.name} is active. Project settings and templates are open.`);
   };
 
   const replaceActiveProjectWithTemplate = () => {
