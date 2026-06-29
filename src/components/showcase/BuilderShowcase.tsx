@@ -13511,68 +13511,35 @@ export function BuilderShowcase() {
         </div>
 
         {mode !== "export" ? (
-        <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-3" data-builder-workflow-rail="">
+        <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2" data-builder-workflow-rail="">
           <div className="mx-auto flex w-full max-w-full flex-col gap-2">
-            <div className="flex min-w-0 max-w-full flex-col gap-2 overflow-hidden lg:flex-row lg:items-start">
-              <div className="grid min-w-0 gap-1.5 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 lg:w-80">
-                <div className="flex min-w-0 items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2 text-on-surface-variant">
-                    <span
-                      className={cn(
-                        "size-2 shrink-0 rounded-full",
-                        runningProjectTask
-                          ? "bg-primary"
-                          : failedProjectTaskCount > 0
-                            ? "bg-destructive"
-                            : queuedProjectTaskCount > 0
-                              ? "bg-secondary"
-                              : "bg-outline",
-                      )}
-                    />
-                    <span className="truncate">{workflowRailStateLabel}</span>
+            <div className="flex min-w-0 max-w-full flex-col gap-2 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2 text-xs shadow-m3-1 xl:flex-row xl:items-center">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span
+                  className={cn(
+                    "size-2.5 shrink-0 rounded-full",
+                    runningProjectTask
+                      ? "bg-primary"
+                      : failedProjectTaskCount > 0
+                        ? "bg-destructive"
+                        : queuedProjectTaskCount > 0
+                          ? "bg-secondary"
+                          : "bg-outline",
+                  )}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate font-medium text-on-surface">{workflowRailTitle}</span>
+                    <Badge variant={workflowRailBadgeVariant} className="shrink-0">
+                      {workflowRailBadgeLabel}
+                    </Badge>
                   </div>
-                  <Badge variant={workflowRailBadgeVariant} className="shrink-0">
-                    {workflowRailBadgeLabel}
-                  </Badge>
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-on-surface">{workflowRailTitle}</p>
                   <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
-                    {workflowRailDetail}
+                    {workflowRailStateLabel} · {workflowRailDetail}
                   </p>
                 </div>
-                <div className="grid gap-1">
-                  <div className="flex items-center justify-between gap-2 text-[0.66rem] text-on-surface-variant">
-                    <span>{workflowProgressLabel}</span>
-                    <span>{workflowProgressValue}%</span>
-                  </div>
-                  <Progress className="h-1.5" value={workflowProgressValue} />
-                </div>
-                <div className="flex min-w-0 items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="min-w-0 flex-1"
-                    data-builder-run-next-workflow-step=""
-                    disabled={workflowPrimaryActionDisabled}
-                    onClick={runWorkflowPrimaryAction}
-                  >
-                    {workflowRuntimeActive ? <Square aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
-                    {workflowPrimaryActionLabel}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="shrink-0"
-                    aria-label="Open workflow tasks"
-                    onClick={() => openBottomDock("tasks")}
-                  >
-                    <ClipboardCopy aria-hidden className="size-4" />
-                    Tasks
-                  </Button>
-                </div>
               </div>
-              <div className="flex min-w-0 max-w-full flex-1 flex-wrap content-start gap-1.5 overflow-hidden" data-builder-workflow-path="">
+              <div className="flex min-w-0 flex-[1.55] items-center gap-1 overflow-x-auto py-0.5" data-builder-workflow-path="">
                 {editorWorkflowStepStates.map(({ step, task, status }, index) => {
                   const StepIcon = step.icon;
                   const suggested = suggestedWorkflowStepId === step.id;
@@ -13584,28 +13551,56 @@ export function BuilderShowcase() {
                       aria-current={suggested ? "step" : undefined}
                       aria-label={`${step.title}: ${workflowStepStatusLabel(status)}`}
                       className={cn(
-                        "focus-ring group grid min-h-[3.05rem] min-w-0 flex-[1_1_6rem] grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl border px-2 py-1.5 text-left text-xs transition lg:max-w-[6.25rem]",
+                        "focus-ring group inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2 text-left text-[0.68rem] transition",
                         workflowStepStatusClassName(status, suggested),
                       )}
                       onClick={() => runEditorWorkflowStep(step)}
+                      title={`${index + 1}. ${step.title} · ${workflowStepStatusLabel(status)}`}
                     >
-                      <span className="flex size-7 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
-                        <StepIcon aria-hidden className="size-4" />
+                      <span className="font-mono text-[0.64rem] text-on-surface-variant">{index + 1}</span>
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80 text-current shadow-m3-1">
+                        <StepIcon aria-hidden className="size-3.5" />
                       </span>
-                      <span className="min-w-0">
-                        <span className="flex min-w-0 items-center gap-1.5">
-                          <span className="font-mono text-[0.68rem] text-on-surface-variant">{index + 1}</span>
-                          <span className="truncate font-medium text-on-surface">{step.title}</span>
-                        </span>
-                        <span className="mt-1 flex min-w-0 items-center gap-1.5">
-                          <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0 px-1.5 py-0 text-[0.6rem]">
-                            {suggested && status === "idle" ? "next" : workflowStepStatusLabel(status)}
-                          </Badge>
-                        </span>
-                      </span>
+                      <span className="max-w-20 truncate font-medium text-on-surface">{step.title}</span>
+                      <Badge
+                        variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"}
+                        className="hidden shrink-0 px-1.5 py-0 text-[0.6rem] 2xl:inline-flex"
+                      >
+                        {suggested && status === "idle" ? "next" : workflowStepStatusLabel(status)}
+                      </Badge>
                     </button>
                   );
                 })}
+              </div>
+              <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2 xl:justify-end">
+                <div className="hidden w-36 min-w-0 gap-1 sm:grid">
+                  <div className="flex items-center justify-between gap-2 text-[0.66rem] text-on-surface-variant">
+                    <span className="truncate">{workflowProgressLabel}</span>
+                    <span>{workflowProgressValue}%</span>
+                  </div>
+                  <Progress className="h-1.5" value={workflowProgressValue} />
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="min-w-0"
+                  data-builder-run-next-workflow-step=""
+                  disabled={workflowPrimaryActionDisabled}
+                  onClick={runWorkflowPrimaryAction}
+                >
+                  {workflowRuntimeActive ? <Square aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
+                  {workflowPrimaryActionLabel}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0"
+                  aria-label="Open workflow tasks"
+                  onClick={() => openBottomDock("tasks")}
+                >
+                  <ClipboardCopy aria-hidden className="size-4" />
+                  Tasks
+                </Button>
               </div>
             </div>
             {operationMonitorVisible ? (
