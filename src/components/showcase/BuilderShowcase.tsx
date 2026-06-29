@@ -6836,16 +6836,16 @@ export function BuilderShowcase() {
       if (isCommand && event.key.toLowerCase() === "z") {
         event.preventDefault();
         if (event.shiftKey) {
-          redoCanvas();
+          runRedoCanvas();
         } else {
-          undoCanvas();
+          runUndoCanvas();
         }
         return;
       }
 
       if ((isCommand && event.key.toLowerCase() === "y") || (isCommand && event.shiftKey && event.key.toLowerCase() === "z")) {
         event.preventDefault();
-        redoCanvas();
+        runRedoCanvas();
         return;
       }
 
@@ -7137,24 +7137,44 @@ export function BuilderShowcase() {
     const history = getFileHistory(activeFile.id);
     const previous = history.undo.pop();
     if (!previous) {
-      return;
+      return null;
     }
 
     history.redo.push(cloneBuilderState(activeFile));
     restoreActiveFileState(previous);
     setHistoryVersion((version) => version + 1);
+    return previous;
   };
 
   const redoCanvas = () => {
     const history = getFileHistory(activeFile.id);
     const next = history.redo.pop();
     if (!next) {
-      return;
+      return null;
     }
 
     history.undo.push(cloneBuilderState(activeFile));
     restoreActiveFileState(next);
     setHistoryVersion((version) => version + 1);
+    return next;
+  };
+
+  const runUndoCanvas = () => {
+    const restored = undoCanvas();
+    if (!restored) {
+      showProjectJumpFeedback("warning", "Nothing to undo", `No earlier canvas snapshot is available for ${activeFile.name}.`);
+      return;
+    }
+    showProjectJumpFeedback("success", "Canvas undo applied", `${activeFile.name} restored with ${formatControlCount(restored.items.length)}.`);
+  };
+
+  const runRedoCanvas = () => {
+    const restored = redoCanvas();
+    if (!restored) {
+      showProjectJumpFeedback("warning", "Nothing to redo", `No later canvas snapshot is available for ${activeFile.name}.`);
+      return;
+    }
+    showProjectJumpFeedback("success", "Canvas redo applied", `${activeFile.name} restored with ${formatControlCount(restored.items.length)}.`);
   };
 
   const updateActiveFile = (updater: (file: DesignerFile) => DesignerFile, options: { history?: boolean } = {}) => {
@@ -13627,19 +13647,11 @@ export function BuilderShowcase() {
         return;
       }
       if (command === "undo") {
-        if (!canUndo) {
-          setBuildError("没有可撤销的画布操作。");
-          return;
-        }
-        undoCanvas();
+        runUndoCanvas();
         return;
       }
       if (command === "redo") {
-        if (!canRedo) {
-          setBuildError("没有可重做的画布操作。");
-          return;
-        }
-        redoCanvas();
+        runRedoCanvas();
         return;
       }
       if (command === "copy-selection") {
@@ -19423,10 +19435,10 @@ export function BuilderShowcase() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1 rounded-full border border-outline bg-surface-container-high p-1">
-                    <Button size="icon-sm" variant="ghost" data-builder-undo="" aria-label="撤销" onClick={undoCanvas} disabled={!canUndo}>
+                    <Button size="icon-sm" variant="ghost" data-builder-undo="" aria-label="撤销" onClick={runUndoCanvas} disabled={!canUndo}>
                       <Undo2 aria-hidden />
                     </Button>
-                    <Button size="icon-sm" variant="ghost" data-builder-redo="" aria-label="重做" onClick={redoCanvas} disabled={!canRedo}>
+                    <Button size="icon-sm" variant="ghost" data-builder-redo="" aria-label="重做" onClick={runRedoCanvas} disabled={!canRedo}>
                       <Redo2 aria-hidden />
                     </Button>
                     <Button size="icon-sm" variant="ghost" data-builder-copy-selection="" aria-label="复制选中控件" onClick={copySelectionToClipboard} disabled={selectedIds.length === 0}>
