@@ -8315,8 +8315,17 @@ export function BuilderShowcase() {
     );
   };
 
+  const formatControlCount = (count: number) => `${count} control${count === 1 ? "" : "s"}`;
+
   const deleteSelected = () => {
     if (selectedIds.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing to delete", "Select one or more controls before deleting.");
+      return;
+    }
+    const deletableRoots = selectedIds.filter((id) => !items.find((item) => item.id === id)?.locked);
+    const deletedIds = collectDescendantIds(deletableRoots, items);
+    if (deletedIds.size === 0) {
+      showProjectJumpFeedback("warning", "Selection is locked", "Unlock the selected controls before deleting them.");
       return;
     }
     updateActiveItems((current) => {
@@ -8325,10 +8334,12 @@ export function BuilderShowcase() {
       return current.filter((item) => !deletedIds.has(item.id));
     });
     clearSelection();
+    showProjectJumpFeedback("success", "Selection deleted", `${formatControlCount(deletedIds.size)} removed from the active UI file.`);
   };
 
   const duplicateSelected = () => {
     if (selectedItems.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing to duplicate", "Select one or more controls before duplicating.");
       return;
     }
     const duplicateIds = collectDescendantIds(selectedIds, items);
@@ -8354,6 +8365,7 @@ export function BuilderShowcase() {
     });
     updateActiveItems((current) => [...current, ...nextItems]);
     setSelectedIds(nextItems.map((item) => item.id));
+    showProjectJumpFeedback("success", "Selection duplicated", `${formatControlCount(nextItems.length)} copied and selected on the canvas.`);
   };
 
   const toggleSelectedLock = () => {
@@ -8403,6 +8415,7 @@ export function BuilderShowcase() {
 
   const bringToFront = () => {
     if (selectedItems.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing selected", "Select a control before changing layer order.");
       return;
     }
     updateActiveItems((current) => {
@@ -8417,10 +8430,12 @@ export function BuilderShowcase() {
         return next;
       });
     });
+    showProjectJumpFeedback("success", "Layer order updated", `${formatControlCount(selectedItems.length)} moved to the front of the canvas stack.`);
   };
 
   const sendToBack = () => {
     if (selectedItems.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing selected", "Select a control before changing layer order.");
       return;
     }
     updateActiveItems((current) => {
@@ -8435,10 +8450,12 @@ export function BuilderShowcase() {
         return next;
       });
     });
+    showProjectJumpFeedback("success", "Layer order updated", `${formatControlCount(selectedItems.length)} sent to the back of the canvas stack.`);
   };
 
   const copySelectionToClipboard = () => {
     if (selectedItems.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing to copy", "Select one or more controls before copying.");
       return;
     }
     const copiedIds = collectDescendantIds(selectedIds, items);
@@ -8447,10 +8464,12 @@ export function BuilderShowcase() {
       .sort((a, b) => a.z - b.z)
       .map((item) => ({ ...item, responsive: cloneResponsiveOverrides(item.responsive), props: { ...item.props } }));
     setClipboardVersion((version) => version + 1);
+    showProjectJumpFeedback("success", "Selection copied", `${formatControlCount(clipboardRef.current.length)} ready to paste with nested children and bindings.`);
   };
 
   const pasteClipboardItems = () => {
     if (clipboardRef.current.length === 0) {
+      showProjectJumpFeedback("warning", "Clipboard is empty", "Copy a control or insert a new component from Components.");
       return;
     }
     const idMap = new Map(clipboardRef.current.map((item) => [item.id, createId()]));
@@ -8476,6 +8495,7 @@ export function BuilderShowcase() {
     setSelectedIds(pastedItems.map((item) => item.id));
     clipboardRef.current = pastedItems.map((item) => ({ ...item, responsive: cloneResponsiveOverrides(item.responsive), props: { ...item.props } }));
     setClipboardVersion((version) => version + 1);
+    showProjectJumpFeedback("success", "Selection pasted", `${formatControlCount(pastedItems.length)} inserted and selected on the canvas.`);
   };
 
   const alignSelected = (alignment: AlignmentMode) => {
