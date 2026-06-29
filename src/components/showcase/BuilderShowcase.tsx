@@ -18236,9 +18236,16 @@ export function BuilderShowcase() {
                     <Copy aria-hidden className="size-4" />
                     Duplicate
                   </Button>
-                  <Button size="sm" variant="secondary" disabled={!selectedItem || !selectedEventName} onClick={() => setRightDockTab("connections")}>
+                  <Button
+                    size="sm"
+                    variant={selectedEventCommand ? "secondary" : "default"}
+                    data-builder-inspector-bind-action=""
+                    aria-label={selectedEventCommand ? "Open event connection" : "Create event binding"}
+                    disabled={!selectedItem || !selectedEventName}
+                    onClick={selectedEventCommand ? openSelectedConnections : () => createAndBindBackendIntegrationCommand()}
+                  >
                     <Braces aria-hidden className="size-4" />
-                    Bind
+                    {selectedEventCommand ? "Link" : "Bind"}
                   </Button>
                   <Button size="sm" variant="destructive" disabled={selectedItems.length === 0} onClick={requestDeleteSelected}>
                     <Trash2 aria-hidden className="size-4" />
