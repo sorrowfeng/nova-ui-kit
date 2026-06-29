@@ -30,6 +30,8 @@ type AppShellProps = {
   density: Density;
   onDensityChange: (value: Density) => void;
   onOpenCommand: () => void;
+  onSaveProject: () => void;
+  onExportProject: () => void;
   onToast: () => void;
   children: ReactNode;
 };
@@ -47,6 +49,8 @@ export function AppShell({
   density,
   onDensityChange,
   onOpenCommand,
+  onSaveProject,
+  onExportProject,
   onToast,
   children,
 }: AppShellProps) {
@@ -110,6 +114,8 @@ export function AppShell({
             density={density}
             onDensityChange={onDensityChange}
             onOpenCommand={onOpenCommand}
+            onSaveProject={onSaveProject}
+            onExportProject={onExportProject}
             onOpenMobileNav={() => setMobileOpen(true)}
             onToast={onToast}
           />
@@ -133,7 +139,7 @@ export function AppShell({
                 onSchemeChange={onSchemeChange}
                 density={density}
                 onDensityChange={onDensityChange}
-                onToast={onToast}
+                onSaveProject={onSaveProject}
               />
             )}
           </div>

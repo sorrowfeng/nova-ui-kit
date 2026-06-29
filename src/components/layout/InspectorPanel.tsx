@@ -16,7 +16,7 @@ type InspectorPanelProps = {
   onSchemeChange: (scheme: ThemeScheme) => void;
   density: Density;
   onDensityChange: (density: Density) => void;
-  onToast: () => void;
+  onSaveProject: () => void;
 };
 
 const schemeOptions: Array<{ value: ThemeScheme; label: string; className: string }> = [
@@ -33,7 +33,7 @@ export function InspectorPanel({
   onSchemeChange,
   density,
   onDensityChange,
-  onToast,
+  onSaveProject,
 }: InspectorPanelProps) {
   const activeItem: ShowcaseNavItem = showcaseNavItems.find((item) => item.id === activeId) ?? showcaseNavItems[0];
 
@@ -135,9 +135,9 @@ export function InspectorPanel({
               <Progress value={86} />
             </div>
           </div>
-          <Button className="mt-4 w-full" onClick={onToast}>
+          <Button className="mt-4 w-full" onClick={onSaveProject}>
             <ShieldCheck aria-hidden />
-            同步工作台
+            保存项目
           </Button>
         </section>
       </div>

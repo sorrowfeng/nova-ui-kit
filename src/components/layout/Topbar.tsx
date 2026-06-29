@@ -1,4 +1,4 @@
-import { Bell, Check, Command, Download, LayoutGrid, Menu, Moon, Palette, Search, SlidersHorizontal, Sun } from "lucide-react";
+import { Bell, Check, Command, Download, Menu, Moon, Palette, Save, Search, SlidersHorizontal, Sun } from "lucide-react";
 import type { Density, ThemeMode, ThemeScheme } from "@/App";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,8 @@ type TopbarProps = {
   density: Density;
   onDensityChange: (value: Density) => void;
   onOpenCommand: () => void;
+  onSaveProject: () => void;
+  onExportProject: () => void;
   onOpenMobileNav: () => void;
   onToast: () => void;
 };
@@ -41,6 +43,8 @@ export function Topbar({
   density,
   onDensityChange,
   onOpenCommand,
+  onSaveProject,
+  onExportProject,
   onOpenMobileNav,
   onToast,
 }: TopbarProps) {
@@ -141,24 +145,41 @@ export function Topbar({
         <TooltipContent>显示通知</TooltipContent>
       </Tooltip>
 
-      <Button variant="secondary" className="hidden gap-2 md:inline-flex" onClick={onToast}>
-        <LayoutGrid aria-hidden />
-        同步画布
+      <Button variant="secondary" className="hidden gap-2 md:inline-flex" onClick={onSaveProject}>
+        <Save aria-hidden />
+        保存项目
       </Button>
 
-      <Button className="hidden gap-2 md:inline-flex" onClick={onToast}>
+      <Button className="hidden gap-2 md:inline-flex" onClick={onExportProject}>
         <Download aria-hidden />
         导出
       </Button>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="打开密度控制" className="xl:hidden">
-            <SlidersHorizontal />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>密度：{density === "compact" ? "紧凑" : density === "comfortable" ? "舒展" : "标准"}</TooltipContent>
-      </Tooltip>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="打开密度控制" className="xl:hidden">
+                <SlidersHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>密度：{density === "compact" ? "紧凑" : density === "comfortable" ? "舒展" : "标准"}</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuLabel>界面密度</DropdownMenuLabel>
+          {[
+            ["compact", "紧凑"],
+            ["cozy", "标准"],
+            ["comfortable", "舒展"],
+          ].map(([value, label]) => (
+            <DropdownMenuItem key={value} onClick={() => onDensityChange(value as Density)}>
+              <Check aria-hidden className={density === value ? "opacity-100" : "opacity-0"} />
+              {label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }

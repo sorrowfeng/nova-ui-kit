@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { showcaseNavItems, type ShowcaseId } from "@/data/components";
+import { dispatchNovaEditorCommand, type NovaEditorCommand } from "@/lib/editor-commands";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type ThemeScheme = "violet" | "blue" | "green";
@@ -48,6 +49,7 @@ function App() {
   const [density, setDensity] = useState<Density>("cozy");
   const [commandOpen, setCommandOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
+  const [pendingEditorCommand, setPendingEditorCommand] = useState<NovaEditorCommand | null>(null);
   const [systemDark, setSystemDark] = useState(() =>
     typeof window === "undefined" ? false : window.matchMedia("(prefers-color-scheme: dark)").matches,
   );
@@ -78,6 +80,19 @@ function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (activeId !== "builder" || !pendingEditorCommand) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      dispatchNovaEditorCommand(pendingEditorCommand);
+      setPendingEditorCommand(null);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeId, pendingEditorCommand]);
+
   const filteredItems = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
     if (!normalized) {
@@ -98,6 +113,11 @@ function App() {
     window.setTimeout(() => setToastOpen(true), 20);
   };
 
+  const runBuilderCommand = (command: NovaEditorCommand) => {
+    setActiveId("builder");
+    setPendingEditorCommand(command);
+  };
+
   return (
     <TooltipProvider delayDuration={350}>
       <ToastProvider swipeDirection="right">
@@ -114,6 +134,8 @@ function App() {
           density={density}
           onDensityChange={setDensity}
           onOpenCommand={() => setCommandOpen(true)}
+          onSaveProject={() => runBuilderCommand("save-project")}
+          onExportProject={() => runBuilderCommand("mode-export")}
           onToast={showToast}
         >
           <ShowcasePage item={activeItem} onOpenCommand={() => setCommandOpen(true)} onToast={showToast} />
