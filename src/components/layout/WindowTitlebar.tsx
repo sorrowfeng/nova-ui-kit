@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { dispatchNovaEditorCommand, type NovaEditorCommand } from "@/lib/editor-commands";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 
 type WindowAction = "minimize" | "toggleMaximize" | "close";
 type TitleMenuItem = {
@@ -18,6 +18,9 @@ type TitleMenuItem = {
   command: NovaEditorCommand;
   icon: typeof Check;
   shortcut?: string;
+};
+type WindowTitlebarProps = {
+  onRunEditorCommand: (command: NovaEditorCommand) => void;
 };
 
 async function runWindowAction(action: WindowAction) {
@@ -50,7 +53,15 @@ async function startWindowDrag(event: MouseEvent<HTMLElement>) {
   }
 }
 
-function TitleMenu({ label, items }: { label: string; items: TitleMenuItem[] }) {
+function TitleMenu({
+  label,
+  items,
+  onRunCommand,
+}: {
+  label: string;
+  items: TitleMenuItem[];
+  onRunCommand: (command: NovaEditorCommand) => void;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,7 +78,7 @@ function TitleMenu({ label, items }: { label: string; items: TitleMenuItem[] }) 
           const Icon = item.icon;
 
           return (
-            <DropdownMenuItem key={item.command} onSelect={() => dispatchNovaEditorCommand(item.command)}>
+            <DropdownMenuItem key={item.command} onSelect={() => onRunCommand(item.command)}>
               <Icon aria-hidden className="size-4" />
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
               {item.shortcut ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">{item.shortcut}</span> : null}
@@ -75,7 +86,7 @@ function TitleMenu({ label, items }: { label: string; items: TitleMenuItem[] }) 
           );
         })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("help-guide")}>
+        <DropdownMenuItem onSelect={() => onRunCommand("help-guide")}>
           <Settings aria-hidden className="size-4" />
           <span className="min-w-0 flex-1 truncate">命令说明</span>
           <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span>
@@ -119,7 +130,7 @@ function WindowMenu() {
   );
 }
 
-export function WindowTitlebar() {
+export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
   return (
     <div
       className="relative flex h-10 shrink-0 select-none items-center border-b border-outline-variant bg-surface px-3 pr-32 text-xs text-on-surface-variant"
@@ -145,6 +156,7 @@ export function WindowTitlebar() {
         <div className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex">
           <TitleMenu
             label="文件"
+            onRunCommand={onRunEditorCommand}
             items={[
               { label: "新建项目", command: "new-project", icon: FilePlus2 },
               { label: "打开项目", command: "open-project", icon: FolderOpen },
@@ -153,6 +165,7 @@ export function WindowTitlebar() {
           />
           <TitleMenu
             label="编辑"
+            onRunCommand={onRunEditorCommand}
             items={[
               { label: "撤销", command: "undo", icon: Undo2, shortcut: "Ctrl+Z" },
               { label: "重做", command: "redo", icon: RotateCcw, shortcut: "Ctrl+Y" },
@@ -161,6 +174,7 @@ export function WindowTitlebar() {
           />
           <TitleMenu
             label="视图"
+            onRunCommand={onRunEditorCommand}
             items={[
               { label: "Design 模式", command: "mode-design", icon: Sparkles },
               { label: "Logic 模式", command: "mode-logic", icon: Settings },
@@ -171,6 +185,7 @@ export function WindowTitlebar() {
           />
           <TitleMenu
             label="构建"
+            onRunCommand={onRunEditorCommand}
             items={[
               { label: "运行检查", command: "quick-check-all", icon: Terminal },
               { label: "运行当前事件", command: "run-selected-event", icon: Play, shortcut: "F5" },
@@ -189,15 +204,15 @@ export function WindowTitlebar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("help-guide")}>
+              <DropdownMenuItem onSelect={() => onRunEditorCommand("help-guide")}>
                 <HelpCircle aria-hidden className="size-4" />
                 Nova 编辑器指南
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("project-templates")}>
+              <DropdownMenuItem onSelect={() => onRunEditorCommand("project-templates")}>
                 <FilePlus2 aria-hidden className="size-4" />
                 新建项目模板
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => dispatchNovaEditorCommand("bundle-installer")}>
+              <DropdownMenuItem onSelect={() => onRunEditorCommand("bundle-installer")}>
                 <FileDown aria-hidden className="size-4" />
                 导出桌面包
               </DropdownMenuItem>

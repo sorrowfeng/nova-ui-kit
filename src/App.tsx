@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   CheckCircle2,
@@ -205,6 +205,10 @@ function getInitialScheme(): ThemeScheme {
   return "violet";
 }
 
+function isPrimaryShortcut(event: KeyboardEvent) {
+  return (event.metaKey || event.ctrlKey) && !event.altKey;
+}
+
 function App() {
   const [activeId, setActiveId] = useState<ShowcaseId>("builder");
   const [searchQuery, setSearchQuery] = useState("");
@@ -217,6 +221,11 @@ function App() {
   const [systemDark, setSystemDark] = useState(() =>
     typeof window === "undefined" ? false : window.matchMedia("(prefers-color-scheme: dark)").matches,
   );
+
+  const runBuilderCommand = useCallback((command: NovaEditorCommand) => {
+    setActiveId("builder");
+    setPendingEditorCommand(command);
+  }, []);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-color-scheme: dark)");
@@ -235,14 +244,42 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      const key = event.key.toLowerCase();
+      const primaryShortcut = isPrimaryShortcut(event);
+
+      if (primaryShortcut && key === "k") {
         event.preventDefault();
         setCommandOpen((open) => !open);
+        return;
+      }
+
+      if (activeId === "builder") {
+        return;
+      }
+
+      const routeEditorShortcut = (command: NovaEditorCommand) => {
+        event.preventDefault();
+        setCommandOpen(false);
+        runBuilderCommand(command);
+      };
+
+      if (primaryShortcut && key === "s") {
+        routeEditorShortcut("save-project");
+        return;
+      }
+
+      if (primaryShortcut && event.shiftKey && key === "b") {
+        routeEditorShortcut("build-exe");
+        return;
+      }
+
+      if (event.key === "F5") {
+        routeEditorShortcut("run-selected-event");
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [activeId, runBuilderCommand]);
 
   useEffect(() => {
     if (activeId !== "builder" || !pendingEditorCommand) {
@@ -275,11 +312,6 @@ function App() {
   const showToast = () => {
     setToastOpen(false);
     window.setTimeout(() => setToastOpen(true), 20);
-  };
-
-  const runBuilderCommand = (command: NovaEditorCommand) => {
-    setActiveId("builder");
-    setPendingEditorCommand(command);
   };
 
   return (
