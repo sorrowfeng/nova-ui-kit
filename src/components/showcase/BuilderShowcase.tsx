@@ -5914,6 +5914,7 @@ export function BuilderShowcase() {
   const [selectedProjectTaskId, setSelectedProjectTaskId] = useState("");
   const [projectTaskLogSearchQuery, setProjectTaskLogSearchQuery] = useState("");
   const [projectTaskQueuePaused, setProjectTaskQueuePaused] = useState(() => loadProjectTaskQueueState().paused);
+  const [projectTaskQueueMessage, setProjectTaskQueueMessage] = useState("");
   const [projectTaskQueueVersion, setProjectTaskQueueVersion] = useState(0);
   const [customProjectActionPresets, setCustomProjectActionPresets] = useState<ProjectActionPresetDefinition[]>(() => loadProjectActionPresets());
   const [destructiveAction, setDestructiveAction] = useState<DestructiveActionRequest | null>(null);
@@ -6059,6 +6060,45 @@ export function BuilderShowcase() {
     [activeProjectTasks],
   );
   const operationMonitorTask = runningProjectTask ?? latestQueuedProjectTask ?? latestFailedProjectTask ?? latestProjectTask;
+  const nextQueuedProjectTask = localQueuedProjectTasks[0] ?? latestQueuedProjectTask;
+  const taskQueueStateTone = runningProjectTask
+    ? "running"
+    : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
+      ? "paused"
+      : localQueuedProjectTasks.length > 0
+        ? "queued"
+        : latestFailedProjectTask
+          ? "attention"
+          : "ready";
+  const taskQueueStateTitle = runningProjectTask
+    ? `Running ${runningProjectTask.title}`
+    : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
+      ? "Queue paused"
+      : localQueuedProjectTasks.length > 0
+        ? `${localQueuedProjectTasks.length} waiting`
+        : latestFailedProjectTask
+          ? `Needs attention: ${latestFailedProjectTask.title}`
+          : "Queue ready";
+  const taskQueueStateDetail =
+    projectTaskQueueMessage ||
+    runningProjectTask?.summary ||
+    runningProjectTask?.detail ||
+    (projectTaskQueuePaused && nextQueuedProjectTask
+      ? `${nextQueuedProjectTask.title} is waiting until you resume the queue.`
+      : nextQueuedProjectTask
+        ? `Next: ${nextQueuedProjectTask.title}.`
+        : latestFailedProjectTask
+          ? latestFailedProjectTask.error ?? latestFailedProjectTask.summary ?? "Open the failed task, inspect the log, then retry or adjust the project."
+          : "Run a check, validation, build, or preset to create tracked editor work.");
+  const taskQueueNextActionLabel = runningProjectTask
+    ? "Inspect live task"
+    : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
+      ? "Resume queue"
+      : localQueuedProjectTasks.length > 0
+        ? "Continue queue"
+        : latestFailedProjectTask
+          ? "Review failure"
+          : "Start from checks";
   const allProjectActionPresets = useMemo(
     () => [...projectActionPresets, ...customProjectActionPresets],
     [customProjectActionPresets],
@@ -10609,9 +10649,11 @@ export function BuilderShowcase() {
 
   const drainProjectTaskQueue = async () => {
     if (projectTaskQueuePausedRef.current) {
+      setProjectTaskQueueMessage("Queue is paused. Resume it before continuing queued work.");
       return null;
     }
     if (projectTaskRunnerRef.current) {
+      setProjectTaskQueueMessage("Queue runner is already active.");
       return projectTaskRunnerRef.current;
     }
 
@@ -10640,6 +10682,7 @@ export function BuilderShowcase() {
           ...startedTaskBase,
           commandArgs: createReleasePipelineCommandArgs(startedTaskBase),
         };
+        setProjectTaskQueueMessage(`Started ${startedTask.title}.`);
         updateProjectTask(task.id, startedTask);
         recordReleasePipelineTaskUpdate(startedTask);
 
@@ -10662,6 +10705,11 @@ export function BuilderShowcase() {
             ...finishedTaskBase,
             commandArgs: createReleasePipelineCommandArgs(finishedTaskBase),
           };
+          setProjectTaskQueueMessage(
+            `${finishedTask.title} ${finishedTask.status}. ${
+              projectTaskQueueRef.current.length > 0 ? `${projectTaskQueueRef.current.length} task(s) still waiting.` : "Queue is clear."
+            }`,
+          );
           updateProjectTask(task.id, finishedTask);
           recordReleasePipelineTaskUpdate(finishedTask);
           if (finishedTask.pipelineRunId && (finishedTask.status === "failed" || finishedTask.status === "canceled")) {
@@ -10684,6 +10732,7 @@ export function BuilderShowcase() {
             ...failedTaskBase,
             commandArgs: createReleasePipelineCommandArgs(failedTaskBase),
           };
+          setProjectTaskQueueMessage(`${failedTask.title} failed. Open its log or retry after fixing the project.`);
           updateProjectTask(task.id, failedTask);
           recordReleasePipelineTaskUpdate(failedTask);
           if (failedTask.pipelineRunId) {
@@ -10746,6 +10795,11 @@ export function BuilderShowcase() {
     bumpProjectTaskQueueVersion();
     setProjectTasks((current) => [...tasks, ...current].slice(0, 100));
     setSelectedProjectTaskId(tasks[0].id);
+    setProjectTaskQueueMessage(
+      tasks.length === 1
+        ? `Queued ${tasks[0].title}.`
+        : `Queued ${tasks.length} task(s), starting with ${tasks[0].title}.`,
+    );
     if (shouldRevealTaskWorkspaceForActions(actionIds)) {
       openBottomDock("tasks");
       setMode(projectTaskDefinitions[tasks[tasks.length - 1].actionId].mode);
@@ -10866,6 +10920,13 @@ export function BuilderShowcase() {
   const setProjectTaskQueuePausedState = (paused: boolean) => {
     projectTaskQueuePausedRef.current = paused;
     setProjectTaskQueuePaused(paused);
+    setProjectTaskQueueMessage(
+      paused
+        ? `Queue paused. ${localQueuedProjectTasks.length} waiting task(s) will stay queued.`
+        : localQueuedProjectTasks.length > 0
+          ? `Queue resumed. Next task: ${localQueuedProjectTasks[0].title}.`
+          : "Queue resumed. No waiting tasks.",
+    );
     if (!paused) {
       void drainProjectTaskQueue();
     }
@@ -10883,6 +10944,7 @@ export function BuilderShowcase() {
     projectTaskQueueRef.current = nextQueue;
     bumpProjectTaskQueueVersion();
     syncProjectTaskQueueOrderToHistory();
+    setProjectTaskQueueMessage(`${task.title} moved to queue position ${nextIndex + 1}.`);
   };
 
   const cancelQueuedProjectTasks = () => {
@@ -10892,6 +10954,7 @@ export function BuilderShowcase() {
     }
     projectTaskQueueRef.current = projectTaskQueueRef.current.filter((task) => !canceledIds.has(task.id));
     bumpProjectTaskQueueVersion();
+    setProjectTaskQueueMessage(`Canceled ${canceledIds.size} waiting task(s).`);
     localQueuedProjectTasks
       .filter((task) => canceledIds.has(task.id))
       .forEach((task) =>
@@ -10925,6 +10988,7 @@ export function BuilderShowcase() {
   };
 
   const retryProjectTask = (task: ProjectTaskEntry) => {
+    setProjectTaskQueueMessage(`Retry queued for ${task.title}.`);
     enqueueProjectTask(task.actionId, task.attempt + 1);
   };
 
@@ -10943,6 +11007,7 @@ export function BuilderShowcase() {
         finishedAt: canceledTask.finishedAt,
         summary: canceledTask.summary,
       });
+      setProjectTaskQueueMessage(`Canceled ${task.title} before it started.`);
       recordReleasePipelineTaskUpdate(canceledTask);
       return;
     }
@@ -10959,17 +11024,20 @@ export function BuilderShowcase() {
             logPath: canceled.log_path,
             artifactPath: canceled.root_path,
           });
+          setProjectTaskQueueMessage(`Cancellation requested for ${task.title}.`);
         }
       } catch (error) {
         updateProjectTask(task.id, {
           error: String(error),
           summary: "Failed to request backend task cancellation.",
         });
+        setProjectTaskQueueMessage(`Failed to cancel ${task.title}: ${String(error)}`);
       }
     }
   };
 
   const clearCompletedProjectTasks = () => {
+    setProjectTaskQueueMessage(`Cleared ${completedProjectTaskCount} completed task(s).`);
     setProjectTasks((current) =>
       current.filter(
         (task) =>
@@ -13032,6 +13100,25 @@ export function BuilderShowcase() {
     if (tab === "tasks") {
       selectRelevantProjectTask();
     }
+  };
+  const runTaskQueueRecommendedAction = () => {
+    if (runningProjectTask) {
+      openRelevantTaskDock(runningProjectTask);
+      return;
+    }
+    if (projectTaskQueuePaused && localQueuedProjectTasks.length > 0) {
+      setProjectTaskQueuePausedState(false);
+      return;
+    }
+    if (localQueuedProjectTasks.length > 0) {
+      void drainProjectTaskQueue();
+      return;
+    }
+    if (latestFailedProjectTask) {
+      openRelevantTaskDock(latestFailedProjectTask);
+      return;
+    }
+    enqueueProjectTask("quick-check-all");
   };
   const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
     setBuildError("");
@@ -16215,6 +16302,55 @@ export function BuilderShowcase() {
                   <div className="rounded-xl bg-surface-container-high px-2 py-2">
                     <p className="font-medium text-on-surface">{failedProjectTaskCount}</p>
                     <p className="mt-1 text-on-surface-variant">failed</p>
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "mb-3 rounded-2xl border p-3 text-xs",
+                    taskQueueStateTone === "attention"
+                      ? "border-destructive/30 bg-destructive/10"
+                      : taskQueueStateTone === "running"
+                        ? "border-primary/30 bg-primary/10"
+                        : taskQueueStateTone === "paused"
+                          ? "border-outline bg-surface-container-high"
+                          : "border-outline-variant bg-surface-container-high",
+                  )}
+                  data-builder-task-queue-status=""
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <Badge
+                          variant={
+                            taskQueueStateTone === "attention"
+                              ? "destructive"
+                              : taskQueueStateTone === "running" || taskQueueStateTone === "ready"
+                                ? "secondary"
+                                : "outline"
+                          }
+                        >
+                          {taskQueueStateTone}
+                        </Badge>
+                        <span className="min-w-0 truncate font-medium text-on-surface">{taskQueueStateTitle}</span>
+                      </div>
+                      <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{taskQueueStateDetail}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={taskQueueStateTone === "attention" || taskQueueStateTone === "paused" ? "secondary" : "ghost"}
+                      className="shrink-0"
+                      data-builder-task-queue-recommended-action=""
+                      onClick={runTaskQueueRecommendedAction}
+                    >
+                      {taskQueueStateTone === "paused" || taskQueueStateTone === "queued" || taskQueueStateTone === "ready" ? (
+                        <Play aria-hidden className="size-4" />
+                      ) : taskQueueStateTone === "attention" ? (
+                        <AlertTriangle aria-hidden className="size-4" />
+                      ) : (
+                        <MousePointer2 aria-hidden className="size-4" />
+                      )}
+                      {taskQueueNextActionLabel}
+                    </Button>
                   </div>
                 </div>
                 <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]" data-builder-task-queue-controls="">
