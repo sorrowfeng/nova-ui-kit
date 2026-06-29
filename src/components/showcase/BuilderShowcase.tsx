@@ -548,6 +548,21 @@ type SimulatorTraceEntry = {
   target?: string;
 };
 
+function formatSimulatorTraceLog(trace: SimulatorTraceEntry) {
+  const args = trace.args && Object.keys(trace.args).length > 0 ? JSON.stringify(trace.args) : "{}";
+  const patch = Object.keys(trace.patch).length > 0 ? JSON.stringify(trace.patch) : "{}";
+
+  return [
+    `[${trace.time}] ${trace.status.toUpperCase()} ${trace.itemName}.${trace.eventName}`,
+    `command: ${trace.commandName}`,
+    `message: ${trace.message}`,
+    `args: ${args}`,
+    `result: ${trace.rawResult}`,
+    trace.target ? `target: ${trace.target}` : "target: none",
+    `state patch: ${patch}`,
+  ].join("\n");
+}
+
 type BuildReadinessSeverity = "ready" | "warning" | "error";
 
 type BuildReadinessItem = {
@@ -6048,6 +6063,7 @@ export function BuilderShowcase() {
     latestSimulatorTrace && selectedItem && selectedEventName && latestSimulatorTrace.itemName === getItemSummary(selectedItem) && latestSimulatorTrace.eventName === selectedEventName
       ? latestSimulatorTrace
       : null;
+  const selectedSimulatorTraceLogPreview = selectedLatestSimulatorTrace ? formatSimulatorTraceLog(selectedLatestSimulatorTrace) : "";
   const selectedActionFeedback = selectedItem
     ? selectedLatestSimulatorTrace
       ? {
@@ -7895,7 +7911,12 @@ export function BuilderShowcase() {
   const simulateSelectedEvent = (options: { recordTask?: boolean } = {}) => {
     if (!selectedItem || !selectedEventName) {
       if (options.recordTask !== false) {
-        recordInstantProjectAction("run-selected-event", "Select a control with an event before running it.", "skipped");
+        recordInstantProjectAction(
+          "run-selected-event",
+          "Select a control with an event before running it.",
+          "skipped",
+          "Run selected event skipped: select a control with an event binding first.",
+        );
       }
       return;
     }
@@ -7905,9 +7926,25 @@ export function BuilderShowcase() {
         trace.status === "success"
           ? `Ran ${trace.itemName} ${trace.eventName} with ${trace.commandName}.`
           : `Failed to run ${trace.itemName} ${trace.eventName}: ${trace.message}`;
-      recordInstantProjectAction("run-selected-event", summary, trace.status === "success" ? "succeeded" : "failed");
+      recordInstantProjectAction(
+        "run-selected-event",
+        summary,
+        trace.status === "success" ? "succeeded" : "failed",
+        formatSimulatorTraceLog(trace),
+      );
     }
     return trace;
+  };
+
+  const runSelectedEventAndRevealLogs = () => {
+    const trace = simulateSelectedEvent();
+    setMode("preview");
+    setRightDockTab("connections");
+    setFeedbackPanelOpen(true);
+    openBottomDock("logs", false);
+    if (trace) {
+      setProjectTaskLogSearchQuery(trace.commandName);
+    }
   };
 
   const applyLayoutPatchForActiveBreakpoint = (item: BuilderItem, patch: ResponsiveOverride, current: BuilderItem[]) => {
@@ -10722,6 +10759,7 @@ export function BuilderShowcase() {
     actionId: ProjectJumpActionId,
     summary: string,
     status: Exclude<ProjectTaskStatus, "queued" | "running"> = "succeeded",
+    logPreview?: string,
   ) => {
     const timestamp = new Date().toISOString();
     const task = createProjectTask(actionId, activeProject, 1);
@@ -10731,6 +10769,7 @@ export function BuilderShowcase() {
       startedAt: timestamp,
       finishedAt: timestamp,
       summary,
+      logPreview,
     };
     setProjectTasks((current) => [finishedTask, ...current].slice(0, 100));
     setSelectedProjectTaskId(finishedTask.id);
@@ -10764,7 +10803,7 @@ export function BuilderShowcase() {
     }
 
     if (actionId === "run-selected-event") {
-      simulateSelectedEvent();
+      runSelectedEventAndRevealLogs();
       return true;
     }
 
@@ -12761,8 +12800,7 @@ export function BuilderShowcase() {
     if (!selectedItem || !selectedEventName) {
       return;
     }
-    setRightDockTab("connections");
-    simulateSelectedEvent();
+    runSelectedEventAndRevealLogs();
   };
 
   useEffect(() => {
@@ -13274,7 +13312,7 @@ export function BuilderShowcase() {
                         ? `${activeProjectTasks.length} total`
                         : bottomDockTab === "output"
                           ? activeProject.outputExePath ? "exe ready" : "pending"
-                          : selectedProjectTask?.logPreview ? "task log" : "waiting"}
+                          : selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview ? "task log" : "waiting"}
                   </span>
                 </div>
                 <div className="min-w-0">
@@ -13306,7 +13344,7 @@ export function BuilderShowcase() {
                     </span>
                   ) : (
                     <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
-                      {selectedProjectTask?.logPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                      {selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
                     </span>
                   )}
                 </div>
@@ -18564,7 +18602,7 @@ export function BuilderShowcase() {
                         data-builder-connection-path-run=""
                         aria-label="Run selected event"
                         disabled={!selectedEventCommand}
-                        onClick={() => simulateSelectedEvent()}
+                        onClick={runSelectedEventAndRevealLogs}
                       >
                         <Play aria-hidden className="size-4" />
                         Run
@@ -18691,7 +18729,7 @@ export function BuilderShowcase() {
                       <Button
                         size="sm"
                         data-builder-simulate-event=""
-                        onClick={() => simulateSelectedEvent()}
+                        onClick={runSelectedEventAndRevealLogs}
                         disabled={!selectedItem || !selectedEventName || !selectedEventCommand}
                       >
                         <Braces aria-hidden className="size-4" />
@@ -19590,7 +19628,7 @@ export function BuilderShowcase() {
                         <Button
                           size="sm"
                           data-builder-connection-simulate=""
-                          onClick={() => simulateSelectedEvent()}
+                          onClick={runSelectedEventAndRevealLogs}
                           disabled={!selectedEventCommand}
                         >
                           <Play aria-hidden className="size-4" />
@@ -20177,6 +20215,7 @@ export function BuilderShowcase() {
               ) : (
                 <pre className="max-h-36 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-5 text-on-surface-variant">
                   {selectedProjectTask?.logPreview ||
+                    selectedSimulatorTraceLogPreview ||
                     latestRunSessionEntry?.runtimeLogPreview ||
                     "Runtime and task logs will appear after checks, builds, or running the generated app."}
                 </pre>
