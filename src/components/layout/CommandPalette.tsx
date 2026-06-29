@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Command, Search } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,40 +12,131 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
+
+export type CommandPaletteAction = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: LucideIcon;
+  tags: string[];
+  command: NovaEditorCommand;
+  shortcut?: string;
+};
+
+type CommandPaletteResult =
+  | {
+      kind: "page";
+      id: string;
+      title: string;
+      description: string;
+      category: string;
+      tags: string[];
+      icon: LucideIcon;
+      item: ShowcaseNavItem;
+      shortcut?: string;
+    }
+  | {
+      kind: "action";
+      id: string;
+      title: string;
+      description: string;
+      category: string;
+      tags: string[];
+      icon: LucideIcon;
+      action: CommandPaletteAction;
+      shortcut?: string;
+    };
 
 type CommandPaletteProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   items: ShowcaseNavItem[];
   onSelect: (id: ShowcaseId) => void;
+  actions: CommandPaletteAction[];
+  onRunAction: (command: NovaEditorCommand) => void;
 };
 
-export function CommandPalette({ open, onOpenChange, items, onSelect }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, items, onSelect, actions, onRunAction }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const results = useMemo(() => {
     const normalized = query.trim().toLowerCase();
+    const actionResults: CommandPaletteResult[] = actions.map((action) => ({
+      kind: "action",
+      id: action.id,
+      title: action.title,
+      description: action.description,
+      category: action.category,
+      tags: action.tags,
+      icon: action.icon,
+      action,
+      shortcut: action.shortcut,
+    }));
+    const pageResults: CommandPaletteResult[] = items.map((item) => ({
+      kind: "page",
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      tags: item.tags,
+      icon: item.icon,
+      item,
+    }));
+    const allResults = [...pageResults, ...actionResults];
+
     if (!normalized) {
-      return items;
+      return allResults;
     }
-    return items.filter((item) =>
-      [item.title, item.description, item.category, ...item.tags]
+    return allResults.filter((result) =>
+      [result.title, result.description, result.category, result.shortcut ?? "", ...result.tags]
         .join(" ")
         .toLowerCase()
         .includes(normalized),
     );
-  }, [items, query]);
+  }, [actions, items, query]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [open, query]);
+
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, Math.max(results.length - 1, 0)));
+  }, [results.length]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  };
+
+  const closePalette = () => {
+    handleOpenChange(false);
+  };
+
+  const chooseResult = (result: CommandPaletteResult) => {
+    if (result.kind === "page") {
+      onSelect(result.item.id);
+    } else {
+      onRunAction(result.action.command);
+    }
+    closePalette();
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="top-[14%] max-w-2xl overflow-hidden p-0 [--dialog-y:0px]">
         <DialogHeader className="border-b border-outline-variant bg-surface-container p-5 pb-4">
           <DialogTitle className="flex items-center gap-2 text-base">
             <Command aria-hidden className="size-4 text-primary" />
             命令面板
           </DialogTitle>
-          <DialogDescription>快速跳转组件组，或检查匹配的交互状态。</DialogDescription>
+          <DialogDescription>搜索工作区、编辑器模式和项目动作。</DialogDescription>
         </DialogHeader>
 
         <div className="border-b border-outline-variant bg-surface-container-low p-4">
@@ -56,6 +148,22 @@ export function CommandPalette({ open, onOpenChange, items, onSelect }: CommandP
               placeholder="输入组件、模式或状态..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  setActiveIndex((current) => Math.min(current + 1, Math.max(results.length - 1, 0)));
+                  return;
+                }
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  setActiveIndex((current) => Math.max(current - 1, 0));
+                  return;
+                }
+                if (event.key === "Enter" && results[activeIndex]) {
+                  event.preventDefault();
+                  chooseResult(results[activeIndex]);
+                }
+              }}
               className="h-12 rounded-full pl-12"
             />
           </div>
@@ -68,30 +176,30 @@ export function CommandPalette({ open, onOpenChange, items, onSelect }: CommandP
             </div>
           ) : (
             <div className="space-y-1">
-              {results.map((item) => {
-                const Icon = item.icon;
+              {results.map((result, index) => {
+                const Icon = result.icon;
                 return (
                   <button
-                    key={item.id}
+                    key={result.id}
                     type="button"
+                    aria-selected={index === activeIndex}
                     className={cn(
                       "focus-ring m3-state-layer flex w-full items-center gap-3 rounded-[28px] px-4 py-3 text-left transition-colors hover:bg-surface-container-high",
+                      index === activeIndex && "bg-secondary-container text-secondary-container-foreground",
                     )}
-                    onClick={() => {
-                      onSelect(item.id);
-                      onOpenChange(false);
-                      setQuery("");
-                    }}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => chooseResult(result)}
                   >
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary-container">
                       <Icon aria-hidden className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <Badge variant="secondary">{item.category}</Badge>
+                        <p className="truncate text-sm font-medium">{result.title}</p>
+                        <Badge variant={result.kind === "action" ? "default" : "secondary"}>{result.category}</Badge>
+                        {result.shortcut ? <Badge variant="outline">{result.shortcut}</Badge> : null}
                       </div>
-                      <p className="truncate text-xs text-on-surface-variant">{item.description}</p>
+                      <p className="truncate text-xs text-on-surface-variant">{result.description}</p>
                     </div>
                     <ArrowRight aria-hidden className="size-4 text-on-surface-variant" />
                   </button>
@@ -102,8 +210,8 @@ export function CommandPalette({ open, onOpenChange, items, onSelect }: CommandP
         </div>
 
         <div className="flex items-center justify-between border-t border-outline-variant bg-surface-container px-5 py-3 text-xs text-on-surface-variant">
-          <span>搜索结果与侧边栏共用同一份组件注册表。</span>
-          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+          <span>工作区与编辑器动作</span>
+          <Button variant="ghost" size="sm" onClick={closePalette}>
             关闭
           </Button>
         </div>
