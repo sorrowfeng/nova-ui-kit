@@ -14002,6 +14002,24 @@ export function BuilderShowcase() {
         enqueueProjectTask("bundle-installer");
         return;
       }
+      if (command === "open-project-settings") {
+        switchEditorMode("design");
+        setLeftDockTab("project");
+        showProjectJumpFeedback("success", "Opened project settings", "Project Dock is active with templates, UI files, and release settings.");
+        return;
+      }
+      if (command === "open-project-files") {
+        switchEditorMode("design");
+        setLeftDockTab("navigator");
+        showProjectJumpFeedback("success", "Opened project files", "Navigator is active with UI files, layers, and canvas controls.");
+        return;
+      }
+      if (command === "open-build-output") {
+        setMode("build");
+        openBottomDock("output");
+        showProjectJumpFeedback("success", "Opened build output", "Build workspace and Output dock are visible.");
+        return;
+      }
       if (command === "help-guide") {
         setProjectJumpQuery("action build command settings");
         setProjectJumpFocused(true);

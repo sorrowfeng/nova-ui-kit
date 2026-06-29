@@ -1,16 +1,18 @@
 import { SearchX, Sparkles } from "lucide-react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
 import { workspaceSections, utilityNavItems } from "@/data/components";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
 
 type SidebarProps = {
   activeId: ShowcaseId;
   filteredItems: ShowcaseNavItem[];
   onSelect: (id: ShowcaseId) => void;
+  onRunEditorCommand: (command: NovaEditorCommand) => void;
   className?: string;
 };
 
-export function Sidebar({ activeId, filteredItems, onSelect, className }: SidebarProps) {
+export function Sidebar({ activeId, filteredItems, onSelect, onRunEditorCommand, className }: SidebarProps) {
   const filteredIds = new Set(filteredItems.map((item) => item.id));
 
   return (
@@ -93,6 +95,7 @@ export function Sidebar({ activeId, filteredItems, onSelect, className }: Sideba
               <button
                 type="button"
                 key={item.title}
+                onClick={() => onRunEditorCommand(item.command)}
                 className="focus-ring m3-state-layer flex w-full items-center gap-3 rounded-full px-4 py-3 text-left text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
               >
                 <Icon aria-hidden className="size-5" />

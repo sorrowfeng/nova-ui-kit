@@ -2,6 +2,7 @@ import { Bell, Boxes, Command, Palette, Settings } from "lucide-react";
 import type { ShowcaseId, ShowcaseNavItem } from "@/data/components";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
 
 type NavigationRailProps = {
@@ -9,6 +10,7 @@ type NavigationRailProps = {
   items: ShowcaseNavItem[];
   onSelect: (id: ShowcaseId) => void;
   onOpenCommand: () => void;
+  onRunEditorCommand: (command: NovaEditorCommand) => void;
   onToast: () => void;
 };
 
@@ -17,6 +19,7 @@ export function NavigationRail({
   items,
   onSelect,
   onOpenCommand,
+  onRunEditorCommand,
   onToast,
 }: NavigationRailProps) {
   return (
@@ -66,10 +69,10 @@ export function NavigationRail({
         <Button variant="ghost" size="icon" aria-label="通知" onClick={onToast}>
           <Bell />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="编辑器设置">
+        <Button variant="ghost" size="icon" aria-label="项目设置" onClick={() => onRunEditorCommand("open-project-settings")}>
           <Settings />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="项目文件">
+        <Button variant="ghost" size="icon" aria-label="项目文件" onClick={() => onRunEditorCommand("open-project-files")}>
           <Boxes />
         </Button>
       </div>

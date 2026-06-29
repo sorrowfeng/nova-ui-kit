@@ -90,6 +90,33 @@ const editorCommandActions: CommandPaletteAction[] = [
     command: "mode-build",
   },
   {
+    id: "editor-action-project-settings",
+    title: "打开项目设置",
+    description: "切到 Project Dock，编辑模板、文件和 release 配置。",
+    category: "Project",
+    icon: Settings,
+    tags: ["project", "settings", "release", "项目", "设置", "发布"],
+    command: "open-project-settings",
+  },
+  {
+    id: "editor-action-project-files",
+    title: "打开项目文件",
+    description: "切到 Navigator，查看和切换当前项目 UI 文件。",
+    category: "Project",
+    icon: FolderOpen,
+    tags: ["project", "files", "navigator", "ui files", "项目文件", "导航"],
+    command: "open-project-files",
+  },
+  {
+    id: "editor-action-build-output",
+    title: "打开构建输出",
+    description: "切到 Build 模式并展开 Output 面板。",
+    category: "Build",
+    icon: Terminal,
+    tags: ["build", "output", "logs", "构建", "输出"],
+    command: "open-build-output",
+  },
+  {
     id: "editor-action-mode-preview",
     title: "Preview 模式",
     description: "预览当前 UI 并模拟已绑定的交互。",
@@ -271,6 +298,7 @@ function App() {
           density={density}
           onDensityChange={setDensity}
           onOpenCommand={() => setCommandOpen(true)}
+          onRunEditorCommand={runBuilderCommand}
           onSaveProject={() => runBuilderCommand("save-project")}
           onExportProject={() => runBuilderCommand("mode-export")}
           onToast={showToast}

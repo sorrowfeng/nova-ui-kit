@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { StatusBar } from "@/components/layout/StatusBar";
 import { Topbar } from "@/components/layout/Topbar";
 import { WindowTitlebar } from "@/components/layout/WindowTitlebar";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 import {
   Sheet,
   SheetContent,
@@ -30,6 +31,7 @@ type AppShellProps = {
   density: Density;
   onDensityChange: (value: Density) => void;
   onOpenCommand: () => void;
+  onRunEditorCommand: (command: NovaEditorCommand) => void;
   onSaveProject: () => void;
   onExportProject: () => void;
   onToast: () => void;
@@ -49,6 +51,7 @@ export function AppShell({
   density,
   onDensityChange,
   onOpenCommand,
+  onRunEditorCommand,
   onSaveProject,
   onExportProject,
   onToast,
@@ -83,6 +86,7 @@ export function AppShell({
           items={filteredItems}
           onSelect={onSelect}
           onOpenCommand={onOpenCommand}
+          onRunEditorCommand={onRunEditorCommand}
           onToast={onToast}
         />
 
@@ -90,6 +94,7 @@ export function AppShell({
           activeId={activeId}
           filteredItems={filteredItems}
           onSelect={onSelect}
+          onRunEditorCommand={onRunEditorCommand}
           className="hidden lg:flex"
         />
 
@@ -99,7 +104,13 @@ export function AppShell({
               <SheetTitle>导航</SheetTitle>
               <SheetDescription>组件库导航</SheetDescription>
             </SheetHeader>
-            <Sidebar activeId={activeId} filteredItems={filteredItems} onSelect={handleSelect} className="w-full border-r-0" />
+            <Sidebar
+              activeId={activeId}
+              filteredItems={filteredItems}
+              onSelect={handleSelect}
+              onRunEditorCommand={onRunEditorCommand}
+              className="w-full border-r-0"
+            />
           </SheetContent>
         </Sheet>
 

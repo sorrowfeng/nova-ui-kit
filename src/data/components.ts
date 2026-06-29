@@ -4,6 +4,7 @@ import {
   PanelsTopLeft,
   Settings,
 } from "lucide-react";
+import type { NovaEditorCommand } from "@/lib/editor-commands";
 
 export type ShowcaseId =
   | "builder"
@@ -21,6 +22,12 @@ export type ShowcaseNavItem = {
   category: string;
   icon: LucideIcon;
   tags: string[];
+};
+
+export type UtilityNavItem = {
+  title: string;
+  icon: LucideIcon;
+  command: NovaEditorCommand;
 };
 
 export const showcaseNavItems: ShowcaseNavItem[] = [
@@ -42,7 +49,7 @@ export const workspaceSections = [
   },
 ];
 
-export const utilityNavItems = [
-  { title: "项目设置", icon: Settings },
-  { title: "构建输出", icon: Component },
+export const utilityNavItems: UtilityNavItem[] = [
+  { title: "项目设置", icon: Settings, command: "open-project-settings" },
+  { title: "构建输出", icon: Component, command: "open-build-output" },
 ];
