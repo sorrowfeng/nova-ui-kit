@@ -21492,18 +21492,28 @@ export function BuilderShowcase() {
                       </p>
                     ) : null}
                     <div className="flex flex-wrap gap-1.5">
-                      <Button size="sm" variant="secondary" disabled={!activeProject.outputExePath} onClick={() => void openLocalArtifact(activeProject.outputExePath || "")}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        data-builder-output-run-exe=""
+                        loading={launchingExeId === "active-output"}
+                        disabled={!activeProject.outputExePath || Boolean(launchingExeId)}
+                        title="Run the generated desktop executable"
+                        onClick={() => void launchActiveOutputExecutable()}
+                      >
                         <Play aria-hidden className="size-4" />
                         {bottomDockExpanded ? "Run exe" : "Run"}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
+                        data-builder-output-reveal-exe=""
                         disabled={!activeProject.outputExePath}
+                        title="Reveal the executable folder"
                         onClick={() => void openLocalArtifact(parentPathFromPath(activeProject.outputExePath || ""))}
                       >
                         <FolderOpen aria-hidden className="size-4" />
-                        {bottomDockExpanded ? "Folder" : "Dir"}
+                        {bottomDockExpanded ? "Folder" : "Reveal"}
                       </Button>
                       <Button size="sm" variant="ghost" disabled={!activeProject.outputExePath} onClick={() => void copyArtifactPath(activeProject.outputExePath || "")}>
                         <ClipboardCopy aria-hidden className="size-4" />
