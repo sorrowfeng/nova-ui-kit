@@ -7600,8 +7600,15 @@ export function BuilderShowcase() {
     setSelectedIds(items.map((item) => item.id));
   };
 
-  const addComponent = (type: BuilderComponentType, position?: { x: number; y: number }, parentId?: string, insertionIndex?: number) => {
+  const addComponent = (
+    type: BuilderComponentType,
+    position?: { x: number; y: number },
+    parentId?: string,
+    insertionIndex?: number,
+    propsPatch: Partial<BuilderItemProps> = {},
+  ) => {
     const parent = parentId ? items.find((item) => item.id === parentId && item.type === "frame") : undefined;
+    const definition = getDefinition(type);
     const baseItem = createItem(type, page, items.length, position);
     const parentedBaseItem = parent
       ? normalizeItemBoundsInTree(
@@ -7624,18 +7631,28 @@ export function BuilderShowcase() {
               assetPath: firstAsset.publicPath,
               alt: firstAsset.name,
               label: firstAsset.name,
-            },
-          }
+          },
+        }
         : parentedBaseItem;
+    const patchedItem = {
+      ...nextItem,
+      props: { ...nextItem.props, ...propsPatch },
+    };
     updateActiveItems((current) => {
-      const appendedItems = [...current, nextItem];
+      const appendedItems = [...current, patchedItem];
       if (parent?.id && insertionIndex !== undefined) {
-        return reorderFrameChildren(appendedItems, parent.id, [nextItem.id], insertionIndex);
+        return reorderFrameChildren(appendedItems, parent.id, [patchedItem.id], insertionIndex);
       }
       return appendedItems;
     });
-    setSelectedId(nextItem.id);
+    setSelectedId(patchedItem.id);
     setMode("design");
+    setRightDockTab("properties");
+    showProjectJumpFeedback(
+      "success",
+      "Component inserted",
+      `${definition.title} was added ${parent ? `inside ${getItemSummary(parent)}` : `to ${activeFile.name}`} and selected for editing in Properties.`,
+    );
   };
 
   const insertComponentFromShortcut = (type: BuilderComponentType, options: { centered?: boolean; revealPalette?: boolean } = {}) => {
@@ -9242,20 +9259,12 @@ export function BuilderShowcase() {
   };
 
   const addImageFromAsset = (asset: DesignerAsset) => {
-    const item = createItem("image", page, items.length);
-    const nextItem: BuilderItem = {
-      ...item,
-      props: {
-        ...item.props,
+    addComponent("image", undefined, undefined, undefined, {
         label: asset.name,
         alt: asset.name,
         assetId: asset.id,
         assetPath: asset.publicPath,
-      },
-    };
-    updateActiveItems((current) => [...current, nextItem]);
-    setSelectedId(nextItem.id);
-    setMode("design");
+    });
   };
 
   const bindSelectedImageAsset = (assetId: string) => {
@@ -11318,7 +11327,6 @@ export function BuilderShowcase() {
 
     if (result.kind === "component" && result.insertComponentType) {
       insertComponentFromShortcut(result.insertComponentType, { centered: items.length === 0, revealPalette: true });
-      showProjectJumpFeedback("success", "Component inserted", `${result.title} was added to the active UI file and selected on the canvas.`);
       return;
     }
 
