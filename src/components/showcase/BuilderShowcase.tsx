@@ -7594,10 +7594,28 @@ export function BuilderShowcase() {
     setSelectedId(id);
   };
 
-  const clearSelection = () => setSelectedIds([]);
+  const clearSelection = (options: { feedback?: boolean } = {}) => {
+    const clearedCount = selectedIds.length;
+    setSelectedIds([]);
+    if (!options.feedback || clearedCount === 0) {
+      return;
+    }
+    setRightDockTab("properties");
+    showProjectJumpFeedback(
+      "success",
+      "Selection cleared",
+      `${formatControlCount(clearedCount)} released. ${activeFile.name} canvas context is active.`,
+    );
+  };
 
   const selectAllItems = () => {
+    if (items.length === 0) {
+      showProjectJumpFeedback("warning", "Nothing to select", `${activeFile.name} has no controls yet. Insert a component first.`);
+      return;
+    }
     setSelectedIds(items.map((item) => item.id));
+    setRightDockTab("properties");
+    showProjectJumpFeedback("success", "All controls selected", `${formatControlCount(items.length)} ready for batch editing in Properties.`);
   };
 
   const addComponent = (
@@ -19120,7 +19138,7 @@ export function BuilderShowcase() {
                       data-builder-navigator-clear-selection=""
                       aria-label="清空选择"
                       title="清空选择"
-                      onClick={clearSelection}
+                      onClick={() => clearSelection({ feedback: true })}
                       disabled={selectedIds.length === 0}
                     >
                       <MousePointer2 aria-hidden />
@@ -19728,7 +19746,7 @@ export function BuilderShowcase() {
                       mode === "design" && canvasPanActive && "cursor-grab",
                     )}
                     style={canvasStyle}
-                    onClick={clearSelection}
+                    onClick={() => clearSelection({ feedback: true })}
                     onDragOver={(event) => {
                       event.preventDefault();
                       event.dataTransfer.dropEffect = "copy";
