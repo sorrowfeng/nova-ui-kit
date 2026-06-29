@@ -12740,19 +12740,20 @@ export function BuilderShowcase() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-        <div className="grid h-full min-h-0 grid-cols-[56px_minmax(0,1fr)]">
-          <nav className="flex flex-col items-center gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="Editor modes">
-            <span className="mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
+        <div className="grid h-full min-h-0 grid-cols-[88px_minmax(0,1fr)]">
+          <nav className="flex flex-col items-stretch gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="Editor modes">
+            <span className="mx-auto mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
               <MousePointer2 aria-hidden className="size-4" />
             </span>
             {modeBarItems.map((item) => (
               <button
                 key={item.mode}
                 type="button"
+                data-builder-mode-button={item.mode}
                 aria-label={`${item.label} mode`}
                 aria-current={mode === item.mode ? "page" : undefined}
                 className={cn(
-                  "focus-ring group flex size-10 items-center justify-center rounded-2xl transition",
+                  "focus-ring group flex h-14 w-full min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 text-[0.62rem] font-medium leading-none transition",
                   mode === item.mode
                     ? "bg-secondary-container text-secondary-container-foreground shadow-m3-1"
                     : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
@@ -12760,7 +12761,8 @@ export function BuilderShowcase() {
                 title={`${item.label} · ${item.detail}`}
                 onClick={() => switchEditorMode(item.mode)}
               >
-                <item.icon aria-hidden className="size-4" />
+                <item.icon aria-hidden className="size-4 shrink-0" />
+                <span className="max-w-full truncate">{item.label}</span>
               </button>
             ))}
           </nav>
