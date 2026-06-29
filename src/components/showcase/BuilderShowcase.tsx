@@ -6369,6 +6369,25 @@ export function BuilderShowcase() {
         selectedEventBinding?.applyJsonStatePatch ? "JSON patch" : "",
       ].filter(Boolean).join(" · ") || "no write-back"
     : "not configured";
+  const selectedConnectionVerificationLabel = selectedEventCommand
+    ? selectedLatestSimulatorTrace
+      ? selectedLatestSimulatorTrace.status === "success"
+        ? "Verified"
+        : "Needs attention"
+      : "Ready to simulate"
+    : "Needs command";
+  const selectedConnectionVerificationDetail = selectedEventCommand
+    ? selectedLatestSimulatorTrace
+      ? `${selectedLatestSimulatorTrace.commandName} ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
+      : `${selectedEventName ?? "event"} is bound to ${sanitizeRustCommandName(selectedEventCommand.name)}.`
+    : selectedEventName
+      ? `${selectedEventName} has no Rust command.`
+      : "Select an interactive control.";
+  const selectedConnectionVerificationVariant = selectedEventCommand
+    ? selectedLatestSimulatorTrace?.status === "error"
+      ? "destructive"
+      : "secondary"
+    : "outline";
   const eventResultTargets = useMemo(
     () =>
       items
@@ -8130,7 +8149,8 @@ export function BuilderShowcase() {
   };
 
   const updateSelectedEventCommand = (eventName: BuilderEventName, commandId: string) => {
-    const commandAcceptsValue = Boolean(activeProject.rustCommands.find((command) => command.id === commandId)?.acceptsValue);
+    const command = activeProject.rustCommands.find((candidate) => candidate.id === commandId) ?? null;
+    const commandAcceptsValue = Boolean(command?.acceptsValue);
     const patch: Partial<BuilderEventBinding> = commandAcceptsValue
       ? { commandId, passValue: true }
       : { commandId, passValue: false, payloadMode: "value", payloadFields: undefined };
@@ -8143,6 +8163,16 @@ export function BuilderShowcase() {
             }
           : item,
       ),
+    );
+    setSimulatorTrace([]);
+    setRightDockTab("connections");
+    const targetLabel = selectedIds.length > 1 ? `${selectedIds.length} selected controls` : selectedItem ? getItemSummary(selectedItem) : "Selected control";
+    showProjectJumpFeedback(
+      command ? "success" : "warning",
+      command ? "Connection bound" : "Connection unbound",
+      command
+        ? `${targetLabel} ${eventName} -> ${sanitizeRustCommandName(command.name)}. Simulate opens Logs with this command prefiltered.`
+        : `${targetLabel} ${eventName} no longer has a Rust command.`,
     );
   };
 
@@ -8160,6 +8190,7 @@ export function BuilderShowcase() {
           : item,
       ),
     );
+    setSimulatorTrace([]);
   };
 
   const updateSelectedStateBinding = (propName: BuilderResultTargetProp, stateId: string) => {
@@ -8331,6 +8362,18 @@ export function BuilderShowcase() {
     if (trace) {
       setProjectTaskLogSearchQuery(trace.commandName);
     }
+  };
+
+  const revealSelectedConnectionLogs = () => {
+    if (!selectedItem || !selectedEventName) {
+      return;
+    }
+    setRightDockTab("connections");
+    setFeedbackPanelOpen(true);
+    openBottomDock("logs", false);
+    setProjectTaskLogSearchQuery(
+      selectedLatestSimulatorTrace?.commandName ?? (selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : selectedEventName),
+    );
   };
 
   const applyLayoutPatchForActiveBreakpoint = (item: BuilderItem, patch: ResponsiveOverride, current: BuilderItem[]) => {
@@ -9637,6 +9680,11 @@ export function BuilderShowcase() {
     setRightDockTab("connections");
     if (options.recordTask !== false) {
       recordInstantProjectAction("bind-control-event", `Bound ${selectedItemName} ${eventName} to ${createdCommandName}.`);
+      showProjectJumpFeedback(
+        "success",
+        "Connection created",
+        `${selectedItemName} ${eventName} -> ${createdCommandName}. Simulate opens Logs with this command prefiltered.`,
+      );
     }
     return createdCommandName;
   };
@@ -21693,6 +21741,25 @@ export function BuilderShowcase() {
                           <div className="rounded-xl bg-surface-container-high px-3 py-2">
                             <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Output</p>
                             <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">{selectedConnectionOutputSummary}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-high px-3 py-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Verification</p>
+                              <p className="mt-1 line-clamp-2 text-xs leading-4 text-on-surface-variant">{selectedConnectionVerificationDetail}</p>
+                            </div>
+                            <Badge variant={selectedConnectionVerificationVariant}>{selectedConnectionVerificationLabel}</Badge>
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <Button size="sm" variant="secondary" disabled={!selectedEventCommand} onClick={runSelectedEventAndRevealLogs}>
+                              <Play aria-hidden className="size-4" />
+                              Simulate
+                            </Button>
+                            <Button size="sm" variant="ghost" disabled={!selectedEventCommand} onClick={revealSelectedConnectionLogs}>
+                              <FileJson aria-hidden className="size-4" />
+                              Logs
+                            </Button>
                           </div>
                         </div>
                       </div>
