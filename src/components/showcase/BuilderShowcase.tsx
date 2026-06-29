@@ -20257,6 +20257,7 @@ export function BuilderShowcase() {
               }}
               minimized={bottomDockMinimized}
               onMinimizedChange={setBottomDockMinimized}
+              avoidDesignSideDocks={mode === "design"}
               summary={
                 <div className="grid gap-2 text-xs" data-builder-feedback-summary="">
                   <div

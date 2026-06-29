@@ -13,6 +13,7 @@ export function OutputDock<T extends string>({
   onExpandedChange,
   minimized = false,
   onMinimizedChange,
+  avoidDesignSideDocks = false,
   summary,
   children,
 }: {
@@ -23,6 +24,7 @@ export function OutputDock<T extends string>({
   onExpandedChange?: (expanded: boolean) => void;
   minimized?: boolean;
   onMinimizedChange?: (minimized: boolean) => void;
+  avoidDesignSideDocks?: boolean;
   summary?: ReactNode;
   children: ReactNode;
 }) {
@@ -37,7 +39,8 @@ export function OutputDock<T extends string>({
   return (
     <section
       className={cn(
-        "fixed bottom-0 left-[88px] right-0 z-20 shrink-0 border-t border-outline-variant bg-surface-container-lowest shadow-m3-2 transition-[height]",
+        "fixed bottom-0 left-[88px] right-0 z-20 shrink-0 border-t border-outline-variant bg-surface-container-lowest shadow-m3-2 transition-[height,left,right]",
+        avoidDesignSideDocks && "xl:left-[348px] xl:right-[320px]",
         minimized ? "h-[56px]" : expanded ? "h-[288px]" : "h-[128px]",
       )}
       data-builder-output-dock=""
