@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import type { MouseEvent, PointerEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, Play, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,22 @@ type WindowTitlebarProps = {
   onRunEditorCommand: (command: NovaEditorCommand) => void;
 };
 
+const TITLEBAR_INTERACTIVE_SELECTOR = [
+  "button",
+  "a",
+  "input",
+  "select",
+  "textarea",
+  "[role='button']",
+  "[role='menuitem']",
+  "[data-titlebar-interactive='true']",
+  "[contenteditable='true']",
+].join(",");
+
+function isTitlebarInteractiveTarget(target: EventTarget | null) {
+  return target instanceof HTMLElement && target.closest(TITLEBAR_INTERACTIVE_SELECTOR);
+}
+
 async function runWindowAction(action: WindowAction) {
   try {
     const appWindow = getCurrentWindow();
@@ -40,17 +56,17 @@ async function runWindowAction(action: WindowAction) {
   }
 }
 
-async function startWindowDrag(event: MouseEvent<HTMLElement>) {
+function startWindowDrag(event: PointerEvent<HTMLElement>) {
   if (event.button !== 0) {
     return;
   }
-  try {
-    event.preventDefault();
-    const appWindow = getCurrentWindow();
-    await appWindow.startDragging();
-  } catch {
-    // Browser preview fallback.
+  if (isTitlebarInteractiveTarget(event.target)) {
+    return;
   }
+
+  void getCurrentWindow().startDragging().catch(() => {
+    // Browser preview fallback.
+  });
 }
 
 function TitleMenu({
@@ -133,27 +149,31 @@ function WindowMenu() {
 export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
   return (
     <div
+      data-tauri-drag-region=""
       className="relative flex h-10 shrink-0 select-none items-center border-b border-outline-variant bg-surface px-3 pr-32 text-xs text-on-surface-variant"
+      onPointerDown={startWindowDrag}
+      onDoubleClick={(event) => {
+        if (!isTitlebarInteractiveTarget(event.target)) {
+          void runWindowAction("toggleMaximize");
+        }
+      }}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <div
-          data-tauri-drag-region=""
-          onMouseDown={startWindowDrag}
-          onDoubleClick={() => runWindowAction("toggleMaximize")}
           className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary-container text-primary-container-foreground"
         >
           <Sparkles aria-hidden className="size-3.5" />
         </div>
         <div
-          data-tauri-drag-region=""
           className="flex min-w-0 shrink-0 items-center gap-2"
-          onMouseDown={startWindowDrag}
-          onDoubleClick={() => runWindowAction("toggleMaximize")}
         >
           <span className="shrink-0 font-medium text-on-surface">Nova UI Editor</span>
           <span className="truncate">Desktop UI project editor</span>
         </div>
-        <div className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex">
+        <div
+          data-titlebar-interactive="true"
+          className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex"
+        >
           <TitleMenu
             label="文件"
             onRunCommand={onRunEditorCommand}
@@ -222,13 +242,10 @@ export function WindowTitlebar({ onRunEditorCommand }: WindowTitlebarProps) {
       </div>
 
       <div
-        data-tauri-drag-region=""
         className="min-w-8 flex-1 self-stretch"
-        onMouseDown={startWindowDrag}
-        onDoubleClick={() => runWindowAction("toggleMaximize")}
       />
 
-      <div className="absolute inset-y-0 right-3 flex shrink-0 items-center gap-1">
+      <div data-titlebar-interactive="true" className="absolute inset-y-0 right-3 flex shrink-0 items-center gap-1">
         <Button
           variant="ghost"
           size="icon-sm"
