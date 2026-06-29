@@ -9,9 +9,9 @@ use crate::{
     asset_file_name, backend_integrations, backend_integrations_need_ffi_loader,
     cargo_dependencies, default_icon_paths, generated_app_tsx,
     generated_backend_integrations_readme, generated_backend_integrations_rs,
-    generated_capture_window_script, generated_cargo_toml, generated_icon_source,
-    generated_index_html, generated_lib_rs, generated_main_rs, generated_main_tsx,
-    generated_package_json, generated_project_data, generated_project_readme,
+    generated_capabilities_default, generated_capture_window_script, generated_cargo_toml,
+    generated_icon_source, generated_index_html, generated_lib_rs, generated_main_rs,
+    generated_main_tsx, generated_package_json, generated_project_data, generated_project_readme,
     generated_rust_source_map_json, generated_styles, generated_tauri_conf, generated_tsconfig,
     generated_vite_config, json_string, managed_project_root, normalized_checkpoint_created_at,
     path_size_bytes, project_name, project_with_root_path, release_config,
@@ -481,6 +481,13 @@ fn planned_generated_files(
         "tauri",
         generated_tauri_conf(&release, &icon_paths, &backend_resource_paths),
         "Generated Tauri app config".to_string(),
+    );
+    push_planned_text_file(
+        &mut files,
+        "app/src-tauri/capabilities/default.json".to_string(),
+        "tauri",
+        generated_capabilities_default().to_string(),
+        "Generated Tauri window permissions".to_string(),
     );
     push_planned_text_file(
         &mut files,

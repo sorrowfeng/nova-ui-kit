@@ -208,7 +208,9 @@ import {
   releaseSigningConfigured,
   releaseSigningDescription,
   releaseSigningModes,
+  releaseTitlebarStyles,
   type ReleaseVersionBump,
+  releaseWindowKinds,
 } from "./builder/release";
 import {
   activeBackendMethod,
@@ -349,6 +351,8 @@ import type {
   ReleaseInstallerSmokeMode,
   ReleaseInstallerSmokeRunnerMode,
   ReleaseSigningMode,
+  ReleaseTitlebarStyle,
+  ReleaseWindowKind,
   ResponsiveBreakpointId,
   ResponsiveOverride,
   BuilderResultTargetProp,
@@ -16775,6 +16779,12 @@ export function BuilderShowcase() {
                 <div className="rounded-2xl bg-surface-container-high p-3 text-xs">
                   <PathRow label="应用" value={activeProject.releaseConfig.appName} />
                   <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
+                  <PathRow
+                    label="窗口"
+                    value={`${releaseWindowKinds.find((kind) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
+                      releaseTitlebarStyles.find((style) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
+                    }`}
+                  />
                   <PathRow label="目标" value={activeProject.releaseConfig.bundleTargets} />
                 </div>
                 <Button
@@ -20042,6 +20052,57 @@ export function BuilderShowcase() {
                       />
                     </Field>
                   </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="窗体类型">
+                      <Select
+                        value={activeProject.releaseConfig.windowKind}
+                        onValueChange={(windowKind) =>
+                          updateReleaseConfig({
+                            windowKind: windowKind as ReleaseWindowKind,
+                            titlebarStyle: windowKind === "frameless" ? "hidden" : activeProject.releaseConfig.titlebarStyle,
+                          })
+                        }
+                      >
+                        <SelectTrigger inputSize="sm" data-builder-project-release-window-kind="">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {releaseWindowKinds.map((kind) => (
+                            <SelectItem key={kind.value} value={kind.value}>
+                              {kind.label} · {kind.description}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="标题栏">
+                      <Select
+                        value={activeProject.releaseConfig.titlebarStyle}
+                        onValueChange={(titlebarStyle) => updateReleaseConfig({ titlebarStyle: titlebarStyle as ReleaseTitlebarStyle })}
+                        disabled={activeProject.releaseConfig.windowKind === "frameless"}
+                      >
+                        <SelectTrigger inputSize="sm" data-builder-project-release-titlebar-style="">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {releaseTitlebarStyles.map((style) => (
+                            <SelectItem key={style.value} value={style.value}>
+                              {style.label} · {style.description}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label="标题栏副标题">
+                    <Input
+                      inputSize="sm"
+                      data-builder-project-release-titlebar-subtitle=""
+                      value={activeProject.releaseConfig.titlebarSubtitle}
+                      placeholder="例如：设置、工具窗口、后台任务"
+                      onChange={(event) => updateReleaseConfig({ titlebarSubtitle: event.target.value })}
+                    />
+                  </Field>
                   <div className="grid grid-cols-2 gap-2">
                     <Field label="安装包目标">
                       <Select

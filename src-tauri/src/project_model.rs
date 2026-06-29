@@ -29,11 +29,15 @@ pub(super) struct GeneratedReleaseConfig {
     pub(super) installer_smoke_vm_shared_folder: Option<String>,
     pub(super) installer_smoke_vm_notes: Option<String>,
     pub(super) window_title: String,
+    pub(super) window_kind: String,
+    pub(super) titlebar_style: String,
+    pub(super) titlebar_subtitle: String,
     pub(super) window_width: u64,
     pub(super) window_height: u64,
     pub(super) min_window_width: u64,
     pub(super) min_window_height: u64,
     pub(super) resizable: bool,
+    pub(super) show_runtime_panel: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -200,6 +204,23 @@ pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedRe
             .filter(|value| !value.is_empty())
             .map(ToString::to_string),
         window_title: string_field(config, "windowTitle", &app_name),
+        window_kind: release_window_kind(
+            config
+                .get("windowKind")
+                .and_then(Value::as_str)
+                .unwrap_or("main"),
+        ),
+        titlebar_style: release_titlebar_style(
+            config
+                .get("titlebarStyle")
+                .and_then(Value::as_str)
+                .unwrap_or("nova"),
+            config
+                .get("windowKind")
+                .and_then(Value::as_str)
+                .unwrap_or("main"),
+        ),
+        titlebar_subtitle: string_field(config, "titlebarSubtitle", "Desktop app"),
         window_width,
         window_height,
         min_window_width,
@@ -208,6 +229,27 @@ pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedRe
             .get("resizable")
             .and_then(Value::as_bool)
             .unwrap_or(true),
+        show_runtime_panel: config
+            .get("showRuntimePanel")
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
+    }
+}
+
+fn release_window_kind(value: &str) -> String {
+    match value {
+        "dialog" | "tool" | "frameless" => value.to_string(),
+        _ => "main".to_string(),
+    }
+}
+
+fn release_titlebar_style(value: &str, window_kind: &str) -> String {
+    if window_kind == "frameless" {
+        return "hidden".to_string();
+    }
+    match value {
+        "native" | "hidden" => value.to_string(),
+        _ => "nova".to_string(),
     }
 }
 

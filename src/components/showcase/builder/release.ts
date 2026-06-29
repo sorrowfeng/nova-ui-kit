@@ -5,6 +5,8 @@ import type {
   ReleaseInstallerSmokeMode,
   ReleaseInstallerSmokeRunnerMode,
   ReleaseSigningMode,
+  ReleaseTitlebarStyle,
+  ReleaseWindowKind,
 } from "./types";
 
 export const releaseBundleTargets: { value: ReleaseBundleTarget; label: string }[] = [
@@ -21,6 +23,19 @@ export const releaseSigningModes: { value: ReleaseSigningMode; label: string; de
   { value: "unsigned", label: "未签名", description: "本地测试和内部预览，不写入签名配置。" },
   { value: "windows-certificate", label: "Windows 证书", description: "使用证书 thumbprint 和时间戳服务签名 Windows 安装包。" },
   { value: "custom-command", label: "自定义命令", description: "使用自定义 signCommand，把 %1 作为待签名文件路径。" },
+];
+
+export const releaseWindowKinds: { value: ReleaseWindowKind; label: string; description: string }[] = [
+  { value: "main", label: "主窗口", description: "普通应用主界面，默认可缩放并显示完整标题栏。" },
+  { value: "dialog", label: "对话框", description: "适合确认、设置、向导等中等尺寸窗口。" },
+  { value: "tool", label: "工具窗口", description: "适合浮动工具、面板或辅助控制台。" },
+  { value: "frameless", label: "无框沉浸", description: "隐藏标题栏，内容占满窗口。" },
+];
+
+export const releaseTitlebarStyles: { value: ReleaseTitlebarStyle; label: string; description: string }[] = [
+  { value: "nova", label: "Nova 自绘", description: "与编辑器一致的细边框自绘标题栏。" },
+  { value: "native", label: "系统原生", description: "使用操作系统默认标题栏和窗口控件。" },
+  { value: "hidden", label: "隐藏", description: "隐藏标题栏，适合 kiosk、弹层或全内容窗口。" },
 ];
 
 export const releaseDigestAlgorithms = ["sha256", "sha384", "sha512"] as const;
@@ -51,6 +66,17 @@ export function defaultBundleIdentifier(name: string) {
 export function normalizeReleaseVersion(value: string) {
   const version = value.trim();
   return /^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(version) ? version : "0.1.0";
+}
+
+export function normalizeReleaseWindowKind(value: unknown): ReleaseWindowKind {
+  return value === "dialog" || value === "tool" || value === "frameless" ? value : "main";
+}
+
+export function normalizeReleaseTitlebarStyle(value: unknown, windowKind: ReleaseWindowKind = "main"): ReleaseTitlebarStyle {
+  if (windowKind === "frameless") {
+    return "hidden";
+  }
+  return value === "native" || value === "hidden" ? value : "nova";
 }
 
 export type ReleaseVersionBump = "patch" | "minor" | "major";
@@ -180,11 +206,15 @@ export function defaultReleaseConfig(name = "Nova 项目"): ProjectReleaseConfig
     installerSmokeVmSharedFolder: "",
     installerSmokeVmNotes: "",
     windowTitle: name || "Nova 应用",
+    windowKind: "main",
+    titlebarStyle: "nova",
+    titlebarSubtitle: "桌面应用",
     windowWidth: 1200,
     windowHeight: 800,
     minWindowWidth: 720,
     minWindowHeight: 480,
     resizable: true,
+    showRuntimePanel: false,
   };
 }
 
@@ -195,6 +225,7 @@ export function normalizeReleaseConfig(value: unknown, projectName = "Nova 项�
   }
   const source = value as Partial<ProjectReleaseConfig>;
   const appName = (source.appName || projectName || defaults.appName).trim() || defaults.appName;
+  const windowKind = normalizeReleaseWindowKind(source.windowKind);
   return {
     appName,
     bundleIdentifier: normalizeBundleIdentifier(source.bundleIdentifier || defaults.bundleIdentifier, appName),
@@ -218,10 +249,14 @@ export function normalizeReleaseConfig(value: unknown, projectName = "Nova 项�
     installerSmokeVmSharedFolder: typeof source.installerSmokeVmSharedFolder === "string" ? source.installerSmokeVmSharedFolder.trim() : "",
     installerSmokeVmNotes: typeof source.installerSmokeVmNotes === "string" ? source.installerSmokeVmNotes.trim() : "",
     windowTitle: (source.windowTitle || appName).trim() || appName,
+    windowKind,
+    titlebarStyle: normalizeReleaseTitlebarStyle(source.titlebarStyle, windowKind),
+    titlebarSubtitle: typeof source.titlebarSubtitle === "string" ? source.titlebarSubtitle.trim() : defaults.titlebarSubtitle,
     windowWidth: clamp(Math.round(Number(source.windowWidth ?? defaults.windowWidth)), 320, 3840),
     windowHeight: clamp(Math.round(Number(source.windowHeight ?? defaults.windowHeight)), 240, 2160),
     minWindowWidth: clamp(Math.round(Number(source.minWindowWidth ?? defaults.minWindowWidth)), 240, 3840),
     minWindowHeight: clamp(Math.round(Number(source.minWindowHeight ?? defaults.minWindowHeight)), 180, 2160),
     resizable: source.resizable !== false,
+    showRuntimePanel: source.showRuntimePanel === true,
   };
 }

@@ -37,8 +37,8 @@ use editor_tasks::{
     start_editor_project_task, EditorTaskState,
 };
 use generated_app_config::{
-    generated_cargo_toml, generated_index_html, generated_main_rs, generated_package_json,
-    generated_tauri_conf,
+    generated_capabilities_default, generated_cargo_toml, generated_index_html, generated_main_rs,
+    generated_package_json, generated_tauri_conf,
 };
 use generated_app_runtime::{
     generated_app_tsx, generated_capture_window_script, generated_main_tsx, generated_styles,

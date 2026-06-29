@@ -603,8 +603,9 @@ try {
 }
 
 pub fn generated_app_tsx() -> &'static str {
-    r#"import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+    r#"import { useCallback, useEffect, useMemo, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   backendIntegrationOpenLogCommand,
   backendIntegrationProbeCommand,
@@ -691,6 +692,15 @@ type ProjectStateVariable = {
   initialValue: string;
 };
 
+type RuntimeReleaseConfig = {
+  appName?: string;
+  windowTitle?: string;
+  windowKind?: "main" | "dialog" | "tool" | "frameless";
+  titlebarStyle?: "nova" | "native" | "hidden";
+  titlebarSubtitle?: string;
+  showRuntimePanel?: boolean;
+};
+
 type CommandFeedback = Record<string, { loading: boolean; message: string; error: boolean }>;
 type ItemPropOverrides = Record<string, Record<string, string>>;
 type StateValues = Record<string, string>;
@@ -756,6 +766,7 @@ type BackendRuntimeLogPreview = {
 
 const projectAssets = ((project as unknown as { assets?: readonly ProjectAsset[] }).assets ?? []) as readonly ProjectAsset[];
 const projectStateVariables = ((project as unknown as { stateVariables?: readonly ProjectStateVariable[] }).stateVariables ?? []) as readonly ProjectStateVariable[];
+const projectReleaseConfig = ((project as unknown as { releaseConfig?: RuntimeReleaseConfig }).releaseConfig ?? {}) as RuntimeReleaseConfig;
 const commandBindings = rustCommandBindings as Record<string, string>;
 const commandSchemas = rustCommandSchemas as Record<string, CommandSchema>;
 const defaultEventPayloadFields: EventPayloadField[] = ["event", "itemId", "itemName", "value"];
@@ -896,6 +907,75 @@ function nowLabel() {
     minute: "2-digit",
     second: "2-digit",
   }).format(new Date());
+}
+
+type WindowAction = "minimize" | "toggleMaximize" | "close";
+
+const TITLEBAR_INTERACTIVE_SELECTOR = [
+  "button",
+  "a",
+  "input",
+  "select",
+  "textarea",
+  "[role='button']",
+  "[contenteditable='true']",
+].join(",");
+
+function isTitlebarInteractiveTarget(target: EventTarget | null) {
+  return target instanceof HTMLElement && Boolean(target.closest(TITLEBAR_INTERACTIVE_SELECTOR));
+}
+
+async function runWindowAction(action: WindowAction) {
+  try {
+    const appWindow = getCurrentWindow();
+    if (action === "minimize") {
+      await appWindow.minimize();
+    }
+    if (action === "toggleMaximize") {
+      await appWindow.toggleMaximize();
+    }
+    if (action === "close") {
+      await appWindow.close();
+    }
+  } catch {
+    // Browser preview fallback.
+  }
+}
+
+function startWindowDrag(event: ReactPointerEvent<HTMLElement>) {
+  if (event.button !== 0 || isTitlebarInteractiveTarget(event.target)) {
+    return;
+  }
+  void getCurrentWindow().startDragging().catch(() => {
+    // Browser preview fallback.
+  });
+}
+
+function NovaWindowTitlebar({ title, subtitle, status }: { title: string; subtitle: string; status: string }) {
+  return (
+    <div
+      className="window-titlebar"
+      data-tauri-drag-region=""
+      onPointerDown={startWindowDrag}
+      onDoubleClick={(event) => {
+        if (!isTitlebarInteractiveTarget(event.target)) {
+          void runWindowAction("toggleMaximize");
+        }
+      }}
+    >
+      <div className="titlebar-brand">
+        <span className="titlebar-mark" aria-hidden>N</span>
+        <span className="titlebar-title">{title}</span>
+        {subtitle ? <span className="titlebar-subtitle">{subtitle}</span> : null}
+      </div>
+      <span className="titlebar-status">{status}</span>
+      <div className="window-controls" data-titlebar-interactive="true">
+        <button type="button" aria-label="Minimize window" onClick={() => void runWindowAction("minimize")}>_</button>
+        <button type="button" aria-label="Maximize or restore window" onClick={() => void runWindowAction("toggleMaximize")}>[]</button>
+        <button type="button" aria-label="Close window" className="window-close" onClick={() => void runWindowAction("close")}>X</button>
+      </div>
+    </div>
+  );
 }
 
 function commandResultOutcome(result: string, binding: EventBinding) {
@@ -1741,34 +1821,42 @@ export function App() {
   const page = { ...basePage, ...pageForBreakpoint(basePage, breakpoint) };
   const items = resolveItemsForBreakpoint([...(activeFile?.items ?? [])].sort((a, b) => a.z - b.z) as Item[], breakpoint);
   const topLevelItems = items.filter((item) => !item.parentId);
+  const rawWindowKind = projectReleaseConfig.windowKind ?? "main";
+  const windowKind = rawWindowKind === "dialog" || rawWindowKind === "tool" || rawWindowKind === "frameless" ? rawWindowKind : "main";
+  const rawTitlebarStyle = projectReleaseConfig.titlebarStyle ?? "nova";
+  const titlebarStyle = windowKind === "frameless" ? "hidden" : rawTitlebarStyle === "native" || rawTitlebarStyle === "hidden" ? rawTitlebarStyle : "nova";
+  const windowTitle = String(projectReleaseConfig.windowTitle || page.title || projectReleaseConfig.appName || project.name || "Nova App");
+  const titlebarSubtitle = String(projectReleaseConfig.titlebarSubtitle || "");
+  const showRuntimePanel = projectReleaseConfig.showRuntimePanel === true;
+  const statusText = message && message !== "Rust logic not invoked yet" ? message : `${items.length} controls / ${breakpoint}`;
 
   return (
-    <main className="app">
-      <header>
-        <div>
-          <p className="eyebrow">Generated by Nova UI Editor / {breakpoint}</p>
-          <h1>{page.title}</h1>
+    <main className={`app app-${windowKind} app-titlebar-${titlebarStyle}`}>
+      {titlebarStyle === "nova" ? <NovaWindowTitlebar title={windowTitle} subtitle={titlebarSubtitle} status={statusText} /> : null}
+      <div className="app-body">
+        <div className="workspace" data-runtime-panel={showRuntimePanel ? "visible" : "hidden"}>
+          <div className="canvas-viewport">
+            <section className="canvas" style={{ width: page.width, height: page.height }}>
+              {topLevelItems.map((item) => renderNode(item, items, commandFeedback, itemPropOverrides, stateValues, runCommand, writeProp, "free", { width: page.width, height: page.height }))}
+            </section>
+          </div>
+          {showRuntimePanel ? (
+            <RuntimeTracePanel
+              trace={runtimeTrace}
+              stateValues={stateValues}
+              backendProbeResults={backendProbeResults}
+              backendProbeLoading={backendProbeLoading}
+              backendRuntimeStatuses={backendRuntimeStatuses}
+              backendRuntimeLogs={backendRuntimeLogs}
+              backendRuntimeLoading={backendRuntimeLoading}
+              onStartBackend={startBackend}
+              onStopBackend={stopBackend}
+              onRefreshBackendRuntime={refreshBackendRuntime}
+              onPreviewBackendLog={previewBackendLog}
+              onOpenBackendLog={openBackendLog}
+            />
+          ) : null}
         </div>
-        <span className="logic">{commandName}: {message}</span>
-      </header>
-      <div className="workspace">
-        <section className="canvas" style={{ width: page.width, height: page.height }}>
-          {topLevelItems.map((item) => renderNode(item, items, commandFeedback, itemPropOverrides, stateValues, runCommand, writeProp, "free", { width: page.width, height: page.height }))}
-        </section>
-        <RuntimeTracePanel
-          trace={runtimeTrace}
-          stateValues={stateValues}
-          backendProbeResults={backendProbeResults}
-          backendProbeLoading={backendProbeLoading}
-          backendRuntimeStatuses={backendRuntimeStatuses}
-          backendRuntimeLogs={backendRuntimeLogs}
-          backendRuntimeLoading={backendRuntimeLoading}
-          onStartBackend={startBackend}
-          onStopBackend={stopBackend}
-          onRefreshBackendRuntime={refreshBackendRuntime}
-          onPreviewBackendLog={previewBackendLog}
-          onOpenBackendLog={openBackendLog}
-        />
       </div>
     </main>
   );
@@ -1789,6 +1877,9 @@ pub fn generated_styles() -> &'static str {
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, #fbfafc 0%, #f4f1f7 100%);
 }
 
 button,
@@ -1800,15 +1891,111 @@ select {
 
 .app {
   min-height: 100vh;
-  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #1d1b20;
 }
 
-header {
+.window-titlebar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 14px;
+  height: 40px;
+  flex: 0 0 auto;
+  user-select: none;
+  border-bottom: 1px solid #d8d2e4;
+  background: rgb(255 251 255 / 0.94);
+  padding: 0 10px 0 12px;
+  color: #5f5a66;
+  backdrop-filter: blur(18px);
+}
+
+.titlebar-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.titlebar-mark {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #e8def8;
+  color: #4f378b;
+  font-size: 12px;
+}
+
+.titlebar-title {
+  max-width: 260px;
+  overflow: hidden;
+  color: #1d1b20;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titlebar-subtitle,
+.titlebar-status {
+  min-width: 0;
+  overflow: hidden;
+  color: #79747e;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titlebar-status {
+  justify-self: end;
+  max-width: 34vw;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.window-controls button {
+  width: 34px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #49454f;
+  cursor: pointer;
+}
+
+.window-controls button:hover {
+  background: #f0edf4;
+}
+
+.window-controls .window-close:hover {
+  background: #ba1a1a;
+  color: white;
+}
+
+.app-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 18px;
+}
+
+.app-titlebar-native .app-body,
+.app-titlebar-hidden .app-body {
+  padding-top: 18px;
+}
+
+.app-frameless .app-body {
+  padding: 0;
 }
 
 h1,
@@ -1825,20 +2012,35 @@ p {
   text-transform: uppercase;
 }
 
-.logic {
-  border: 1px solid #d8d2e4;
-  border-radius: 999px;
-  background: white;
-  padding: 10px 14px;
-  color: #5f5a66;
-  font-size: 13px;
-}
-
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, max-content) minmax(280px, 360px);
-  align-items: start;
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
   gap: 18px;
+}
+
+.workspace[data-runtime-panel="visible"] {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+}
+
+.canvas-viewport {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid #d8d2e4;
+  border-radius: 22px;
+  background: rgb(255 251 255 / 0.72);
+  padding: 14px;
+  box-shadow: 0 18px 46px rgb(31 28 38 / 0.1);
+}
+
+.app-frameless .canvas-viewport {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 .canvas {
@@ -1846,11 +2048,8 @@ p {
   overflow: hidden;
   border: 1px solid #d8d2e4;
   border-radius: 18px;
-  background-image:
-    linear-gradient(#e8e1ef 1px, transparent 1px),
-    linear-gradient(90deg, #e8e1ef 1px, transparent 1px);
-  background-size: 16px 16px;
-  box-shadow: 0 18px 48px rgb(31 28 38 / 0.12);
+  background: #fffbff;
+  box-shadow: 0 10px 30px rgb(31 28 38 / 0.08);
 }
 
 .runtime-panel {

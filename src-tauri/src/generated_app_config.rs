@@ -132,6 +132,9 @@ pub fn generated_tauri_conf(
     };
     let windows_bundle_config = generated_windows_bundle_config(release);
     let resizable = release.resizable;
+    let decorations = release.titlebar_style == "native";
+    let center = release.window_kind == "dialog" || release.window_kind == "tool";
+    let _runtime_shape = (&release.titlebar_subtitle, release.show_runtime_panel);
     let width = release.window_width;
     let height = release.window_height;
     let min_width = release.min_window_width;
@@ -155,7 +158,9 @@ pub fn generated_tauri_conf(
         "height": {height},
         "minWidth": {min_width},
         "minHeight": {min_height},
-        "resizable": {resizable}
+        "decorations": {decorations},
+        "resizable": {resizable},
+        "center": {center}
       }}
     ],
     "security": {{
@@ -170,6 +175,22 @@ pub fn generated_tauri_conf(
 }}
 "#
     )
+}
+
+pub fn generated_capabilities_default() -> &'static str {
+    r#"{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Allow the generated Nova app window to use optional custom titlebar controls.",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close"
+  ]
+}
+"#
 }
 
 pub fn generated_package_json(release: &GeneratedReleaseConfig) -> String {

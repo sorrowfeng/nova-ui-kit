@@ -33,6 +33,8 @@ export type ReleaseBundleTarget = "all" | "app" | "nsis" | "msi" | "appimage" | 
 export type ReleaseSigningMode = "unsigned" | "windows-certificate" | "custom-command";
 export type ReleaseInstallerSmokeMode = "artifact-only" | "write-script";
 export type ReleaseInstallerSmokeRunnerMode = "manual" | "local-artifact" | "vm-handoff";
+export type ReleaseWindowKind = "main" | "dialog" | "tool" | "frameless";
+export type ReleaseTitlebarStyle = "nova" | "native" | "hidden";
 export type InstallerSmokeStatus = "not-requested" | "pending" | "artifact-only" | "passed" | "failed";
 export type BackendIntegrationKind = "rust-native" | "cpp-ffi" | "sidecar" | "local-service";
 export type BackendIntegrationLanguage = "rust" | "cpp" | "go" | "python" | "node" | "other";
@@ -453,11 +455,15 @@ export type ProjectReleaseConfig = {
   installerSmokeVmSharedFolder: string;
   installerSmokeVmNotes: string;
   windowTitle: string;
+  windowKind: ReleaseWindowKind;
+  titlebarStyle: ReleaseTitlebarStyle;
+  titlebarSubtitle: string;
   windowWidth: number;
   windowHeight: number;
   minWindowWidth: number;
   minWindowHeight: number;
   resizable: boolean;
+  showRuntimePanel: boolean;
 };
 
 export type BreakpointValidationIssue = {

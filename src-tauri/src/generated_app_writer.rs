@@ -4,12 +4,12 @@ use crate::incremental_io::{
 use crate::{
     backend_bundle_resource_paths, backend_integrations, backend_integrations_need_ffi_loader,
     cargo_dependencies, copy_backend_integration_resources, generated_app_tsx,
-    generated_backend_integrations_rs, generated_capture_window_script, generated_cargo_toml,
-    generated_index_html, generated_lib_rs, generated_main_rs, generated_main_tsx,
-    generated_package_json, generated_project_data, generated_rust_source_map_json,
-    generated_styles, generated_tauri_conf, generated_tsconfig, generated_vite_config,
-    release_config, rust_command_names, rust_module_source, rust_modules, safe_file_name, to_error,
-    GeneratedReleaseConfig,
+    generated_backend_integrations_rs, generated_capabilities_default,
+    generated_capture_window_script, generated_cargo_toml, generated_index_html, generated_lib_rs,
+    generated_main_rs, generated_main_tsx, generated_package_json, generated_project_data,
+    generated_rust_source_map_json, generated_styles, generated_tauri_conf, generated_tsconfig,
+    generated_vite_config, release_config, rust_command_names, rust_module_source, rust_modules,
+    safe_file_name, to_error, GeneratedReleaseConfig,
 };
 use serde_json::Value;
 use std::{
@@ -121,11 +121,13 @@ pub(super) fn write_generated_app(
     let scripts_dir = app_dir.join("scripts");
     let tauri_dir = app_dir.join("src-tauri");
     let tauri_src_dir = tauri_dir.join("src");
+    let tauri_capabilities_dir = tauri_dir.join("capabilities");
     let public_assets_dir = app_dir.join("public").join("assets");
     let icons_dir = tauri_dir.join("icons");
     fs::create_dir_all(&src_dir).map_err(to_error)?;
     fs::create_dir_all(&scripts_dir).map_err(to_error)?;
     fs::create_dir_all(&tauri_src_dir).map_err(to_error)?;
+    fs::create_dir_all(&tauri_capabilities_dir).map_err(to_error)?;
     fs::create_dir_all(&public_assets_dir).map_err(to_error)?;
     fs::create_dir_all(&icons_dir).map_err(to_error)?;
 
@@ -174,6 +176,10 @@ pub(super) fn write_generated_app(
     write_text_if_changed(
         &tauri_dir.join("tauri.conf.json"),
         &generated_tauri_conf(&release, &icon_paths, &backend_resource_paths),
+    )?;
+    write_text_if_changed(
+        &tauri_capabilities_dir.join("default.json"),
+        generated_capabilities_default(),
     )?;
     write_text_if_changed(&tauri_src_dir.join("main.rs"), &generated_main_rs(&slug))?;
     let expected_tauri_module_files = project_modules
