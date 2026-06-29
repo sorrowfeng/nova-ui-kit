@@ -6040,7 +6040,7 @@ export function BuilderShowcase() {
     latestSimulatorTrace && selectedItem && selectedEventName && latestSimulatorTrace.itemName === getItemSummary(selectedItem) && latestSimulatorTrace.eventName === selectedEventName
       ? latestSimulatorTrace
       : null;
-  const selectedActionFeedback = selectedItem && selectedEventName
+  const selectedActionFeedback = selectedItem
     ? selectedLatestSimulatorTrace
       ? {
           tone: selectedLatestSimulatorTrace.status,
@@ -6048,19 +6048,32 @@ export function BuilderShowcase() {
           detail: `${selectedLatestSimulatorTrace.commandName}: ${selectedLatestSimulatorTrace.message}`,
           badge: selectedLatestSimulatorTrace.status,
         }
-      : selectedEventCommand
+      : mode === "preview"
         ? {
-            tone: "ready",
-            title: `Ready to run ${selectedEventName}`,
-            detail: `${sanitizeRustCommandName(selectedEventCommand.name)} · ${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result`,
-            badge: "ready",
+            tone: selectedEventName && !selectedEventCommand ? "unbound" : "ready",
+            title: `Previewing ${getItemSummary(selectedItem)}`,
+            detail: selectedEventName
+              ? selectedEventCommand
+                ? `${selectedEventName} is bound to ${sanitizeRustCommandName(selectedEventCommand.name)}. Run the event or interact with the preview canvas.`
+                : `${selectedEventName} needs a command before it can run in preview.`
+              : "Preview mode is active for this control. Switch back to Design to edit layout.",
+            badge: selectedEventName ? (selectedEventCommand ? "preview ready" : "needs binding") : "preview",
           }
-        : {
-            tone: "unbound",
-            title: `${selectedEventName} has no command`,
-            detail: "Create a binding before this control can run a live event.",
-            badge: "needs binding",
-          }
+        : selectedEventName
+          ? selectedEventCommand
+            ? {
+                tone: "ready",
+                title: `Ready to run ${selectedEventName}`,
+                detail: `${sanitizeRustCommandName(selectedEventCommand.name)} · ${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result`,
+                badge: "ready",
+              }
+            : {
+                tone: "unbound",
+                title: `${selectedEventName} has no command`,
+                detail: "Create a binding before this control can run a live event.",
+                badge: "needs binding",
+              }
+          : null
     : null;
   const eventResultTargets = useMemo(
     () =>
@@ -12669,8 +12682,10 @@ export function BuilderShowcase() {
       return;
     }
     setMode("preview");
-    if (selectedEventName) {
+    if (selectedEventName && !selectedEventCommand) {
       setRightDockTab("connections");
+    } else {
+      setRightDockTab("properties");
     }
   };
 
