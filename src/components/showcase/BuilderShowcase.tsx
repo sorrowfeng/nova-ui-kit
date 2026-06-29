@@ -26,6 +26,7 @@ import {
   Box,
   Braces,
   CheckCircle2,
+  ChevronDown,
   ClipboardCopy,
   ClipboardPaste,
   CornerDownRight,
@@ -420,6 +421,7 @@ type BuilderPropertyIssue = {
 type BuilderLeftDockTab = "project" | "navigator" | "components" | "assets";
 type BuilderRightDockTab = "properties" | "connections" | "responsive" | "impact";
 type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs";
+type BuilderPropertySectionId = "layout" | "content" | "state" | "appearance" | "actions";
 
 function buildDiagnosticKey(diagnostic: BuildDiagnostic, index: number) {
   return [
@@ -5791,6 +5793,16 @@ export function BuilderShowcase() {
   const [componentPaletteCategory, setComponentPaletteCategory] = useState<ComponentPaletteCategoryId>("all");
   const [navigatorQuery, setNavigatorQuery] = useState("");
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
+  const [openPropertySections, setOpenPropertySections] = useState<Record<BuilderPropertySectionId, boolean>>({
+    layout: true,
+    content: true,
+    state: false,
+    appearance: false,
+    actions: false,
+  });
+  const togglePropertySection = (section: BuilderPropertySectionId) => {
+    setOpenPropertySections((current) => ({ ...current, [section]: !current[section] }));
+  };
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
   const [bottomDockMinimized, setBottomDockMinimized] = useState(false);
@@ -19376,32 +19388,50 @@ export function BuilderShowcase() {
 
               <div className="space-y-4">
                 {selectedItem ? (
-                  <section className="space-y-3 rounded-[22px] border border-primary/20 bg-surface-container-low p-3 shadow-m3-1" data-builder-selected-properties-quick="">
-                    <div className="flex items-start justify-between gap-3">
+                  <section className="space-y-2.5 rounded-[18px] border border-primary/20 bg-surface-container-low p-2.5 shadow-m3-1" data-builder-selected-properties-quick="">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="truncate text-sm font-semibold">{getItemSummary(selectedItem)}</h3>
                           <Badge variant="outline">{selectedItem.type}</Badge>
                           {selectedItem.locked ? <Badge variant="outline">locked</Badge> : null}
+                          <Badge variant={selectedEventCommand ? "secondary" : selectedEventName ? "outline" : "outline"}>
+                            {selectedEventCommand ? "event bound" : selectedEventName ? "event ready" : "no event"}
+                          </Badge>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
-                          常用属性优先显示；页面设置、对象树和高级检查项保留在后面。
+                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                          x {Math.round(selectedItem.x)} y {Math.round(selectedItem.y)} · {Math.round(selectedItem.width)} x {Math.round(selectedItem.height)}
                         </p>
                       </div>
-                      <Button variant="ghost" size="icon-sm" aria-label={selectedItem.locked ? "解锁控件" : "锁定控件"} onClick={toggleSelectedLock}>
-                        {selectedItem.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button size="icon-sm" variant="secondary" aria-label="打开连接设置" disabled={!selectedEventName} onClick={openSelectedConnections}>
+                          <Braces aria-hidden className="size-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" aria-label={selectedItem.locked ? "解锁控件" : "锁定控件"} onClick={toggleSelectedLock}>
+                          {selectedItem.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button size="sm" variant="secondary" onClick={openSelectedProperties}>
-                        <Settings2 aria-hidden className="size-4" />
-                        Properties
-                      </Button>
-                      <Button size="sm" variant="secondary" disabled={!selectedEventName} onClick={openSelectedConnections}>
-                        <Braces aria-hidden className="size-4" />
-                        Connections
-                      </Button>
+                    <div className="grid grid-cols-5 gap-1.5" aria-label="属性分组">
+                      {[
+                        { id: "layout" as const, label: "Layout" },
+                        { id: "content" as const, label: "Content" },
+                        { id: "state" as const, label: "State" },
+                        { id: "appearance" as const, label: "Style" },
+                        { id: "actions" as const, label: "Action" },
+                      ].map((section) => (
+                        <Button
+                          key={section.id}
+                          type="button"
+                          size="sm"
+                          variant={openPropertySections[section.id] ? "secondary" : "outline"}
+                          className="h-7 min-w-0 px-1.5 text-[0.68rem]"
+                          onClick={() => togglePropertySection(section.id)}
+                        >
+                          <span className="truncate">{section.label}</span>
+                        </Button>
+                      ))}
                     </div>
 
                     <PropertySection
@@ -19409,6 +19439,8 @@ export function BuilderShowcase() {
                       title="Layout"
                       description={activeBreakpoint === "desktop" ? "编辑基础坐标、尺寸和父容器。" : `正在编辑 ${activeBreakpoint} 断点覆盖。`}
                       badge={activeBreakpoint}
+                      open={openPropertySections.layout}
+                      onOpenChange={() => togglePropertySection("layout")}
                     >
                       <div className="grid grid-cols-2 gap-2">
                         <Field label="X">
@@ -19523,7 +19555,13 @@ export function BuilderShowcase() {
                       ) : null}
                     </PropertySection>
 
-                    <PropertySection icon={Type} title="Content" description="文本、图片和表单候选项。">
+                    <PropertySection
+                      icon={Type}
+                      title="Content"
+                      description="文本、图片和表单候选项。"
+                      open={openPropertySections.content}
+                      onOpenChange={() => togglePropertySection("content")}
+                    >
                       {selectedItem.type === "image" ? (
                         <>
                           <Field label="绑定资源">
@@ -19617,6 +19655,8 @@ export function BuilderShowcase() {
                       title="State"
                       description="项目状态绑定、默认值和属性校验。"
                       badge={selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} issue(s)` : "ready"}
+                      open={openPropertySections.state}
+                      onOpenChange={() => togglePropertySection("state")}
                     >
                       {selectedBindableProps.length > 0 ? (
                         <div className="grid grid-cols-1 gap-2">
@@ -19674,7 +19714,13 @@ export function BuilderShowcase() {
                       ) : null}
                     </PropertySection>
 
-                    <PropertySection icon={Settings2} title="Appearance" description="视觉变体和控件尺寸。">
+                    <PropertySection
+                      icon={Settings2}
+                      title="Appearance"
+                      description="视觉变体和控件尺寸。"
+                      open={openPropertySections.appearance}
+                      onOpenChange={() => togglePropertySection("appearance")}
+                    >
                       {selectedItem.type === "button" || selectedItem.type === "badge" ? (
                         <Field label="样式">
                           <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value) => updateSelectedProps({ variant: value as ButtonVariant })}>
@@ -19715,6 +19761,8 @@ export function BuilderShowcase() {
                       title="Actions"
                       description={selectedEventName ? `事件 ${selectedEventName} 绑定和常用图层动作。` : "当前控件没有可绑定事件。"}
                       badge={selectedEventCommand ? "bound" : selectedEventName ? "ready" : "none"}
+                      open={openPropertySections.actions}
+                      onOpenChange={() => togglePropertySection("actions")}
                     >
                       {selectedEventName ? (
                         <Field label="Rust command">
@@ -21615,18 +21663,27 @@ function PropertySection({
   title,
   description,
   badge,
+  open = true,
+  onOpenChange,
   children,
 }: {
   icon: typeof Layers;
   title: string;
   description: string;
   badge?: ReactNode;
+  open?: boolean;
+  onOpenChange?: () => void;
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2">
+    <section className="rounded-[16px] border border-outline-variant bg-surface-container-high">
+      <button
+        type="button"
+        className="focus-ring flex w-full items-start justify-between gap-3 rounded-[16px] p-2.5 text-left transition hover:bg-surface-container-low"
+        aria-expanded={open}
+        onClick={onOpenChange}
+      >
+        <span className="flex min-w-0 items-start gap-2">
           <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Icon aria-hidden className="size-3.5" />
           </span>
@@ -21634,10 +21691,13 @@ function PropertySection({
             <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">{title}</h4>
             <p className="mt-1 text-xs leading-5 text-on-surface-variant">{description}</p>
           </div>
-        </div>
-        {badge ? <Badge variant="outline" className="shrink-0">{badge}</Badge> : null}
-      </div>
-      <div className="space-y-3">{children}</div>
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          {badge ? <Badge variant="outline" className="shrink-0">{badge}</Badge> : null}
+          <ChevronDown aria-hidden className={cn("size-4 text-on-surface-variant transition-transform", open && "rotate-180")} />
+        </span>
+      </button>
+      {open ? <div className="space-y-3 px-2.5 pb-2.5">{children}</div> : null}
     </section>
   );
 }
