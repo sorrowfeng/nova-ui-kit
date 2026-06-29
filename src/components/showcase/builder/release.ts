@@ -8,32 +8,32 @@ import type {
 } from "./types";
 
 export const releaseBundleTargets: { value: ReleaseBundleTarget; label: string }[] = [
-  { value: "all", label: "All targets" },
-  { value: "app", label: "App bundle" },
-  { value: "nsis", label: "NSIS installer" },
-  { value: "msi", label: "MSI installer" },
+  { value: "all", label: "全部目标" },
+  { value: "app", label: "App 包" },
+  { value: "nsis", label: "NSIS 安装器" },
+  { value: "msi", label: "MSI 安装器" },
   { value: "appimage", label: "AppImage" },
-  { value: "deb", label: "Deb package" },
-  { value: "dmg", label: "DMG image" },
+  { value: "deb", label: "Deb 包" },
+  { value: "dmg", label: "DMG 镜像" },
 ];
 
 export const releaseSigningModes: { value: ReleaseSigningMode; label: string; description: string }[] = [
-  { value: "unsigned", label: "Unsigned", description: "本地测试和内部预览，不写入签名配置。" },
-  { value: "windows-certificate", label: "Windows certificate", description: "使用证书 thumbprint 和时间戳服务签名 Windows 安装包。" },
-  { value: "custom-command", label: "Custom command", description: "使用自定义 signCommand，把 %1 作为待签名文件路径。" },
+  { value: "unsigned", label: "未签名", description: "本地测试和内部预览，不写入签名配置。" },
+  { value: "windows-certificate", label: "Windows 证书", description: "使用证书 thumbprint 和时间戳服务签名 Windows 安装包。" },
+  { value: "custom-command", label: "自定义命令", description: "使用自定义 signCommand，把 %1 作为待签名文件路径。" },
 ];
 
 export const releaseDigestAlgorithms = ["sha256", "sha384", "sha512"] as const;
 
 export const releaseInstallerSmokeModes: { value: ReleaseInstallerSmokeMode; label: string; description: string }[] = [
-  { value: "artifact-only", label: "Artifact only", description: "只检查安装包文件存在、类型和体积。" },
-  { value: "write-script", label: "Write smoke script", description: "额外写出 PowerShell 安装/卸载 smoke 脚本，供发布前手动执行。" },
+  { value: "artifact-only", label: "仅产物检查", description: "只检查安装包文件存在、类型和体积。" },
+  { value: "write-script", label: "写出 smoke 脚本", description: "额外写出 PowerShell 安装/卸载 smoke 脚本，供发布前手动执行。" },
 ];
 
 export const releaseInstallerSmokeRunnerModes: { value: ReleaseInstallerSmokeRunnerMode; label: string; description: string }[] = [
-  { value: "local-artifact", label: "Local artifact runner", description: "在本机只运行 artifact-only smoke，不执行安装器。" },
-  { value: "manual", label: "Manual review", description: "只生成脚本和结果路径，由测试人员手动执行并回填。" },
-  { value: "vm-handoff", label: "VM handoff", description: "额外生成 VM/沙箱测试交接包，供隔离环境 runner 使用。" },
+  { value: "local-artifact", label: "本地产物 runner", description: "在本机只运行 artifact-only smoke，不执行安装器。" },
+  { value: "manual", label: "人工复核", description: "只生成脚本和结果路径，由测试人员手动执行并回填。" },
+  { value: "vm-handoff", label: "VM 交接", description: "额外生成 VM/沙箱测试交接包，供隔离环境 runner 使用。" },
 ];
 
 export function releaseSlug(value: string) {
@@ -78,7 +78,7 @@ export function bumpReleaseVersion(value: string, bump: ReleaseVersionBump) {
 }
 
 export function defaultReleaseNotes(version = "0.1.0") {
-  return [`Release ${normalizeReleaseVersion(version)}`, "", "- UI changes:", "- Rust logic changes:", "- Validation notes:"].join("\n");
+  return [`发布 ${normalizeReleaseVersion(version)}`, "", "- UI 变更：", "- Rust 逻辑变更：", "- 验证备注："].join("\n");
 }
 
 export function normalizeReleaseNotes(value: unknown, version = "0.1.0") {
@@ -143,22 +143,22 @@ export function releaseSigningConfigured(release: ProjectReleaseConfig) {
 export function releaseSigningDescription(release: ProjectReleaseConfig) {
   if (release.signingMode === "windows-certificate") {
     return releaseSigningConfigured(release)
-      ? `Windows signing via thumbprint ${release.certificateThumbprint.slice(0, 8)}... with ${release.digestAlgorithm}; secrets stay in env vars.`
+      ? `使用 thumbprint ${release.certificateThumbprint.slice(0, 8)}... 和 ${release.digestAlgorithm} 进行 Windows 签名；密钥仍保存在环境变量中。`
       : release.importCertificateBeforeBuild
-        ? "Windows signing needs thumbprint, timestamp URL, PFX/P12 path, and a password env var."
-        : "Windows signing needs a certificate thumbprint and timestamp URL.";
+        ? "Windows 签名需要 thumbprint、时间戳 URL、PFX/P12 路径和密码环境变量。"
+        : "Windows 签名需要证书 thumbprint 和时间戳 URL。";
   }
   if (release.signingMode === "custom-command") {
     return releaseSigningConfigured(release)
-      ? "Custom signCommand is configured and will be written to the generated Tauri config."
-      : "Custom signing needs a command containing the %1 artifact placeholder.";
+      ? "自定义 signCommand 已配置，并会写入生成的 Tauri 配置。"
+      : "自定义签名命令需要包含 %1 产物占位符。";
   }
-  return "Unsigned build; fine for local testing, but not ready for trusted distribution.";
+  return "未签名构建可用于本地测试，但不适合可信分发。";
 }
 
-export function defaultReleaseConfig(name = "Nova Project"): ProjectReleaseConfig {
+export function defaultReleaseConfig(name = "Nova 项目"): ProjectReleaseConfig {
   return {
-    appName: name || "Nova App",
+    appName: name || "Nova 应用",
     bundleIdentifier: defaultBundleIdentifier(name),
     version: "0.1.0",
     releaseNotes: defaultReleaseNotes("0.1.0"),
@@ -179,7 +179,7 @@ export function defaultReleaseConfig(name = "Nova Project"): ProjectReleaseConfi
     installerSmokeVmName: "Nova Smoke VM",
     installerSmokeVmSharedFolder: "",
     installerSmokeVmNotes: "",
-    windowTitle: name || "Nova App",
+    windowTitle: name || "Nova 应用",
     windowWidth: 1200,
     windowHeight: 800,
     minWindowWidth: 720,
@@ -188,7 +188,7 @@ export function defaultReleaseConfig(name = "Nova Project"): ProjectReleaseConfi
   };
 }
 
-export function normalizeReleaseConfig(value: unknown, projectName = "Nova Project"): ProjectReleaseConfig {
+export function normalizeReleaseConfig(value: unknown, projectName = "Nova 项目"): ProjectReleaseConfig {
   const defaults = defaultReleaseConfig(projectName);
   if (!value || typeof value !== "object") {
     return defaults;

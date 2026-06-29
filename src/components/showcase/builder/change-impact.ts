@@ -111,58 +111,58 @@ type ProjectChangeScopeDefinition = {
 const scopeDefinitions: ProjectChangeScopeDefinition[] = [
   {
     id: "project",
-    label: "Project schema",
-    cleanSummary: "Project manifest and generated project docs are in sync.",
-    dirtySummary: (count) => `${count} project metadata target(s) need writing.`,
+    label: "项目结构",
+    cleanSummary: "项目清单和生成的项目文档已同步。",
+    dirtySummary: (count) => `${count} 个项目元数据目标需要写入。`,
     nextActions: ["save-project", "apply-generated-changes"],
   },
   {
     id: "ui",
-    label: "UI files",
-    cleanSummary: "UI JSON and generated project data are in sync.",
-    dirtySummary: (count) => `${count} UI/data target(s) changed.`,
+    label: "UI 文件",
+    cleanSummary: "UI JSON 和生成的项目数据已同步。",
+    dirtySummary: (count) => `${count} 个 UI/数据目标已变化。`,
     nextActions: ["apply-generated-changes", "quick-check-frontend", "validate-window"],
   },
   {
     id: "frontend",
-    label: "Frontend runtime",
-    cleanSummary: "Generated React/Vite runtime targets are in sync.",
-    dirtySummary: (count) => `${count} frontend runtime target(s) changed.`,
+    label: "前端运行时",
+    cleanSummary: "生成的 React/Vite 运行时目标已同步。",
+    dirtySummary: (count) => `${count} 个前端运行时目标已变化。`,
     nextActions: ["apply-generated-changes", "quick-check-frontend"],
   },
   {
     id: "rust",
-    label: "Rust/native",
-    cleanSummary: "Rust logic, modules, Cargo, and source-map targets are in sync.",
-    dirtySummary: (count) => `${count} Rust/native target(s) changed.`,
+    label: "Rust/原生",
+    cleanSummary: "Rust 逻辑、模块、Cargo 和 source-map 目标已同步。",
+    dirtySummary: (count) => `${count} 个 Rust/原生目标已变化。`,
     nextActions: ["apply-generated-changes", "quick-check-rust"],
   },
   {
     id: "assets",
-    label: "Assets/icons",
-    cleanSummary: "Project assets, copied public assets, and icons are in sync.",
-    dirtySummary: (count) => `${count} asset/icon target(s) need copying.`,
+    label: "资源/图标",
+    cleanSummary: "项目资源、复制到 public 的资源和图标已同步。",
+    dirtySummary: (count) => `${count} 个资源/图标目标需要复制。`,
     nextActions: ["apply-generated-changes", "quick-check-frontend", "validate-window"],
   },
   {
     id: "backend",
-    label: "Backend integrations",
-    cleanSummary: "Backend integration handoff, wrappers, and bundled resources are in sync.",
-    dirtySummary: (count) => `${count} backend integration target(s) changed.`,
+    label: "后端集成",
+    cleanSummary: "后端集成交接、包装器和打包资源已同步。",
+    dirtySummary: (count) => `${count} 个后端集成目标已变化。`,
     nextActions: ["build-backend-artifacts", "apply-generated-changes", "quick-check-rust"],
   },
   {
     id: "release",
-    label: "Release package",
-    cleanSummary: "Package metadata, Tauri config, signing-facing targets, and bundle resources are in sync.",
-    dirtySummary: (count) => `${count} release packaging target(s) changed.`,
+    label: "发布包",
+    cleanSummary: "包元数据、Tauri 配置、签名相关目标和打包资源已同步。",
+    dirtySummary: (count) => `${count} 个发布打包目标已变化。`,
     nextActions: ["apply-generated-changes", "quick-check-all", "build-exe"],
   },
   {
     id: "validation",
-    label: "Validation tooling",
-    cleanSummary: "Generated validation helpers are in sync.",
-    dirtySummary: (count) => `${count} validation helper target(s) changed.`,
+    label: "验证工具",
+    cleanSummary: "生成的验证辅助文件已同步。",
+    dirtySummary: (count) => `${count} 个验证辅助目标已变化。`,
     nextActions: ["apply-generated-changes", "quick-check-frontend", "validate-window"],
   },
 ];
@@ -318,7 +318,7 @@ export function createProjectReverseDependencySummary(
       plannedActions: [],
       matches: [],
       sourceCount: 0,
-      summary: "Select a UI object or backend source to inspect its generated-file impact.",
+      summary: "选择 UI 对象或后端来源，以查看它对生成文件的影响。",
     };
   }
 
@@ -353,10 +353,10 @@ export function createProjectReverseDependencySummary(
   const scopeLabel = scopeIds.map((scopeId) => scopeDefinitionForId(scopeId).label).slice(0, 4).join(", ");
   const source =
     status === "tracked"
-      ? "current preview"
+      ? "当前预览"
       : status === "persisted"
-        ? "persisted graph"
-        : "project model";
+        ? "已保存图谱"
+        : "项目模型";
 
   return {
     target,
@@ -366,7 +366,7 @@ export function createProjectReverseDependencySummary(
     plannedActions,
     matches: matchedSources,
     sourceCount: matchedSources.length,
-    summary: `${target.label} affects ${scopeIds.length} scope(s) from ${source}${scopeLabel ? `: ${scopeLabel}` : ""}.`,
+    summary: `${target.label} 通过${source}影响 ${scopeIds.length} 个范围${scopeLabel ? `：${scopeLabel}` : ""}。`,
   };
 }
 
@@ -383,12 +383,12 @@ function createExecutionPlan(
   if (status === "needs-preview" || status === "stale") {
     return {
       id: "impact-refresh",
-      title: "Refresh impact preview",
+      title: "刷新影响预览",
       detail:
         status === "stale"
-          ? "The project changed after the last generated-file preview. Refresh before applying generated targets."
-          : "Run a generated-file preview so Nova can compute dirty scopes and a scoped execution plan.",
-      badge: "refresh",
+          ? "项目在上次生成文件预览后发生了变化。应用生成目标前请先刷新。"
+          : "运行生成文件预览，让 Nova 计算脏范围和范围化执行计划。",
+      badge: "刷新",
       actions: ["preview-generated-files"],
       scopeIds: [],
       ready: true,
@@ -398,9 +398,9 @@ function createExecutionPlan(
   if (status === "clean") {
     return {
       id: "impact-verify",
-      title: "Verify synced project",
-      detail: "Generated targets are in sync. Run checks, validate the window, and build the exe from the current project state.",
-      badge: "verify",
+      title: "验证已同步项目",
+      detail: "生成目标已同步。基于当前项目状态运行检查、验证窗口并构建 exe。",
+      badge: "验证",
       actions: ["quick-check-all", "validate-window", "build-exe"],
       scopeIds: [],
       ready: true,
@@ -437,9 +437,9 @@ function createExecutionPlan(
 
   return {
     id: "impact-scoped",
-    title: "Run scoped impact plan",
-    detail: `${changedCount} generated target(s) changed across ${dirtyScopes.length} scope(s). Nova will apply changes and run only the checks implied by those scopes.`,
-    badge: "impact",
+    title: "运行范围化影响计划",
+    detail: `${changedCount} 个生成目标在 ${dirtyScopes.length} 个范围内变化。Nova 会应用变更，并只运行这些范围所需的检查。`,
+    badge: "影响",
     actions: uniqueActions(actions),
     scopeIds,
     ready: actions.length > 0,
@@ -519,14 +519,14 @@ function sourceRefsForScope(
 ): ProjectDependencySourceReference[] {
   const sources = new Map<string, ProjectDependencySourceReference>();
   const paths = changedPaths(dirtyEntries);
-  const fallbackPaths = paths.length ? paths : ["generated target plan"];
+  const fallbackPaths = paths.length ? paths : ["生成目标计划"];
 
   if (scopeId === "project") {
     pushSourceRef(sources, {
       id: `project-${project.id}`,
       kind: "project",
       label: project.name,
-      detail: `${project.files.length} UI files, ${project.rustCommands.length} commands, ${project.assets.length} assets`,
+      detail: `${project.files.length} 个 UI 文件，${project.rustCommands.length} 个命令，${project.assets.length} 个资源`,
       affectedPaths: fallbackPaths,
     });
   }
@@ -541,7 +541,7 @@ function sourceRefsForScope(
         id: `ui-file-${file.id}`,
         kind: "ui-file",
         label: file.name,
-        detail: `${file.items.length} controls in ${file.path}`,
+          detail: `${file.items.length} 个控件位于 ${file.path}`,
         affectedPaths,
         fileId: file.id,
         path: file.path,
@@ -551,7 +551,7 @@ function sourceRefsForScope(
           id: `control-${item.id}`,
           kind: "control",
           label: item.name,
-          detail: `${item.type} in ${file.name}`,
+          detail: `${item.type} 位于 ${file.name}`,
           affectedPaths,
           fileId: file.id,
           itemId: item.id,
@@ -565,8 +565,8 @@ function sourceRefsForScope(
     pushSourceRef(sources, {
       id: "generated-react-runtime",
       kind: "generated-runtime",
-      label: "Generated React runtime",
-      detail: "Runtime App.tsx/styles/project-data targets used by the generated app.",
+      label: "生成的 React 运行时",
+      detail: "生成应用使用的 App.tsx、样式和 project-data 运行时目标。",
       affectedPaths: fallbackPaths,
     });
   }
@@ -581,7 +581,7 @@ function sourceRefsForScope(
         id: `rust-module-${module.id}`,
         kind: "rust-module",
         label: module.name,
-        detail: "Project Rust module",
+        detail: "项目 Rust 模块",
         affectedPaths: moduleEntries.length ? changedPaths(moduleEntries) : fallbackPaths,
         moduleId: module.id,
         path: `rust/modules/${module.name}.rs`,
@@ -592,7 +592,7 @@ function sourceRefsForScope(
         id: `rust-command-${command.id}`,
         kind: "rust-command",
         label: command.name,
-        detail: command.backendIntegrationId ? "Command bound to backend integration" : "Project Tauri command",
+        detail: command.backendIntegrationId ? "绑定到后端集成的命令" : "项目 Tauri 命令",
         affectedPaths: fallbackPaths,
         commandId: command.id,
         path: "rust/logic.rs",
@@ -603,7 +603,7 @@ function sourceRefsForScope(
         id: `cargo-dependency-${dependency.id}`,
         kind: "cargo-dependency",
         label: dependency.name,
-        detail: `Cargo dependency v${dependency.version}`,
+        detail: `Cargo 依赖 v${dependency.version}`,
         affectedPaths: fallbackPaths,
         dependencyId: dependency.id,
         path: "rust/dependencies.json",
@@ -669,8 +669,8 @@ function sourceRefsForScope(
     pushSourceRef(sources, {
       id: "validation-runtime",
       kind: "validation",
-      label: "Generated window validation",
-      detail: "Capture script, breakpoint validation, and visual/runtime audit artifacts.",
+      label: "生成窗口验证",
+      detail: "截图脚本、断点验证以及视觉/运行时审查产物。",
       affectedPaths: fallbackPaths,
     });
   }
@@ -725,7 +725,7 @@ function scopeIdsForEntry(entry: GeneratedFilePreviewEntry): ProjectChangeScopeI
 
 function scopeSummary(definition: ProjectChangeScopeDefinition, preview: GeneratedFilePreviewResult | null, changedCount: number) {
   if (!preview) {
-    return "Run generated-file preview to compute this scope.";
+    return "运行生成文件预览后可计算该范围。";
   }
   return changedCount > 0 ? definition.dirtySummary(changedCount) : definition.cleanSummary;
 }
@@ -780,12 +780,12 @@ export function createProjectChangeImpact(
 
   const summary =
     status === "needs-preview"
-      ? `${project.name} needs a generated-file preview before Nova can compute scoped invalidation.`
+      ? `${project.name} 需要先运行生成文件预览，Nova 才能计算范围化失效。`
       : status === "stale"
-        ? `${project.name} changed after the last preview; refresh to avoid applying stale generated targets.`
+        ? `${project.name} 在上次预览后发生了变化；请刷新，避免应用过期生成目标。`
         : status === "dirty"
-          ? `${changedEntries.length} generated target(s) changed across ${dirtyScopes.length} scope(s).`
-          : `${project.name} generated targets are in sync with the last preview.`;
+          ? `${changedEntries.length} 个生成目标在 ${dirtyScopes.length} 个范围内发生变化。`
+          : `${project.name} 的生成目标已与上次预览同步。`;
 
   return {
     status,

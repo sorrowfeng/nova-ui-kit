@@ -115,188 +115,188 @@ export const projectTaskDefinitions: Record<
   }
 > = {
   "save-project": {
-    title: "Save project",
-    detail: "Persist workspace, UI files, Rust logic, and project metadata.",
+    title: "保存项目",
+    detail: "保存工作区、UI 文件、Rust 逻辑和项目元数据。",
     kind: "project",
     mode: "build",
   },
   "new-ui-file": {
-    title: "New UI file",
-    detail: "Create another managed window inside this Nova project.",
+    title: "新建 UI 文件",
+    detail: "在当前 Nova 项目中创建一个受管理的窗口。",
     kind: "design",
     mode: "design",
   },
   "duplicate-ui-file": {
-    title: "Duplicate UI file",
-    detail: "Copy the active managed UI file and open the duplicate.",
+    title: "复制 UI 文件",
+    detail: "复制当前受管理的 UI 文件并打开副本。",
     kind: "design",
     mode: "design",
   },
   "delete-ui-file": {
-    title: "Delete UI file",
-    detail: "Delete or clear the active managed UI file after confirmation.",
+    title: "删除 UI 文件",
+    detail: "确认后删除或清空当前受管理的 UI 文件。",
     kind: "design",
     mode: "design",
   },
   "insert-component": {
-    title: "Insert component",
-    detail: "Place a reusable UI component on the active design canvas.",
+    title: "插入组件",
+    detail: "把可复用 UI 组件放到当前设计画布上。",
     kind: "design",
     mode: "design",
   },
   "bind-control-event": {
-    title: "Bind control event",
-    detail: "Create a Rust command and bind it to the selected control event.",
+    title: "绑定控件事件",
+    detail: "创建 Rust 命令并绑定到所选控件事件。",
     kind: "logic",
     mode: "design",
   },
   "run-selected-event": {
-    title: "Run selected event",
-    detail: "Simulate the selected control event and show the latest runtime result.",
+    title: "运行所选事件",
+    detail: "模拟所选控件事件并显示最新运行结果。",
     kind: "logic",
     mode: "preview",
   },
   "add-rust-command": {
-    title: "Add Rust command",
-    detail: "Register a new Tauri invoke command for UI events.",
+    title: "添加 Rust 命令",
+    detail: "为 UI 事件注册新的 Tauri invoke 命令。",
     kind: "logic",
     mode: "logic",
   },
   "add-state-variable": {
-    title: "Add state variable",
-    detail: "Create shared project state for bindings and command results.",
+    title: "添加状态变量",
+    detail: "创建用于绑定和命令结果的项目共享状态。",
     kind: "logic",
     mode: "logic",
   },
   "sync-rust": {
-    title: "Sync Rust source",
-    detail: "Regenerate Rust logic from the command registry.",
+    title: "同步 Rust 源码",
+    detail: "根据命令注册表重新生成 Rust 逻辑。",
     kind: "logic",
     mode: "logic",
   },
   "add-image-asset": {
-    title: "Import image asset",
-    detail: "Add a local image resource to the managed project assets.",
+    title: "导入图片资源",
+    detail: "把本地图片资源加入受管理的项目资源。",
     kind: "design",
     mode: "design",
   },
   "preview-generated-files": {
-    title: "Preview generated files",
-    detail: "Review the target app file plan and disk diff before writing.",
+    title: "预览生成文件",
+    detail: "写入前查看目标应用文件计划和磁盘差异。",
     kind: "generate",
     mode: "build",
   },
   "apply-generated-files": {
-    title: "Apply selected generated files",
-    detail: "Write selected generated target files with a pre-write snapshot.",
+    title: "应用所选生成文件",
+    detail: "带写入前快照地写入所选生成目标文件。",
     kind: "generate",
     mode: "build",
   },
   "apply-generated-changes": {
-    title: "Apply generated changes",
-    detail: "Preview and write all changed generated target files with a pre-write snapshot.",
+    title: "应用生成变更",
+    detail: "预览并带写入前快照地写入全部已变化目标文件。",
     kind: "generate",
     mode: "build",
   },
   "build-backend-artifacts": {
-    title: "Build backend artifacts",
-    detail: "Run C++/Go starter build scripts and refresh bundled artifact status.",
+    title: "构建后端产物",
+    detail: "运行 C++/Go starter 构建脚本并刷新打包产物状态。",
     kind: "build",
     mode: "logic",
   },
   "quick-check-frontend": {
-    title: "Run frontend check",
-    detail: "Run the generated target app frontend check.",
+    title: "运行前端检查",
+    detail: "运行生成目标应用的前端检查。",
     kind: "check",
     mode: "build",
   },
   "quick-check-rust": {
-    title: "Run Rust check",
-    detail: "Run cargo check for the generated target app.",
+    title: "运行 Rust 检查",
+    detail: "对生成目标应用执行 cargo check。",
     kind: "check",
     mode: "build",
   },
   "quick-check-all": {
-    title: "Run all quick checks",
-    detail: "Run frontend and Rust checks before building the executable.",
+    title: "运行全部快速检查",
+    detail: "构建可执行文件前运行前端和 Rust 检查。",
     kind: "check",
     mode: "build",
   },
   "validate-window": {
-    title: "Validate generated window",
-    detail: "Run visual/runtime validation for the generated target window.",
+    title: "验证生成窗口",
+    detail: "对生成目标窗口运行视觉和运行时验证。",
     kind: "validate",
     mode: "build",
   },
   "build-exe": {
-    title: "Build release exe",
-    detail: "Compile the managed target app into a release executable.",
+    title: "构建 release exe",
+    detail: "把受管理的目标应用编译成发布可执行文件。",
     kind: "build",
     mode: "build",
   },
   "bundle-installer": {
-    title: "Bundle installer",
-    detail: "Build installer bundles and collect artifact smoke metadata.",
+    title: "打包安装器",
+    detail: "构建安装包并收集产物冒烟测试元数据。",
     kind: "build",
     mode: "build",
   },
   "fix-property-schema": {
-    title: "Fix property schema issues",
-    detail: "Apply safe project-level control property repairs.",
+    title: "修复属性结构问题",
+    detail: "应用安全的项目级控件属性修复。",
     kind: "repair",
     mode: "build",
   },
 };
 
 export const projectTaskStatusFilterOptions: { value: ProjectTaskStatusFilter; label: string }[] = [
-  { value: "all", label: "All status" },
-  { value: "running", label: "Running" },
-  { value: "queued", label: "Queued" },
-  { value: "failed", label: "Failed" },
-  { value: "succeeded", label: "Done" },
-  { value: "canceled", label: "Canceled" },
-  { value: "skipped", label: "Skipped" },
+  { value: "all", label: "全部状态" },
+  { value: "running", label: "运行中" },
+  { value: "queued", label: "排队中" },
+  { value: "failed", label: "失败" },
+  { value: "succeeded", label: "完成" },
+  { value: "canceled", label: "已取消" },
+  { value: "skipped", label: "已跳过" },
 ];
 
 export const projectTaskKindFilterOptions: { value: ProjectTaskKindFilter; label: string }[] = [
-  { value: "all", label: "All kinds" },
-  { value: "build", label: "Build" },
-  { value: "check", label: "Checks" },
-  { value: "validate", label: "Validate" },
-  { value: "generate", label: "Generate" },
-  { value: "logic", label: "Logic" },
-  { value: "design", label: "Design" },
-  { value: "repair", label: "Repair" },
-  { value: "project", label: "Project" },
+  { value: "all", label: "全部类型" },
+  { value: "build", label: "构建" },
+  { value: "check", label: "检查" },
+  { value: "validate", label: "验证" },
+  { value: "generate", label: "生成" },
+  { value: "logic", label: "逻辑" },
+  { value: "design", label: "设计" },
+  { value: "repair", label: "修复" },
+  { value: "project", label: "项目" },
 ];
 
 export const projectActionPresets: ProjectActionPresetDefinition[] = [
   {
     id: "design-preflight",
-    title: "Design preflight",
-    detail: "Save, preview/apply generated files, build backend artifacts, run all quick checks, then validate the generated window.",
-    badge: "preflight",
+    title: "设计预检",
+    detail: "保存、预览并应用生成文件、构建后端产物、运行全部快速检查，然后验证生成窗口。",
+    badge: "预检",
     actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window"],
   },
   {
     id: "release-exe",
-    title: "Release exe",
-    detail: "Save the project, apply generated changes, build backend artifacts, run checks and validation, then compile the generated app executable.",
+    title: "发布 exe",
+    detail: "保存项目、应用生成变更、构建后端产物、运行检查和验证，然后编译生成应用可执行文件。",
     badge: "exe",
     actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window", "build-exe"],
   },
   {
     id: "installer-bundle",
-    title: "Installer bundle",
-    detail: "Run the full release chain through exe build and installer bundle collection.",
-    badge: "bundle",
+    title: "安装包流水线",
+    detail: "执行完整发布链路，包含 exe 构建和安装包产物收集。",
+    badge: "安装包",
     actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window", "build-exe", "bundle-installer"],
   },
   {
     id: "logic-sync",
-    title: "Logic sync",
-    detail: "Regenerate Rust source from commands, save, then run the generated Rust check.",
-    badge: "logic",
+    title: "逻辑同步",
+    detail: "根据命令重新生成 Rust 源码，保存后运行生成项目的 Rust 检查。",
+    badge: "逻辑",
     actions: ["sync-rust", "save-project", "quick-check-rust"],
   },
 ];
@@ -358,8 +358,8 @@ function normalizeProjectActionPresetRecord(record: unknown): ProjectActionPrese
   return {
     id: typeof source.id === "string" && source.id ? source.id : createTaskId(),
     title,
-    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail.trim() : "Custom Task Center action preset.",
-    badge: typeof source.badge === "string" && source.badge.trim() ? source.badge.trim().slice(0, 16) : "custom",
+    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail.trim() : "自定义任务中心操作 preset。",
+    badge: typeof source.badge === "string" && source.badge.trim() ? source.badge.trim().slice(0, 16) : "自定义",
     actions,
     custom: true,
   };
@@ -421,7 +421,7 @@ function normalizeProjectTaskHistoryRecord(record: unknown): ProjectTaskEntry | 
     createdAt,
     startedAt: typeof source.startedAt === "string" ? source.startedAt : undefined,
     finishedAt: typeof source.finishedAt === "string" ? source.finishedAt : interrupted ? new Date().toISOString() : undefined,
-    summary: interrupted ? "Task was interrupted when the editor session ended." : typeof source.summary === "string" ? source.summary : undefined,
+    summary: interrupted ? "编辑器会话结束时任务被中断。" : typeof source.summary === "string" ? source.summary : undefined,
     error: typeof source.error === "string" ? source.error : undefined,
     logPreview: typeof source.logPreview === "string" ? projectTaskLogPreview(source.logPreview) : undefined,
     artifactPath: typeof source.artifactPath === "string" ? source.artifactPath : undefined,
@@ -454,7 +454,7 @@ function normalizeProjectTaskQueueRecord(record: unknown): ProjectTaskEntry | nu
     detail: definition.detail,
     status: "queued",
     createdAt: typeof source.createdAt === "string" && source.createdAt ? source.createdAt : new Date().toISOString(),
-    summary: typeof source.summary === "string" && source.summary ? source.summary : "Restored from the persisted editor queue.",
+    summary: typeof source.summary === "string" && source.summary ? source.summary : "已从本地持久化队列恢复。",
     error: undefined,
     logPreview: undefined,
     artifactPath: typeof source.artifactPath === "string" ? source.artifactPath : undefined,
@@ -651,13 +651,20 @@ export function projectTaskLogPreview(log?: string | null) {
   }
   const readable = readableTaskLogPreview(normalized);
   if (!readable) {
-    return "Machine log contained no user-facing diagnostics.";
+    return "机器日志中没有可面向用户显示的诊断。";
   }
   return readable.length > 4000 ? readable.slice(-4000) : readable;
 }
 
 export function projectTaskKindLabel(kind: ProjectTaskKind) {
   return projectTaskKindFilterOptions.find((option) => option.value === kind)?.label ?? kind;
+}
+
+export function projectTaskStatusLabel(status: ProjectTaskStatus | "idle" | string) {
+  if (status === "idle") {
+    return "待开始";
+  }
+  return projectTaskStatusFilterOptions.find((option) => option.value === status)?.label ?? status;
 }
 
 function projectTaskSearchText(task: ProjectTaskEntry) {
@@ -700,7 +707,7 @@ export function projectTaskElapsedLabel(task: ProjectTaskEntry) {
   const startTime = startDate.getTime();
   const endTime = endDate?.getTime();
   if (!Number.isFinite(startTime) || !endTime || !Number.isFinite(endTime) || endTime < startTime) {
-    return task.startedAt ? "started" : "not started";
+    return task.startedAt ? "已开始" : "未开始";
   }
 
   const elapsedSeconds = Math.max(1, Math.round((endTime - startTime) / 1000));

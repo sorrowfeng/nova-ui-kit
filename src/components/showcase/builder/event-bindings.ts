@@ -9,12 +9,12 @@ import type {
 export const defaultEventPayloadFields: BuilderEventPayloadField[] = ["event", "itemId", "itemName", "value"];
 
 export const eventPayloadFields: Array<{ value: BuilderEventPayloadField; label: string; description: string }> = [
-  { value: "event", label: "Event", description: "click/change" },
-  { value: "itemId", label: "Item ID", description: "控件唯一 id" },
-  { value: "itemName", label: "Item name", description: "图层名称" },
-  { value: "value", label: "Value", description: "当前值" },
-  { value: "checked", label: "Checked", description: "布尔开关状态" },
-  { value: "state", label: "State", description: "共享 state 快照" },
+  { value: "event", label: "事件", description: "click/change" },
+  { value: "itemId", label: "控件 ID", description: "控件唯一 id" },
+  { value: "itemName", label: "控件名称", description: "图层名称" },
+  { value: "value", label: "值", description: "当前值" },
+  { value: "checked", label: "选中状态", description: "布尔开关状态" },
+  { value: "state", label: "状态", description: "共享 state 快照" },
 ];
 
 export function eventNameForItem(item: BuilderItem): BuilderEventName | null {

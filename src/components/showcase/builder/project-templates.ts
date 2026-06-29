@@ -42,53 +42,53 @@ export type ProjectTemplateSeedOptions = {
 export const projectTemplates: ProjectTemplateDefinition[] = [
   {
     id: "blank",
-    title: "Blank",
+    title: "空白",
     description: "空白桌面窗口，适合从零开始。",
-    defaultName: "Blank Project",
+    defaultName: "空白项目",
     badge: "自由",
     icon: RectangleHorizontal,
-    preview: ["Empty canvas", "Default state", "Default command"],
-    footprint: "1 file / 0 controls",
+    preview: ["空画布", "默认状态", "默认命令"],
+    footprint: "1 个文件 / 0 个控件",
   },
   {
     id: "dashboard",
-    title: "Dashboard",
+    title: "仪表盘",
     description: "指标卡、表格和刷新动作。",
-    defaultName: "Operations Dashboard",
+    defaultName: "运营仪表盘",
     badge: "数据",
     icon: BarChart3,
-    preview: ["Header + action", "3 stat cards", "Status card + table"],
-    footprint: "1 file / 9 controls",
+    preview: ["标题 + 操作", "3 个指标卡", "状态卡 + 表格"],
+    footprint: "1 个文件 / 9 个控件",
   },
   {
     id: "settings",
-    title: "Settings",
+    title: "设置",
     description: "设置表单、开关和保存命令。",
-    defaultName: "Settings Panel",
+    defaultName: "设置面板",
     badge: "表单",
     icon: Settings2,
-    preview: ["Header", "Inputs + select", "Switches + actions"],
-    footprint: "1 file / 9 controls",
+    preview: ["标题", "输入框 + 下拉选择", "开关 + 操作"],
+    footprint: "1 个文件 / 9 个控件",
   },
   {
     id: "dialog",
-    title: "Dialog",
+    title: "弹窗",
     description: "紧凑弹窗窗口和确认动作。",
-    defaultName: "Confirm Dialog",
+    defaultName: "确认弹窗",
     badge: "弹窗",
     icon: PanelTop,
-    preview: ["Dialog header", "Summary card", "Cancel / confirm"],
-    footprint: "1 file / 5 controls",
+    preview: ["弹窗标题", "摘要卡片", "取消 / 确认"],
+    footprint: "1 个文件 / 5 个控件",
   },
   {
     id: "data-tool",
-    title: "Data Tool",
+    title: "数据工具",
     description: "搜索、过滤和数据表工作台。",
-    defaultName: "Data Tool",
+    defaultName: "数据工具",
     badge: "工具",
     icon: Table2,
-    preview: ["Search + command", "Stats + status", "Record table"],
-    footprint: "1 file / 7 controls",
+    preview: ["搜索 + 命令", "指标 + 状态", "记录表"],
+    footprint: "1 个文件 / 7 个控件",
   },
 ];
 
@@ -98,7 +98,7 @@ export function projectTemplateById(id: ProjectTemplateId) {
 
 export function createBlankFile(name = "Main Window.ui", pagePatch: Partial<PageConfig> = {}, defaultPage: PageConfig): DesignerFile {
   const now = new Date().toISOString();
-  const pageTitle = name.replace(/\.ui$/i, "") || "Untitled Interface";
+  const pageTitle = name.replace(/\.ui$/i, "") || "未命名界面";
   return {
     id: createId(),
     name,
@@ -182,45 +182,45 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
   const file = (name: string, pagePatch: Partial<PageConfig>, items: BuilderItem[]) => createTemplateFile(options, name, pagePatch, items);
 
   if (templateId === "dashboard") {
-    const status = createTemplateState("statusText", "Dashboard ready");
+    const status = createTemplateState("statusText", "仪表盘就绪");
     const health = createTemplateState("healthScore", "98%");
-    const refresh = createTemplateCommand("refresh_dashboard", "Dashboard refreshed");
+    const refresh = createTemplateCommand("refresh_dashboard", "仪表盘已刷新");
     return {
-      description: "Operations dashboard starter with status cards, table, and refresh action.",
+      description: "包含状态卡、表格和刷新操作的运营仪表盘 starter。",
       rustCommands: [refresh],
       stateVariables: [status, health],
       files: [
-        file("Dashboard.ui", { title: "Operations Dashboard", preset: "wide", width: 1728, height: 1024, zoom: 0.45 }, [
-          item("heading", "Dashboard title", 64, 56, 620, 96, 1, {
-            label: "Operations",
-            title: "Service Dashboard",
-            description: "Monitor build output, runtime health, and release readiness from one desktop surface.",
+        file("Dashboard.ui", { title: "运营仪表盘", preset: "wide", width: 1728, height: 1024, zoom: 0.45 }, [
+          item("heading", "仪表盘标题", 64, 56, 620, 96, 1, {
+            label: "运营",
+            title: "服务仪表盘",
+            description: "在一个桌面界面中监控构建输出、运行健康度和发布就绪状态。",
           }),
-          item("badge", "Environment badge", 1272, 72, 128, 32, 2, { label: "Production", variant: "secondary" }),
-          item("button", "Refresh action", 1432, 62, 176, 44, 3, {
-            label: "Refresh data",
+          item("badge", "环境徽标", 1272, 72, 128, 32, 2, { label: "生产环境", variant: "secondary" }),
+          item("button", "刷新操作", 1432, 62, 176, 44, 3, {
+            label: "刷新数据",
             events: { click: { commandId: refresh.id, resultStateId: status.id } },
           }),
-          item("stat", "Health score", 64, 188, 248, 136, 4, {
-            label: "Health score",
+          item("stat", "健康分数", 64, 188, 248, 136, 4, {
+            label: "健康分数",
             value: "98%",
-            helper: "All systems nominal",
+            helper: "所有系统正常",
             stateBindings: { value: health.id },
           }),
-          item("stat", "Build time", 336, 188, 248, 136, 5, { label: "Build time", value: "2.4m", helper: "-18s from last run" }),
-          item("stat", "Open issues", 608, 188, 248, 136, 6, { label: "Open issues", value: "3", helper: "2 warnings, 1 review" }),
-          item("card", "Release status", 64, 372, 472, 232, 7, {
-            title: "Release status",
-            description: "Frontend checks, Rust checks, and breakpoint validation are ready to run before packaging.",
+          item("stat", "构建耗时", 336, 188, 248, 136, 5, { label: "构建耗时", value: "2.4m", helper: "比上次快 18s" }),
+          item("stat", "未处理问题", 608, 188, 248, 136, 6, { label: "未处理问题", value: "3", helper: "2 个警告，1 个待审查" }),
+          item("card", "发布状态", 64, 372, 472, 232, 7, {
+            title: "发布状态",
+            description: "打包前可以运行前端检查、Rust 检查和断点验证。",
             stateBindings: { description: status.id },
           }),
-          item("table", "Recent builds", 584, 372, 760, 300, 8, {
-            title: "Recent builds",
-            description: "Generated artifacts and target platforms.",
+          item("table", "最近构建", 584, 372, 760, 300, 8, {
+            title: "最近构建",
+            description: "生成产物和目标平台。",
           }),
-          item("switch", "Auto deploy", 64, 648, 340, 78, 9, {
-            title: "Auto deploy",
-            description: "Publish after full validation passes.",
+          item("switch", "自动部署", 64, 648, 340, 78, 9, {
+            title: "自动部署",
+            description: "完整验证通过后发布。",
             checked: false,
           }),
         ]),
@@ -229,82 +229,82 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
   }
 
   if (templateId === "settings") {
-    const status = createTemplateState("statusText", "Settings ready");
-    const save = createTemplateCommand("save_settings", "Settings saved");
+    const status = createTemplateState("statusText", "设置已就绪");
+    const save = createTemplateCommand("save_settings", "设置已保存");
     return {
-      description: "Settings panel starter with form controls, state binding, and save action.",
+      description: "包含表单控件、状态绑定和保存操作的设置面板 starter。",
       rustCommands: [save],
       stateVariables: [status],
       files: [
-        file("Settings.ui", { title: "Settings Panel", preset: "desktop", width: 1280, height: 820, zoom: 0.55 }, [
-          item("heading", "Settings title", 64, 56, 560, 96, 1, {
-            label: "Preferences",
-            title: "Application Settings",
-            description: "Configure paths, build behavior, and generated app defaults.",
+        file("Settings.ui", { title: "设置面板", preset: "desktop", width: 1280, height: 820, zoom: 0.55 }, [
+          item("heading", "设置标题", 64, 56, 560, 96, 1, {
+            label: "偏好",
+            title: "应用设置",
+            description: "配置路径、构建行为和生成应用默认值。",
           }),
-          item("input", "Project path", 64, 188, 420, 78, 2, {
-            label: "Project path",
+          item("input", "项目路径", 64, 188, 420, 78, 2, {
+            label: "项目路径",
             placeholder: "C:/Users/me/Documents/My App",
-            helper: "Used for generated app output.",
+            helper: "用于生成应用输出。",
           }),
-          item("select", "Build target", 528, 188, 320, 78, 3, {
-            label: "Build target",
+          item("select", "构建目标", 528, 188, 320, 78, 3, {
+            label: "构建目标",
             value: "Windows exe",
             optionA: "Windows exe",
             optionB: "macOS app",
             optionC: "Linux AppImage",
           }),
-          item("switch", "Autosave", 64, 304, 380, 78, 4, {
-            title: "Autosave project",
-            description: "Persist UI and Rust changes while editing.",
+          item("switch", "自动保存", 64, 304, 380, 78, 4, {
+            title: "自动保存项目",
+            description: "编辑时保存 UI 和 Rust 变更。",
             checked: true,
           }),
-          item("checkbox", "Validation gate", 476, 318, 340, 48, 5, {
-            label: "Require validation before package",
+          item("checkbox", "验证门禁", 476, 318, 340, 48, 5, {
+            label: "打包前要求验证",
             checked: true,
           }),
-          item("textarea", "Release notes", 64, 424, 620, 160, 6, {
-            label: "Release notes",
-            placeholder: "Document the operator-facing changes...",
+          item("textarea", "发布说明", 64, 424, 620, 160, 6, {
+            label: "发布说明",
+            placeholder: "记录面向操作者的变更...",
           }),
-          item("card", "Settings status", 732, 424, 360, 160, 7, {
-            title: "Status",
-            description: "Settings ready",
+          item("card", "设置状态", 732, 424, 360, 160, 7, {
+            title: "状态",
+            description: "设置已就绪",
             stateBindings: { description: status.id },
           }),
-          item("button", "Save settings", 64, 632, 180, 44, 8, {
-            label: "Save settings",
+          item("button", "保存设置", 64, 632, 180, 44, 8, {
+            label: "保存设置",
             events: { click: { commandId: save.id, resultStateId: status.id } },
           }),
-          item("button", "Reset settings", 264, 632, 160, 44, 9, { label: "Reset", variant: "secondary" }),
+          item("button", "重置设置", 264, 632, 160, 44, 9, { label: "重置", variant: "secondary" }),
         ]),
       ],
     };
   }
 
   if (templateId === "dialog") {
-    const status = createTemplateState("statusText", "Waiting for confirmation");
-    const confirm = createTemplateCommand("confirm_action", "Action confirmed");
+    const status = createTemplateState("statusText", "等待确认");
+    const confirm = createTemplateCommand("confirm_action", "操作已确认");
     return {
-      description: "Compact dialog starter with confirm/cancel actions.",
+      description: "包含确认/取消操作的紧凑弹窗 starter。",
       rustCommands: [confirm],
       stateVariables: [status],
       files: [
-        file("Confirm Dialog.ui", { title: "Confirm Dialog", preset: "dialog", width: 720, height: 520, zoom: 0.9, background: "plain", showGrid: true }, [
-          item("heading", "Dialog heading", 48, 48, 560, 96, 1, {
-            label: "Confirmation",
-            title: "Apply generated changes?",
-            description: "Review the summary before committing UI and Rust updates to the project.",
+        file("Confirm Dialog.ui", { title: "确认弹窗", preset: "dialog", width: 720, height: 520, zoom: 0.9, background: "plain", showGrid: true }, [
+          item("heading", "弹窗标题", 48, 48, 560, 96, 1, {
+            label: "确认",
+            title: "应用生成变更？",
+            description: "提交 UI 和 Rust 更新到项目之前，请先查看摘要。",
           }),
-          item("card", "Dialog summary", 48, 176, 600, 150, 2, {
-            title: "Summary",
-            description: "This action will update generated files and run a quick project check.",
+          item("card", "弹窗摘要", 48, 176, 600, 150, 2, {
+            title: "摘要",
+            description: "该操作会更新生成文件并运行一次快速项目检查。",
             stateBindings: { description: status.id },
           }),
-          item("checkbox", "Remember choice", 48, 352, 280, 48, 3, { label: "Remember this choice", checked: false }),
-          item("button", "Cancel", 376, 416, 120, 44, 4, { label: "Cancel", variant: "secondary" }),
-          item("button", "Confirm", 520, 416, 128, 44, 5, {
-            label: "Confirm",
+          item("checkbox", "记住选择", 48, 352, 280, 48, 3, { label: "记住这次选择", checked: false }),
+          item("button", "取消", 376, 416, 120, 44, 4, { label: "取消", variant: "secondary" }),
+          item("button", "确认", 520, 416, 128, 44, 5, {
+            label: "确认",
             events: { click: { commandId: confirm.id, resultStateId: status.id } },
           }),
         ]),
@@ -313,43 +313,43 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
   }
 
   if (templateId === "data-tool") {
-    const status = createTemplateState("statusText", "Loaded 128 records");
-    const query = createTemplateCommand("filter_records", "{\"success\":true,\"message\":\"Records filtered\",\"patch\":{\"statusText\":\"Filtered records\"}}", {
+    const status = createTemplateState("statusText", "已加载 128 条记录");
+    const query = createTemplateCommand("filter_records", "{\"success\":true,\"message\":\"记录已过滤\",\"patch\":{\"statusText\":\"已过滤记录\"}}", {
       parameters: [{ id: createId(), name: "query", type: "string", source: "value" }],
       acceptsValue: true,
       result: { ...defaultJsonResultSchema },
     });
     return {
-      description: "Data tool starter with search input, table, stats, and JSON result patching.",
+      description: "包含搜索输入、表格、指标和 JSON 结果 patch 的数据工具 starter。",
       rustCommands: [query],
       stateVariables: [status],
       files: [
-        file("Data Tool.ui", { title: "Data Tool", preset: "desktop", width: 1360, height: 860, zoom: 0.52 }, [
-          item("heading", "Data tool title", 64, 56, 560, 96, 1, {
-            label: "Data Tool",
-            title: "Record Explorer",
-            description: "Search, inspect, and package local data workflows into a desktop app.",
+        file("Data Tool.ui", { title: "数据工具", preset: "desktop", width: 1360, height: 860, zoom: 0.52 }, [
+          item("heading", "数据工具标题", 64, 56, 560, 96, 1, {
+            label: "数据工具",
+            title: "记录浏览器",
+            description: "搜索、检查并把本地数据工作流打包成桌面应用。",
           }),
-          item("input", "Search records", 64, 176, 420, 78, 2, {
-            label: "Search",
-            placeholder: "Type a query",
-            helper: "Runs the Rust filter command.",
+          item("input", "搜索记录", 64, 176, 420, 78, 2, {
+            label: "搜索",
+            placeholder: "输入查询",
+            helper: "运行 Rust 过滤命令。",
             events: { change: { commandId: query.id, resultStateId: status.id, applyJsonStatePatch: true } },
           }),
-          item("button", "Apply filter", 512, 204, 148, 44, 3, {
-            label: "Apply",
+          item("button", "应用过滤", 512, 204, 148, 44, 3, {
+            label: "应用",
             events: { click: { commandId: query.id, resultStateId: status.id, applyJsonStatePatch: true } },
           }),
-          item("stat", "Record count", 64, 300, 220, 132, 4, { label: "Records", value: "128", helper: "Local dataset" }),
-          item("stat", "Filtered count", 308, 300, 220, 132, 5, { label: "Filtered", value: "42", helper: "Current query" }),
-          item("card", "Tool status", 552, 300, 340, 132, 6, {
-            title: "Status",
-            description: "Loaded 128 records",
+          item("stat", "记录数量", 64, 300, 220, 132, 4, { label: "记录", value: "128", helper: "本地数据集" }),
+          item("stat", "过滤数量", 308, 300, 220, 132, 5, { label: "已过滤", value: "42", helper: "当前查询" }),
+          item("card", "工具状态", 552, 300, 340, 132, 6, {
+            title: "状态",
+            description: "已加载 128 条记录",
             stateBindings: { description: status.id },
           }),
-          item("table", "Records table", 64, 480, 960, 300, 7, {
-            title: "Records",
-            description: "Preview the current query result.",
+          item("table", "记录表", 64, 480, 960, 300, 7, {
+            title: "记录",
+            description: "预览当前查询结果。",
           }),
         ]),
       ],
@@ -357,9 +357,9 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
   }
 
   const rustCommands = createDefaultRustCommands();
-  const stateVariables = [createTemplateState("statusText", "Ready")];
+  const stateVariables = [createTemplateState("statusText", "就绪")];
   return {
-    description: "Blank local Nova UI editor project.",
+    description: "空白本地 Nova UI 编辑器项目。",
     rustCommands,
     stateVariables,
     files: [createBlankFile("Main Window.ui", {}, options.defaultPage)],

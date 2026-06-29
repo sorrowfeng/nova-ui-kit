@@ -11,7 +11,7 @@ import type {
 } from "./types";
 
 export const DEFAULT_RUST_COMMAND_NAME = "app_message";
-export const DEFAULT_RUST_COMMAND_RESPONSE = "Hello from Nova generated Rust logic";
+export const DEFAULT_RUST_COMMAND_RESPONSE = "来自 Nova 生成 Rust 逻辑的消息";
 export const DEFAULT_RUST_COMMANDS: RustCommand[] = [
   {
     id: "command-app-message",
@@ -28,13 +28,13 @@ export const rustParameterTypes: Array<{ value: RustCommandParameterType; label:
 ];
 
 export const rustParameterSources: Array<{ value: RustCommandParameterSource; label: string }> = [
-  { value: "value", label: "Current value" },
-  { value: "checked", label: "Checked" },
-  { value: "event", label: "Event name" },
-  { value: "itemId", label: "Item ID" },
-  { value: "itemName", label: "Item name" },
-  { value: "state", label: "State snapshot" },
-  { value: "payload", label: "Full payload" },
+  { value: "value", label: "当前值" },
+  { value: "checked", label: "选中状态" },
+  { value: "event", label: "事件名称" },
+  { value: "itemId", label: "控件 ID" },
+  { value: "itemName", label: "控件名称" },
+  { value: "state", label: "状态快照" },
+  { value: "payload", label: "完整载荷" },
 ];
 
 export const defaultRustCommandResult: RustCommandResultSchema = {
@@ -294,7 +294,7 @@ export function createRustCommand(index: number): RustCommand {
   return {
     id: createId(),
     name: `project_command_${index}`,
-    response: `Response from project_command_${index}`,
+    response: `来自 project_command_${index} 的响应`,
   };
 }
 
@@ -308,7 +308,7 @@ export function createBackendIntegrationCommand(
   return {
     id: createId(),
     name: commandName || `backend_integration_${index}`,
-    response: `Invoke ${integration.name || "backend integration"}${method ? ` / ${method.name}` : ""}`,
+    response: `调用 ${integration.name || "后端集成"}${method ? ` / ${method.name}` : ""}`,
     acceptsValue: true,
     parameters: [
       {
@@ -348,7 +348,7 @@ export function normalizeRustCommands(value: unknown): RustCommand[] {
       return {
         id: command.id || createId(),
         name,
-        response: command.response || (index === 0 ? DEFAULT_RUST_COMMAND_RESPONSE : `Response from ${name}`),
+        response: command.response || (index === 0 ? DEFAULT_RUST_COMMAND_RESPONSE : `来自 ${name} 的响应`),
         acceptsValue: parameters.length > 0,
         parameters: parameters.length > 0 ? parameters : undefined,
         result,

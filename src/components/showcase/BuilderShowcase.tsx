@@ -164,6 +164,7 @@ import {
   projectTaskLogLines,
   projectTaskLogPreview,
   projectTaskProgress,
+  projectTaskStatusLabel,
   projectTaskStatusFilterOptions,
   projectTaskStatusVariant,
   saveProjectActionPresets,
@@ -694,25 +695,25 @@ const DESIGNER_WORKSPACE_STORAGE_KEY = "nova-ui-kit-designer-workspace-v1";
 const PROJECT_JUMP_RECENTS_STORAGE_KEY = "nova-ui-kit-project-jump-recents-v1";
 
 const canvasPresets: Array<{ id: CanvasPresetId; title: string; description: string; width: number; height: number; icon: typeof Monitor }> = [
-  { id: "desktop", title: "Desktop", description: "1440 x 900", width: 1440, height: 900, icon: Monitor },
-  { id: "wide", title: "Wide", description: "1728 x 1024", width: 1728, height: 1024, icon: Monitor },
-  { id: "dialog", title: "Dialog", description: "720 x 520", width: 720, height: 520, icon: RectangleHorizontal },
-  { id: "tablet", title: "Tablet", description: "1024 x 768", width: 1024, height: 768, icon: RectangleHorizontal },
-  { id: "mobile", title: "Mobile", description: "390 x 844", width: 390, height: 844, icon: Smartphone },
+  { id: "desktop", title: "桌面", description: "1440 x 900", width: 1440, height: 900, icon: Monitor },
+  { id: "wide", title: "宽屏", description: "1728 x 1024", width: 1728, height: 1024, icon: Monitor },
+  { id: "dialog", title: "弹窗", description: "720 x 520", width: 720, height: 520, icon: RectangleHorizontal },
+  { id: "tablet", title: "平板", description: "1024 x 768", width: 1024, height: 768, icon: RectangleHorizontal },
+  { id: "mobile", title: "手机", description: "390 x 844", width: 390, height: 844, icon: Smartphone },
 ];
 
 const responsiveBreakpoints: Array<{ id: ResponsiveBreakpointId; title: string; width: number; height: number; icon: typeof Monitor }> = [
-  { id: "desktop", title: "Desktop", width: 1440, height: 900, icon: Monitor },
-  { id: "tablet", title: "Tablet", width: 1024, height: 768, icon: RectangleHorizontal },
-  { id: "mobile", title: "Mobile", width: 390, height: 844, icon: Smartphone },
+  { id: "desktop", title: "桌面", width: 1440, height: 900, icon: Monitor },
+  { id: "tablet", title: "平板", width: 1024, height: 768, icon: RectangleHorizontal },
+  { id: "mobile", title: "手机", width: 390, height: 844, icon: Smartphone },
 ];
 
 const eventResultTargetProps: Array<{ value: BuilderResultTargetProp; label: string }> = [
-  { value: "value", label: "Value" },
-  { value: "label", label: "Label" },
-  { value: "title", label: "Title" },
-  { value: "description", label: "Description" },
-  { value: "helper", label: "Helper" },
+  { value: "value", label: "值" },
+  { value: "label", label: "标签" },
+  { value: "title", label: "标题" },
+  { value: "description", label: "说明" },
+  { value: "helper", label: "辅助文本" },
 ];
 
 const buttonVariantValues = ["default", "secondary", "outline", "ghost", "destructive"] as const satisfies readonly ButtonVariant[];
@@ -721,26 +722,26 @@ const imageFitValues = ["cover", "contain", "fill"] as const satisfies readonly 
 const frameLayoutValues = ["free", "row", "column", "grid"] as const satisfies readonly FrameLayoutMode[];
 
 const builderPropertySchema: BuilderPropertySchemaField[] = [
-  { prop: "title", label: "Title", kind: "text", appliesTo: ["heading", "switch", "card", "table"], required: true, minLength: 1, maxLength: 72 },
-  { prop: "title", label: "Title", kind: "text", appliesTo: ["frame"], recommended: true, maxLength: 72 },
-  { prop: "label", label: "Label", kind: "text", appliesTo: ["button", "input", "textarea", "select", "checkbox", "stat", "badge"], required: true, minLength: 1, maxLength: 64 },
-  { prop: "value", label: "Value", kind: "text", appliesTo: ["select", "stat"], required: true, minLength: 1, maxLength: 80 },
-  { prop: "description", label: "Description", kind: "text", appliesTo: ["heading", "switch", "card", "table"], maxLength: 180 },
-  { prop: "placeholder", label: "Placeholder", kind: "text", appliesTo: ["input", "textarea"], maxLength: 96 },
-  { prop: "helper", label: "Helper text", kind: "text", appliesTo: ["input", "stat"], maxLength: 120 },
-  { prop: "variant", label: "Variant", kind: "select", appliesTo: ["button", "badge"], options: buttonVariantValues },
-  { prop: "size", label: "Size", kind: "select", appliesTo: ["button"], options: controlSizeValues },
-  { prop: "checked", label: "Checked state", kind: "boolean", appliesTo: ["checkbox", "switch"] },
-  { prop: "alt", label: "Alt text", kind: "text", appliesTo: ["image"], recommended: true, maxLength: 120 },
-  { prop: "objectFit", label: "Object fit", kind: "select", appliesTo: ["image"], options: imageFitValues },
-  { prop: "layoutMode", label: "Layout mode", kind: "select", appliesTo: ["frame"], recommended: true, options: frameLayoutValues },
-  { prop: "layoutGap", label: "Layout gap", kind: "number", appliesTo: ["frame"], min: 0, max: 96 },
-  { prop: "layoutPadding", label: "Layout padding", kind: "number", appliesTo: ["frame"], min: 0, max: 96 },
-  { prop: "layoutColumns", label: "Grid columns", kind: "number", appliesTo: ["frame"], min: 1, max: 12 },
+  { prop: "title", label: "标题", kind: "text", appliesTo: ["heading", "switch", "card", "table"], required: true, minLength: 1, maxLength: 72 },
+  { prop: "title", label: "标题", kind: "text", appliesTo: ["frame"], recommended: true, maxLength: 72 },
+  { prop: "label", label: "标签", kind: "text", appliesTo: ["button", "input", "textarea", "select", "checkbox", "stat", "badge"], required: true, minLength: 1, maxLength: 64 },
+  { prop: "value", label: "值", kind: "text", appliesTo: ["select", "stat"], required: true, minLength: 1, maxLength: 80 },
+  { prop: "description", label: "说明", kind: "text", appliesTo: ["heading", "switch", "card", "table"], maxLength: 180 },
+  { prop: "placeholder", label: "占位文本", kind: "text", appliesTo: ["input", "textarea"], maxLength: 96 },
+  { prop: "helper", label: "辅助文本", kind: "text", appliesTo: ["input", "stat"], maxLength: 120 },
+  { prop: "variant", label: "变体", kind: "select", appliesTo: ["button", "badge"], options: buttonVariantValues },
+  { prop: "size", label: "尺寸", kind: "select", appliesTo: ["button"], options: controlSizeValues },
+  { prop: "checked", label: "选中状态", kind: "boolean", appliesTo: ["checkbox", "switch"] },
+  { prop: "alt", label: "替代文本", kind: "text", appliesTo: ["image"], recommended: true, maxLength: 120 },
+  { prop: "objectFit", label: "图片适配", kind: "select", appliesTo: ["image"], options: imageFitValues },
+  { prop: "layoutMode", label: "布局模式", kind: "select", appliesTo: ["frame"], recommended: true, options: frameLayoutValues },
+  { prop: "layoutGap", label: "布局间距", kind: "number", appliesTo: ["frame"], min: 0, max: 96 },
+  { prop: "layoutPadding", label: "内边距", kind: "number", appliesTo: ["frame"], min: 0, max: 96 },
+  { prop: "layoutColumns", label: "网格列数", kind: "number", appliesTo: ["frame"], min: 1, max: 12 },
 ];
 
 const defaultPage: PageConfig = {
-  title: "Untitled Interface",
+  title: "未命名界面",
   preset: "desktop",
   activeBreakpoint: "desktop",
   width: 1440,
@@ -756,13 +757,13 @@ const defaultPage: PageConfig = {
 const palette: ComponentDefinition[] = [
   {
     type: "frame",
-    title: "Frame",
+    title: "容器",
     description: "容器面板，用来承载一组控件。",
     icon: Box,
     defaultSize: { width: 360, height: 220 },
     defaultProps: {
-      title: "Settings",
-      description: "Group related controls in one panel.",
+      title: "设置",
+      description: "把相关控件组织到一个面板中。",
       layoutMode: "free",
       layoutGap: 12,
       layoutPadding: 16,
@@ -771,94 +772,94 @@ const palette: ComponentDefinition[] = [
   },
   {
     type: "heading",
-    title: "Heading",
+    title: "标题",
     description: "页面标题、分组标题或说明文本。",
     icon: Heading1,
     defaultSize: { width: 420, height: 92 },
     defaultProps: {
-      label: "Workspace",
-      title: "Project Overview",
-      description: "Arrange controls freely on the canvas.",
+      label: "工作区",
+      title: "项目概览",
+      description: "在画布上自由排列控件。",
     },
   },
   {
     type: "image",
-    title: "Image",
+    title: "图片",
     description: "绑定项目资源，用于产品图、插图或界面预览。",
     icon: FileImage,
     defaultSize: { width: 320, height: 200 },
     defaultProps: {
-      label: "Image",
-      alt: "Project asset",
+      label: "图片",
+      alt: "项目资源",
       objectFit: "cover",
     },
   },
   {
     type: "button",
-    title: "Button",
+    title: "按钮",
     description: "主操作、次操作、危险操作按钮。",
     icon: MousePointer2,
     defaultSize: { width: 148, height: 44 },
     defaultProps: {
-      label: "Create",
+      label: "创建",
       variant: "default",
       size: "md",
     },
   },
   {
     type: "input",
-    title: "Input",
+    title: "输入框",
     description: "单行输入控件，适合名称、路径、搜索。",
     icon: Type,
     defaultSize: { width: 260, height: 76 },
     defaultProps: {
-      label: "Project name",
-      placeholder: "Nova workspace",
-      helper: "Used for the generated window title.",
+      label: "项目名称",
+      placeholder: "Nova 工作区",
+      helper: "用于生成窗口标题。",
     },
   },
   {
     type: "textarea",
-    title: "Textarea",
+    title: "多行文本",
     description: "多行文本输入区域。",
     icon: TextCursorInput,
     defaultSize: { width: 320, height: 138 },
     defaultProps: {
-      label: "Notes",
-      placeholder: "Write implementation notes...",
+      label: "备注",
+      placeholder: "编写实现备注...",
     },
   },
   {
     type: "checkbox",
-    title: "Checkbox",
+    title: "复选框",
     description: "复选项或确认项。",
     icon: CheckCircle2,
     defaultSize: { width: 230, height: 48 },
     defaultProps: {
-      label: "Enable generated layout",
+      label: "启用生成布局",
       checked: true,
     },
   },
   {
     type: "switch",
-    title: "Switch",
+    title: "开关",
     description: "二元设置开关。",
     icon: ToggleLeft,
     defaultSize: { width: 280, height: 76 },
     defaultProps: {
-      title: "Auto save",
-      description: "Persist layout changes locally.",
+      title: "自动保存",
+      description: "将布局变更保存到本地。",
       checked: true,
     },
   },
   {
     type: "select",
-    title: "Select",
+    title: "下拉选择",
     description: "下拉选项控件。",
     icon: PanelTop,
     defaultSize: { width: 260, height: 76 },
     defaultProps: {
-      label: "Build target",
+      label: "构建目标",
       value: "Windows exe",
       optionA: "Windows exe",
       optionB: "macOS app",
@@ -867,41 +868,41 @@ const palette: ComponentDefinition[] = [
   },
   {
     type: "card",
-    title: "Card",
+    title: "卡片",
     description: "信息卡片，适合摘要与状态说明。",
     icon: Box,
     defaultSize: { width: 320, height: 180 },
     defaultProps: {
-      title: "Release status",
-      description: "All checks passed and the desktop artifact is ready.",
+      title: "发布状态",
+      description: "全部检查通过，桌面产物已准备好。",
     },
   },
   {
     type: "stat",
-    title: "Stat",
+    title: "指标",
     description: "指标卡，用于仪表盘和状态面板。",
     icon: BarChart3,
     defaultSize: { width: 210, height: 132 },
     defaultProps: {
-      label: "Build success",
+      label: "构建成功率",
       value: "98%",
       helper: "+4.2% this week",
     },
   },
   {
     type: "table",
-    title: "Table",
+    title: "表格",
     description: "紧凑数据表格。",
     icon: Table2,
     defaultSize: { width: 520, height: 240 },
     defaultProps: {
-      title: "Recent builds",
-      description: "Artifact status and platform output.",
+      title: "最近构建",
+      description: "产物状态和平台输出。",
     },
   },
   {
     type: "divider",
-    title: "Divider",
+    title: "分隔线",
     description: "横向分隔线。",
     icon: RectangleHorizontal,
     defaultSize: { width: 320, height: 18 },
@@ -909,12 +910,12 @@ const palette: ComponentDefinition[] = [
   },
   {
     type: "badge",
-    title: "Badge",
+    title: "徽标",
     description: "状态徽标和标签。",
     icon: PanelTop,
     defaultSize: { width: 112, height: 32 },
     defaultProps: {
-      label: "Ready",
+      label: "就绪",
       variant: "secondary",
     },
   },
@@ -927,11 +928,11 @@ function getDefinition(type: BuilderComponentType) {
 type ComponentPaletteCategoryId = "all" | "layout" | "inputs" | "data" | "display";
 
 const componentPaletteCategoryOptions = [
-  { id: "all", label: "All", description: "全部控件" },
-  { id: "layout", label: "Layout", description: "布局与结构" },
-  { id: "inputs", label: "Inputs", description: "输入与设置" },
-  { id: "data", label: "Data", description: "数据展示" },
-  { id: "display", label: "Display", description: "内容与状态" },
+  { id: "all", label: "全部", description: "全部控件" },
+  { id: "layout", label: "布局", description: "布局与结构" },
+  { id: "inputs", label: "输入", description: "输入与设置" },
+  { id: "data", label: "数据", description: "数据展示" },
+  { id: "display", label: "展示", description: "内容与状态" },
 ] as const satisfies ReadonlyArray<{ id: ComponentPaletteCategoryId; label: string; description: string }>;
 
 const componentPaletteQuickInsertTypes = ["button", "input", "frame", "table"] as const satisfies readonly BuilderComponentType[];
@@ -1102,7 +1103,7 @@ function normalizeValidationHistory(value: unknown): ValidationHistoryEntry[] {
         screenshotAnalysisPath: entry.screenshotAnalysisPath,
         runtimeAuditPath: entry.runtimeAuditPath,
         breakpointValidationPath: entry.breakpointValidationPath,
-        summary: entry.summary || "Generated window validation",
+        summary: entry.summary || "生成窗口验证",
       };
     })
     .filter((entry): entry is ValidationHistoryEntry => Boolean(entry))
@@ -1135,9 +1136,9 @@ function normalizeProjectMaintenanceHistory(value: unknown): ProjectMaintenanceE
               }
               return {
                 fileId: change.fileId,
-                fileName: change.fileName || "UI file",
+                fileName: change.fileName || "UI 文件",
                 itemId: change.itemId,
-                itemName: change.itemName || "Control",
+                itemName: change.itemName || "控件",
                 itemType: change.itemType || "frame",
                 props,
                 issueCount: Math.max(0, Number(change.issueCount ?? 0)),
@@ -1153,8 +1154,8 @@ function normalizeProjectMaintenanceHistory(value: unknown): ProjectMaintenanceE
         createdAt: entry.createdAt || new Date().toISOString(),
         action,
         status,
-        title: entry.title || "Property schema repair",
-        summary: entry.summary || "Project maintenance action",
+        title: entry.title || "属性结构修复",
+        summary: entry.summary || "项目维护操作",
         fileCount: Math.max(0, Number(entry.fileCount ?? new Set(changes.map((change) => change.fileId)).size)),
         itemCount: Math.max(0, Number(entry.itemCount ?? changes.length)),
         propertyCount: Math.max(0, Number(entry.propertyCount ?? changes.reduce((sum, change) => sum + change.props.length, 0))),
@@ -1197,8 +1198,8 @@ function normalizeBuildHistory(value: unknown): BuildHistoryEntry[] {
         createdAt: entry.createdAt || new Date().toISOString(),
         status: "success",
         buildKind,
-        label: entry.label || (buildKind === "bundle" ? "Bundle build" : "Build"),
-        releaseAppName: entry.releaseAppName || "Nova App",
+        label: entry.label || (buildKind === "bundle" ? "安装包构建" : "构建"),
+        releaseAppName: entry.releaseAppName || "Nova 应用",
         releaseVersion: normalizeReleaseVersion(entry.releaseVersion || "0.1.0"),
         releaseBundleTargets: normalizeReleaseBundleTarget(entry.releaseBundleTargets),
         releaseNotes: normalizeReleaseNotes(entry.releaseNotes, entry.releaseVersion || "0.1.0"),
@@ -1250,7 +1251,7 @@ function normalizeBuildHistory(value: unknown): BuildHistoryEntry[] {
         commandCount: Math.max(0, Number(entry.commandCount ?? 0)),
         stateCount: Math.max(0, Number(entry.stateCount ?? 0)),
         assetCount: Math.max(0, Number(entry.assetCount ?? 0)),
-        summary: entry.summary || (buildKind === "bundle" ? "Generated installer bundle" : "Generated executable build"),
+        summary: entry.summary || (buildKind === "bundle" ? "已生成安装包" : "已生成可执行文件"),
       };
     })
     .filter((entry): entry is BuildHistoryEntry => Boolean(entry))
@@ -1284,7 +1285,7 @@ function normalizeReleasePipelineStepInputSnapshot(value: unknown): ReleasePipel
     rootPath: typeof source.rootPath === "string" && source.rootPath.trim() ? source.rootPath : undefined,
     activeFileId: typeof source.activeFileId === "string" && source.activeFileId.trim() ? source.activeFileId : undefined,
     activeFileName: typeof source.activeFileName === "string" && source.activeFileName.trim() ? source.activeFileName : undefined,
-    releaseAppName: typeof source.releaseAppName === "string" && source.releaseAppName.trim() ? source.releaseAppName : "Nova App",
+    releaseAppName: typeof source.releaseAppName === "string" && source.releaseAppName.trim() ? source.releaseAppName : "Nova 应用",
     releaseVersion: normalizeReleaseVersion(source.releaseVersion || "0.1.0"),
     fileCount: Math.max(0, Number(source.fileCount ?? 0)),
     controlCount: Math.max(0, Number(source.controlCount ?? 0)),
@@ -1355,7 +1356,7 @@ function normalizeReleasePipelineStepArtifactEvidence(value: unknown): ReleasePi
     sizeBytes: Math.max(0, Number(source.sizeBytes ?? 0)),
     modifiedAt: typeof source.modifiedAt === "string" && source.modifiedAt.trim() ? source.modifiedAt : source.modifiedAt === null ? null : undefined,
     sha256: typeof source.sha256 === "string" && source.sha256.trim() ? source.sha256 : source.sha256 === null ? null : undefined,
-    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "Artifact evidence captured.",
+    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "已捕获产物证据。",
     checkedAt: typeof source.checkedAt === "string" && source.checkedAt.trim() ? source.checkedAt : new Date().toISOString(),
   };
 }
@@ -1416,8 +1417,8 @@ function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDependencyG
   if (!value || typeof value !== "object") {
     return {
       id: "dependency-plan",
-      title: "Dependency plan",
-      detail: "No persisted dependency plan was found.",
+      title: "依赖计划",
+      detail: "没有找到已保存的依赖计划。",
       badge: "graph",
       actions: [],
       scopeIds: [],
@@ -1596,7 +1597,7 @@ function normalizeReleasePipelineHistory(value: unknown): ReleasePipelineEntry[]
       return {
         id: typeof entry.id === "string" && entry.id ? entry.id : createId(),
         presetId: typeof entry.presetId === "string" && entry.presetId ? entry.presetId : "preset",
-        presetTitle: typeof entry.presetTitle === "string" && entry.presetTitle ? entry.presetTitle : "Release pipeline",
+        presetTitle: typeof entry.presetTitle === "string" && entry.presetTitle ? entry.presetTitle : "发布流水线",
         presetBadge: typeof entry.presetBadge === "string" && entry.presetBadge ? entry.presetBadge : "run",
         createdAt: entry.createdAt || steps[0]?.startedAt || new Date().toISOString(),
         startedAt: typeof entry.startedAt === "string" ? entry.startedAt : steps.find((step) => step.startedAt)?.startedAt,
@@ -1669,7 +1670,7 @@ function normalizeBreakpointValidationIssues(value: unknown): BreakpointValidati
         breakpoint: normalizeBreakpoint(String(issue.breakpoint ?? raw.breakpoint ?? "desktop")),
         severity,
         title: String(issue.title ?? raw.title ?? "Breakpoint runtime issue"),
-        detail: String(issue.detail ?? raw.detail ?? "No detail provided."),
+        detail: String(issue.detail ?? raw.detail ?? "没有提供详情。"),
         fileId,
         fileName: String(issue.fileName ?? raw.file_name ?? "UI file"),
         itemId: typeof issue.itemId === "string" ? issue.itemId : typeof raw.item_id === "string" ? raw.item_id : undefined,
@@ -1698,7 +1699,7 @@ function createStateVariable(index = 1): BuilderStateVariable {
   return {
     id: createId(),
     name: index === 1 ? "statusText" : `stateValue${index}`,
-    initialValue: index === 1 ? "Ready" : "",
+    initialValue: index === 1 ? "就绪" : "",
   };
 }
 
@@ -1781,9 +1782,9 @@ function selectOptionsForItem(item: BuilderItem) {
 function propertySchemaHint(field: BuilderPropertySchemaField) {
   const hints: string[] = [field.kind];
   if (field.required) {
-    hints.push("required");
+    hints.push("必填");
   } else if (field.recommended) {
-    hints.push("recommended");
+    hints.push("推荐");
   }
   if (field.options?.length) {
     hints.push(field.options.join(" / "));
@@ -1792,7 +1793,7 @@ function propertySchemaHint(field: BuilderPropertySchemaField) {
     hints.push(`${field.min ?? "-inf"}..${field.max ?? "inf"}`);
   }
   if (typeof field.maxLength === "number") {
-    hints.push(`max ${field.maxLength}`);
+    hints.push(`最多 ${field.maxLength} 字符`);
   }
   return hints.join(" | ");
 }
@@ -1817,7 +1818,7 @@ function propertyFallbackValue(item: BuilderItem, field: BuilderPropertySchemaFi
     return field.min ?? 0;
   }
   if (field.prop === "alt") {
-    return item.props.label || item.name || "Project asset";
+    return item.props.label || item.name || "项目资源";
   }
   if (field.prop === "title" || field.prop === "label") {
     return item.name || definition.title;
@@ -1940,7 +1941,7 @@ function propertyIssuesForItem(file: DesignerFile, item: BuilderItem): BuilderPr
     const options = selectOptionsForItem(item);
     const value = item.props.value?.trim() ?? "";
     if (options.length === 0) {
-      pushIssue({ prop: "optionA", label: "Options" }, "error", "Select 至少需要一个候选项。", "empty-options");
+      pushIssue({ prop: "optionA", label: "选项" }, "error", "Select 至少需要一个候选项。", "empty-options");
     } else if (value && !options.includes(value)) {
       pushIssue({ prop: "value", label: "Value" }, "warning", `当前值不在候选项中：${options.join(", ")}。`, "value-option");
     }
@@ -1998,21 +1999,64 @@ function propertyAutoFixSummaryForProject(project: DesignerProject): BuilderProp
 
 function projectJumpKindLabel(kind: ProjectJumpKind) {
   const labels: Record<ProjectJumpKind, string> = {
-    action: "Action",
-    file: "UI file",
-    component: "Component",
-    control: "Control",
+    action: "操作",
+    file: "UI 文件",
+    component: "组件",
+    control: "控件",
     "rust-command": "Rust",
-    state: "State",
-    asset: "Asset",
-    artifact: "Artifact",
-    validation: "Validation",
-    pipeline: "Pipeline",
-    maintenance: "Repair",
-    settings: "Settings",
-    checkpoint: "Checkpoint",
+    state: "状态",
+    asset: "资源",
+    artifact: "产物",
+    validation: "验证",
+    pipeline: "流水线",
+    maintenance: "修复",
+    settings: "设置",
+    checkpoint: "检查点",
   };
   return labels[kind];
+}
+
+function buildReadinessSeverityLabel(severity: BuildReadinessSeverity) {
+  const labels: Record<BuildReadinessSeverity, string> = {
+    ready: "就绪",
+    warning: "警告",
+    error: "错误",
+  };
+  return labels[severity];
+}
+
+function visualAuditSeverityLabel(severity: WindowVisualAuditSeverity) {
+  const labels: Record<WindowVisualAuditSeverity, string> = {
+    pass: "通过",
+    warning: "警告",
+    error: "错误",
+  };
+  return labels[severity];
+}
+
+function booleanStateLabel(enabled: boolean) {
+  return enabled ? "已启用" : "已停用";
+}
+
+function backendArtifactInspectionStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    ok: "正常",
+    missing: "未找到",
+    warning: "警告",
+    error: "错误",
+  };
+  return labels[status] ?? status;
+}
+
+function generatedFileStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    create: "新增",
+    update: "更新",
+    copy: "复制",
+    unchanged: "未变化",
+    delete: "删除",
+  };
+  return labels[status] ?? status;
 }
 
 function projectJumpSearchText(parts: Array<string | number | undefined | null>) {
@@ -2090,18 +2134,18 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "settings-release",
       kind: "settings",
-      title: "Project release settings",
-      subtitle: "Edit app name, bundle id, version, bundle target, and window behavior.",
-      badge: "settings",
+      title: "项目发布设置",
+      subtitle: "编辑应用名称、bundle id、版本、打包目标和窗口行为。",
+      badge: "设置",
       mode: "design",
       searchable: projectJumpSearchText(["project settings release config app name bundle identifier version target window"]),
     },
     {
       id: "action-save-project",
       kind: "action",
-      title: "Save project",
-      subtitle: "Persist workspace, UI files, Rust logic, and project metadata.",
-      badge: "save",
+      title: "保存项目",
+      subtitle: "保存工作区、UI 文件、Rust 逻辑和项目元数据。",
+      badge: "保存",
       mode: "build",
       actionId: "save-project",
       searchable: projectJumpSearchText(["save persist disk project workspace ui rust metadata"]),
@@ -2109,8 +2153,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-new-ui-file",
       kind: "action",
-      title: "New UI file",
-      subtitle: "Create another managed window inside this Nova project.",
+      title: "新建 UI 文件",
+      subtitle: "在当前 Nova 项目中创建另一个受管理窗口。",
       badge: "UI",
       mode: "design",
       actionId: "new-ui-file",
@@ -2119,8 +2163,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-duplicate-ui-file",
       kind: "action",
-      title: "Duplicate current UI file",
-      subtitle: "Copy the active UI file, controls, page settings, and responsive overrides.",
+      title: "复制当前 UI 文件",
+      subtitle: "复制当前 UI 文件、控件、页面设置和响应式覆盖。",
       badge: "UI",
       mode: "design",
       actionId: "duplicate-ui-file",
@@ -2129,8 +2173,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-delete-ui-file",
       kind: "action",
-      title: "Delete current UI file",
-      subtitle: "Open a confirmation before removing or clearing the active UI file.",
+      title: "删除当前 UI 文件",
+      subtitle: "移除或清空当前 UI 文件前先打开确认。",
       badge: "UI",
       mode: "design",
       actionId: "delete-ui-file",
@@ -2139,8 +2183,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-add-rust-command",
       kind: "action",
-      title: "Add Rust command",
-      subtitle: "Register a new Tauri invoke command for UI events.",
+      title: "添加 Rust 命令",
+      subtitle: "为 UI 事件注册新的 Tauri invoke 命令。",
       badge: "invoke",
       mode: "logic",
       actionId: "add-rust-command",
@@ -2149,9 +2193,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-bind-control-event",
       kind: "action",
-      title: "Bind selected control event",
-      subtitle: "Create a Rust command and connect it to the selected control event.",
-      badge: "bind",
+      title: "绑定所选控件事件",
+      subtitle: "创建 Rust 命令并连接到所选控件事件。",
+      badge: "绑定",
       mode: "design",
       actionId: "bind-control-event",
       searchable: projectJumpSearchText(["bind selected control event create connection rust command signal slot"]),
@@ -2159,9 +2203,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-run-selected-event",
       kind: "action",
-      title: "Run selected event",
-      subtitle: "Simulate the selected control event and inspect the latest result.",
-      badge: "run",
+      title: "运行所选事件",
+      subtitle: "模拟所选控件事件并查看最新结果。",
+      badge: "运行",
       mode: "preview",
       actionId: "run-selected-event",
       searchable: projectJumpSearchText(["run simulate selected control event preview invoke command result"]),
@@ -2169,9 +2213,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-add-state-variable",
       kind: "action",
-      title: "Add state variable",
-      subtitle: "Create shared project state for bindings and command results.",
-      badge: "state",
+      title: "添加状态变量",
+      subtitle: "创建用于绑定和命令结果的共享项目状态。",
+      badge: "状态",
       mode: "logic",
       actionId: "add-state-variable",
       searchable: projectJumpSearchText(["add create state variable binding shared result"]),
@@ -2179,9 +2223,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-sync-rust",
       kind: "action",
-      title: "Sync Rust source",
-      subtitle: "Regenerate Rust logic from the command registry.",
-      badge: "sync",
+      title: "同步 Rust 源码",
+      subtitle: "根据命令注册表重新生成 Rust 逻辑。",
+      badge: "同步",
       mode: "logic",
       actionId: "sync-rust",
       searchable: projectJumpSearchText(["sync regenerate rust source logic commands registry"]),
@@ -2189,9 +2233,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-add-image-asset",
       kind: "action",
-      title: "Import image asset",
-      subtitle: "Add a local image resource to the managed project assets.",
-      badge: "asset",
+      title: "导入图片资源",
+      subtitle: "把本地图片资源加入受管理的项目资源。",
+      badge: "资源",
       mode: "design",
       actionId: "add-image-asset",
       searchable: projectJumpSearchText(["import add image asset resource png jpg svg"]),
@@ -2199,9 +2243,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-preview-generated-files",
       kind: "action",
-      title: "Preview generated files",
-      subtitle: "Review the target app file plan and disk diff before writing.",
-      badge: "diff",
+      title: "预览生成文件",
+      subtitle: "写入前查看目标应用文件计划和磁盘差异。",
+      badge: "差异",
       mode: "build",
       actionId: "preview-generated-files",
       searchable: projectJumpSearchText(["preview generated files file plan diff target app"]),
@@ -2209,9 +2253,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-apply-generated-files",
       kind: "action",
-      title: "Apply selected generated files",
-      subtitle: "Write the selected generated target files with a pre-write snapshot.",
-      badge: "apply",
+      title: "应用所选生成文件",
+      subtitle: "带写入前快照地写入所选生成目标文件。",
+      badge: "应用",
       mode: "build",
       actionId: "apply-generated-files",
       searchable: projectJumpSearchText(["apply selected generated files write snapshot target app"]),
@@ -2219,9 +2263,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-apply-generated-changes",
       kind: "action",
-      title: "Apply generated changes",
-      subtitle: "Preview and write all changed generated target files with a pre-write snapshot.",
-      badge: "apply all",
+      title: "应用生成变更",
+      subtitle: "预览并带写入前快照地写入全部已变更目标文件。",
+      badge: "全部应用",
       mode: "build",
       actionId: "apply-generated-changes",
       searchable: projectJumpSearchText(["apply all generated changes changed files write snapshot target app"]),
@@ -2229,9 +2273,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-build-backend-artifacts",
       kind: "action",
-      title: "Build backend artifacts",
-      subtitle: "Run C++/Go starter build scripts and refresh artifact status.",
-      badge: "backend",
+      title: "构建后端产物",
+      subtitle: "运行 C++/Go starter 构建脚本并刷新产物状态。",
+      badge: "后端",
       mode: "logic",
       actionId: "build-backend-artifacts",
       searchable: projectJumpSearchText(["build backend artifacts cpp ffi go sidecar starter script artifact"]),
@@ -2239,9 +2283,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-quick-check-all",
       kind: "action",
-      title: "Run all quick checks",
-      subtitle: "Run frontend and Rust checks before building the executable.",
-      badge: "check",
+      title: "运行全部快速检查",
+      subtitle: "构建可执行文件前运行前端和 Rust 检查。",
+      badge: "检查",
       mode: "build",
       actionId: "quick-check-all",
       searchable: projectJumpSearchText(["run all quick checks frontend rust cargo npm build verify"]),
@@ -2249,8 +2293,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-quick-check-frontend",
       kind: "action",
-      title: "Run frontend check",
-      subtitle: "Run the generated target app frontend check.",
+      title: "运行前端检查",
+      subtitle: "运行生成目标应用的前端检查。",
       badge: "web",
       mode: "build",
       actionId: "quick-check-frontend",
@@ -2259,8 +2303,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-quick-check-rust",
       kind: "action",
-      title: "Run Rust check",
-      subtitle: "Run cargo check for the generated target app.",
+      title: "运行 Rust 检查",
+      subtitle: "对生成目标应用执行 cargo check。",
       badge: "cargo",
       mode: "build",
       actionId: "quick-check-rust",
@@ -2269,9 +2313,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-validate-window",
       kind: "action",
-      title: "Validate generated window",
-      subtitle: "Run visual/runtime validation for the generated target window.",
-      badge: "audit",
+      title: "验证生成窗口",
+      subtitle: "对生成目标窗口运行视觉和运行时验证。",
+      badge: "审查",
       mode: "build",
       actionId: "validate-window",
       searchable: projectJumpSearchText(["validate generated window visual runtime audit screenshot breakpoint"]),
@@ -2279,8 +2323,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-build-exe",
       kind: "action",
-      title: "Build release exe",
-      subtitle: "Compile the managed target app into a release executable.",
+      title: "构建 release exe",
+      subtitle: "把受管理的目标应用编译成发布可执行文件。",
       badge: "exe",
       mode: "build",
       actionId: "build-exe",
@@ -2289,9 +2333,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-bundle-installer",
       kind: "action",
-      title: "Bundle installer",
-      subtitle: "Build installer bundles and collect artifact smoke metadata.",
-      badge: "bundle",
+      title: "打包安装器",
+      subtitle: "构建安装包并收集产物冒烟测试元数据。",
+      badge: "打包",
       mode: "build",
       actionId: "bundle-installer",
       searchable: projectJumpSearchText(["bundle installer msi nsis artifact smoke release"]),
@@ -2299,9 +2343,9 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     {
       id: "action-fix-property-schema",
       kind: "action",
-      title: "Fix property schema issues",
-      subtitle: "Apply safe project-level control property repairs.",
-      badge: "repair",
+      title: "修复属性结构问题",
+      subtitle: "应用安全的项目级控件属性修复。",
+      badge: "修复",
       mode: "build",
       actionId: "fix-property-schema",
       searchable: projectJumpSearchText(["fix repair property schema control issue autofix maintenance"]),
@@ -2313,8 +2357,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     results.push({
       id: `component-${definition.type}`,
       kind: "component",
-      title: `Insert ${definition.title}`,
-      subtitle: `${definition.description} Adds it to the active UI file and selects it on the canvas.`,
+      title: `插入${definition.title}`,
+      subtitle: `${definition.description} 会加入当前 UI 文件，并在画布中选中。`,
       badge: definition.type,
       mode: "design",
       insertComponentType: definition.type,
@@ -2332,7 +2376,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       id: `file-${file.id}`,
       kind: "file",
       title: file.name,
-      subtitle: `${file.path} · ${file.items.length} controls · ${file.page.width} x ${file.page.height}`,
+      subtitle: `${file.path} · ${file.items.length} 个控件 · ${file.page.width} x ${file.page.height}`,
       badge: "UI",
       mode: "design",
       fileId: file.id,
@@ -2372,7 +2416,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       id: `rust-command-${command.id}`,
       kind: "rust-command",
       title: safeName,
-      subtitle: `${rustCommandParameters(command).length} args · ${commandResultSchema(command).mode} result`,
+      subtitle: `${rustCommandParameters(command).length} 个参数 · ${commandResultSchema(command).mode} 结果`,
       badge: "invoke",
       mode: "logic",
       commandId: command.id,
@@ -2385,8 +2429,8 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       id: `state-${state.id}`,
       kind: "state",
       title: state.name,
-      subtitle: `Initial value: ${state.initialValue || "(empty)"}`,
-      badge: "state",
+      subtitle: `初始值：${state.initialValue || "（空）"}`,
+      badge: "状态",
       mode: "logic",
       stateId: state.id,
       searchable: projectJumpSearchText([state.name, state.initialValue, "state variable binding"]),
@@ -2412,7 +2456,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       id: `pipeline-${entry.id}`,
       kind: "pipeline",
       title: entry.presetTitle,
-      subtitle: `${entry.status} · ${entry.succeededCount}/${entry.stepCount} steps · ${entry.summary}`,
+      subtitle: `${projectTaskStatusLabel(entry.status)} · ${entry.succeededCount}/${entry.stepCount} 步 · ${entry.summary}`,
       badge: entry.presetBadge,
       mode: "build",
       path: entry.recordPath || entry.artifactPath,
@@ -2436,7 +2480,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     results.push({
       id: `artifact-${entry.id}`,
       kind: "artifact",
-      title: entry.buildKind === "bundle" ? "Bundle artifact" : "Executable artifact",
+      title: entry.buildKind === "bundle" ? "安装包产物" : "可执行文件产物",
       subtitle: `${entry.releaseAppName} v${entry.releaseVersion} · ${entry.summary}`,
       badge: entry.buildKind,
       mode: "build",
@@ -2450,7 +2494,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
     results.push({
       id: `validation-${entry.id}`,
       kind: "validation",
-      title: "Window validation",
+      title: "窗口验证",
       subtitle: `${entry.status} · ${entry.score}% · ${entry.summary}`,
       badge: entry.status,
       mode: "build",
@@ -2465,7 +2509,7 @@ function buildProjectJumpResults(project: DesignerProject, checkpoints: EditorPr
       id: `maintenance-${entry.id}`,
       kind: "maintenance",
       title: entry.title,
-      subtitle: `${entry.propertyCount} properties · ${entry.itemCount} controls · ${entry.manualIssueCount} manual`,
+      subtitle: `${entry.propertyCount} 个属性 · ${entry.itemCount} 个控件 · ${entry.manualIssueCount} 个需手动处理`,
       badge: entry.status,
       mode: "build",
       searchable: projectJumpSearchText([
@@ -2535,13 +2579,13 @@ function workflowTaskForActions(tasks: ProjectTaskEntry[], actions: ProjectJumpA
 
 function workflowStepStatusLabel(status: ProjectTaskStatus | "idle") {
   const labels: Record<ProjectTaskStatus | "idle", string> = {
-    idle: "ready",
-    queued: "queued",
-    running: "running",
-    succeeded: "done",
-    failed: "failed",
-    skipped: "skipped",
-    canceled: "canceled",
+    idle: "待开始",
+    queued: "排队中",
+    running: "运行中",
+    succeeded: "完成",
+    failed: "失败",
+    skipped: "已跳过",
+    canceled: "已取消",
   };
   return labels[status];
 }
@@ -2593,11 +2637,11 @@ function createPropertyMaintenanceEntry(summary: BuilderPropertyAutoFixSummary):
     createdAt: new Date().toISOString(),
     action: "property-schema-repair",
     status: summary.manualIssueCount > 0 ? "partial" : "applied",
-    title: "Property schema repair",
+    title: "属性结构修复",
     summary:
       summary.manualIssueCount > 0
-        ? `Applied ${summary.propertyCount} safe property fixes; ${summary.manualIssueCount} issue(s) still need review.`
-        : `Applied ${summary.propertyCount} safe property fixes across ${summary.targets.length} control(s).`,
+        ? `已应用 ${summary.propertyCount} 个安全属性修复；仍有 ${summary.manualIssueCount} 个问题需要检查。`
+        : `已为 ${summary.targets.length} 个控件应用 ${summary.propertyCount} 个安全属性修复。`,
     fileCount: summary.fileCount,
     itemCount: summary.targets.length,
     propertyCount: summary.propertyCount,
@@ -2842,7 +2886,7 @@ function projectTemplateSeedOptions() {
 function createBlankFile(name = "Main Window.ui", pagePatch: Partial<PageConfig> = {}): DesignerFile {
   return createTemplateBlankFile(name, pagePatch, defaultPage);
 }
-function createProject(name = "Untitled Project", templateId: ProjectTemplateId = "blank"): DesignerProject {
+function createProject(name = "未命名项目", templateId: ProjectTemplateId = "blank"): DesignerProject {
   const now = new Date().toISOString();
   const seed = createProjectTemplateSeed(templateId, projectTemplateSeedOptions());
   const activeFile = seed.files[0] ?? createBlankFile("Main Window.ui");
@@ -2875,7 +2919,7 @@ function createProject(name = "Untitled Project", templateId: ProjectTemplateId 
   };
 }
 
-function createWorkspace(project = createProject("Nova Project")): DesignerWorkspace {
+function createWorkspace(project = createProject("Nova 项目")): DesignerWorkspace {
   return {
     projects: [project],
     activeProjectId: project.id,
@@ -3154,7 +3198,7 @@ ${childCode}
 
   if (item.type === "image") {
     const src = escapeText(item.props.assetPath || "");
-    const alt = escapeText(item.props.alt || item.props.label || "Project asset");
+    const alt = escapeText(item.props.alt || item.props.label || "项目资源");
     return `<img ${style} src="${src}" alt="${alt}" className="rounded-2xl object-${item.props.objectFit ?? "cover"}" />`;
   }
 
@@ -3220,8 +3264,8 @@ ${childCode}
   if (item.type === "table") {
     return `<section ${style} className="overflow-hidden rounded-2xl border">
   <table className="h-full w-full text-left text-sm">
-    <thead><tr><th>Name</th><th>Status</th><th>Target</th></tr></thead>
-    <tbody><tr><td>${title}</td><td>Ready</td><td>Windows</td></tr></tbody>
+    <thead><tr><th>名称</th><th>状态</th><th>目标</th></tr></thead>
+    <tbody><tr><td>${title}</td><td>就绪</td><td>Windows</td></tr></tbody>
   </table>
 </section>`;
   }
@@ -3278,18 +3322,18 @@ function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, assets: Desi
         {src ? (
           <img
             src={src}
-            alt={props.alt || props.label || asset?.name || "Project asset"}
+            alt={props.alt || props.label || asset?.name || "项目资源"}
             className={cn("h-full w-full", props.objectFit === "contain" ? "object-contain" : props.objectFit === "fill" ? "object-fill" : "object-cover")}
             draggable={false}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center text-on-surface-variant">
             <FileImage aria-hidden className="size-8 text-primary" />
-            <span className="text-sm font-medium">No asset bound</span>
+            <span className="text-sm font-medium">未绑定资源</span>
           </div>
         )}
         <figcaption className="pointer-events-none absolute inset-x-2 bottom-2 rounded-xl border border-outline-variant bg-surface/85 px-2 py-1 text-[0.68rem] text-on-surface-variant shadow-m3-1">
-          <span className="block truncate">{asset?.name || props.label || "Image asset"}</span>
+          <span className="block truncate">{asset?.name || props.label || "图片资源"}</span>
         </figcaption>
       </figure>
     );
@@ -3355,7 +3399,7 @@ function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, assets: Desi
             <h3 className="truncate text-base font-medium">{props.title}</h3>
             <p className="mt-2 line-clamp-3 text-sm leading-5 text-on-surface-variant">{props.description}</p>
           </div>
-          <Badge variant="secondary">Live</Badge>
+          <Badge variant="secondary">实时</Badge>
         </div>
         <Progress value={68} className="mt-auto" />
       </section>
@@ -3382,17 +3426,17 @@ function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, assets: Desi
         <table className="w-full text-left text-xs">
           <thead className="bg-surface-container-high text-on-surface-variant">
             <tr>
-              <th className="px-4 py-2 font-medium">Name</th>
-              <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium">Target</th>
+              <th className="px-4 py-2 font-medium">名称</th>
+              <th className="px-4 py-2 font-medium">状态</th>
+              <th className="px-4 py-2 font-medium">目标</th>
             </tr>
           </thead>
           <tbody>
-            {["Desktop shell", "UI kit", "Builder"].map((name, index) => (
+            {["桌面外壳", "UI Kit", "编辑器"].map((name, index) => (
               <tr key={name} className="border-t border-outline-variant">
                 <td className="px-4 py-2">{name}</td>
                 <td className="px-4 py-2">
-                  <Badge variant={index === 2 ? "outline" : "secondary"}>{index === 2 ? "Draft" : "Ready"}</Badge>
+                  <Badge variant={index === 2 ? "outline" : "secondary"}>{index === 2 ? "草稿" : "就绪"}</Badge>
                 </td>
                 <td className="px-4 py-2 text-on-surface-variant">Win</td>
               </tr>
@@ -3598,7 +3642,7 @@ function buildReadiness(
   addItem(
     project.name.trim() ? "ready" : "error",
     "project-name",
-    "Project identity",
+    "项目标识",
     project.name.trim() ? `项目名称会写入 manifest 和生成 app 标题：${project.name}` : "项目名称不能为空。",
   );
 
@@ -3612,21 +3656,21 @@ function buildReadiness(
   addItem(
     release.appName.trim() && releaseIdentifierValid && releaseVersionValid && releaseWindowValid ? "ready" : "error",
     "release-config",
-    "Release config",
+    "发布配置",
     release.appName.trim() && releaseIdentifierValid && releaseVersionValid && releaseWindowValid
       ? `生成 app：${release.appName} / ${release.bundleIdentifier} / v${release.version} / ${release.windowWidth}x${release.windowHeight} / ${release.bundleTargets}。`
       : "发布配置需要合法 app 名称、bundle identifier、semver 版本号和窗口尺寸。",
   );
 
   if (release.iconAssetId && !releaseIconAsset) {
-    addItem("error", "release-icon", "Release icon", "发布图标引用的项目资源不存在，请重新选择资源。");
+    addItem("error", "release-icon", "发布图标", "发布图标引用的项目资源不存在，请重新选择资源。");
   } else if (releaseIconAsset && !["png", "ico", "icns"].includes(releaseIconExtension)) {
-    addItem("warning", "release-icon-format", "Release icon", "Tauri 图标建议使用 png、ico 或 icns，当前资源会保留默认图标作为 fallback。");
+    addItem("warning", "release-icon-format", "发布图标", "Tauri 图标建议使用 png、ico 或 icns，当前资源会保留默认图标作为 fallback。");
   } else {
     addItem(
       "ready",
       "release-icon",
-      "Release icon",
+      "发布图标",
       releaseIconAsset ? `发布图标会从项目资源复制：${releaseIconAsset.name}。` : "未指定发布图标时使用默认 Nova 图标。",
     );
   }
@@ -3637,7 +3681,7 @@ function buildReadiness(
   addItem(
     signingSeverity,
     "release-signing",
-    "Release signing",
+    "发布签名",
     releaseSigningDescription(release),
   );
 
@@ -3646,7 +3690,7 @@ function buildReadiness(
     addItem(
       certificateImportReady ? "ready" : "error",
       "release-certificate-import",
-      "Certificate import",
+      "证书导入",
       certificateImportReady
         ? `构建前会从 ${fileNameFromPath(release.certificateSourcePath)} 导入证书，密码只读取环境变量 ${release.certificatePasswordEnvVar}。`
         : "构建前导入证书需要 PFX/P12 路径和合法的密码环境变量名；不要把密码写入项目文件。",
@@ -3656,14 +3700,14 @@ function buildReadiness(
   addItem(
     "ready",
     "bundle-smoke-threshold",
-    "Bundle smoke threshold",
+    "安装包冒烟阈值",
     `安装包 manifest 会检查每个 artifact 是否存在且不小于 ${normalizeMinimumArtifactSizeKb(release.minimumArtifactSizeKb)} KB。`,
   );
 
   addItem(
     "ready",
     "installer-smoke-mode",
-    "Installer smoke mode",
+    "安装器冒烟模式",
     release.installerSmokeMode === "write-script"
       ? "打包后会写出 PowerShell 安装/卸载 smoke 脚本，供发布前在受控环境执行。"
       : "当前只做非侵入式 artifact smoke 检查，不会自动安装或卸载软件。",
@@ -3672,7 +3716,7 @@ function buildReadiness(
   addItem(
     release.installerSmokeRunnerMode === "vm-handoff" && release.installerSmokeMode !== "write-script" ? "warning" : "ready",
     "installer-smoke-runner",
-    "Installer smoke runner",
+    "安装器冒烟 runner",
     release.installerSmokeRunnerMode === "vm-handoff"
       ? release.installerSmokeMode === "write-script"
         ? `打包后会生成 ${release.installerSmokeVmName || "VM"} smoke handoff JSON，供隔离环境读取安装包和结果路径。`
@@ -3685,21 +3729,21 @@ function buildReadiness(
   addItem(
     project.files.length > 0 ? "ready" : "error",
     "ui-files",
-    "UI files",
+    "UI 文件",
     project.files.length > 0 ? `${project.files.length} 个 UI 文件会写入 ui/*.json。` : "项目至少需要一个 UI 文件。",
   );
 
   addItem(
     projectItems.length > 0 ? "ready" : "warning",
     "canvas-content",
-    "Canvas content",
+    "画布内容",
     projectItems.length > 0 ? `${projectItems.length} 个控件会进入生成 app。` : "当前画布为空，可以构建，但输出窗口没有可见控件。",
   );
 
   addItem(
     propertyErrors.length > 0 ? "error" : propertyWarnings.length > 0 ? "warning" : "ready",
     "control-property-schema",
-    "Control property schema",
+    "控件属性结构",
     projectPropertyIssues.length > 0
       ? `${propertyErrors.length} 个错误、${propertyWarnings.length} 个警告：${projectPropertyIssues[0].itemName} 的 ${projectPropertyIssues[0].label} 需要处理。`
       : `${projectItems.length} 个控件的属性 schema、枚举和范围检查通过。`,
@@ -3716,7 +3760,7 @@ function buildReadiness(
   addItem(
     project.rootPath?.trim() ? "ready" : "warning",
     "project-root",
-    "Project folder",
+    "项目目录",
     project.rootPath?.trim() ? `项目会保存到 ${project.rootPath}` : "未指定项目目录时，Tauri 会保存到默认 Nova projects 目录。",
   );
 
@@ -3742,7 +3786,7 @@ function buildReadiness(
       `这些 command 名称生成后重复：${Array.from(new Set(duplicateCommandNames)).join(", ")}。`,
     );
   } else {
-    addItem("ready", "unique-rust-command-names", "Command names", "Rust command 名称可安全注册。");
+    addItem("ready", "unique-rust-command-names", "命令名称", "Rust command 名称可安全注册。");
   }
 
   if (missingRustFunctions.length > 0) {
@@ -3759,7 +3803,7 @@ function buildReadiness(
   addItem(
     emptyRustModules.length > 0 ? "error" : enabledRustModules.length > 0 ? "ready" : "warning",
     "rust-modules",
-    "Rust modules",
+    "Rust 模块",
     emptyRustModules.length > 0
       ? `这些启用模块没有源码：${emptyRustModules.map((module) => module.name).join(", ")}。`
       : enabledRustModules.length > 0
@@ -3770,7 +3814,7 @@ function buildReadiness(
   addItem(
     invalidCargoDependencies.length > 0 ? "error" : "ready",
     "cargo-dependencies",
-    "Cargo dependencies",
+    "Cargo 依赖",
     invalidCargoDependencies.length > 0
       ? "启用的 Cargo dependency 需要有效 crate 名称和版本。"
       : enabledCargoDependencies.length > 0
@@ -3781,7 +3825,7 @@ function buildReadiness(
   addItem(
     incompleteBackendIntegrations.length > 0 ? "warning" : "ready",
     "backend-integrations",
-    "Backend integrations",
+    "后端集成",
     incompleteBackendIntegrations.length > 0
       ? `${incompleteBackendIntegrations.length} 个后端集成缺少入口路径或启动命令；Rust 主后端仍可继续构建。`
       : enabledBackendIntegrations.length > 0
@@ -3926,7 +3970,7 @@ function buildReadiness(
     addItem(
       "error",
       "broken-state-links",
-      "State bindings",
+      "状态绑定",
       `${brokenStateBindings.length + brokenResultStates.length} 个 state 引用已经断开。`,
       (brokenStateBindings[0] ?? brokenResultStates[0])?.file.name,
       {
@@ -3936,7 +3980,7 @@ function buildReadiness(
       },
     );
   } else {
-    addItem("ready", "state-bindings", "State bindings", `${project.stateVariables.length} 个共享 state 可用于控件绑定。`);
+    addItem("ready", "state-bindings", "状态绑定", `${project.stateVariables.length} 个共享 state 可用于控件绑定。`);
   }
 
   const missingEventCommands = projectItems.filter(({ item }) => {
@@ -3963,9 +4007,9 @@ function buildReadiness(
       },
     );
   } else if (eventBindings.length === 0) {
-    addItem("warning", "no-event-bindings", "Event bindings", "还没有 UI 事件连接 Rust command；生成 app 会偏静态。");
+    addItem("warning", "no-event-bindings", "事件绑定", "还没有 UI 事件连接 Rust command；生成 app 会偏静态。");
   } else {
-    addItem("ready", "event-bindings", "Event bindings", `${eventBindings.length} 个 UI 事件会调用 Rust command。`);
+    addItem("ready", "event-bindings", "事件绑定", `${eventBindings.length} 个 UI 事件会调用 Rust command。`);
   }
 
   if (unboundButtons.length > 0) {
@@ -4005,7 +4049,7 @@ function buildReadiness(
       },
     );
   } else {
-    addItem("ready", "result-targets", "Result targets", "Rust 返回值写回目标检查通过。");
+    addItem("ready", "result-targets", "结果目标", "Rust 返回值写回目标检查通过。");
   }
 
   const textPatchBindings = eventBindings.filter(({ item }) => {
@@ -4032,9 +4076,9 @@ function buildReadiness(
 
   const unnamedStateNames = project.stateVariables.filter((state) => !state.name.trim());
   if (unnamedStateNames.length > 0) {
-    addItem("error", "empty-state-names", "State names", "State 名称不能为空，否则 JSON patch 无法稳定映射。");
+    addItem("error", "empty-state-names", "状态名称", "State 名称不能为空，否则 JSON patch 无法稳定映射。");
   } else if (stateNames.size !== project.stateVariables.length) {
-    addItem("error", "duplicate-state-names", "State names", "State 名称需要唯一。");
+    addItem("error", "duplicate-state-names", "状态名称", "State 名称需要唯一。");
   }
 
   return summarizeReadiness(items);
@@ -4147,7 +4191,7 @@ function auditAutoLayoutFrame(file: DesignerFile, frame: BuilderItem, items: Bui
     pushIssue({
       id: `${file.id}-${frame.id}-autolayout-overflow`,
       severity: "warning",
-      title: "Auto-layout capacity",
+      title: "自动布局容量",
       detail: `${mode} Frame 的子控件需要约 ${Math.round(requiredWidth)} x ${Math.round(requiredHeight)}，可用空间为 ${Math.round(availableWidth)} x ${Math.round(availableHeight)}。`,
       fileId: file.id,
       fileName: file.name,
@@ -4176,12 +4220,12 @@ function auditSiblingOverlaps(file: DesignerFile, parentId: string | undefined, 
         pushIssue({
           id: `${file.id}-${first.id}-${second.id}-overlap`,
           severity: "warning",
-          title: "Overlapping controls",
+          title: "控件重叠",
           detail: `${itemVisualName(first)} 与 ${itemVisualName(second)} 在同一层级明显重叠。`,
           fileId: file.id,
           fileName: file.name,
           itemId: first.id,
-          itemName: parent ? itemVisualName(parent) : "Window",
+          itemName: parent ? itemVisualName(parent) : "窗口",
         });
       }
     }
@@ -4203,7 +4247,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
       pushIssue({
         id: `${file.id}-window-size`,
         severity: "error",
-        title: "Window size",
+        title: "窗口尺寸",
         detail: `目标窗口只有 ${page.width} x ${page.height}，容易生成不可用窗口。`,
         fileId: file.id,
         fileName: file.name,
@@ -4214,7 +4258,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
       pushIssue({
         id: `${file.id}-empty-window`,
         severity: "warning",
-        title: "Empty window",
+        title: "空窗口",
         detail: "这个 UI 文件没有控件，生成窗口会是空画布。",
         fileId: file.id,
         fileName: file.name,
@@ -4234,7 +4278,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
         pushIssue({
           id: `${file.id}-${item.id}-offscreen`,
           severity: "error",
-          title: "Off-canvas control",
+          title: "画布外控件",
           detail: "控件完全位于目标窗口外，生成 app 中不可见。",
           fileId: file.id,
           fileName: file.name,
@@ -4245,7 +4289,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
         pushIssue({
           id: `${file.id}-${item.id}-clipped`,
           severity: "warning",
-          title: "Clipped control",
+          title: "控件被裁切",
           detail: `控件只有约 ${Math.round(visibleRatio * 100)}% 位于目标窗口内。`,
           fileId: file.id,
           fileName: file.name,
@@ -4258,7 +4302,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
         pushIssue({
           id: `${file.id}-${item.id}-small-size`,
           severity: "warning",
-          title: "Small control",
+          title: "控件尺寸过小",
           detail: `${item.type} 当前为 ${Math.round(item.width)} x ${Math.round(item.height)}，建议至少 ${minimum.width} x ${minimum.height}。`,
           fileId: file.id,
           fileName: file.name,
@@ -4271,7 +4315,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
         pushIssue({
           id: `${file.id}-${item.id}-text-fit`,
           severity: "warning",
-          title: "Text fit",
+          title: "文本适配",
           detail: `文本 "${text.slice(0, 48)}${text.length > 48 ? "..." : ""}" 可能在目标窗口中被截断。`,
           fileId: file.id,
           fileName: file.name,
@@ -4284,8 +4328,8 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
         pushIssue({
           id: `${file.id}-${item.id}-image-placeholder`,
           severity: "warning",
-          title: "Image placeholder",
-          detail: "Image 控件没有绑定项目资源，目标窗口会显示占位状态。",
+          title: "图片占位",
+          detail: "图片控件没有绑定项目资源，目标窗口会显示占位状态。",
           fileId: file.id,
           fileName: file.name,
           itemId: item.id,
@@ -4301,7 +4345,7 @@ function auditProjectWindows(project: DesignerProject): WindowVisualAuditSummary
             pushIssue({
               id: `${file.id}-${item.id}-frame-clip`,
               severity: "warning",
-              title: "Frame clipping",
+              title: "容器裁切",
               detail: `${itemVisualName(item)} 超出父 Frame 可见范围。`,
               fileId: file.id,
               fileName: file.name,
@@ -4373,10 +4417,10 @@ function byteSizeLabel(value: number) {
 
 function projectChangeImpactStatusLabel(status: ProjectChangeImpactStatus) {
   const labels: Record<ProjectChangeImpactStatus, string> = {
-    "needs-preview": "needs preview",
-    stale: "stale",
-    dirty: "dirty",
-    clean: "clean",
+    "needs-preview": "需要预览",
+    stale: "已过期",
+    dirty: "有变更",
+    clean: "已同步",
   };
   return labels[status];
 }
@@ -4430,30 +4474,30 @@ function reverseDependencyStatusVariant(status: ProjectReverseDependencySummary[
 
 function reverseDependencyStatusLabel(status: ProjectReverseDependencySummary["status"]) {
   if (status === "tracked") {
-    return "current preview";
+    return "当前预览";
   }
   if (status === "persisted") {
-    return "persisted graph";
+    return "已保存图谱";
   }
   if (status === "projected") {
-    return "projected";
+    return "推断";
   }
-  return "empty";
+  return "空";
 }
 
 function reverseDependencyTargetKindLabel(kind: ProjectReverseDependencyTarget["kind"]) {
   const labels: Record<ProjectReverseDependencyTarget["kind"], string> = {
-    project: "Project",
-    "ui-file": "UI file",
-    control: "Control",
-    "generated-runtime": "Runtime",
-    "rust-command": "Rust command",
-    "rust-module": "Rust module",
-    "cargo-dependency": "Cargo dependency",
-    asset: "Asset",
-    "backend-integration": "Backend integration",
-    "release-config": "Release config",
-    validation: "Validation",
+    project: "项目",
+    "ui-file": "UI 文件",
+    control: "控件",
+    "generated-runtime": "运行时",
+    "rust-command": "Rust 命令",
+    "rust-module": "Rust 模块",
+    "cargo-dependency": "Cargo 依赖",
+    asset: "资源",
+    "backend-integration": "后端集成",
+    "release-config": "发布配置",
+    validation: "验证",
   };
   return labels[kind];
 }
@@ -4694,27 +4738,27 @@ const dependencyValidityDefinitions: Record<
   { label: string; scopeIds: string[] }
 > = {
   "frontend-check": {
-    label: "Frontend check",
+    label: "前端检查",
     scopeIds: ["ui", "frontend", "assets", "validation"],
   },
   "rust-check": {
-    label: "Rust check",
+    label: "Rust 检查",
     scopeIds: ["rust", "backend", "release"],
   },
   "all-check": {
-    label: "All quick checks",
+    label: "全部快速检查",
     scopeIds: ["ui", "frontend", "assets", "validation", "rust", "backend", "release"],
   },
   validation: {
-    label: "Window validation",
+    label: "窗口验证",
     scopeIds: ["ui", "frontend", "assets", "validation"],
   },
   build: {
-    label: "Release exe build",
+    label: "Release exe 构建",
     scopeIds: ["project", "ui", "frontend", "assets", "rust", "backend", "release", "validation"],
   },
   bundle: {
-    label: "Installer bundle",
+    label: "安装器打包",
     scopeIds: ["project", "ui", "frontend", "assets", "rust", "backend", "release", "validation"],
   },
 };
@@ -5046,7 +5090,7 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
       id: `build-${entry.id}`,
       time: entry.createdAt,
       kind: entry.buildKind === "bundle" ? "bundle" : "build",
-      title: entry.buildKind === "bundle" ? "Bundle build" : "Executable build",
+      title: entry.buildKind === "bundle" ? "安装包构建" : "可执行文件构建",
       status: entry.buildKind === "bundle" ? entry.bundleSmokeStatus ?? "built" : "built",
       summary: `${entry.releaseAppName} v${entry.releaseVersion} · ${entry.summary}`,
       path: primaryPath,
@@ -5058,7 +5102,7 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
         id: `run-${entry.id}-${entry.launchedAt ?? entry.createdAt}`,
         time: entry.runCheckedAt || entry.launchedAt || entry.createdAt,
         kind: "run",
-        title: "Run session",
+        title: "运行会话",
         status: entry.runStatus ?? "launched",
         summary: entry.runSummary || entry.launchSummary || `pid ${entry.launchedPid}`,
         path: entry.outputExePath,
@@ -5070,9 +5114,9 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
         id: `runtime-log-${entry.id}`,
         time: entry.runtimeLogUpdatedAt || entry.runCheckedAt || entry.launchedAt || entry.createdAt,
         kind: "runtime-log",
-        title: "Runtime Console",
+        title: "运行时控制台",
         status: entry.runtimeLogTruncated ? "truncated" : "ready",
-        summary: entry.runtimeLogSizeBytes ? `${entry.runtimeLogSizeBytes} bytes captured` : "Runtime log captured",
+        summary: entry.runtimeLogSizeBytes ? `已捕获 ${entry.runtimeLogSizeBytes} 字节` : "已捕获运行时日志",
         path: entry.runtimeLogPath,
       });
     }
@@ -5082,7 +5126,7 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
         id: `smoke-${entry.id}-${entry.installerSmokeFinishedAt ?? entry.createdAt}`,
         time: entry.installerSmokeFinishedAt || entry.createdAt,
         kind: "smoke",
-        title: "Installer smoke",
+        title: "安装器冒烟",
         status: entry.installerSmokeStatus,
         summary: entry.installerSmokeSummary || `${entry.installerSmokeRunnerMode ?? "installer"} smoke ${entry.installerSmokeStatus}`,
         path: entry.installerSmokeResultPath,
@@ -5096,7 +5140,7 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
       id: `validation-${entry.id}`,
       time: entry.createdAt,
       kind: "validation",
-      title: "Window validation",
+      title: "窗口验证",
       status: entry.status,
       summary: `${entry.score}% · ${entry.summary}`,
       path: entry.reportPath,
@@ -5111,7 +5155,7 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
       kind: "maintenance",
       title: entry.title,
       status: entry.status,
-      summary: `${entry.propertyCount} properties · ${entry.itemCount} controls · ${entry.manualIssueCount} manual`,
+      summary: `${entry.propertyCount} 个属性 · ${entry.itemCount} 个控件 · ${entry.manualIssueCount} 个需手动处理`,
     });
   }
 
@@ -5120,9 +5164,9 @@ function projectActivityTimeline(project: DesignerProject, checkpoints: EditorPr
       id: `checkpoint-${checkpoint.id}`,
       time: checkpoint.created_at,
       kind: "checkpoint",
-      title: "Disk checkpoint",
+      title: "磁盘检查点",
       status: "saved",
-      summary: `${checkpoint.label} · ${checkpoint.file_count} UI · ${checkpoint.command_count} commands`,
+      summary: `${checkpoint.label} · ${checkpoint.file_count} 个 UI · ${checkpoint.command_count} 个命令`,
       path: checkpoint.path,
     });
   }
@@ -5154,33 +5198,33 @@ function releaseReadinessDashboard(
   addItem(
     readiness.errorCount > 0 ? "error" : readiness.warningCount > 0 ? "warning" : "ready",
     "preflight",
-    "Build preflight",
+    "构建预检",
     readiness.errorCount > 0
-      ? `${readiness.errorCount} blocking issue(s) must be fixed before compiling.`
+      ? `编译前必须修复 ${readiness.errorCount} 个阻塞问题。`
       : readiness.warningCount > 0
-        ? `${readiness.warningCount} warning(s) remain before release.`
-        : "Project structure, Rust commands, assets, and release config are ready.",
+        ? `发布前仍有 ${readiness.warningCount} 个警告。`
+        : "项目结构、Rust 命令、资源和发布配置已就绪。",
     readiness.score,
   );
 
   addItem(
     visualAudit.errorCount > 0 ? "error" : visualAudit.warningCount > 0 ? "warning" : "ready",
     "visual",
-    "Window visual audit",
+    "窗口视觉审查",
     visualAudit.errorCount > 0
-      ? `${visualAudit.errorCount} visual blocking issue(s) found.`
+      ? `发现 ${visualAudit.errorCount} 个视觉阻塞问题。`
       : visualAudit.warningCount > 0
-        ? `${visualAudit.warningCount} visual warning(s) should be reviewed.`
-        : "No obvious clipping, overlap, or sizing problems in the target window.",
+        ? `建议检查 ${visualAudit.warningCount} 个视觉警告。`
+        : "目标窗口没有明显裁切、重叠或尺寸问题。",
     visualAudit.score,
   );
 
   addItem(
     !latestValidation ? "warning" : latestValidation.status === "failed" ? "error" : latestValidation.status === "warning" ? "warning" : "ready",
     "validation",
-    "Generated window validation",
+    "生成窗口验证",
     !latestValidation
-      ? "Run generated-window validation before packaging a release."
+      ? "打包发布前请运行生成窗口验证。"
       : `${latestValidation.status} · ${latestValidation.summary}`,
     latestValidation ? latestValidation.score : 45,
   );
@@ -5188,9 +5232,9 @@ function releaseReadinessDashboard(
   addItem(
     !latestBuild ? "warning" : latestBuild.readinessErrors > 0 ? "error" : latestBuild.readinessWarnings > 0 ? "warning" : "ready",
     "artifact",
-    "Build artifact",
+    "构建产物",
     !latestBuild
-      ? "No successful exe or bundle build recorded yet."
+      ? "还没有记录成功的 exe 或安装包构建。"
       : `${latestBuild.label} · ${latestBuild.releaseAppName} v${latestBuild.releaseVersion}`,
     latestBuild ? Math.min(latestBuild.readinessScore, latestBuild.visualScore) : 35,
   );
@@ -5198,7 +5242,7 @@ function releaseReadinessDashboard(
   addItem(
     project.releaseConfig.signingMode === "unsigned" ? "warning" : signingReady ? "ready" : "error",
     "signing",
-    "Release signing",
+    "发布签名",
     releaseSigningDescription(project.releaseConfig),
     project.releaseConfig.signingMode === "unsigned" ? 65 : signingReady ? 100 : 10,
   );
@@ -5212,38 +5256,38 @@ function releaseReadinessDashboard(
           ? "warning"
           : "ready",
     "smoke",
-    "Bundle and smoke evidence",
+    "安装包和冒烟证据",
     !latestBundle
-      ? "Run a full bundle build to collect installer artifacts and smoke evidence."
-      : `${latestBundle.bundleArtifactCount ?? latestBundle.bundlePaths?.length ?? 0} artifact(s) · smoke ${smokeStatus ?? "unknown"}`,
+      ? "运行完整安装包构建以收集安装器产物和冒烟证据。"
+      : `${latestBundle.bundleArtifactCount ?? latestBundle.bundlePaths?.length ?? 0} 个产物 · 冒烟 ${smokeStatus ?? "unknown"}`,
     !latestBundle ? 40 : smokeStatus === "failed" ? 0 : smokeStatus === "pending" || smokeStatus === "not-requested" ? 70 : 100,
   );
 
   addItem(
     !latestRun ? "warning" : latestRun.runStatus === "stale" || latestRun.runStatus === "unknown" ? "warning" : "ready",
     "runtime",
-    "Runtime run session",
+    "运行时会话",
     !latestRun
-      ? "Launch the generated exe once from Nova to verify the runtime loop."
+      ? "从 Nova 启动一次生成 exe，以验证运行时闭环。"
       : latestRun.runtimeLogPath
-        ? `${latestRun.runStatus ?? "launched"} · runtime log captured`
-        : `${latestRun.runStatus ?? "launched"} · no runtime log preview yet`,
+        ? `${latestRun.runStatus ?? "launched"} · 已捕获运行时日志`
+        : `${latestRun.runStatus ?? "launched"} · 暂无运行时日志预览`,
     !latestRun ? 45 : latestRun.runtimeLogPath ? 100 : 80,
   );
 
   addItem(
     checkpointCount > 0 ? "ready" : "warning",
     "checkpoint",
-    "Recovery checkpoint",
-    checkpointCount > 0 ? `${checkpointCount} disk checkpoint(s) available for rollback.` : "Create a disk checkpoint before major release changes.",
+    "恢复检查点",
+    checkpointCount > 0 ? `${checkpointCount} 个磁盘检查点可用于回滚。` : "重大发布变更前请创建磁盘检查点。",
     checkpointCount > 0 ? 100 : 65,
   );
 
   addItem(
     activityCount > 0 ? "ready" : "warning",
     "traceability",
-    "Project traceability",
-    activityCount > 0 ? `${activityCount} recent activity event(s) recorded.` : "Run validation, build, or checkpoint actions to create an audit trail.",
+    "项目可追踪性",
+    activityCount > 0 ? `已记录 ${activityCount} 条最近活动。` : "运行验证、构建或检查点操作以创建审计轨迹。",
     activityCount > 0 ? 100 : 55,
   );
 
@@ -6024,8 +6068,8 @@ export function BuilderShowcase() {
   const [projectTaskQueueVersion, setProjectTaskQueueVersion] = useState(0);
   const [customProjectActionPresets, setCustomProjectActionPresets] = useState<ProjectActionPresetDefinition[]>(() => loadProjectActionPresets());
   const [destructiveAction, setDestructiveAction] = useState<DestructiveActionRequest | null>(null);
-  const [customPresetTitle, setCustomPresetTitle] = useState("Custom release flow");
-  const [customPresetDetail, setCustomPresetDetail] = useState("Reusable project build flow.");
+  const [customPresetTitle, setCustomPresetTitle] = useState("自定义发布流程");
+  const [customPresetDetail, setCustomPresetDetail] = useState("可复用的项目构建流程。");
   const [customPresetDraftActionId, setCustomPresetDraftActionId] = useState<ProjectJumpActionId>("save-project");
   const [customPresetDraftActions, setCustomPresetDraftActions] = useState<ProjectJumpActionId[]>(["save-project", "quick-check-all"]);
   const [replaceTemplateOpen, setReplaceTemplateOpen] = useState(false);
@@ -6178,34 +6222,34 @@ export function BuilderShowcase() {
           ? "attention"
           : "ready";
   const taskQueueStateTitle = runningProjectTask
-    ? `Running ${runningProjectTask.title}`
+    ? `正在运行 ${runningProjectTask.title}`
     : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
-      ? "Queue paused"
+      ? "队列已暂停"
       : localQueuedProjectTasks.length > 0
-        ? `${localQueuedProjectTasks.length} waiting`
+        ? `${localQueuedProjectTasks.length} 个等待中`
         : latestFailedProjectTask
-          ? `Needs attention: ${latestFailedProjectTask.title}`
-          : "Queue ready";
+          ? `需要处理：${latestFailedProjectTask.title}`
+          : "队列就绪";
   const taskQueueStateDetail =
     projectTaskQueueMessage ||
     runningProjectTask?.summary ||
     runningProjectTask?.detail ||
     (projectTaskQueuePaused && nextQueuedProjectTask
-      ? `${nextQueuedProjectTask.title} is waiting until you resume the queue.`
+      ? `${nextQueuedProjectTask.title} 正在等待你恢复队列。`
       : nextQueuedProjectTask
-        ? `Next: ${nextQueuedProjectTask.title}.`
+        ? `下一个：${nextQueuedProjectTask.title}。`
         : latestFailedProjectTask
-          ? latestFailedProjectTask.error ?? latestFailedProjectTask.summary ?? "Open the failed task, inspect the log, then retry or adjust the project."
-          : "Run a check, validation, build, or preset to create tracked editor work.");
+          ? latestFailedProjectTask.error ?? latestFailedProjectTask.summary ?? "打开失败任务，检查日志，然后重试或调整项目。"
+          : "运行检查、验证、构建或预设后会创建可追踪的编辑器任务。");
   const taskQueueNextActionLabel = runningProjectTask
-    ? "Inspect live task"
+    ? "查看当前任务"
     : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
-      ? "Resume queue"
+      ? "恢复队列"
       : localQueuedProjectTasks.length > 0
-        ? "Continue queue"
+        ? "继续队列"
         : latestFailedProjectTask
-          ? "Review failure"
-          : "Start from checks";
+          ? "查看失败"
+          : "从检查开始";
   const allProjectActionPresets = useMemo(
     () => [...projectActionPresets, ...customProjectActionPresets],
     [customProjectActionPresets],
@@ -6383,34 +6427,34 @@ export function BuilderShowcase() {
     ? selectedLatestSimulatorTrace
       ? {
           tone: selectedLatestSimulatorTrace.status,
-          title: selectedLatestSimulatorTrace.status === "success" ? "Last event succeeded" : "Last event failed",
+          title: selectedLatestSimulatorTrace.status === "success" ? "最近事件成功" : "最近事件失败",
           detail: `${selectedLatestSimulatorTrace.commandName}: ${selectedLatestSimulatorTrace.message}`,
           badge: selectedLatestSimulatorTrace.status,
         }
       : mode === "preview"
         ? {
             tone: selectedEventName && !selectedEventCommand ? "unbound" : "ready",
-            title: `Previewing ${getItemSummary(selectedItem)}`,
+            title: `正在预览 ${getItemSummary(selectedItem)}`,
             detail: selectedEventName
               ? selectedEventCommand
-                ? `${selectedEventName} is bound to ${sanitizeRustCommandName(selectedEventCommand.name)}. Run the event or interact with the preview canvas.`
-                : `${selectedEventName} needs a command before it can run in preview.`
-              : "Preview mode is active for this control. Switch back to Design to edit layout.",
-            badge: selectedEventName ? (selectedEventCommand ? "preview ready" : "needs binding") : "preview",
+                ? `${selectedEventName} 已绑定到 ${sanitizeRustCommandName(selectedEventCommand.name)}。可以运行事件或在预览画布中交互。`
+                : `${selectedEventName} 需要命令后才能在预览中运行。`
+              : "该控件处于预览模式。返回设计模式可编辑布局。",
+            badge: selectedEventName ? (selectedEventCommand ? "预览就绪" : "待绑定") : "预览",
           }
         : selectedEventName
           ? selectedEventCommand
             ? {
                 tone: "ready",
-                title: `Ready to run ${selectedEventName}`,
-                detail: `${sanitizeRustCommandName(selectedEventCommand.name)} · ${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result`,
-                badge: "ready",
+                title: `${selectedEventName} 可运行`,
+                detail: `${sanitizeRustCommandName(selectedEventCommand.name)} · ${selectedEventCommandArgs.length} 个参数 · ${commandResultSchema(selectedEventCommand).mode} 结果`,
+                badge: "就绪",
               }
             : {
                 tone: "unbound",
-                title: `${selectedEventName} has no command`,
-                detail: "Create a binding before this control can run a live event.",
-                badge: "needs binding",
+                title: `${selectedEventName} 没有命令`,
+                detail: "创建绑定后，该控件才能运行实时事件。",
+                badge: "待绑定",
               }
           : null
     : null;
@@ -6423,38 +6467,38 @@ export function BuilderShowcase() {
     : null;
   const selectedConnectionInputSummary = selectedEventCommand
     ? selectedEventCommandArgs.length > 0
-      ? `${selectedEventCommandArgs.length} named argument(s)`
+      ? `${selectedEventCommandArgs.length} 个命名参数`
       : selectedEventBinding?.passValue
         ? selectedEventBinding.payloadMode === "json"
           ? `${selectedConnectionPayloadFields.length} JSON field(s)`
-          : "current value"
-        : "no payload"
-    : "no command";
+          : "当前值"
+        : "无载荷"
+    : "无命令";
   const selectedConnectionOutputSummary = selectedEventCommand
     ? [
         selectedEventBinding?.resultTargetItemId
           ? selectedConnectionResultTarget && selectedEventBinding.resultTargetProp
             ? `${getItemSummary(selectedConnectionResultTarget)}.${selectedEventBinding.resultTargetProp}`
-            : "target missing"
+            : "目标缺失"
           : "",
-        selectedConnectionResultState ? `state ${selectedConnectionResultState.name}` : "",
+        selectedConnectionResultState ? `状态 ${selectedConnectionResultState.name}` : "",
         selectedEventBinding?.applyJsonStatePatch ? "JSON patch" : "",
-      ].filter(Boolean).join(" · ") || "no write-back"
-    : "not configured";
+      ].filter(Boolean).join(" · ") || "无回写"
+    : "未配置";
   const selectedConnectionVerificationLabel = selectedEventCommand
     ? selectedLatestSimulatorTrace
       ? selectedLatestSimulatorTrace.status === "success"
-        ? "Verified"
-        : "Needs attention"
-      : "Ready to simulate"
-    : "Needs command";
+        ? "已验证"
+        : "需要处理"
+      : "可模拟"
+    : "需要命令";
   const selectedConnectionVerificationDetail = selectedEventCommand
     ? selectedLatestSimulatorTrace
       ? `${selectedLatestSimulatorTrace.commandName} ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
-      : `${selectedEventName ?? "event"} is bound to ${sanitizeRustCommandName(selectedEventCommand.name)}.`
+      : `${selectedEventName ?? "事件"} 已绑定到 ${sanitizeRustCommandName(selectedEventCommand.name)}。`
     : selectedEventName
-      ? `${selectedEventName} has no Rust command.`
-      : "Select an interactive control.";
+      ? `${selectedEventName} 没有 Rust 命令。`
+      : "请选择一个可交互控件。";
   const selectedConnectionVerificationVariant = selectedEventCommand
     ? selectedLatestSimulatorTrace?.status === "error"
       ? "destructive"
@@ -6500,23 +6544,23 @@ export function BuilderShowcase() {
         id: "build-error",
         kind: "build-error",
         severity: "error",
-        sourceLabel: "Build",
-        title: "Build error",
+        sourceLabel: "构建",
+        title: "构建错误",
         detail: buildError,
-        meta: "Editor message",
+        meta: "编辑器消息",
       });
     }
     buildDiagnostics.forEach((diagnostic, index) => {
       const key = buildDiagnosticKey(diagnostic, index);
       const location = diagnostic.file
         ? `${diagnostic.file}${diagnostic.line ? `:${diagnostic.line}` : ""}`
-        : diagnostic.origin || "Cargo output";
+        : diagnostic.origin || "Cargo 输出";
       issues.push({
         id: `diagnostic:${key}`,
         kind: "diagnostic",
         severity: diagnostic.severity === "error" ? "error" : "warning",
-        sourceLabel: diagnostic.origin || "Build",
-        title: diagnostic.code || "Compiler diagnostic",
+        sourceLabel: diagnostic.origin || "构建",
+        title: diagnostic.code || "编译器诊断",
         detail: diagnostic.message,
         meta: location,
         diagnostic,
@@ -6529,7 +6573,7 @@ export function BuilderShowcase() {
         id: `property:${issue.id}`,
         kind: "property",
         severity: issue.severity,
-        sourceLabel: "Design",
+        sourceLabel: "设计",
         title: `${issue.itemName} / ${issue.label}`,
         detail: issue.message,
         meta: `${issue.fileName} · ${issue.itemType}`,
@@ -6634,40 +6678,40 @@ export function BuilderShowcase() {
   const generatedPlanPrimaryAction = projectChangeImpact.executionPlan.actions[0] ?? "preview-generated-files";
   const generatedPlanPrimaryLabel =
     generatedPlanPrimaryAction === "preview-generated-files"
-      ? "Preview first"
+      ? "先预览"
       : generatedPlanPrimaryAction === "save-project"
-        ? "Save first"
-        : generatedPlanPrimaryAction === "apply-generated-changes"
-          ? "Apply changes"
+        ? "先保存"
+      : generatedPlanPrimaryAction === "apply-generated-changes"
+          ? "应用变更"
           : generatedPlanPrimaryAction === "quick-check-all"
-            ? "Run checks"
+            ? "运行检查"
             : generatedPlanPrimaryAction === "validate-window"
-              ? "Validate window"
+              ? "验证窗口"
               : generatedPlanPrimaryAction === "build-exe"
-                ? "Build exe"
+                ? "构建 exe"
                 : projectTaskDefinitions[generatedPlanPrimaryAction].title;
   const generatedPlanStatusTitle =
     previewingGeneratedFiles
-      ? "Previewing generated targets"
+      ? "正在预览生成目标"
       : applyingGeneratedFiles
-        ? "Applying generated targets"
+        ? "正在应用生成目标"
         : projectChangeImpact.status === "needs-preview"
-          ? "Preview required"
+          ? "需要预览"
           : projectChangeImpact.status === "stale"
-            ? "Preview is stale"
+            ? "预览已过期"
             : projectChangeImpact.status === "dirty"
-              ? `${projectChangeImpact.changedCount} target(s) ready to apply`
-              : "Generated targets are synced";
+              ? `${projectChangeImpact.changedCount} 个目标可应用`
+              : "生成目标已同步";
   const generatedPlanStatusDetail =
     previewingGeneratedFiles
-      ? "Nova is scanning manifest, UI, Rust, Cargo, assets, and Tauri targets."
+      ? "Nova 正在扫描 manifest、UI、Rust、Cargo、资源和 Tauri 目标。"
       : applyingGeneratedFiles
-        ? `${selectedGeneratedPreviewPaths.length || projectChangeImpact.changedCount} selected target(s) are being written to disk.`
+        ? `正在向磁盘写入 ${selectedGeneratedPreviewPaths.length || projectChangeImpact.changedCount} 个选中目标。`
         : projectChangeImpact.status === "needs-preview" || projectChangeImpact.status === "stale"
           ? projectChangeImpact.executionPlan.detail
           : projectChangeImpact.status === "dirty"
             ? `${projectChangeImpact.dirtyScopeCount} dirty scope(s). Apply generated changes before checks or release builds.`
-            : "Run checks, validate the window, then build the executable from the current generated output.";
+            : "运行检查、验证窗口，然后从当前生成输出构建可执行文件。";
   const projectDependencyValidity = useMemo(
     () => projectDependencyValidityViews(projectDependencyGraph, projectChangeImpact, activeProjectSnapshotHash),
     [activeProjectSnapshotHash, projectChangeImpact, projectDependencyGraph],
@@ -6709,7 +6753,7 @@ export function BuilderShowcase() {
         id: `rust-command-${activeRustCommand.id}`,
         kind: "rust-command",
         label: activeRustCommand.name,
-        detail: activeRustCommand.backendIntegrationId ? "Command bound to backend integration" : "Project Tauri command",
+        detail: activeRustCommand.backendIntegrationId ? "命令已绑定到后端集成" : "项目 Tauri 命令",
         commandId: activeRustCommand.id,
         path: "rust/logic.rs",
       },
@@ -7337,19 +7381,19 @@ export function BuilderShowcase() {
   const runUndoCanvas = () => {
     const restored = undoCanvas();
     if (!restored) {
-      showProjectJumpFeedback("warning", "Nothing to undo", `No earlier canvas snapshot is available for ${activeFile.name}.`);
+      showProjectJumpFeedback("warning", "没有可撤销内容", `${activeFile.name} 没有更早的画布快照。`);
       return;
     }
-    showProjectJumpFeedback("success", "Canvas undo applied", `${activeFile.name} restored with ${formatControlCount(restored.items.length)}.`);
+    showProjectJumpFeedback("success", "已撤销画布操作", `${activeFile.name} 已恢复，包含 ${formatControlCount(restored.items.length)}。`);
   };
 
   const runRedoCanvas = () => {
     const restored = redoCanvas();
     if (!restored) {
-      showProjectJumpFeedback("warning", "Nothing to redo", `No later canvas snapshot is available for ${activeFile.name}.`);
+      showProjectJumpFeedback("warning", "没有可重做内容", `${activeFile.name} 没有更晚的画布快照。`);
       return;
     }
-    showProjectJumpFeedback("success", "Canvas redo applied", `${activeFile.name} restored with ${formatControlCount(restored.items.length)}.`);
+    showProjectJumpFeedback("success", "已重做画布操作", `${activeFile.name} 已恢复，包含 ${formatControlCount(restored.items.length)}。`);
   };
 
   const updateActiveFile = (updater: (file: DesignerFile) => DesignerFile, options: { history?: boolean } = {}) => {
@@ -7462,17 +7506,17 @@ export function BuilderShowcase() {
     if (Math.abs(appliedZoom - page.zoom) < 0.001) {
       showProjectJumpFeedback(
         "warning",
-        delta > 0 ? "Maximum zoom reached" : "Minimum zoom reached",
-        `Canvas is already at ${formatCanvasZoom(appliedZoom)}.`,
+        delta > 0 ? "已达到最大缩放" : "已达到最小缩放",
+        `画布已经是 ${formatCanvasZoom(appliedZoom)}。`,
       );
       return;
     }
-    showProjectJumpFeedback("success", "Canvas zoom updated", `${formatCanvasZoom(page.zoom)} -> ${formatCanvasZoom(appliedZoom)}.`);
+    showProjectJumpFeedback("success", "画布缩放已更新", `${formatCanvasZoom(page.zoom)} -> ${formatCanvasZoom(appliedZoom)}。`);
   };
 
   const chooseCanvasZoom = (zoom: number) => {
     const appliedZoom = setCanvasZoom(zoom);
-    showProjectJumpFeedback("success", "Canvas zoom selected", `Canvas viewport is now ${formatCanvasZoom(appliedZoom)}.`);
+    showProjectJumpFeedback("success", "画布缩放已选择", `当前画布视口为 ${formatCanvasZoom(appliedZoom)}。`);
   };
 
   const resetCanvasView = () => {
@@ -7488,13 +7532,13 @@ export function BuilderShowcase() {
         behavior: "smooth",
       });
     });
-    showProjectJumpFeedback("success", "Canvas view reset", `Zoom restored to ${formatCanvasZoom(nextZoom)} and the canvas was centered.`);
+    showProjectJumpFeedback("success", "画布视图已重置", `缩放已恢复到 ${formatCanvasZoom(nextZoom)}，画布已居中。`);
   };
 
   const fitCanvasToViewport = () => {
     const viewport = canvasViewportRef.current;
     if (!viewport) {
-      showProjectJumpFeedback("warning", "Cannot fit canvas", "The canvas viewport is not ready yet.");
+      showProjectJumpFeedback("warning", "无法适配画布", "画布视口还没有准备好。");
       return;
     }
     const nextZoom = Math.min((viewport.clientWidth - 64) / page.width, (viewport.clientHeight - 64) / page.height);
@@ -7502,7 +7546,7 @@ export function BuilderShowcase() {
     window.requestAnimationFrame(() => {
       viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
     });
-    showProjectJumpFeedback("success", "Canvas fit to viewport", `${page.width} x ${page.height} canvas shown at ${formatCanvasZoom(appliedZoom)}.`);
+    showProjectJumpFeedback("success", "画布已适配视口", `${page.width} x ${page.height} 画布以 ${formatCanvasZoom(appliedZoom)} 显示。`);
   };
 
   const toggleCanvasPanMode = () => {
@@ -7510,8 +7554,8 @@ export function BuilderShowcase() {
     setCanvasPanMode(nextEnabled);
     showProjectJumpFeedback(
       nextEnabled ? "success" : "warning",
-      nextEnabled ? "Pan mode enabled" : "Pan mode disabled",
-      nextEnabled ? "Drag the canvas viewport to move around the design surface." : "Canvas clicks will select and edit controls again.",
+      nextEnabled ? "已启用平移模式" : "已关闭平移模式",
+      nextEnabled ? "拖动画布视口即可移动设计区域。" : "再次点击画布会选择并编辑控件。",
     );
   };
 
@@ -7778,19 +7822,19 @@ export function BuilderShowcase() {
     setRightDockTab("properties");
     showProjectJumpFeedback(
       "success",
-      "Selection cleared",
+      "选择已清空",
       `${formatControlCount(clearedCount)} released. ${activeFile.name} canvas context is active.`,
     );
   };
 
   const selectAllItems = () => {
     if (items.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing to select", `${activeFile.name} has no controls yet. Insert a component first.`);
+      showProjectJumpFeedback("warning", "没有可选择控件", `${activeFile.name} 还没有控件。请先插入一个组件。`);
       return;
     }
     setSelectedIds(items.map((item) => item.id));
     setRightDockTab("properties");
-    showProjectJumpFeedback("success", "All controls selected", `${formatControlCount(items.length)} ready for batch editing in Properties.`);
+    showProjectJumpFeedback("success", "已选择全部控件", `${formatControlCount(items.length)} 可在属性面板批量编辑。`);
   };
 
   const addComponent = (
@@ -8233,7 +8277,7 @@ export function BuilderShowcase() {
 
   const applySelectedPropertyAutoFix = () => {
     if (!selectedItem || selectedPropertyAutoFixCount === 0) {
-      showProjectJumpFeedback("warning", "No property fixes", "The selected control has no safe automatic property repair available.");
+      showProjectJumpFeedback("warning", "没有属性修复", "选中的控件没有可安全自动修复的属性。");
       return;
     }
     const fixedCount = selectedPropertyAutoFixCount;
@@ -8253,7 +8297,7 @@ export function BuilderShowcase() {
 
   const applyProjectPropertyAutoFixes = () => {
     if (projectPropertyAutoFixSummary.targets.length === 0) {
-      showProjectJumpFeedback("warning", "No project property fixes", "No safe automatic property repairs are available across the project.");
+      showProjectJumpFeedback("warning", "没有项目属性修复", "当前项目没有可安全自动修复的属性。");
       return;
     }
 
@@ -8277,7 +8321,7 @@ export function BuilderShowcase() {
     setBottomDockTab(summary.manualIssueCount > 0 ? "issues" : "tasks");
     showProjectJumpFeedback(
       "success",
-      "Project properties repaired",
+      "项目属性已修复",
       `${summary.propertyCount} propert${summary.propertyCount === 1 ? "y" : "ies"} fixed across ${summary.targets.length} control(s) in ${summary.fileCount} file(s). ${summary.manualIssueCount} issue(s) remain for manual review.`,
     );
   };
@@ -8395,7 +8439,7 @@ export function BuilderShowcase() {
     );
     setSimulatorTrace([]);
     setRightDockTab("connections");
-    const targetLabel = selectedIds.length > 1 ? `${selectedIds.length} selected controls` : selectedItem ? getItemSummary(selectedItem) : "Selected control";
+    const targetLabel = selectedIds.length > 1 ? `${selectedIds.length} 个选中控件` : selectedItem ? getItemSummary(selectedItem) : "选中控件";
     showProjectJumpFeedback(
       command ? "success" : "warning",
       command ? "Connection bound" : "Connection unbound",
@@ -8559,9 +8603,9 @@ export function BuilderShowcase() {
       if (options.recordTask !== false) {
         recordInstantProjectAction(
           "run-selected-event",
-          "Select a control with an event before running it.",
+          "运行前请先选择带事件的控件。",
           "skipped",
-          "Run selected event skipped: select a control with an event binding first.",
+          "已跳过运行所选事件：请先选择带事件绑定的控件。",
         );
       }
       return;
@@ -8589,12 +8633,12 @@ export function BuilderShowcase() {
       setRightDockTab("properties");
       setFeedbackPanelOpen(true);
       openBottomDock("issues", false);
-      showProjectJumpFeedback("warning", "Select a control first", "Run Event needs a selected control with a supported event.");
+      showProjectJumpFeedback("warning", "请先选择控件", "运行事件需要选中一个支持事件的控件。");
       recordInstantProjectAction(
         "run-selected-event",
-        "Select a control with an event before running it.",
+        "运行前请先选择带事件的控件。",
         "skipped",
-        "Run selected event skipped: no control is selected.",
+        "已跳过运行所选事件：当前没有选中控件。",
       );
       return;
     }
@@ -8606,14 +8650,14 @@ export function BuilderShowcase() {
       openBottomDock("issues", false);
       showProjectJumpFeedback(
         "warning",
-        "Selected control is static",
+        "所选控件是静态控件",
         `${getItemSummary(selectedItem)} does not expose an event. Select a button, input, switch, select, or checkbox.`,
       );
       recordInstantProjectAction(
         "run-selected-event",
         `${getItemSummary(selectedItem)} does not expose an event to run.`,
         "skipped",
-        "Run selected event skipped: selected control has no supported event.",
+        "已跳过运行所选事件：所选控件没有支持的事件。",
       );
       return;
     }
@@ -8626,14 +8670,14 @@ export function BuilderShowcase() {
       setBottomDockMinimized(true);
       showProjectJumpFeedback(
         "warning",
-        "Bind event before running",
+        "运行前请先绑定事件",
         `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command. Connections is open with Bind new ready.`,
       );
       recordInstantProjectAction(
         "run-selected-event",
         `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command before it can run.`,
         "skipped",
-        "Run selected event skipped: open Connections and create a binding first.",
+        "已跳过运行所选事件：请先打开连接并创建绑定。",
       );
       return;
     }
@@ -8775,13 +8819,13 @@ export function BuilderShowcase() {
 
   const deleteSelected = () => {
     if (selectedIds.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing to delete", "Select one or more controls before deleting.");
+      showProjectJumpFeedback("warning", "没有可删除内容", "删除前请先选择一个或多个控件。");
       return;
     }
     const deletableRoots = selectedIds.filter((id) => !items.find((item) => item.id === id)?.locked);
     const deletedIds = collectDescendantIds(deletableRoots, items);
     if (deletedIds.size === 0) {
-      showProjectJumpFeedback("warning", "Selection is locked", "Unlock the selected controls before deleting them.");
+      showProjectJumpFeedback("warning", "选择已锁定", "删除前请先解锁选中的控件。");
       return;
     }
     updateActiveItems((current) => {
@@ -8790,12 +8834,12 @@ export function BuilderShowcase() {
       return current.filter((item) => !deletedIds.has(item.id));
     });
     clearSelection();
-    showProjectJumpFeedback("success", "Selection deleted", `${formatControlCount(deletedIds.size)} removed from the active UI file.`);
+    showProjectJumpFeedback("success", "已删除选择", `已从当前 UI 文件移除 ${formatControlCount(deletedIds.size)}。`);
   };
 
   const duplicateSelected = () => {
     if (selectedItems.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing to duplicate", "Select one or more controls before duplicating.");
+      showProjectJumpFeedback("warning", "没有可复制内容", "复制前请先选择一个或多个控件。");
       return;
     }
     const duplicateIds = collectDescendantIds(selectedIds, items);
@@ -8821,7 +8865,7 @@ export function BuilderShowcase() {
     });
     updateActiveItems((current) => [...current, ...nextItems]);
     setSelectedIds(nextItems.map((item) => item.id));
-    showProjectJumpFeedback("success", "Selection duplicated", `${formatControlCount(nextItems.length)} copied and selected on the canvas.`);
+    showProjectJumpFeedback("success", "已复制选择", `${formatControlCount(nextItems.length)} 已复制并在画布上选中。`);
   };
 
   const toggleSelectedLock = () => {
@@ -8871,7 +8915,7 @@ export function BuilderShowcase() {
 
   const bringToFront = () => {
     if (selectedItems.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing selected", "Select a control before changing layer order.");
+      showProjectJumpFeedback("warning", "未选择控件", "调整图层顺序前请先选择控件。");
       return;
     }
     updateActiveItems((current) => {
@@ -8886,12 +8930,12 @@ export function BuilderShowcase() {
         return next;
       });
     });
-    showProjectJumpFeedback("success", "Layer order updated", `${formatControlCount(selectedItems.length)} moved to the front of the canvas stack.`);
+    showProjectJumpFeedback("success", "图层顺序已更新", `${formatControlCount(selectedItems.length)} 已移到画布最前。`);
   };
 
   const sendToBack = () => {
     if (selectedItems.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing selected", "Select a control before changing layer order.");
+      showProjectJumpFeedback("warning", "未选择控件", "调整图层顺序前请先选择控件。");
       return;
     }
     updateActiveItems((current) => {
@@ -8906,12 +8950,12 @@ export function BuilderShowcase() {
         return next;
       });
     });
-    showProjectJumpFeedback("success", "Layer order updated", `${formatControlCount(selectedItems.length)} sent to the back of the canvas stack.`);
+    showProjectJumpFeedback("success", "图层顺序已更新", `${formatControlCount(selectedItems.length)} 已移到画布最后。`);
   };
 
   const copySelectionToClipboard = () => {
     if (selectedItems.length === 0) {
-      showProjectJumpFeedback("warning", "Nothing to copy", "Select one or more controls before copying.");
+      showProjectJumpFeedback("warning", "没有可复制内容", "复制前请先选择一个或多个控件。");
       return;
     }
     const copiedIds = collectDescendantIds(selectedIds, items);
@@ -8920,12 +8964,12 @@ export function BuilderShowcase() {
       .sort((a, b) => a.z - b.z)
       .map((item) => ({ ...item, responsive: cloneResponsiveOverrides(item.responsive), props: { ...item.props } }));
     setClipboardVersion((version) => version + 1);
-    showProjectJumpFeedback("success", "Selection copied", `${formatControlCount(clipboardRef.current.length)} ready to paste with nested children and bindings.`);
+    showProjectJumpFeedback("success", "选择已复制", `${formatControlCount(clipboardRef.current.length)} 已复制，可包含子级和绑定一起粘贴。`);
   };
 
   const pasteClipboardItems = () => {
     if (clipboardRef.current.length === 0) {
-      showProjectJumpFeedback("warning", "Clipboard is empty", "Copy a control or insert a new component from Components.");
+      showProjectJumpFeedback("warning", "剪贴板为空", "请先复制控件，或从控件面板插入新组件。");
       return;
     }
     const idMap = new Map(clipboardRef.current.map((item) => [item.id, createId()]));
@@ -8951,7 +8995,7 @@ export function BuilderShowcase() {
     setSelectedIds(pastedItems.map((item) => item.id));
     clipboardRef.current = pastedItems.map((item) => ({ ...item, responsive: cloneResponsiveOverrides(item.responsive), props: { ...item.props } }));
     setClipboardVersion((version) => version + 1);
-    showProjectJumpFeedback("success", "Selection pasted", `${formatControlCount(pastedItems.length)} inserted and selected on the canvas.`);
+    showProjectJumpFeedback("success", "已粘贴选择", `${formatControlCount(pastedItems.length)} 已插入并在画布上选中。`);
   };
 
   const alignmentLabel = (alignment: AlignmentMode) => {
@@ -8975,7 +9019,7 @@ export function BuilderShowcase() {
 
   const alignSelected = (alignment: AlignmentMode) => {
     if (selectedItems.length < 2) {
-      showProjectJumpFeedback("warning", "Alignment needs a selection", "Select at least two controls before using alignment tools.");
+      showProjectJumpFeedback("warning", "对齐需要多个选择", "使用对齐工具前请至少选择两个控件。");
       return;
     }
     const movableItems = selectedItems.filter((item) => !item.locked);
@@ -8986,13 +9030,13 @@ export function BuilderShowcase() {
         "Alignment skipped",
         lockedCount > 0
           ? `${lockedCount} locked control${lockedCount === 1 ? "" : "s"} cannot move. Unlock at least two controls to align them.`
-          : "Select at least two movable controls before using alignment tools.",
+          : "使用对齐工具前请至少选择两个可移动控件。",
       );
       return;
     }
     const bounds = getSelectionBounds(movableItems);
     if (!bounds) {
-      showProjectJumpFeedback("warning", "Alignment skipped", "The selected controls do not have measurable canvas bounds yet.");
+      showProjectJumpFeedback("warning", "已跳过对齐", "选中控件还没有可测量的画布边界。");
       return;
     }
 
@@ -9022,7 +9066,7 @@ export function BuilderShowcase() {
     );
     showProjectJumpFeedback(
       "success",
-      "Selection aligned",
+      "选择已对齐",
       `${formatControlCount(movableItems.length)} aligned by ${alignmentLabel(alignment)}${lockedCount > 0 ? `; ${lockedCount} locked stayed in place` : ""}.`,
     );
   };
@@ -9065,7 +9109,7 @@ export function BuilderShowcase() {
     });
 
     if (!result) {
-      const message = "Window validation is available in the Tauri desktop app. The web preview can run the in-editor visual audit only.";
+      const message = "窗口验证需要在 Tauri 桌面 app 中运行。Web 预览只能执行编辑器内视觉审查。";
       updateActiveProject((project) => ({
         ...project,
         validationLog: message,
@@ -9118,7 +9162,7 @@ export function BuilderShowcase() {
       integrationId: integration.id,
     });
     if (!result) {
-      throw new Error("No backend artifact build result was returned.");
+      throw new Error("后端产物构建没有返回结果。");
     }
     setBackendArtifactBuildResult(result);
     updateActiveProject((project) => ({
@@ -9131,7 +9175,7 @@ export function BuilderShowcase() {
   const buildActiveBackendArtifact = async () => {
     const integration = activeBackendIntegration;
     if (!backendArtifactStarterBuildAvailable(integration)) {
-      setBuildError("This backend integration does not have a Nova starter build script. Use Artifact status to verify script/resource folders.");
+      setBuildError("这个后端集成没有 Nova starter 构建脚本。请用产物状态检查脚本和资源目录。");
       return;
     }
     if (!isTauriRuntime()) {
@@ -9164,7 +9208,7 @@ export function BuilderShowcase() {
       await refreshBackendArtifactInspection(projectSnapshot);
       return {
         status: "skipped",
-        summary: "No enabled C++ FFI or Go starter backend integrations need artifact builds.",
+        summary: "没有启用的 C++ FFI 或 Go starter 后端集成需要构建产物。",
         artifactPath: projectSnapshot.rootPath,
       };
     }
@@ -9374,7 +9418,7 @@ export function BuilderShowcase() {
   const loadWorkspace = () => {
     const savedWorkspace = loadDesignerWorkspace();
     if (!savedWorkspace) {
-      showProjectJumpFeedback("warning", "No local workspace", "Save the current editor workspace first, then Reload can restore it.");
+      showProjectJumpFeedback("warning", "没有本地工作区", "请先保存当前编辑器工作区，之后才能重新加载恢复。");
       return;
     }
     setWorkspace(savedWorkspace);
@@ -9382,7 +9426,7 @@ export function BuilderShowcase() {
     const nextFile = nextProject.files.find((file) => file.id === nextProject.activeFileId) ?? nextProject.files[0];
     setSelectedId(nextFile.items[0]?.id ?? "");
     setMode("design");
-    showProjectJumpFeedback("success", "Workspace reloaded", `${nextProject.name} / ${nextFile.name} was restored from local editor storage.`);
+    showProjectJumpFeedback("success", "工作区已重新加载", `${nextProject.name} / ${nextFile.name} 已从本地编辑器存储恢复。`);
   };
 
   const resetCurrentFile = () => {
@@ -9395,7 +9439,7 @@ export function BuilderShowcase() {
     setSelectedId("");
     setLeftDockTab("components");
     setMode("design");
-    showProjectJumpFeedback("success", "UI file cleared", `${fileName} is blank. Components is open for the next insert.`);
+    showProjectJumpFeedback("success", "UI 文件已清空", `${fileName} 已清空。控件面板已打开，可继续插入。`);
   };
 
   const createNewProject = () => {
@@ -9409,7 +9453,7 @@ export function BuilderShowcase() {
     setSelectedId("");
     setLeftDockTab("project");
     setMode("design");
-    showProjectJumpFeedback("success", "Project created", `${nextProject.name} is active. Project settings and templates are open.`);
+    showProjectJumpFeedback("success", "项目已创建", `${nextProject.name} 已激活。项目设置和模板已打开。`);
   };
 
   const replaceActiveProjectWithTemplate = () => {
@@ -9449,7 +9493,7 @@ export function BuilderShowcase() {
 
   const deleteActiveProject = () => {
     if (workspace.projects.length <= 1) {
-      const nextProject = createProject("Nova Project");
+      const nextProject = createProject("Nova 项目");
       setWorkspace(createWorkspace(nextProject));
       setSelectedId("");
       setMode("design");
@@ -9470,7 +9514,7 @@ export function BuilderShowcase() {
   const renameActiveProject = (name: string) => {
     updateActiveProject((project) => ({
       ...project,
-      name: name || "Untitled Project",
+      name: name || "未命名项目",
     }));
   };
 
@@ -9662,7 +9706,7 @@ export function BuilderShowcase() {
       assetId,
       assetPath: asset?.publicPath ?? "",
       label: asset?.name ?? "Image",
-      alt: asset?.name ?? selectedItem?.props.alt ?? "Project asset",
+      alt: asset?.name ?? selectedItem?.props.alt ?? "项目资源",
     });
   };
 
@@ -9896,7 +9940,7 @@ export function BuilderShowcase() {
   const createAndBindBackendIntegrationCommand = (options: { recordTask?: boolean } = {}) => {
     if (!selectedItem || !selectedEventName) {
       if (options.recordTask !== false) {
-        recordInstantProjectAction("bind-control-event", "Select a control with an event before creating a binding.", "skipped");
+        recordInstantProjectAction("bind-control-event", "创建绑定前请先选择带事件的控件。", "skipped");
       }
       return null;
     }
@@ -9909,7 +9953,7 @@ export function BuilderShowcase() {
       activeProject.backendIntegrations[0];
     if (!integration) {
       if (options.recordTask !== false) {
-        recordInstantProjectAction("bind-control-event", "No backend integration is available for the selected event.", "skipped");
+        recordInstantProjectAction("bind-control-event", "所选事件没有可用的后端集成。", "skipped");
       }
       return null;
     }
@@ -10367,7 +10411,7 @@ export function BuilderShowcase() {
           "skipped",
           "Backend method calls require the Nova desktop app runtime.",
           request,
-          "Open the Tauri desktop build to run this method against local processes or HTTP endpoints.",
+          "请打开 Tauri 桌面构建，才能针对本地进程或 HTTP endpoint 运行这个方法。",
         ),
       });
       return;
@@ -10389,7 +10433,7 @@ export function BuilderShowcase() {
             "skipped",
             "Backend method calls require the Nova desktop app runtime.",
             request,
-            "No Tauri invoke result was returned.",
+            "没有返回 Tauri invoke 结果。",
           ),
         });
         return;
@@ -10477,7 +10521,7 @@ export function BuilderShowcase() {
     if (options.feedback && state) {
       showProjectJumpFeedback(
         "success",
-        "State selected",
+        "状态已选择",
         `${state.name} is active in Logic. ${formatStateReferenceCount(countStateVariableReferences(activeProject, state.id))} linked.`,
       );
     }
@@ -10511,7 +10555,7 @@ export function BuilderShowcase() {
     if (options.feedback) {
       showProjectJumpFeedback(
         "success",
-        "State variable created",
+        "状态变量已创建",
         `${state.name} is selected with Properties bindings and Connections result routing ready.`,
       );
     }
@@ -10574,15 +10618,15 @@ export function BuilderShowcase() {
     if (resetOnlyState) {
       showProjectJumpFeedback(
         "warning",
-        "State store reset",
+        "状态存储已重置",
         "Nova keeps one state variable available, so a fresh statusText state is ready for bindings.",
       );
       return;
     }
     showProjectJumpFeedback(
       "success",
-      "State variable deleted",
-      `${deletedState?.name ?? "Selected state"} removed. ${formatStateReferenceCount(referenceCount)} cleared from bindings and command results.`,
+      "状态变量已删除",
+      `${deletedState?.name ?? "选中状态"} 已移除。${formatStateReferenceCount(referenceCount)} 已从绑定和命令结果中清理。`,
     );
   };
 
@@ -10606,7 +10650,7 @@ export function BuilderShowcase() {
     setNavigatorLayerMessage("");
     setLeftDockTab(options.leftDockTab ?? (file.items.length > 0 ? "navigator" : "components"));
     if (options.feedback) {
-      showProjectJumpFeedback("success", options.title ?? "Opened UI file", options.detail ?? `${file.name} is active. ${fileCanvasSummary(file)}.`);
+      showProjectJumpFeedback("success", options.title ?? "已打开 UI 文件", options.detail ?? `${file.name} 已激活。${fileCanvasSummary(file)}。`);
     }
   };
 
@@ -10620,8 +10664,8 @@ export function BuilderShowcase() {
     openFileEditingContext(nextFile, {
       feedback: true,
       leftDockTab: "components",
-      title: "UI file created",
-      detail: `${nextFile.name} is blank. Components is open for the first control.`,
+      title: "UI 文件已创建",
+      detail: `${nextFile.name} 为空。控件面板已打开，可以添加第一个控件。`,
     });
     return nextFile;
   };
@@ -10631,7 +10675,7 @@ export function BuilderShowcase() {
     if (!nextFile) {
       const message = `Could not find UI file: ${fileId}.`;
       setBuildError(message);
-      showProjectJumpFeedback("error", "UI file missing", message);
+      showProjectJumpFeedback("error", "UI 文件缺失", message);
       return;
     }
     updateActiveProject((project) => ({
@@ -10641,8 +10685,8 @@ export function BuilderShowcase() {
     openFileEditingContext(nextFile, {
       feedback: options.feedback,
       leftDockTab: "navigator",
-      title: "Opened UI file",
-      detail: `${nextFile.name} is active. ${fileCanvasSummary(nextFile)}.`,
+      title: "已打开 UI 文件",
+      detail: `${nextFile.name} 已激活。${fileCanvasSummary(nextFile)}。`,
     });
   };
 
@@ -10731,21 +10775,21 @@ export function BuilderShowcase() {
     if (["project-name", "project-root", "release-config", "release-icon", "release-icon-format", "release-signing", "release-certificate-import", "installer-smoke-mode", "installer-smoke-runner"].includes(item.id)) {
       setMode("design");
       setLeftDockTab("project");
-      showProjectJumpFeedback("success", "Opened project settings", `${item.title} can be reviewed in the Project dock.`);
+      showProjectJumpFeedback("success", "已打开项目设置", `${item.title} 可在项目 Dock 中查看。`);
       return;
     }
 
     if (item.id === "ui-files") {
       setMode("design");
       setLeftDockTab("navigator");
-      showProjectJumpFeedback("success", "Opened Navigator", "Create, duplicate, or restore UI files from the Navigator.");
+      showProjectJumpFeedback("success", "已打开导航器", "可以在导航器中创建、复制或恢复 UI 文件。");
       return;
     }
 
     if (item.id === "canvas-content") {
       setMode("design");
       setLeftDockTab("components");
-      showProjectJumpFeedback("success", "Opened Components", "Insert a control into the active UI file to make the generated window visible.");
+      showProjectJumpFeedback("success", "已打开控件面板", "向当前 UI 文件插入控件后，生成窗口会变得可见。");
       return;
     }
 
@@ -10753,14 +10797,14 @@ export function BuilderShowcase() {
       setMode("design");
       setLeftDockTab("navigator");
       setRightDockTab("connections");
-      showProjectJumpFeedback("warning", "Open Connections", "Select an event-capable control, then bind it to a Rust command.");
+      showProjectJumpFeedback("warning", "请打开连接", "选择支持事件的控件，然后绑定到 Rust 命令。");
       return;
     }
 
     if (item.id === "tauri-runtime") {
       setMode("build");
       openBottomDock("output", false);
-      showProjectJumpFeedback("warning", "Desktop runtime needed", "Build and disk actions run from the Tauri desktop app, not the browser preview.");
+      showProjectJumpFeedback("warning", "需要桌面运行时", "构建和磁盘操作需要在 Tauri 桌面 app 中运行，不能在浏览器预览中执行。");
       return;
     }
 
@@ -10770,18 +10814,18 @@ export function BuilderShowcase() {
         selectBackendIntegration(firstBackend.id);
       }
       setMode("logic");
-      showProjectJumpFeedback("success", "Opened backend integrations", `${item.title} can be reviewed in the Logic workspace.`);
+      showProjectJumpFeedback("success", "已打开后端集成", `${item.title} 可在逻辑工作区中查看。`);
       return;
     }
 
     if (item.id.includes("rust") || item.id.includes("cargo") || item.id.includes("state")) {
       setMode("logic");
-      showProjectJumpFeedback("success", "Opened Logic workspace", `${item.title} can be reviewed in commands, modules, dependencies, or state.`);
+      showProjectJumpFeedback("success", "已打开逻辑工作区", `${item.title} 可在命令、模块、依赖或状态中查看。`);
       return;
     }
 
     setMode("build");
-    showProjectJumpFeedback("warning", "Readiness item selected", item.detail);
+    showProjectJumpFeedback("warning", "已选择就绪项", item.detail);
   };
 
   const updateProjectTask = (taskId: string, patch: Partial<ProjectTaskEntry>) => {
@@ -11145,7 +11189,7 @@ export function BuilderShowcase() {
       checkKind,
     });
     if (!started) {
-      return { status: "skipped", summary: "Background task registry requires the Tauri desktop runtime." };
+      return { status: "skipped", summary: "后台任务注册表需要 Tauri 桌面运行时。" };
     }
 
     let current = started;
@@ -11161,7 +11205,7 @@ export function BuilderShowcase() {
       await new Promise((resolve) => window.setTimeout(resolve, 1000));
       const next = await invokeIfAvailable<EditorBackgroundTaskView>("read_editor_project_task", { taskId: current.id });
       if (!next) {
-        return { status: "failed", summary: "Lost access to the Rust background task registry." };
+        return { status: "failed", summary: "已失去 Rust 后台任务注册表访问。" };
       }
       current = next;
       updateProjectTask(frontendTaskId, {
@@ -11216,7 +11260,7 @@ export function BuilderShowcase() {
     switch (actionId) {
       case "save-project":
         await saveWorkspace();
-        return { summary: "Project workspace saved to the current editor storage target." };
+        return { summary: "项目工作区已保存到当前编辑器存储目标。" };
       case "new-ui-file":
         {
           const file = createNewFile();
@@ -11231,7 +11275,7 @@ export function BuilderShowcase() {
         setMode("design");
         setLeftDockTab("navigator");
         requestDeleteActiveFile();
-        return { status: "skipped", summary: "Delete UI file requires confirmation in the Navigator." };
+        return { status: "skipped", summary: "删除 UI 文件需要在导航器中确认。" };
       case "insert-component":
         {
           const definition = getDefinition("button");
@@ -11244,7 +11288,7 @@ export function BuilderShowcase() {
         {
           const commandName = createAndBindBackendIntegrationCommand({ recordTask: false });
           if (!commandName) {
-            return { status: "skipped", summary: "Select a control with an event before creating a binding." };
+            return { status: "skipped", summary: "创建绑定前请先选择带事件的控件。" };
           }
           return { summary: `Bound the selected control event to ${commandName}.` };
         }
@@ -11254,7 +11298,7 @@ export function BuilderShowcase() {
             setMode("design");
             setLeftDockTab("navigator");
             setRightDockTab("properties");
-            return { status: "skipped", summary: "Select a control with an event before running it." };
+            return { status: "skipped", summary: "运行前请先选择带事件的控件。" };
           }
           if (!selectedEventCommand) {
             setMode("design");
@@ -11262,12 +11306,12 @@ export function BuilderShowcase() {
             return {
               status: "skipped",
               summary: `${getItemSummary(selectedItem)} ${selectedEventName} needs a Rust command before it can run.`,
-              logPreview: "Open Connections and use Bind new, then run the event again.",
+              logPreview: "打开连接并使用“绑定新命令”，然后再次运行事件。",
             };
           }
           const trace = simulateSelectedEvent({ recordTask: false });
           if (!trace) {
-            return { status: "skipped", summary: "Select a control with an event before running it." };
+            return { status: "skipped", summary: "运行前请先选择带事件的控件。" };
           }
           return {
             status: trace.status === "success" ? "succeeded" : "failed",
@@ -11281,24 +11325,24 @@ export function BuilderShowcase() {
       case "add-rust-command":
         createRustCommandInProject();
         setMode("logic");
-        return { summary: "Added a Rust command and opened the Logic panel." };
+        return { summary: "已添加 Rust 命令并打开逻辑面板。" };
       case "add-state-variable":
         createStateVariableInProject();
         setMode("logic");
-        return { summary: "Added a shared project state variable." };
+        return { summary: "已添加共享项目状态变量。" };
       case "sync-rust":
         syncRustLogicFromCommands();
         setMode("logic");
-        return { summary: "Regenerated Rust source from the command registry." };
+        return { summary: "已根据命令注册表重新生成 Rust 源码。" };
       case "add-image-asset":
         setMode("design");
         await chooseImageAsset();
-        return { summary: "Image asset import flow finished." };
+        return { summary: "图片资源导入流程已完成。" };
       case "preview-generated-files":
         {
           const result = await previewGeneratedProjectFiles();
           if (!result) {
-            return { status: "skipped", summary: "Generated file preview requires the Tauri desktop runtime." };
+            return { status: "skipped", summary: "生成文件预览需要 Tauri 桌面运行时。" };
           }
           return {
             summary: result.summary,
@@ -11311,18 +11355,18 @@ export function BuilderShowcase() {
           await previewGeneratedProjectFiles();
           return {
             status: "skipped",
-            summary: "Generated a file preview first. Select target files, then run Apply selected generated files again.",
+            summary: "已先生成文件预览。请选择目标文件，然后再次运行“应用选中的生成文件”。",
           };
         }
         if (selectedGeneratedPreviewPaths.length === 0) {
           setMode("build");
           setBuildError("没有选中的生成文件。请先在文件预览里选择要写入的文件。");
-          return { status: "skipped", summary: "No generated files were selected for apply." };
+          return { status: "skipped", summary: "没有选择要应用的生成文件。" };
         }
         {
           const result = await applySelectedGeneratedFiles();
           if (!result) {
-            return { status: "skipped", summary: "Generated file apply requires selected files and the Tauri desktop runtime." };
+            return { status: "skipped", summary: "应用生成文件需要选择文件，并在 Tauri 桌面运行时中执行。" };
           }
           return {
             summary: result.summary,
@@ -11349,7 +11393,7 @@ export function BuilderShowcase() {
           };
         }
         await validateGeneratedWindow();
-        return { summary: "Generated window validation finished." };
+        return { summary: "生成窗口验证已完成。" };
       case "build-exe":
         if (buildReadinessSummary.errorCount > 0) {
           await buildActiveProject();
@@ -11372,7 +11416,7 @@ export function BuilderShowcase() {
         setMode("build");
         if (projectPropertyAutoFixSummary.targets.length === 0) {
           setBuildError("没有可自动修复的属性 schema 问题。");
-          return { status: "skipped", summary: "No safe property schema fixes were available." };
+          return { status: "skipped", summary: "没有可安全应用的属性结构修复。" };
         }
         applyProjectPropertyAutoFixes();
         return {
@@ -11406,7 +11450,7 @@ export function BuilderShowcase() {
           ...task,
           status: "running",
           startedAt: new Date().toISOString(),
-          summary: "Running...",
+          summary: "运行中...",
           error: undefined,
           inputSnapshot: createReleasePipelineInputSnapshot(activeProject),
           environment: createReleasePipelineEnvironment(),
@@ -11458,7 +11502,7 @@ export function BuilderShowcase() {
             ...startedTask,
             status: "failed",
             finishedAt: new Date().toISOString(),
-            summary: "Task failed before the editor action could finish.",
+            summary: "编辑器操作完成前任务已失败。",
             error: String(error),
             artifactEvidence,
           };
@@ -11500,7 +11544,7 @@ export function BuilderShowcase() {
     }
 
     const primaryBlocker = blockers[0];
-    const actionLabel = label ?? (actionIds.length === 1 ? projectTaskDefinitions[gatedActionId].title : "Release workflow");
+    const actionLabel = label ?? (actionIds.length === 1 ? projectTaskDefinitions[gatedActionId].title : "发布工作流");
     const issueWord = blockers.length === 1 ? "issue" : "issues";
     const summary = `${actionLabel} blocked by ${blockers.length} readiness ${issueWord}.`;
     const detail = `${primaryBlocker.title}: ${primaryBlocker.detail}`;
@@ -11528,7 +11572,7 @@ export function BuilderShowcase() {
     setProjectTaskQueueMessage(`${summary} Open Build readiness or Issues before retrying.`);
     setFeedbackPanelOpen(true);
     openBottomDock("issues", false);
-    showProjectJumpFeedback("warning", "Release blocked", detail);
+    showProjectJumpFeedback("warning", "发布被阻止", detail);
     return true;
   };
 
@@ -11685,7 +11729,7 @@ export function BuilderShowcase() {
       return;
     }
     const title = customPresetTitle.trim();
-    const detail = customPresetDetail.trim() || "Custom Task Center action preset.";
+    const detail = customPresetDetail.trim() || "自定义任务中心操作 preset。";
     const preset: ProjectActionPresetDefinition = {
       id: `custom-preset-${createId()}`,
       title,
@@ -11709,7 +11753,7 @@ export function BuilderShowcase() {
         ? `Queue paused. ${localQueuedProjectTasks.length} waiting task(s) will stay queued.`
         : localQueuedProjectTasks.length > 0
           ? `Queue resumed. Next task: ${localQueuedProjectTasks[0].title}.`
-          : "Queue resumed. No waiting tasks.",
+          : "队列已恢复。没有等待中的任务。",
     );
     if (!paused) {
       void drainProjectTaskQueue();
@@ -11820,7 +11864,7 @@ export function BuilderShowcase() {
 
     setMode("build");
     openBottomDock("issues", false);
-    showProjectJumpFeedback("warning", "No readiness issue found", `${sourceTask.title} has no current blocker in Build readiness.`);
+    showProjectJumpFeedback("warning", "没有找到就绪问题", `${sourceTask.title} 当前在构建就绪度中没有阻塞项。`);
     return false;
   };
 
@@ -11840,13 +11884,13 @@ export function BuilderShowcase() {
       if (!selectedItem) {
         setLeftDockTab("navigator");
         setRightDockTab("properties");
-        showProjectJumpFeedback("warning", "Select an event control", "Navigator is open. Pick a button, input, switch, select, or checkbox, then bind its event.");
+        showProjectJumpFeedback("warning", "选择事件控件", "导航器已打开。请选择按钮、输入框、开关、下拉选择或复选框，然后绑定事件。");
         return;
       }
       setRightDockTab(selectedEventName ? "connections" : "properties");
       showProjectJumpFeedback(
         selectedEventName ? "success" : "warning",
-        selectedEventName ? "Opened Connections" : "Selected control is static",
+        selectedEventName ? "已打开连接" : "所选控件是静态控件",
         selectedEventName
           ? `${getItemSummary(selectedItem)} is ready for event binding or simulation.`
           : `${getItemSummary(selectedItem)} has no supported event; choose another control from Navigator.`,
@@ -11857,7 +11901,7 @@ export function BuilderShowcase() {
     if (task.actionId === "new-ui-file" || task.actionId === "duplicate-ui-file" || task.actionId === "delete-ui-file") {
       setMode("design");
       setLeftDockTab("navigator");
-      showProjectJumpFeedback("success", "Opened Navigator", "UI files, layer selection, duplicate, and delete actions are available here.");
+      showProjectJumpFeedback("success", "已打开导航器", "这里可以管理 UI 文件、图层选择、复制和删除操作。");
       return;
     }
 
@@ -11865,14 +11909,14 @@ export function BuilderShowcase() {
       setMode("design");
       setLeftDockTab("components");
       setRightDockTab("properties");
-      showProjectJumpFeedback("success", "Opened Components", "Insert a component, then tune it from Properties.");
+      showProjectJumpFeedback("success", "已打开控件面板", "插入组件后可以在属性面板继续调整。");
       return;
     }
 
     if (task.actionId === "add-image-asset") {
       setMode("design");
       setLeftDockTab("assets");
-      showProjectJumpFeedback("success", "Opened Assets", "Import or inspect project image resources here.");
+      showProjectJumpFeedback("success", "已打开资源面板", "这里可以导入或检查项目图片资源。");
       return;
     }
 
@@ -11891,7 +11935,7 @@ export function BuilderShowcase() {
       }
       showProjectJumpFeedback(
         "success",
-        task.actionId === "build-backend-artifacts" ? "Opened backend integrations" : "Opened Logic",
+        task.actionId === "build-backend-artifacts" ? "已打开后端集成" : "已打开逻辑",
         `${task.title} can be repaired from commands, state, dependencies, and backend integration settings.`,
       );
       return;
@@ -11900,14 +11944,14 @@ export function BuilderShowcase() {
     if (task.actionId === "preview-generated-files" || task.actionId === "apply-generated-files" || task.actionId === "apply-generated-changes") {
       setMode("build");
       openBottomDock("tasks", false);
-      showProjectJumpFeedback("success", "Opened generated workflow", "Use File Preview, Apply generated changes, and Task Center to inspect target-file output.");
+      showProjectJumpFeedback("success", "已打开生成工作流", "可使用文件预览、应用生成变更和任务中心检查目标文件输出。");
       return;
     }
 
     if (task.actionId === "save-project") {
       setMode("design");
       setLeftDockTab("project");
-      showProjectJumpFeedback("success", "Opened Project dock", "Review project root, release metadata, files, and template state before saving again.");
+      showProjectJumpFeedback("success", "已打开项目 Dock", "再次保存前可检查项目目录、发布元数据、文件和模板状态。");
       return;
     }
 
@@ -11915,12 +11959,12 @@ export function BuilderShowcase() {
       setMode("build");
       openBottomDock(task.logPath || task.logPreview ? "logs" : "issues", false);
       setProjectTaskLogSearchQuery(task.error ? task.error.split(/\s+/).slice(0, 3).join(" ") : task.title);
-      showProjectJumpFeedback("success", task.logPath || task.logPreview ? "Opened logs" : "Opened issues", `${task.title} evidence is visible in the bottom dock.`);
+      showProjectJumpFeedback("success", task.logPath || task.logPreview ? "已打开日志" : "已打开问题", `${task.title} 的证据已显示在底部 Dock。`);
       return;
     }
 
     openRelevantTaskDock(task);
-    showProjectJumpFeedback("warning", "Task selected", `${task.title} has no deeper target, so its task evidence is open.`);
+    showProjectJumpFeedback("warning", "任务已选择", `${task.title} 没有更深的定位目标，已打开任务证据。`);
   };
 
   const cancelProjectTask = async (task: ProjectTaskEntry) => {
@@ -12117,21 +12161,21 @@ export function BuilderShowcase() {
     if (result.kind === "settings") {
       setMode("design");
       setLeftDockTab("project");
-      showProjectJumpFeedback("success", "Opened project settings", "Release, bundle, version, and window settings are in the Project dock.");
+      showProjectJumpFeedback("success", "已打开项目设置", "发布、打包、版本和窗口设置都在项目 Dock 中。");
       return;
     }
 
     if (result.kind === "rust-command" && result.commandId) {
       selectRustCommand(result.commandId);
       setMode("logic");
-      showProjectJumpFeedback("success", "Opened Rust command", `${result.title} is selected in the Logic workspace.`);
+      showProjectJumpFeedback("success", "已打开 Rust 命令", `${result.title} 已在逻辑工作区中选中。`);
       return;
     }
 
     if (result.kind === "state" && result.stateId) {
       selectStateVariable(result.stateId);
       setMode("logic");
-      showProjectJumpFeedback("success", "Opened state variable", `${result.title} is selected in the Logic workspace.`);
+      showProjectJumpFeedback("success", "已打开状态变量", `${result.title} 已在逻辑工作区中选中。`);
       return;
     }
 
@@ -12154,7 +12198,7 @@ export function BuilderShowcase() {
       } else {
         setMode("design");
         setLeftDockTab("assets");
-        showProjectJumpFeedback("success", "Opened project assets", `${result.title} is selected from project assets; no canvas usage was found yet.`);
+        showProjectJumpFeedback("success", "已打开项目资源", `${result.title} 已在项目资源中选中；尚未发现画布使用位置。`);
       }
       return;
     }
@@ -12177,7 +12221,7 @@ export function BuilderShowcase() {
       setRightDockTab("properties");
       showProjectJumpFeedback(
         "success",
-        result.itemId ? "Focused control" : "Opened UI file",
+        result.itemId ? "已定位控件" : "已打开 UI 文件",
         result.itemId ? `${result.title} is selected in ${targetFile.name}.` : `${targetFile.name} is active on the canvas.`,
       );
       return;
@@ -12188,13 +12232,13 @@ export function BuilderShowcase() {
       void openLocalArtifact(result.path).then((opened) => {
         showProjectJumpFeedback(
           opened ? "success" : "warning",
-          opened ? "Opening artifact" : "Artifact could not open",
-          opened ? result.path! : "Check the task output or run from the Tauri desktop app.",
+          opened ? "正在打开产物" : "产物无法打开",
+          opened ? result.path! : "请检查任务输出，或从 Tauri 桌面 app 运行。",
         );
       });
       return;
     }
-    showProjectJumpFeedback("warning", "Opened workspace", `${result.title} has no direct artifact path, so the ${result.mode} workspace is now active.`);
+    showProjectJumpFeedback("warning", "已打开工作区", `${result.title} 没有直接产物路径，已切换到 ${result.mode} 工作区。`);
   };
 
   const focusBreakpointIssue = (issue: BreakpointValidationIssue) => {
@@ -12536,7 +12580,7 @@ export function BuilderShowcase() {
         unlockedCount === 0
           ? "The current selection is locked, so this action will not remove anything. Unlock the controls first if you need to delete them."
           : `This removes the selected control${unlockedCount === 1 ? "" : "s"} and any child controls from ${activeFile.name}. You can still use Undo after the deletion.`,
-      confirmLabel: unlockedCount === 0 ? "Close" : "Delete selection",
+      confirmLabel: unlockedCount === 0 ? "关闭" : "删除选择",
       onConfirm: unlockedCount === 0 ? () => undefined : deleteSelected,
     });
   };
@@ -12559,7 +12603,7 @@ export function BuilderShowcase() {
         clearingOnlyFile
           ? "This is the only UI file in the project, so Nova will clear it instead of removing the file record."
           : `This removes ${fileName} from ${activeProject.name}. Other project files, Rust logic, and release settings are kept.`,
-      confirmLabel: clearingOnlyFile ? "Clear file" : "Delete file",
+      confirmLabel: clearingOnlyFile ? "清空文件" : "删除文件",
       onConfirm: () => {
         deleteActiveFile();
         setLeftDockTab("navigator");
@@ -12575,7 +12619,7 @@ export function BuilderShowcase() {
         workspace.projects.length <= 1
           ? "This is the only project in the workspace, so Nova will replace it with a fresh blank project."
           : "This removes the project from the local editor workspace. Files already written on disk are not deleted by this action.",
-      confirmLabel: workspace.projects.length <= 1 ? "Reset project" : "Delete project",
+      confirmLabel: workspace.projects.length <= 1 ? "重置项目" : "删除项目",
       onConfirm: deleteActiveProject,
     });
   };
@@ -13073,7 +13117,7 @@ export function BuilderShowcase() {
       });
 
       if (!result) {
-        const message = "Quick checks are available in the Tauri desktop app. The web preview can only run in-browser editor checks.";
+        const message = "快速检查需要在 Tauri 桌面 app 中运行。Web 预览只能执行浏览器内编辑器检查。";
         updateActiveProject((project) => ({
           ...project,
           buildLog: message,
@@ -13334,20 +13378,20 @@ export function BuilderShowcase() {
   const applyGeneratedFileChanges = async (): Promise<ProjectTaskRunResult> => {
     const preview = await previewGeneratedProjectFiles();
     if (!preview) {
-      return { status: "skipped", summary: "Generated file auto-apply requires the Tauri desktop runtime." };
+      return { status: "skipped", summary: "自动应用生成文件需要 Tauri 桌面运行时。" };
     }
     const paths = preview.entries.filter(generatedPreviewEntryNeedsApply).map((entry) => entry.relative_path);
     if (paths.length === 0) {
       return {
         status: "skipped",
-        summary: "Generated target files are already up to date.",
+        summary: "生成目标文件已经是最新状态。",
         logPreview: `${preview.unchanged_count} unchanged / ${preview.total_count} total generated target file(s).`,
         artifactPath: preview.root_path,
       };
     }
-    const result = await applyGeneratedFilesByPaths(paths, "No changed generated files were found.");
+    const result = await applyGeneratedFilesByPaths(paths, "没有找到已变更的生成文件。");
     if (!result) {
-      return { status: "skipped", summary: "No generated file changes were applied.", artifactPath: preview.root_path };
+      return { status: "skipped", summary: "没有应用任何生成文件变更。", artifactPath: preview.root_path };
     }
     return {
       summary: result.summary,
@@ -13383,7 +13427,7 @@ export function BuilderShowcase() {
       });
 
       if (!result) {
-        const message = "Build is available in the Tauri desktop app. The web preview saved the workspace locally only.";
+        const message = "构建需要在 Tauri 桌面 app 中运行。Web 预览只会把工作区保存到本地。";
         updateActiveProject((project) => ({
           ...project,
           buildLog: message,
@@ -13456,7 +13500,7 @@ export function BuilderShowcase() {
       });
 
       if (!result) {
-        const message = "Bundle build is available in the Tauri desktop app. The web preview saved the workspace locally only.";
+        const message = "安装包构建需要在 Tauri 桌面 app 中运行。Web 预览只会把工作区保存到本地。";
         updateActiveProject((project) => ({
           ...project,
           buildLog: message,
@@ -13823,7 +13867,7 @@ export function BuilderShowcase() {
           <div className="pointer-events-none absolute inset-2 z-30 overflow-hidden rounded-[14px] border border-dashed border-primary/80 bg-primary/10 p-2 shadow-m3-1 backdrop-blur-[1px]">
             <div className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary/25 bg-surface-container-lowest/95 px-2 py-1 text-[0.66rem] font-medium text-primary shadow-m3-1">
               <PanelTop aria-hidden className="size-3" />
-              <span className="truncate">Drop into Frame</span>
+              <span className="truncate">放入 Frame</span>
               <span className="rounded-full bg-primary/10 px-1.5 py-0.5 uppercase">{layoutMode}</span>
               <span className="rounded-full bg-primary/10 px-1.5 py-0.5">#{Math.min(dropIndex + 1, dropCount + 1)}</span>
             </div>
@@ -13887,11 +13931,11 @@ export function BuilderShowcase() {
   };
 
   const modeBarItems: Array<{ mode: BuilderMode; label: string; detail: string; icon: typeof Layers }> = [
-    { mode: "design", label: "Design", detail: "Canvas", icon: MousePointer2 },
-    { mode: "logic", label: "Logic", detail: "Rust", icon: Braces },
-    { mode: "build", label: "Build", detail: "Run", icon: Download },
-    { mode: "preview", label: "Preview", detail: "Sim", icon: Monitor },
-    { mode: "export", label: "Export", detail: "Code", icon: FileJson },
+    { mode: "design", label: "设计", detail: "画布", icon: MousePointer2 },
+    { mode: "logic", label: "逻辑", detail: "Rust", icon: Braces },
+    { mode: "build", label: "构建", detail: "运行", icon: Download },
+    { mode: "preview", label: "预览", detail: "模拟", icon: Monitor },
+    { mode: "export", label: "导出", detail: "代码", icon: FileJson },
   ];
   const switchEditorMode = (nextMode: BuilderMode) => {
     setMode(nextMode);
@@ -13902,64 +13946,64 @@ export function BuilderShowcase() {
   };
   const activeModeItem = modeBarItems.find((item) => item.mode === mode) ?? modeBarItems[0];
   const leftDockTabs: BuilderDockTab<BuilderLeftDockTab>[] = [
-    { value: "project", label: "Project", icon: FolderOpen },
-    { value: "navigator", label: "Navigator", icon: FileJson, badge: <Badge variant="outline">{activeProject.files.length}</Badge> },
-    { value: "components", label: "Components", icon: Layers, badge: <Badge variant="outline">{palette.length}</Badge> },
-    { value: "assets", label: "Assets", icon: FileImage, badge: <Badge variant="outline">{activeProject.assets.length}</Badge> },
+    { value: "project", label: "项目", icon: FolderOpen },
+    { value: "navigator", label: "导航", icon: FileJson, badge: <Badge variant="outline">{activeProject.files.length}</Badge> },
+    { value: "components", label: "组件", icon: Layers, badge: <Badge variant="outline">{palette.length}</Badge> },
+    { value: "assets", label: "资源", icon: FileImage, badge: <Badge variant="outline">{activeProject.assets.length}</Badge> },
   ];
   const rightDockTabs: BuilderDockTab<BuilderRightDockTab>[] = [
-    { value: "properties", label: "Properties", icon: Settings2 },
-    { value: "connections", label: "Connections", icon: Braces },
-    { value: "responsive", label: "Responsive", icon: Monitor },
-    { value: "impact", label: "Impact", icon: AlertTriangle },
+    { value: "properties", label: "属性", icon: Settings2 },
+    { value: "connections", label: "连接", icon: Braces },
+    { value: "responsive", label: "响应式", icon: Monitor },
+    { value: "impact", label: "影响", icon: AlertTriangle },
   ];
   const bottomDockTabs: BuilderDockTab<BuilderBottomDockTab>[] = [
-    { value: "issues", label: "Issues", icon: AlertTriangle, badge: <Badge variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}>{builderIssueCount}</Badge> },
-    { value: "output", label: "Output", icon: Terminal },
-    { value: "tasks", label: "Tasks", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
-    { value: "logs", label: "Logs", icon: FileJson },
+    { value: "issues", label: "问题", icon: AlertTriangle, badge: <Badge variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}>{builderIssueCount}</Badge> },
+    { value: "output", label: "输出", icon: Terminal },
+    { value: "tasks", label: "任务", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
+    { value: "logs", label: "日志", icon: FileJson },
   ];
   const editorWorkflowSteps: EditorWorkflowStep[] = [
     {
       id: "save",
-      title: "Save",
-      detail: saved ? "Workspace clean" : "Persist project changes",
-      badge: saved ? "clean" : "dirty",
+      title: "保存",
+      detail: saved ? "工作区干净" : "保存项目变更",
+      badge: saved ? "干净" : "未保存",
       icon: Save,
       actions: ["save-project"],
     },
     {
       id: "generate",
-      title: "Generate",
+      title: "生成",
       detail: latestGeneratedFileSummary
-        ? `${latestGeneratedFileSummary.changed_count} changed / ${latestGeneratedFileSummary.total_count} targets`
-        : "Preview and apply target files",
-      badge: "files",
+        ? `${latestGeneratedFileSummary.changed_count} 个变更 / ${latestGeneratedFileSummary.total_count} 个目标`
+        : "预览并应用目标文件",
+      badge: "文件",
       icon: FileJson,
       actions: ["preview-generated-files", "apply-generated-changes"],
     },
     {
       id: "check",
-      title: "Check",
-      detail: buildReadinessSummary.errorCount > 0 ? `${buildReadinessSummary.errorCount} blocker(s) to resolve` : "Run backend and quick checks",
-      badge: buildReadinessSummary.errorCount > 0 ? "blocked" : "checks",
+      title: "检查",
+      detail: buildReadinessSummary.errorCount > 0 ? `${buildReadinessSummary.errorCount} 个阻塞项待处理` : "运行后端和快速检查",
+      badge: buildReadinessSummary.errorCount > 0 ? "阻塞" : "检查",
       icon: Terminal,
       actions: ["build-backend-artifacts", "quick-check-all"],
     },
     {
       id: "validate",
-      title: "Validate",
+      title: "验证",
       detail: activeProject.validationHistory?.[0]
         ? `${activeProject.validationHistory[0].status} · ${activeProject.validationHistory[0].score}%`
-        : "Audit generated window",
-      badge: "audit",
+        : "审查生成窗口",
+      badge: "审查",
       icon: Monitor,
       actions: ["validate-window"],
     },
     {
       id: "build",
-      title: "Build",
-      detail: latestBuildEntry ? `${latestBuildEntry.releaseAppName} v${latestBuildEntry.releaseVersion}` : "Compile release exe",
+      title: "构建",
+      detail: latestBuildEntry ? `${latestBuildEntry.releaseAppName} v${latestBuildEntry.releaseVersion}` : "编译 release exe",
       badge: "exe",
       icon: Download,
       actions: ["build-exe"],
@@ -13998,54 +14042,54 @@ export function BuilderShowcase() {
     ? 100
     : Math.round((completedWorkflowStepCount / Math.max(1, workflowStepCount)) * 100);
   const workflowProgressLabel = workflowComplete
-    ? `${workflowStepCount}/${workflowStepCount} complete`
+    ? `${workflowStepCount}/${workflowStepCount} 已完成`
     : suggestedWorkflowStepIndex >= 0
-      ? `Step ${suggestedWorkflowStepIndex + 1}/${workflowStepCount}`
-      : `${completedWorkflowStepCount}/${workflowStepCount} complete`;
+      ? `步骤 ${suggestedWorkflowStepIndex + 1}/${workflowStepCount}`
+      : `${completedWorkflowStepCount}/${workflowStepCount} 已完成`;
   const workflowPrimaryActionLabel =
     workflowRuntimeActive
       ? stoppingRunId === activeWorkflowRuntimeStopId
-        ? "Stopping"
-        : "Stop target"
+        ? "正在停止"
+        : "停止目标"
       : workflowComplete && activeProject.outputExePath
       ? launchingExeId === "active-output"
-        ? "Launching"
-        : "Run exe"
+        ? "正在启动"
+        : "运行 exe"
       : workflowComplete
-        ? "Open output"
+        ? "打开输出"
         : nextWorkflowStepState?.status === "failed"
-          ? "Retry"
+          ? "重试"
           : nextWorkflowStepState?.status === "running"
-            ? "Running"
-            : "Continue";
+            ? "运行中"
+            : "继续";
   const workflowPrimaryActionDisabled = workflowRuntimeActive
     ? Boolean(stoppingRunId)
     : workflowComplete
     ? Boolean(activeProject.outputExePath && launchingExeId)
     : Boolean(!nextWorkflowStepState || runningProjectTask || queuedProjectTaskCount > 0);
-  const workflowRailStateLabel = activeWorkflowStepState ? "Active step" : workflowRuntimeActive ? "Target running" : workflowComplete ? "Workflow complete" : "Next step";
+  const workflowRailStateLabel = activeWorkflowStepState ? "当前步骤" : workflowRuntimeActive ? "目标运行中" : workflowComplete ? "流程完成" : "下一步";
   const workflowRailBadgeLabel = workflowRuntimeActive
-    ? "running"
+    ? "运行中"
     : workflowComplete
-    ? "done"
+    ? "完成"
     : nextWorkflowStepState
       ? workflowStepStatusLabel(nextWorkflowStepState.status)
-      : "ready";
+      : "就绪";
   const workflowRailBadgeVariant = nextWorkflowStepState?.status === "failed" ? "destructive" : workflowComplete || workflowRuntimeActive ? "secondary" : "outline";
   const workflowActivityText = runningProjectTask
-    ? `Running ${runningProjectTask.title}`
+    ? `正在运行 ${runningProjectTask.title}`
     : queuedProjectTaskCount > 0
-      ? `${queuedProjectTaskCount} queued task(s)`
+      ? `${queuedProjectTaskCount} 个任务排队中`
       : failedProjectTaskCount > 0
-        ? `${failedProjectTaskCount} failed task(s)`
-        : "Ready for the next editor action";
-  const workflowRailTitle = workflowRuntimeActive ? "Runtime active" : workflowComplete ? "Ready to run" : nextWorkflowStepState?.step.title ?? "Workflow ready";
+        ? `${failedProjectTaskCount} 个任务失败`
+        : "已准备好执行下一个编辑操作";
+  const workflowRailTitle = workflowRuntimeActive ? "运行时已启动" : workflowComplete ? "可以运行" : nextWorkflowStepState?.step.title ?? "工作流就绪";
   const workflowRailDetail = workflowRuntimeActive
     ? `pid ${activeWorkflowRuntimeSession?.pid} · ${activeWorkflowRuntimeSession?.status ?? "running"}`
     : workflowComplete
     ? activeProject.outputExePath
-      ? `Release exe ready: ${fileNameFromPath(activeProject.outputExePath)}`
-      : latestReleasePipeline?.summary ?? "All editor workflow steps finished."
+      ? `Release exe 已就绪：${fileNameFromPath(activeProject.outputExePath)}`
+      : latestReleasePipeline?.summary ?? "编辑器工作流步骤已全部完成。"
     : runningProjectTask
       ? workflowActivityText
       : nextWorkflowStepState?.task?.summary ?? nextWorkflowStepState?.step.detail ?? workflowActivityText;
@@ -14054,14 +14098,14 @@ export function BuilderShowcase() {
       ? `${operationMonitorTask.pipelinePresetTitle} / ${operationMonitorTask.title}`
       : operationMonitorTask.title
     : buildError
-      ? "Editor message"
-      : "Editor operations";
+      ? "编辑器消息"
+      : "编辑器操作";
   const operationMonitorDetail =
     operationMonitorTask?.error ??
     operationMonitorTask?.summary ??
     operationMonitorTask?.detail ??
     buildError ??
-    "Run Save, Generate, Check, Validate, or Build to see live task evidence here.";
+    "运行保存、生成、检查、验证或构建后，这里会显示实时任务证据。";
   const operationMonitorStatus = operationMonitorTask?.status ?? (buildError ? "failed" : "queued");
   const operationMonitorVisible = Boolean(buildError || runningProjectTask || queuedProjectTaskCount > 0 || failedProjectTaskCount > 0);
   const feedbackIssueCount = builderIssueCount;
@@ -14073,14 +14117,14 @@ export function BuilderShowcase() {
         ? "queued"
         : "ready";
   const feedbackSummaryTitle = buildError
-    ? "Editor needs attention"
+    ? "编辑器需要处理"
     : runningProjectTask
-      ? `Running ${runningProjectTask.title}`
+      ? `正在运行 ${runningProjectTask.title}`
       : queuedProjectTaskCount > 0
-        ? `${queuedProjectTaskCount} task(s) queued`
+        ? `${queuedProjectTaskCount} 个任务排队中`
         : latestProjectTask
           ? latestProjectTask.title
-          : "Feedback ready";
+          : "反馈已就绪";
   const feedbackSummaryDetail =
     buildError ??
     runningProjectTask?.summary ??
@@ -14088,7 +14132,15 @@ export function BuilderShowcase() {
     latestFailedProjectTask?.error ??
     latestFailedProjectTask?.summary ??
     latestProjectTask?.summary ??
-    (activeProject.outputExePath ? `Latest exe: ${fileNameFromPath(activeProject.outputExePath)}` : "Issues, tasks, output, and logs will appear here.");
+    (activeProject.outputExePath ? `最新 exe：${fileNameFromPath(activeProject.outputExePath)}` : "问题、任务、输出和日志会显示在这里。");
+  const feedbackSummaryToneLabel =
+    feedbackSummaryTone === "attention"
+      ? "需处理"
+      : feedbackSummaryTone === "running"
+        ? "运行中"
+        : feedbackSummaryTone === "queued"
+          ? "排队中"
+          : "就绪";
   const feedbackStripVisible = mode !== "design" || feedbackPanelOpen;
   const selectRelevantProjectTask = (preferredTask?: ProjectTaskEntry | null) => {
     const task =
@@ -14337,41 +14389,41 @@ export function BuilderShowcase() {
       ? [
           {
             id: "batch-properties",
-            title: "Batch layout",
-            detail: `${selectedItems.length} controls selected; shared edits stay in Properties.`,
-            badge: `${selectedItems.length} selected`,
+            title: "批量布局",
+            detail: `已选择 ${selectedItems.length} 个控件；共享编辑会保留在属性面板中。`,
+            badge: `${selectedItems.length} 个已选`,
             icon: Layers,
-            actionLabel: "Properties",
+            actionLabel: "属性",
             tone: rightDockTab === "properties" ? "primary" : "ready",
             onAction: openSelectedProperties,
           },
           {
             id: "batch-duplicate",
-            title: "Duplicate",
-            detail: "Copy the selected controls with their current layout and bindings.",
-            badge: "copy",
+            title: "复制",
+            detail: "复制所选控件及当前布局和绑定。",
+            badge: "复制",
             icon: Copy,
-            actionLabel: "Duplicate",
+            actionLabel: "复制",
             tone: "ready",
             onAction: duplicateSelected,
           },
           {
             id: "batch-impact",
-            title: "Impact graph",
-            detail: "Check which generated files and validation steps depend on this selection.",
-            badge: "graph",
+            title: "影响图谱",
+            detail: "检查哪些生成文件和验证步骤依赖当前选择。",
+            badge: "图谱",
             icon: AlertTriangle,
-            actionLabel: "Impact",
+            actionLabel: "影响",
             tone: rightDockTab === "impact" ? "primary" : "muted",
             onAction: () => setRightDockTab("impact"),
           },
           {
             id: "batch-delete",
-            title: "Delete",
-            detail: `${selectedItems.filter((item) => item.locked).length} locked control(s) will be skipped.`,
-            badge: "destructive",
+            title: "删除",
+            detail: `${selectedItems.filter((item) => item.locked).length} 个锁定控件会被跳过。`,
+            badge: "危险",
             icon: Trash2,
-            actionLabel: "Delete",
+            actionLabel: "删除",
             tone: "danger",
             onAction: requestDeleteSelected,
           },
@@ -14380,28 +14432,28 @@ export function BuilderShowcase() {
         ? [
             {
               id: "selected-properties",
-              title: selectedPropertyIssues.length > 0 ? "Fix properties" : "Properties",
+              title: selectedPropertyIssues.length > 0 ? "修复属性" : "属性",
               detail:
                 selectedPropertyIssues.length > 0
-                  ? `${selectedPropertyIssues.length} issue(s) found; ${selectedPropertyAutoFixCount} can be fixed now.`
-                  : `${getItemSummary(selectedItem)} is ready for layout and content edits.`,
-              badge: selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} issue(s)` : "ready",
+                  ? `发现 ${selectedPropertyIssues.length} 个问题；${selectedPropertyAutoFixCount} 个可立即修复。`
+                  : `${getItemSummary(selectedItem)} 可编辑布局和内容。`,
+              badge: selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} 个问题` : "就绪",
               icon: selectedPropertyIssues.length > 0 ? AlertTriangle : Settings2,
-              actionLabel: selectedPropertyAutoFixCount > 0 ? "Fix now" : "Open",
+              actionLabel: selectedPropertyAutoFixCount > 0 ? "立即修复" : "打开",
               tone: selectedPropertyIssues.length > 0 ? "warning" : rightDockTab === "properties" ? "primary" : "ready",
               onAction: selectedPropertyAutoFixCount > 0 ? applySelectedPropertyAutoFix : openSelectedProperties,
             },
             {
               id: "selected-connection",
-              title: selectedEventName ? (selectedEventCommand ? "Event" : "Bind event") : "Static",
+              title: selectedEventName ? (selectedEventCommand ? "事件" : "绑定事件") : "静态控件",
               detail: selectedEventName
                 ? selectedEventCommand
-                  ? `${selectedEventName} calls ${sanitizeRustCommandName(selectedEventCommand.name)}.`
-                  : `${selectedEventName} is available but has no Rust command yet.`
+                  ? `${selectedEventName} 调用 ${sanitizeRustCommandName(selectedEventCommand.name)}。`
+                  : `${selectedEventName} 可用，但还没有 Rust 命令。`
                 : "这个控件没有事件；Connections 会显示可用的下一步。",
-              badge: selectedEventName ? (selectedEventCommand ? "bound" : "needs binding") : "static",
+              badge: selectedEventName ? (selectedEventCommand ? "已绑定" : "待绑定") : "静态",
               icon: Braces,
-              actionLabel: selectedEventName ? (selectedEventCommand ? "Open" : "Bind") : "查看",
+              actionLabel: selectedEventName ? (selectedEventCommand ? "打开" : "绑定") : "查看",
               tone: selectedEventName ? (selectedEventCommand ? (rightDockTab === "connections" ? "primary" : "ready") : "warning") : "muted",
               onAction: selectedEventName
                 ? selectedEventCommand
@@ -14411,15 +14463,15 @@ export function BuilderShowcase() {
             },
             {
               id: "selected-run-event",
-              title: selectedLatestSimulatorTrace ? "Last run" : "Run preview",
+              title: selectedLatestSimulatorTrace ? "最近运行" : "运行预览",
               detail: selectedLatestSimulatorTrace
                 ? `${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
                 : selectedEventCommand
-                  ? "Execute the bound Rust command and reveal the simulator log."
-                  : "Bind a command first, then this run step becomes available.",
-              badge: selectedLatestSimulatorTrace?.status ?? (selectedEventCommand ? "ready" : "blocked"),
+                  ? "执行已绑定的 Rust 命令并显示模拟器日志。"
+                  : "先绑定命令，之后即可运行这一步。",
+              badge: selectedLatestSimulatorTrace?.status ?? (selectedEventCommand ? "就绪" : "阻塞"),
               icon: Play,
-              actionLabel: selectedEventCommand ? "Run" : "Bind first",
+              actionLabel: selectedEventCommand ? "运行" : "先绑定",
               tone: selectedLatestSimulatorTrace
                 ? selectedLatestSimulatorTrace.status === "success"
                   ? "primary"
@@ -14432,13 +14484,13 @@ export function BuilderShowcase() {
             },
             {
               id: "selected-impact",
-              title: "Impact graph",
+              title: "影响图谱",
               detail: selectedControlReverseDependency
                 ? selectedControlReverseDependency.summary
-                : "Show downstream files, checks, and generated outputs for this control.",
-              badge: selectedControlReverseDependency ? reverseDependencyStatusLabel(selectedControlReverseDependency.status) : "graph",
+                : "显示该控件下游相关的文件、检查和生成输出。",
+              badge: selectedControlReverseDependency ? reverseDependencyStatusLabel(selectedControlReverseDependency.status) : "图谱",
               icon: AlertTriangle,
-              actionLabel: "Impact",
+              actionLabel: "影响",
               tone: rightDockTab === "impact" ? "primary" : "muted",
               onAction: () => setRightDockTab("impact"),
             },
@@ -14446,11 +14498,11 @@ export function BuilderShowcase() {
         : [
             {
               id: "empty-select",
-              title: "Select",
-              detail: "Use Navigator or the canvas to focus the Properties and Connections workflow.",
-              badge: "start",
+              title: "选择",
+              detail: "使用导航或画布聚焦属性和连接工作流。",
+              badge: "开始",
               icon: MousePointer2,
-              actionLabel: "Navigator",
+              actionLabel: "导航",
               tone: "primary",
               onAction: () => {
                 setLeftDockTab("navigator");
@@ -14459,23 +14511,23 @@ export function BuilderShowcase() {
             },
             {
               id: "empty-components",
-              title: "Insert",
-              detail: "Open the component library and drop controls into the active UI file.",
-              badge: `${palette.length} items`,
+              title: "插入",
+              detail: "打开组件库并把控件放入当前 UI 文件。",
+              badge: `${palette.length} 项`,
               icon: Layers,
-              actionLabel: "Components",
+              actionLabel: "组件",
               tone: "ready",
               onAction: () => setLeftDockTab("components"),
             },
             {
               id: "empty-workflow",
-              title: "Build flow",
+              title: "构建流程",
               detail: nextWorkflowStepState
                 ? `${nextWorkflowStepState.step.title}: ${nextWorkflowStepState.step.detail}`
-                : "Save, generate, validate, and build from the workflow strip.",
-              badge: nextWorkflowStepState?.status ?? "idle",
+                : "从工作流条执行保存、生成、验证和构建。",
+              badge: nextWorkflowStepState ? workflowStepStatusLabel(nextWorkflowStepState.status) : "待开始",
               icon: Download,
-              actionLabel: "Tasks",
+              actionLabel: "任务",
               tone: nextWorkflowStepState?.status === "failed" ? "warning" : "muted",
               onAction: () => openRelevantTaskDock(),
             },
@@ -14483,14 +14535,14 @@ export function BuilderShowcase() {
 
   const inspectorWorkflowBadge =
     selectedItems.length > 1
-      ? "Batch workflow"
+      ? "批量工作流"
       : selectedItem
         ? selectedEventName
           ? selectedEventCommand
-            ? "Connected"
-            : "Needs binding"
-          : "Static control"
-        : "No selection";
+            ? "已连接"
+            : "待绑定"
+          : "静态控件"
+        : "未选择";
   const selectionRecommendedStep =
     inspectorWorkflowSteps.find((step) => step.tone === "warning" && !step.disabled) ??
     inspectorWorkflowSteps.find((step) => step.tone === "danger" && !step.disabled) ??
@@ -14514,28 +14566,38 @@ export function BuilderShowcase() {
             : "ready";
   const selectionStatusTitle =
     selectedItems.length > 1
-      ? `${selectedItems.length} selected for batch editing`
+      ? `${selectedItems.length} 个控件已进入批量编辑`
       : selectedItem
         ? selectedPropertyIssues.length > 0
-          ? "Selection needs property fixes"
+          ? "所选控件需要属性修复"
           : selectedEventName && !selectedEventCommand
-            ? "Event binding is the next step"
+            ? "下一步是绑定事件"
             : selectedEventCommand
-              ? "Selection is interactive"
-              : "Selection ready for layout edits"
-        : "No selection";
+              ? "所选控件可交互"
+              : "所选控件可编辑布局"
+        : "未选择";
   const selectionStatusDetail =
     selectedItems.length > 1
-      ? `${selectedItems.filter((item) => item.locked).length} locked · duplicate, delete, or inspect generated impact for the batch.`
+      ? `${selectedItems.filter((item) => item.locked).length} 个已锁定 · 可复制、删除或检查这批控件的生成影响。`
       : selectedItem
         ? selectedPropertyIssues.length > 0
-          ? `${selectedPropertyIssues.length} issue(s), ${selectedPropertyAutoFixCount} safe fix(es).`
+          ? `${selectedPropertyIssues.length} 个问题，${selectedPropertyAutoFixCount} 个安全修复。`
           : selectedEventName
             ? selectedEventCommand
-              ? `${selectedEventName} calls ${sanitizeRustCommandName(selectedEventCommand.name)}; preview or inspect the connection.`
-              : `${selectedEventName} can be wired to a Rust command from Connections.`
+              ? `${selectedEventName} 调用 ${sanitizeRustCommandName(selectedEventCommand.name)}；可预览或检查连接。`
+              : `${selectedEventName} 可在连接面板中接入 Rust 命令。`
             : `${activeFile.name} · ${selectedItem.type} · layout and content are editable.`
-        : "Select a layer or canvas node to edit it.";
+        : "选择图层或画布节点后即可编辑。";
+  const selectionStatusToneLabel =
+    selectionStatusTone === "attention"
+      ? "需处理"
+      : selectionStatusTone === "batch"
+        ? "批量"
+        : selectionStatusTone === "setup"
+          ? "待配置"
+          : selectionStatusTone === "interactive"
+            ? "可交互"
+            : "就绪";
 
   useEffect(() => {
     const handleEditorCommand = (event: Event) => {
@@ -14611,19 +14673,19 @@ export function BuilderShowcase() {
       if (command === "open-project-settings") {
         switchEditorMode("design");
         setLeftDockTab("project");
-        showProjectJumpFeedback("success", "Opened project settings", "Project Dock is active with templates, UI files, and release settings.");
+        showProjectJumpFeedback("success", "已打开项目设置", "项目 Dock 已显示模板、UI 文件和发布设置。");
         return;
       }
       if (command === "open-project-files") {
         switchEditorMode("design");
         setLeftDockTab("navigator");
-        showProjectJumpFeedback("success", "Opened project files", "Navigator is active with UI files, layers, and canvas controls.");
+        showProjectJumpFeedback("success", "已打开项目文件", "导航器已显示 UI 文件、图层和画布控件。");
         return;
       }
       if (command === "open-build-output") {
         setMode("build");
         openBottomDock("output");
-        showProjectJumpFeedback("success", "Opened build output", "Build workspace and Output dock are visible.");
+        showProjectJumpFeedback("success", "已打开构建输出", "构建工作区和输出 Dock 已显示。");
         return;
       }
       if (command === "help-guide") {
@@ -14650,8 +14712,8 @@ export function BuilderShowcase() {
         ref={projectJumpInputRef}
         value={projectJumpQuery}
         inputSize="sm"
-        aria-label="Project Locator"
-        placeholder="Locator: file, control, Rust command, action..."
+        aria-label="项目定位器"
+        placeholder="定位：文件、控件、Rust 命令、操作..."
         className="h-9 rounded-2xl bg-surface-container-low pl-9 pr-16 text-xs"
         onFocus={() => setProjectJumpFocused(true)}
         onBlur={() => window.setTimeout(() => setProjectJumpFocused(false), 120)}
@@ -14691,7 +14753,7 @@ export function BuilderShowcase() {
       {projectJumpPanelOpen ? (
         <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-[360px] overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-1 shadow-m3-2">
           <div className="flex items-center justify-between px-3 py-2 text-[0.68rem] text-on-surface-variant">
-            <span>{projectJumpQuery.trim() ? "Search results" : recentProjectJumpResults.length > 0 ? "Recent and recommended" : "Recommended commands"}</span>
+            <span>{projectJumpQuery.trim() ? "搜索结果" : recentProjectJumpResults.length > 0 ? "最近和推荐" : "推荐命令"}</span>
             <span className="font-mono">Ctrl+P / Ctrl+K</span>
           </div>
           {projectJumpPanelResults.length > 0 ? (
@@ -14729,7 +14791,7 @@ export function BuilderShowcase() {
             ))
           ) : (
             <div className="flex min-h-10 flex-1 items-center rounded-xl border border-dashed border-outline-variant px-4 text-xs text-on-surface-variant">
-              No project matches
+              没有匹配项目
             </div>
           )}
         </div>
@@ -14769,23 +14831,23 @@ export function BuilderShowcase() {
       <Dialog open={Boolean(destructiveAction)} onOpenChange={(open) => !open && setDestructiveAction(null)}>
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle>{destructiveAction?.title ?? "Confirm action"}</DialogTitle>
+            <DialogTitle>{destructiveAction?.title ?? "确认操作"}</DialogTitle>
             <DialogDescription>
-              {destructiveAction?.description ?? "Review this action before applying it to the current workspace."}
+              {destructiveAction?.description ?? "应用到当前工作区前，请先确认这个操作。"}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setDestructiveAction(null)}>
-              Cancel
+              取消
             </Button>
             <Button type="button" variant="destructive" onClick={confirmDestructiveAction}>
-              {destructiveAction?.confirmLabel ?? "Confirm"}
+              {destructiveAction?.confirmLabel ?? "确认"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
         <div className="grid h-full min-h-0 grid-cols-[88px_minmax(0,1fr)]">
-          <nav className="flex flex-col items-stretch gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="Editor modes">
+          <nav className="flex flex-col items-stretch gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3" aria-label="编辑器模式">
             <span className="mx-auto mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
               <MousePointer2 aria-hidden className="size-4" />
             </span>
@@ -14794,7 +14856,7 @@ export function BuilderShowcase() {
                 key={item.mode}
                 type="button"
                 data-builder-mode-button={item.mode}
-                aria-label={`${item.label} mode`}
+                aria-label={`${item.label}模式`}
                 aria-current={mode === item.mode ? "page" : undefined}
                 className={cn(
                   "focus-ring group flex h-14 w-full min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 text-[0.62rem] font-medium leading-none transition",
@@ -14818,7 +14880,7 @@ export function BuilderShowcase() {
                 <activeModeItem.icon aria-hidden className="size-4" />
               </span>
               <div>
-                <h1 className="text-base font-semibold tracking-normal">Nova UI Editor</h1>
+                <h1 className="text-base font-semibold tracking-normal">Nova UI 编辑器</h1>
                 <p className="text-xs text-on-surface-variant">
                   {activeModeItem.label} / {activeProject.name} / {activeFile.path}
                 </p>
@@ -14907,7 +14969,7 @@ export function BuilderShowcase() {
                         variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"}
                         className="hidden shrink-0 px-1.5 py-0 text-[0.6rem] 2xl:inline-flex"
                       >
-                        {suggested && status === "idle" ? "next" : workflowStepStatusLabel(status)}
+                        {suggested && status === "idle" ? "下一步" : workflowStepStatusLabel(status)}
                       </Badge>
                     </button>
                   );
@@ -14936,11 +14998,11 @@ export function BuilderShowcase() {
                   size="sm"
                   variant="ghost"
                   className="shrink-0"
-                  aria-label="Open workflow tasks"
+                  aria-label="打开工作流任务"
                   onClick={() => openRelevantTaskDock()}
                 >
                   <ClipboardCopy aria-hidden className="size-4" />
-                  Tasks
+                  任务
                 </Button>
               </div>
             </div>
@@ -14958,11 +15020,11 @@ export function BuilderShowcase() {
               >
                 <div className="min-w-0">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <Badge variant={projectTaskStatusVariant(operationMonitorStatus)}>{operationMonitorStatus}</Badge>
+                    <Badge variant={projectTaskStatusVariant(operationMonitorStatus)}>{projectTaskStatusLabel(operationMonitorStatus)}</Badge>
                     <span className="truncate text-xs font-medium text-on-surface">{operationMonitorTitle}</span>
                     {operationMonitorTask?.pipelineStepCount ? (
                       <span className="rounded-full border border-outline-variant px-2 py-0.5 font-mono text-[0.66rem] text-on-surface-variant">
-                        step {(operationMonitorTask.pipelineStepIndex ?? 0) + 1}/{operationMonitorTask.pipelineStepCount}
+                        步骤 {(operationMonitorTask.pipelineStepIndex ?? 0) + 1}/{operationMonitorTask.pipelineStepCount}
                       </span>
                     ) : null}
                     {operationMonitorTask ? (
@@ -14982,7 +15044,7 @@ export function BuilderShowcase() {
                     onClick={() => openRelevantTaskDock(operationMonitorTask)}
                   >
                     <ClipboardCopy aria-hidden className="size-4" />
-                    Tasks
+                    任务
                   </Button>
                   <Button
                     size="sm"
@@ -14994,7 +15056,7 @@ export function BuilderShowcase() {
                     }}
                   >
                     <AlertTriangle aria-hidden className="size-4" />
-                    Issues
+                    问题
                   </Button>
                   <Button
                     size="sm"
@@ -15006,12 +15068,12 @@ export function BuilderShowcase() {
                     }}
                   >
                     <Terminal aria-hidden className="size-4" />
-                    Output
+                    输出
                   </Button>
                   {operationMonitorTask?.status === "failed" ? (
                     <Button size="sm" data-builder-monitor-retry-task="" onClick={() => retryProjectTask(operationMonitorTask)}>
                       <RotateCcw aria-hidden className="size-4" />
-                      Retry
+                      重试
                     </Button>
                   ) : null}
                 </div>
@@ -15032,7 +15094,7 @@ export function BuilderShowcase() {
                           : "outline"
                     }
                   >
-                    {feedbackSummaryTone}
+                    {feedbackSummaryToneLabel}
                   </Badge>
                   <span className="max-w-[18rem] truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
                   <button
@@ -15041,7 +15103,7 @@ export function BuilderShowcase() {
                     onClick={() => openFeedbackPanel("issues")}
                   >
                     <AlertTriangle aria-hidden className="size-3.5" />
-                    Issues {feedbackIssueCount}
+                    问题 {feedbackIssueCount}
                   </button>
                   <button
                     type="button"
@@ -15049,7 +15111,7 @@ export function BuilderShowcase() {
                     onClick={() => openRelevantTaskDock()}
                   >
                     <ClipboardCopy aria-hidden className="size-3.5" />
-                    Tasks {activeProjectTasks.length}
+                    任务 {activeProjectTasks.length}
                   </button>
                   <button
                     type="button"
@@ -15057,7 +15119,7 @@ export function BuilderShowcase() {
                     onClick={() => openFeedbackPanel("output")}
                   >
                     <Download aria-hidden className="size-3.5" />
-                    Output
+                    输出
                   </button>
                   <button
                     type="button"
@@ -15065,7 +15127,7 @@ export function BuilderShowcase() {
                     onClick={() => openFeedbackPanel("logs")}
                   >
                     <FileJson aria-hidden className="size-3.5" />
-                    Logs
+                    日志
                   </button>
                   <span className="min-w-[12rem] flex-1 truncate text-on-surface-variant">{feedbackSummaryDetail}</span>
                 </div>
@@ -15075,21 +15137,21 @@ export function BuilderShowcase() {
                     data-builder-feedback-inline-panel={bottomDockTab}
                   >
                     <div className="flex min-w-0 items-center gap-2">
-                      <Badge variant="secondary">{bottomDockTab}</Badge>
+                      <Badge variant="secondary">{bottomDockTabs.find((tab) => tab.value === bottomDockTab)?.label ?? bottomDockTab}</Badge>
                       <span className="truncate text-on-surface-variant">
                         {bottomDockTab === "issues"
-                          ? `${feedbackIssueCount} active`
+                          ? `${feedbackIssueCount} 个活跃问题`
                           : bottomDockTab === "tasks"
-                            ? `${activeProjectTasks.length} total`
+                            ? `${activeProjectTasks.length} 个任务`
                             : bottomDockTab === "output"
-                              ? activeProject.outputExePath ? "exe ready" : "pending"
-                              : selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview ? "task log" : "waiting"}
+                              ? activeProject.outputExePath ? "exe 已就绪" : "等待输出"
+                              : selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview ? "任务日志" : "等待日志"}
                       </span>
                     </div>
                     <div className="min-w-0">
                       {bottomDockTab === "issues" ? (
                         <span className="block truncate text-on-surface-variant">
-                          {selectedBuilderIssue ? `${selectedBuilderIssue.title}: ${selectedBuilderIssue.detail}` : "No active issues. Design validation, build diagnostics, and runtime checks will appear here."}
+                          {selectedBuilderIssue ? `${selectedBuilderIssue.title}: ${selectedBuilderIssue.detail}` : "没有活跃问题。设计验证、构建诊断和运行时检查会显示在这里。"}
                         </span>
                       ) : bottomDockTab === "tasks" ? (
                         <div className="flex min-w-0 flex-wrap gap-1.5">
@@ -15101,18 +15163,18 @@ export function BuilderShowcase() {
                               onClick={() => openRelevantTaskDock(task)}
                             >
                               <span className="truncate">{task.title}</span>
-                              <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                              <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
                             </button>
                           ))}
-                          {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">No tasks yet.</span> : null}
+                          {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">暂无任务。</span> : null}
                         </div>
                       ) : bottomDockTab === "output" ? (
                         <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
-                          {activeProject.outputExePath || activeBundlePath || activeBundleDir || "Run Build or Bundle to produce desktop artifacts."}
+                          {activeProject.outputExePath || activeBundlePath || activeBundleDir || "运行构建或打包后会生成桌面产物。"}
                         </span>
                       ) : (
                         <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
-                          {selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                          {selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview || latestRunSessionEntry?.runtimeLogPreview || "运行检查、构建或启动生成应用后会显示运行时和任务日志。"}
                         </span>
                       )}
                     </div>
@@ -15156,7 +15218,7 @@ export function BuilderShowcase() {
                 新建命令
               </Button>
               <div className="border-t border-outline-variant pt-4">
-                <PanelTitle icon={FileJson} title="Rust modules" description="拆分可复用后端逻辑，生成到 src-tauri/src/*.rs。" />
+                <PanelTitle icon={FileJson} title="Rust 模块" description="拆分可复用后端逻辑，生成到 src-tauri/src/*.rs。" />
                 <div className="space-y-2">
                   {activeProject.rustModules.map((module) => (
                     <button
@@ -15172,7 +15234,7 @@ export function BuilderShowcase() {
                       )}
                     >
                       <span className="block truncate font-mono text-xs">{sanitizeRustModuleName(module.name)}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">{module.enabled ? "enabled" : "disabled"} · {module.source.split(/\r?\n/).length} lines</span>
+                      <span className="mt-1 block truncate text-[0.68rem]">{booleanStateLabel(module.enabled)} · {module.source.split(/\r?\n/).length} 行</span>
                     </button>
                   ))}
                 </div>
@@ -15182,7 +15244,7 @@ export function BuilderShowcase() {
                 </Button>
               </div>
               <div className="border-t border-outline-variant pt-4">
-                <PanelTitle icon={Box} title="Cargo dependencies" description="管理会追加到生成 app Cargo.toml 的 crate。" />
+                <PanelTitle icon={Box} title="Cargo 依赖" description="管理会追加到生成 app Cargo.toml 的 crate。" />
                 <div className="space-y-2">
                   {activeProject.cargoDependencies.map((dependency) => (
                     <button
@@ -15199,7 +15261,7 @@ export function BuilderShowcase() {
                     >
                       <span className="block truncate font-mono text-xs">{sanitizeCargoDependencyName(dependency.name)}</span>
                       <span className="mt-1 block truncate text-[0.68rem]">
-                        {dependency.enabled ? "enabled" : "disabled"} · v{dependency.version}
+                        {booleanStateLabel(dependency.enabled)} · v{dependency.version}
                         {dependency.features ? ` · ${dependency.features}` : ""}
                       </span>
                     </button>
@@ -15211,7 +15273,7 @@ export function BuilderShowcase() {
                 </Button>
               </div>
               <div className="border-t border-outline-variant pt-4">
-                <PanelTitle icon={Terminal} title="Backend integrations" description="登记 Rust 管理的 C++ FFI、sidecar 或本地服务。" />
+                <PanelTitle icon={Terminal} title="后端集成" description="登记 Rust 管理的 C++ FFI、sidecar 或本地服务。" />
                 <div className="space-y-2">
                   {activeProject.backendIntegrations.map((integration) => (
                     <button
@@ -15228,7 +15290,7 @@ export function BuilderShowcase() {
                     >
                       <span className="block truncate font-mono text-xs">{integration.name}</span>
                       <span className="mt-1 block truncate text-[0.68rem]">
-                        {integration.enabled ? "enabled" : "disabled"} · {integration.language} · {integration.transport}
+                        {booleanStateLabel(integration.enabled)} · {integration.language} · {integration.transport}
                       </span>
                     </button>
                   ))}
@@ -15239,7 +15301,7 @@ export function BuilderShowcase() {
                 </Button>
               </div>
               <div className="border-t border-outline-variant pt-4">
-                <PanelTitle icon={ToggleLeft} title="State store" description="项目级共享状态，可绑定到多个控件。" />
+                <PanelTitle icon={ToggleLeft} title="状态存储" description="项目级共享状态，可绑定到多个控件。" />
                 <div className="space-y-2">
                   {activeProject.stateVariables.map((state) => (
                     <button
@@ -15256,7 +15318,7 @@ export function BuilderShowcase() {
                     >
                       <span className="block truncate font-mono text-xs">{state.name}</span>
                       <span className="mt-1 block truncate text-[0.68rem]">
-                        {state.initialValue || "empty"} · {formatStateReferenceCount(stateReferenceCounts.get(state.id) ?? 0)}
+                        {state.initialValue || "空"} · {formatStateReferenceCount(stateReferenceCounts.get(state.id) ?? 0)}
                       </span>
                     </button>
                   ))}
@@ -15276,10 +15338,10 @@ export function BuilderShowcase() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{activeProject.rustCommands.length} commands</Badge>
-                  <Badge variant="outline">{activeProject.rustModules.filter((module) => module.enabled).length} modules</Badge>
-                  <Badge variant="outline">{activeProject.cargoDependencies.filter((dependency) => dependency.enabled).length} deps</Badge>
-                  <Badge variant="outline">{activeProject.backendIntegrations.filter((integration) => integration.enabled).length} integrations</Badge>
+                  <Badge variant="outline">{activeProject.rustCommands.length} 命令</Badge>
+                  <Badge variant="outline">{activeProject.rustModules.filter((module) => module.enabled).length} 模块</Badge>
+                  <Badge variant="outline">{activeProject.cargoDependencies.filter((dependency) => dependency.enabled).length} 依赖</Badge>
+                  <Badge variant="outline">{activeProject.backendIntegrations.filter((integration) => integration.enabled).length} 集成</Badge>
                 </div>
               </div>
               {rustDiagnosticTarget ? (
@@ -15299,7 +15361,7 @@ export function BuilderShowcase() {
                     </p>
                     {rustDiagnosticTarget.sourceFile ? (
                       <p className="mt-1 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                        maps to {fileNameFromPath(rustDiagnosticTarget.sourceFile)}:{rustDiagnosticTarget.sourceLine}
+                        映射到 {fileNameFromPath(rustDiagnosticTarget.sourceFile)}:{rustDiagnosticTarget.sourceLine}
                         {rustDiagnosticTarget.sourceKind ? ` · ${rustDiagnosticTarget.sourceKind}` : ""}
                       </p>
                     ) : null}
@@ -15397,7 +15459,7 @@ export function BuilderShowcase() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <p className="font-medium text-on-surface">Dependency impact</p>
+                        <p className="font-medium text-on-surface">依赖影响</p>
                         <Badge variant={reverseDependencyStatusVariant(activeRustCommandReverseDependency.status)}>
                           {reverseDependencyStatusLabel(activeRustCommandReverseDependency.status)}
                         </Badge>
@@ -15466,7 +15528,7 @@ export function BuilderShowcase() {
               ) : null}
               <div className="flex items-center justify-between gap-4 rounded-[18px] bg-surface-container-low p-3">
                 <div className="min-w-0">
-                  <Label className="text-xs font-medium">Accept command args</Label>
+                  <Label className="text-xs font-medium">接收命令参数</Label>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">生成命名参数，并从控件事件上下文映射到 Rust。</p>
                 </div>
                 <Switch
@@ -15478,12 +15540,12 @@ export function BuilderShowcase() {
                 <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-low p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Command args</h3>
+                      <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">命令参数</h3>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">这些名称会成为 Rust 函数参数和 Tauri invoke args。</p>
                     </div>
                     <Button size="sm" variant="secondary" onClick={addRustCommandParameter}>
                       <Plus aria-hidden className="size-3.5" />
-                      Add
+                      添加
                     </Button>
                   </div>
                   <div className="space-y-2">
@@ -15554,23 +15616,23 @@ export function BuilderShowcase() {
               ) : null}
               <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-low p-3">
                 <div>
-                  <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Result schema</h3>
+                  <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">结果结构</h3>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">定义 Rust 返回值如何变成消息、错误和 state patch。</p>
                 </div>
-                <Field label="Result format">
+                <Field label="结果格式">
                   <Select value={commandResultSchema(activeRustCommand).mode} onValueChange={(mode) => setRustCommandResultMode(mode as RustCommandResultSchema["mode"])}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="text">Text result</SelectItem>
-                      <SelectItem value="json">JSON envelope</SelectItem>
+                      <SelectItem value="text">文本结果</SelectItem>
+                      <SelectItem value="json">JSON 封装</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
                 {commandResultSchema(activeRustCommand).mode === "json" ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <Field label="Message path">
+                    <Field label="消息路径">
                       <Input
                         value={commandResultSchema(activeRustCommand).messagePath ?? "message"}
                         onChange={(event) => updateRustCommandResult({ mode: "json", messagePath: event.target.value })}
@@ -15578,7 +15640,7 @@ export function BuilderShowcase() {
                         spellCheck={false}
                       />
                     </Field>
-                    <Field label="Patch path">
+                    <Field label="Patch 路径">
                       <Input
                         value={commandResultSchema(activeRustCommand).statePatchPath ?? "patch"}
                         onChange={(event) => updateRustCommandResult({ mode: "json", statePatchPath: event.target.value })}
@@ -15586,7 +15648,7 @@ export function BuilderShowcase() {
                         spellCheck={false}
                       />
                     </Field>
-                    <Field label="Success path">
+                    <Field label="成功路径">
                       <Input
                         value={commandResultSchema(activeRustCommand).successPath ?? "success"}
                         onChange={(event) => updateRustCommandResult({ mode: "json", successPath: event.target.value })}
@@ -15594,7 +15656,7 @@ export function BuilderShowcase() {
                         spellCheck={false}
                       />
                     </Field>
-                    <Field label="Error path">
+                    <Field label="错误路径">
                       <Input
                         value={commandResultSchema(activeRustCommand).errorPath ?? "error"}
                         onChange={(event) => updateRustCommandResult({ mode: "json", errorPath: event.target.value })}
@@ -15604,7 +15666,7 @@ export function BuilderShowcase() {
                     </Field>
                   </div>
                 ) : (
-                  <p className="text-xs leading-5 text-on-surface-variant">Text result 会直接作为反馈、目标属性或 result state 的值。</p>
+                  <p className="text-xs leading-5 text-on-surface-variant">文本结果会直接作为反馈、目标属性或结果状态的值。</p>
                 )}
               </section>
               <div className="rounded-[18px] bg-surface-container-low p-3 text-xs leading-5 text-on-surface-variant">
@@ -15628,12 +15690,12 @@ export function BuilderShowcase() {
               <section className="space-y-3 rounded-[20px] border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Rust module</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Rust 模块</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">模块会生成到 app/src-tauri/src，并通过 lib.rs 的 mod 声明载入。</p>
                   </div>
                   <Switch
                     checked={activeRustModule.enabled}
-                    aria-label="启用 Rust module"
+                    aria-label="启用 Rust 模块"
                     onCheckedChange={(enabled) => updateRustModule(activeRustModule.id, { enabled })}
                   />
                 </div>
@@ -15664,17 +15726,17 @@ export function BuilderShowcase() {
               <section className="space-y-3 rounded-[20px] border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Cargo dependency</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Cargo 依赖</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">启用后会写入生成 app 的 src-tauri/Cargo.toml。</p>
                   </div>
                   <Switch
                     checked={activeCargoDependency.enabled}
-                    aria-label="启用 Cargo dependency"
+                    aria-label="启用 Cargo 依赖"
                     onCheckedChange={(enabled) => updateCargoDependency(activeCargoDependency.id, { enabled })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <Field label="Crate">
+                  <Field label="Crate 名称">
                     <Input
                       data-builder-cargo-dependency-name=""
                       value={activeCargoDependency.name}
@@ -15683,7 +15745,7 @@ export function BuilderShowcase() {
                       className="font-mono text-xs"
                     />
                   </Field>
-                  <Field label="Version">
+                  <Field label="版本">
                     <Input
                       data-builder-cargo-dependency-version=""
                       value={activeCargoDependency.version}
@@ -15693,7 +15755,7 @@ export function BuilderShowcase() {
                     />
                   </Field>
                 </div>
-                <Field label="Features">
+                <Field label="特性">
                   <Input
                     data-builder-cargo-dependency-features=""
                     value={activeCargoDependency.features}
@@ -15711,12 +15773,12 @@ export function BuilderShowcase() {
               <section className="space-y-3 rounded-[20px] border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Backend integration</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">后端集成</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">Rust 仍是主后端；这里登记 C++ FFI、sidecar 或本地服务边界。</p>
                   </div>
                   <Switch
                     checked={activeBackendIntegration.enabled}
-                    aria-label="启用 Backend integration"
+                    aria-label="启用后端集成"
                     onCheckedChange={(enabled) => updateBackendIntegration(activeBackendIntegration.id, { enabled })}
                   />
                 </div>
@@ -15730,7 +15792,7 @@ export function BuilderShowcase() {
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-2">
-                  <Field label="Kind">
+                  <Field label="类型">
                     <Select
                       value={activeBackendIntegration.kind}
                       onValueChange={(kind) => {
@@ -15764,7 +15826,7 @@ export function BuilderShowcase() {
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label="Language">
+                  <Field label="语言">
                     <Select
                       value={activeBackendIntegration.language}
                       onValueChange={(language) => {
@@ -15799,7 +15861,7 @@ export function BuilderShowcase() {
                     </Select>
                   </Field>
                 </div>
-                <Field label="Transport">
+                <Field label="通道">
                   <Select
                     value={activeBackendIntegration.transport}
                     onValueChange={(transport) => updateBackendIntegration(activeBackendIntegration.id, { transport: transport as BackendIntegrationTransport })}
@@ -15828,12 +15890,12 @@ export function BuilderShowcase() {
                 </Field>
                 <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
                   <div className="min-w-0">
-                    <Label className="text-xs font-medium">Bundle artifact</Label>
+                    <Label className="text-xs font-medium">打包产物</Label>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">将 sidecar、动态库或脚本产物复制进生成 app 的 Tauri resources。</p>
                   </div>
                   <Switch
                     checked={activeBackendIntegration.bundleResource}
-                    aria-label="打包 Backend integration artifact"
+                    aria-label="打包后端集成产物"
                     onCheckedChange={(bundleResource) => updateBackendIntegration(activeBackendIntegration.id, { bundleResource })}
                   />
                 </div>
@@ -15860,7 +15922,7 @@ export function BuilderShowcase() {
                 <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-on-surface">Artifact status</p>
+                      <p className="font-medium text-on-surface">产物状态</p>
                       <p className="mt-1 leading-5 text-on-surface-variant">检查当前后端产物是否能被 Tauri resources 打包。</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -15873,7 +15935,7 @@ export function BuilderShowcase() {
                         onClick={() => void buildActiveBackendArtifact()}
                       >
                         <Terminal aria-hidden className="size-3.5" />
-                        Build
+                        构建
                       </Button>
                       <Button
                         size="sm"
@@ -15884,7 +15946,7 @@ export function BuilderShowcase() {
                         onClick={() => void refreshBackendArtifactInspection()}
                       >
                         <Search aria-hidden className="size-3.5" />
-                        Check
+                        检查
                       </Button>
                     </div>
                   </div>
@@ -15892,12 +15954,12 @@ export function BuilderShowcase() {
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant={backendArtifactStatusVariant(activeBackendArtifactInspection)}>
-                          {activeBackendArtifactInspection.status}
+                          {backendArtifactInspectionStatusLabel(activeBackendArtifactInspection.status)}
                         </Badge>
                         <span className="text-on-surface-variant">
                           {activeBackendArtifactInspection.exists
-                            ? `${activeBackendArtifactInspection.is_dir ? "directory" : "file"} · ${byteSizeLabel(activeBackendArtifactInspection.size_bytes)}`
-                            : "not found"}
+                            ? `${activeBackendArtifactInspection.is_dir ? "文件夹" : "文件"} · ${byteSizeLabel(activeBackendArtifactInspection.size_bytes)}`
+                            : "未找到"}
                         </span>
                         {activeBackendArtifactInspection.modified_at ? (
                           <span className="text-on-surface-variant">{validationTimeLabel(activeBackendArtifactInspection.modified_at)}</span>
@@ -15943,12 +16005,12 @@ export function BuilderShowcase() {
                 <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                      <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Methods</h4>
+                      <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">后端方法</h4>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">声明可从 UI 事件调用的后端接口。</p>
                     </div>
                     <Button size="sm" variant="secondary" data-builder-new-backend-method="" onClick={createBackendIntegrationMethodInProject}>
                       <Plus aria-hidden className="size-3.5" />
-                      Method
+                      新建方法
                     </Button>
                   </div>
                   <div className="mb-3 grid gap-2">
@@ -15966,7 +16028,7 @@ export function BuilderShowcase() {
                         )}
                       >
                         <span className="block truncate font-mono text-on-surface">{method.name}</span>
-                        <span className="mt-1 block truncate font-mono">{method.operation || method.path || "operation not set"}</span>
+                        <span className="mt-1 block truncate font-mono">{method.operation || method.path || "未设置操作"}</span>
                       </button>
                     ))}
                   </div>
@@ -15975,10 +16037,10 @@ export function BuilderShowcase() {
                       <Badge variant="outline">{activeBackendIntegration.transport}</Badge>
                       <Button size="sm" variant="ghost" data-builder-delete-backend-method="" onClick={deleteActiveBackendIntegrationMethod}>
                         <Trash2 aria-hidden className="size-3.5" />
-                        Delete
+                        删除
                       </Button>
                     </div>
-                    <Field label="Method name">
+                    <Field label="方法名">
                       <Input
                         data-builder-backend-method-name=""
                         value={activeBackendIntegrationMethod.name}
@@ -15988,7 +16050,7 @@ export function BuilderShowcase() {
                       />
                     </Field>
                     <div className="grid grid-cols-2 gap-2">
-                      <Field label="Operation">
+                      <Field label="操作">
                         <Input
                           data-builder-backend-method-operation=""
                           value={activeBackendIntegrationMethod.operation}
@@ -15998,7 +16060,7 @@ export function BuilderShowcase() {
                           placeholder="classify_image"
                         />
                       </Field>
-                      <Field label="HTTP path">
+                      <Field label="HTTP 路径">
                         <Input
                           data-builder-backend-method-path=""
                           value={activeBackendIntegrationMethod.path}
@@ -16009,7 +16071,7 @@ export function BuilderShowcase() {
                         />
                       </Field>
                     </div>
-                    <Field label="Description">
+                    <Field label="说明">
                       <Textarea
                         data-builder-backend-method-description=""
                         value={activeBackendIntegrationMethod.description}
@@ -16018,7 +16080,7 @@ export function BuilderShowcase() {
                       />
                     </Field>
                     <div className="grid grid-cols-2 gap-2">
-                      <Field label="Request schema">
+                    <Field label="请求结构">
                         <Textarea
                           data-builder-backend-method-request-schema=""
                           value={activeBackendIntegrationMethod.requestSchema}
@@ -16027,7 +16089,7 @@ export function BuilderShowcase() {
                           spellCheck={false}
                         />
                       </Field>
-                      <Field label="Response schema">
+                    <Field label="响应结构">
                         <Textarea
                           data-builder-backend-method-response-schema=""
                           value={activeBackendIntegrationMethod.responseSchema}
@@ -16040,7 +16102,7 @@ export function BuilderShowcase() {
                     <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <p className="text-xs font-medium text-on-surface">Schema parameters</p>
+                          <p className="text-xs font-medium text-on-surface">结构参数</p>
                           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                             从 request schema 派生 sample payload 字段。
                           </p>
@@ -16072,7 +16134,7 @@ export function BuilderShowcase() {
                                     ) : null}
                                   </div>
                                   <div className="flex shrink-0 items-center gap-1">
-                                    <Badge variant={field.required ? "secondary" : "outline"}>{field.required ? "required" : "optional"}</Badge>
+                                    <Badge variant={field.required ? "secondary" : "outline"}>{field.required ? "必填" : "可选"}</Badge>
                                     <Badge variant={field.enumValues?.length ? "secondary" : "outline"}>{field.enumValues?.length ? "enum" : field.type}</Badge>
                                   </div>
                                 </div>
@@ -16132,20 +16194,20 @@ export function BuilderShowcase() {
                       {selectedItem ? (
                         <div className="rounded-lg bg-surface-container-low p-2 text-xs">
                           <div className="flex flex-wrap items-center gap-1">
-                            <span className="text-on-surface-variant">Selected control payload:</span>
+                            <span className="text-on-surface-variant">已选控件载荷：</span>
                             {activeBackendPayloadMapping.map((field) => (
                               <Badge key={field} variant="outline">
                                 {field}
                               </Badge>
                             ))}
                             <Badge variant={activeBackendResponsePatchEnabled ? "secondary" : "outline"}>
-                              {activeBackendResponsePatchEnabled ? "patch enabled" : "message target"}
+                              {activeBackendResponsePatchEnabled ? "已启用 patch" : "消息目标"}
                             </Badge>
                           </div>
                         </div>
                       ) : null}
                     </div>
-                    <Field label="Sample payload">
+                    <Field label="示例载荷">
                       <Textarea
                         data-builder-backend-method-sample-payload=""
                         value={activeBackendIntegrationMethod.samplePayload}
@@ -16157,7 +16219,7 @@ export function BuilderShowcase() {
                     <div className="grid gap-2 rounded-xl border border-outline-variant bg-surface p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-on-surface">Method test bench</p>
+                          <p className="text-xs font-medium text-on-surface">方法测试台</p>
                           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                             先校验 JSON contract，再用当前 integration 配置调用这个 method。
                           </p>
@@ -16165,7 +16227,7 @@ export function BuilderShowcase() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Button size="sm" variant="secondary" data-builder-validate-backend-method="" onClick={validateActiveBackendMethodContract}>
                             <CheckCircle2 aria-hidden className="size-3.5" />
-                            Contract
+                            校验契约
                           </Button>
                           <Button
                             size="sm"
@@ -16174,7 +16236,7 @@ export function BuilderShowcase() {
                             onClick={() => void testActiveBackendIntegrationMethod()}
                           >
                             <Play aria-hidden className="size-3.5" />
-                            Run Method
+                            运行方法
                           </Button>
                         </div>
                       </div>
@@ -16195,7 +16257,7 @@ export function BuilderShowcase() {
                             <span className="truncate text-on-surface-variant">
                               {activeBackendIntegrationMethod.lastTest.durationMs !== undefined
                                 ? `${activeBackendIntegrationMethod.lastTest.durationMs} ms`
-                                : "local check"}
+                                : "本地检查"}
                             </span>
                             <span className="truncate text-on-surface-variant">{activeBackendIntegrationMethod.lastTest.transport}</span>
                             <span className="truncate text-on-surface-variant">
@@ -16215,13 +16277,13 @@ export function BuilderShowcase() {
                           ) : null}
                           <div className="grid grid-cols-2 gap-2">
                             <div className="min-w-0 rounded-lg bg-surface-container-low p-2">
-                              <p className="mb-1 text-[0.68rem] uppercase tracking-[0.08em] text-on-surface-variant">Request</p>
+                              <p className="mb-1 text-[0.68rem] uppercase tracking-[0.08em] text-on-surface-variant">请求</p>
                               <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words font-mono text-[0.68rem] leading-4 text-on-surface">
                                 {activeBackendIntegrationMethod.lastTest.request || "{}"}
                               </pre>
                             </div>
                             <div className="min-w-0 rounded-lg bg-surface-container-low p-2">
-                              <p className="mb-1 text-[0.68rem] uppercase tracking-[0.08em] text-on-surface-variant">Response</p>
+                              <p className="mb-1 text-[0.68rem] uppercase tracking-[0.08em] text-on-surface-variant">响应</p>
                               <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words font-mono text-[0.68rem] leading-4 text-on-surface">
                                 {activeBackendIntegrationMethod.lastTest.response || activeBackendIntegrationMethod.lastTest.error || "{}"}
                               </pre>
@@ -16229,7 +16291,7 @@ export function BuilderShowcase() {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-xs leading-5 text-on-surface-variant">还没有测试记录。Contract 会做本地 JSON 检查，Run Method 会调用真实后端边界。</p>
+                        <p className="text-xs leading-5 text-on-surface-variant">还没有测试记录。契约校验会做本地 JSON 检查，运行方法会调用真实后端边界。</p>
                       )}
                     </div>
                   </div>
@@ -16260,7 +16322,7 @@ export function BuilderShowcase() {
                   </Field>
                   <div className="flex items-end">
                     <label className="flex h-[var(--control-sm)] items-center gap-2 rounded-xl bg-surface-container-high px-3 text-xs text-on-surface-variant">
-                      Capture
+                      捕获输出
                       <Switch
                         className="h-5 w-9 border"
                         checked={activeBackendIntegration.captureOutput}
@@ -16323,7 +16385,7 @@ export function BuilderShowcase() {
               <section className="space-y-3 rounded-[20px] border border-outline-variant bg-surface-container-low p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">State variable</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">状态变量</h3>
                     <p className="mt-1 truncate font-mono text-xs text-on-surface">{activeStateVariable.name}</p>
                   </div>
                   <Badge variant={activeStateReferenceCount > 0 ? "secondary" : "outline"} className="shrink-0">
@@ -16331,9 +16393,9 @@ export function BuilderShowcase() {
                   </Badge>
                 </div>
                 <div className="rounded-xl border border-outline-variant bg-surface-container-high p-2 text-xs">
-                  <PathRow label="Active" value={activeStateVariable.name} />
-                  <PathRow label="Initial" value={activeStateVariable.initialValue || "empty"} />
-                  <PathRow label="References" value={formatStateReferenceCount(activeStateReferenceCount)} />
+                  <PathRow label="当前" value={activeStateVariable.name} />
+                  <PathRow label="初始值" value={activeStateVariable.initialValue || "空"} />
+                  <PathRow label="引用" value={formatStateReferenceCount(activeStateReferenceCount)} />
                 </div>
                 <Field label="状态名">
                   <Input
@@ -16365,13 +16427,13 @@ export function BuilderShowcase() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <Download aria-hidden className="size-4 text-primary" />
-                    <h2 className="text-sm font-semibold">Build / Run</h2>
+                    <h2 className="text-sm font-semibold">构建 / 运行</h2>
                     <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
-                      {latestReleasePipeline ? latestReleasePipeline.status : "idle"}
+                      {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "待开始"}
                     </Badge>
                   </div>
                   <p className="mt-1 truncate text-xs text-on-surface-variant">
-                    Pipeline, Problems, Output and Artifacts for {activeProject.releaseConfig.appName}
+                    {activeProject.releaseConfig.appName} 的流水线、问题、输出和产物
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -16384,15 +16446,15 @@ export function BuilderShowcase() {
                     onClick={() => void launchActiveOutputExecutable()}
                   >
                     <Play aria-hidden className="size-4" />
-                    Run
+                    运行
                   </Button>
                   <Button size="sm" data-builder-build-workspace="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
                     <Download aria-hidden className="size-4" />
-                    Release exe
+                    发布 exe
                   </Button>
                   <Button size="sm" variant="secondary" data-builder-bundle-workspace="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
                     <Box aria-hidden className="size-4" />
-                    Installer
+                    安装包
                   </Button>
                   <Button
                     size="sm"
@@ -16407,7 +16469,7 @@ export function BuilderShowcase() {
                     }}
                   >
                     <Square aria-hidden className="size-4" />
-                    Stop
+                    停止
                   </Button>
                 </div>
               </div>
@@ -16419,9 +16481,9 @@ export function BuilderShowcase() {
                 <PathRow label="项目目录" value={activeProject.rootPath || "保存后生成"} />
                 <PathRow label="UI 文件" value={activeProject.rootPath ? `${activeProject.rootPath}\\ui` : "保存后生成"} />
                 <PathRow label="Rust 逻辑" value={activeProject.rootPath ? `${activeProject.rootPath}\\rust\\logic.rs` : "保存后生成"} />
-                <PathRow label="Rust Source Map" value={activeProject.rustSourceMapPath || "保存后生成"} />
+                <PathRow label="Rust 源码映射" value={activeProject.rustSourceMapPath || "保存后生成"} />
                 <PathRow label="生成应用" value={activeProject.rootPath ? `${activeProject.rootPath}\\app` : "保存后生成"} />
-                <PathRow label="Generated Map" value={activeProject.generatedRustSourceMapPath || "生成 app 后写入"} />
+                <PathRow label="生成源码映射" value={activeProject.generatedRustSourceMapPath || "生成 app 后写入"} />
                 <PathRow label="验证报告" value={activeProject.validationReportPath || "验证后生成"} />
                 <PathRow label="窗口快照" value={activeProject.validationSnapshotPath || "验证后生成"} />
                 <PathRow label="运行截图" value={activeProject.validationScreenshotPath || "有可用浏览器时生成"} />
@@ -16431,7 +16493,7 @@ export function BuilderShowcase() {
                 <PathRow label="输出 exe" value={activeProject.outputExePath || "构建成功后生成"} />
                 <PathRow label="安装包目录" value={activeProject.outputBundleDir || activeBundleDir || "完整打包后生成"} />
                 <PathRow label="安装包产物" value={activeBundlePath || "完整打包后生成"} />
-                <PathRow label="Bundle manifest" value={activeBundleManifestPath || "完整打包后生成"} />
+                <PathRow label="安装包 manifest" value={activeBundleManifestPath || "完整打包后生成"} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     size="sm"
@@ -16499,13 +16561,13 @@ export function BuilderShowcase() {
                   <div className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-3" data-builder-run-session-panel="">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-xs font-medium">Run session</p>
+                        <p className="text-xs font-medium">运行会话</p>
                         <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">
-                          pid {latestRunSessionEntry.launchedPid} · {latestRunSessionEntry.runStatus ?? "launched"}
+                          pid {latestRunSessionEntry.launchedPid} · {latestRunSessionEntry.runStatus ?? "已启动"}
                         </p>
                       </div>
                       <Badge variant={latestRunSessionEntry.runStatus === "running" ? "secondary" : "outline"}>
-                        {latestRunSessionEntry.runStatus ?? "unknown"}
+                        {latestRunSessionEntry.runStatus ?? "未知"}
                       </Badge>
                     </div>
                     <p className="mt-2 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">
@@ -16562,7 +16624,7 @@ export function BuilderShowcase() {
                       </Button>
                     </div>
                     <pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                      {latestRunSessionEntry.runtimeLogPreview || "Runtime Console will appear after launching the generated exe."}
+                      {latestRunSessionEntry.runtimeLogPreview || "启动生成的 exe 后会显示运行时控制台。"}
                     </pre>
                   </div>
                 ) : null}
@@ -16570,7 +16632,7 @@ export function BuilderShowcase() {
               <section className="space-y-3 rounded-[22px] border border-outline-variant bg-surface-container-low p-3" data-builder-release-settings-shortcut="">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Project Settings</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                       Release config 已移动到 Project Dock；Build 页只保留运行、构建、输出和证据。
                     </p>
@@ -16578,9 +16640,9 @@ export function BuilderShowcase() {
                   <Badge variant="outline">{normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
                 </div>
                 <div className="rounded-2xl bg-surface-container-high p-3 text-xs">
-                  <PathRow label="App" value={activeProject.releaseConfig.appName} />
+                  <PathRow label="应用" value={activeProject.releaseConfig.appName} />
                   <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
-                  <PathRow label="Target" value={activeProject.releaseConfig.bundleTargets} />
+                  <PathRow label="目标" value={activeProject.releaseConfig.bundleTargets} />
                 </div>
                 <Button
                   size="sm"
@@ -16593,7 +16655,7 @@ export function BuilderShowcase() {
                   }}
                 >
                   <Settings2 aria-hidden className="size-4" />
-                  Open Project Settings
+                  打开项目设置
                 </Button>
               </section>
               <section className="hidden" data-builder-release-config="">
@@ -16602,7 +16664,7 @@ export function BuilderShowcase() {
                     <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布配置</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">写入目标 app 的 package、Cargo 和 Tauri 配置。</p>
                   </div>
-                  <Badge variant="outline">release</Badge>
+                  <Badge variant="outline">发布</Badge>
                 </div>
                 <Field label="应用名称">
                   <Input
@@ -16612,7 +16674,7 @@ export function BuilderShowcase() {
                     onChange={(event) => updateReleaseConfig({ appName: event.target.value })}
                   />
                 </Field>
-                <Field label="Bundle identifier">
+                <Field label="Bundle 标识符">
                   <Input
                     inputSize="sm"
                     data-builder-release-identifier=""
@@ -16668,7 +16730,7 @@ export function BuilderShowcase() {
                     ))}
                   </div>
                 </div>
-                <Field label="Release notes">
+                <Field label="发布说明">
                   <Textarea
                     data-builder-release-notes=""
                     value={activeProject.releaseConfig.releaseNotes}
@@ -16723,7 +16785,7 @@ export function BuilderShowcase() {
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">{releaseSigningDescription(activeProject.releaseConfig)}</p>
                     </div>
                     <Badge variant={activeProject.releaseConfig.signingMode === "unsigned" ? "outline" : releaseSigningConfigured(activeProject.releaseConfig) ? "secondary" : "destructive"}>
-                      {activeProject.releaseConfig.signingMode === "unsigned" ? "unsigned" : releaseSigningConfigured(activeProject.releaseConfig) ? "ready" : "missing"}
+                      {activeProject.releaseConfig.signingMode === "unsigned" ? "未签名" : releaseSigningConfigured(activeProject.releaseConfig) ? "就绪" : "缺失"}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -16744,7 +16806,7 @@ export function BuilderShowcase() {
                         </SelectContent>
                       </Select>
                     </Field>
-                    <Field label="Smoke 最小 KB">
+                    <Field label="Smoke 最小体积 KB">
                       <Input
                         inputSize="sm"
                         type="number"
@@ -16759,7 +16821,7 @@ export function BuilderShowcase() {
                   </div>
                   {activeProject.releaseConfig.signingMode === "windows-certificate" ? (
                     <div className="space-y-3">
-                      <Field label="Certificate thumbprint">
+                      <Field label="证书 thumbprint">
                         <Input
                           inputSize="sm"
                           data-builder-release-cert-thumbprint=""
@@ -16775,7 +16837,7 @@ export function BuilderShowcase() {
                       <div className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0">
-                            <Label className="text-xs font-medium">Certificate store</Label>
+                            <Label className="text-xs font-medium">证书存储</Label>
                             <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">
                               检查 CurrentUser\My 和 LocalMachine\My 是否已有匹配证书。
                             </p>
@@ -16833,7 +16895,7 @@ export function BuilderShowcase() {
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                          <Label className="text-xs text-on-surface-variant">Certificate file</Label>
+                          <Label className="text-xs text-on-surface-variant">证书文件</Label>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -16856,7 +16918,7 @@ export function BuilderShowcase() {
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <Field label="Password env var">
+                        <Field label="密码环境变量">
                           <Input
                             inputSize="sm"
                             data-builder-release-cert-password-env=""
@@ -16881,7 +16943,7 @@ export function BuilderShowcase() {
                         证书密码不会保存到项目；构建时只读取系统环境变量 {activeProject.releaseConfig.certificatePasswordEnvVar || "NOVA_SIGNING_CERT_PASSWORD"}。
                       </p>
                       <div className="grid grid-cols-2 gap-2">
-                        <Field label="Digest">
+                        <Field label="摘要算法">
                           <Select
                             value={activeProject.releaseConfig.digestAlgorithm}
                             onValueChange={(digestAlgorithm) => updateReleaseConfig({ digestAlgorithm })}
@@ -16909,7 +16971,7 @@ export function BuilderShowcase() {
                           />
                         </div>
                       </div>
-                      <Field label="Timestamp URL">
+                      <Field label="时间戳 URL">
                         <Input
                           inputSize="sm"
                           data-builder-release-timestamp-url=""
@@ -16922,7 +16984,7 @@ export function BuilderShowcase() {
                     </div>
                   ) : null}
                   {activeProject.releaseConfig.signingMode === "custom-command" ? (
-                    <Field label="Sign command">
+                    <Field label="签名命令">
                       <Textarea
                         data-builder-release-sign-command=""
                         value={activeProject.releaseConfig.signCommand}
@@ -16932,7 +16994,7 @@ export function BuilderShowcase() {
                       />
                     </Field>
                   ) : null}
-                  <Field label="Installer smoke">
+                  <Field label="安装包 smoke">
                     <Select
                       value={activeProject.releaseConfig.installerSmokeMode}
                       onValueChange={(installerSmokeMode) => updateReleaseConfig({ installerSmokeMode: installerSmokeMode as ReleaseInstallerSmokeMode })}
@@ -16968,7 +17030,7 @@ export function BuilderShowcase() {
                   </Field>
                   {activeProject.releaseConfig.installerSmokeRunnerMode === "vm-handoff" ? (
                     <>
-                      <Field label="VM name">
+                      <Field label="虚拟机名称">
                         <Input
                           inputSize="sm"
                           value={activeProject.releaseConfig.installerSmokeVmName}
@@ -16976,7 +17038,7 @@ export function BuilderShowcase() {
                           onChange={(event) => updateReleaseConfig({ installerSmokeVmName: event.target.value })}
                         />
                       </Field>
-                      <Field label="Shared folder">
+                      <Field label="共享目录">
                         <Input
                           inputSize="sm"
                           value={activeProject.releaseConfig.installerSmokeVmSharedFolder}
@@ -16986,11 +17048,11 @@ export function BuilderShowcase() {
                           onChange={(event) => updateReleaseConfig({ installerSmokeVmSharedFolder: event.target.value })}
                         />
                       </Field>
-                      <Field label="VM notes" className="col-span-2">
+                      <Field label="虚拟机备注" className="col-span-2">
                         <Textarea
                           value={activeProject.releaseConfig.installerSmokeVmNotes}
                           data-builder-release-installer-smoke-vm-notes=""
-                          placeholder="Snapshot name, guest user, runner expectation, or return-result convention."
+                          placeholder="快照名、访客用户、runner 预期或结果返回约定。"
                           className="min-h-[70px] resize-none text-xs leading-5"
                           onChange={(event) => updateReleaseConfig({ installerSmokeVmNotes: event.target.value })}
                         />
@@ -17064,7 +17126,7 @@ export function BuilderShowcase() {
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-generated-incremental-summary="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Generated targets</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">生成目标</h3>
                     <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
                       {latestGeneratedFileSummary
                         ? latestGeneratedFileSummary.summary
@@ -17072,32 +17134,32 @@ export function BuilderShowcase() {
                     </p>
                   </div>
                   <Badge variant={latestGeneratedFileSummary?.changed_count ? "outline" : "secondary"}>
-                    {latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} changed` : "pending"}
+                    {latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} 个变更` : "待生成"}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center text-xs">
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.total_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">targets</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">目标</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-primary">{latestGeneratedFileSummary?.created_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">create</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">新增</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.updated_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">update</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">更新</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-on-surface-variant">{latestGeneratedFileSummary?.unchanged_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">unchanged</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">未变化</p>
                   </div>
                 </div>
               </section>
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-readiness="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Build readiness</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建就绪度</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">构建前检查项目结构、Rust 同步、事件绑定和资源引用。</p>
                   </div>
                   <Badge
@@ -17116,24 +17178,24 @@ export function BuilderShowcase() {
                 <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-destructive">{buildReadinessSummary.errorCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">errors</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">错误</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-on-surface">{buildReadinessSummary.warningCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">warnings</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">警告</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container-high p-2">
                     <p className="font-medium text-primary">{buildReadinessSummary.readyCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">ready</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">就绪</p>
                   </div>
                 </div>
                 <div className="mt-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3" data-builder-property-repair-plan="">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Property repair plan</h4>
+                      <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">属性修复计划</h4>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                         {projectPropertyAutoFixSummary.issueCount > 0
-                          ? `${projectPropertyAutoFixSummary.errorCount} errors, ${projectPropertyAutoFixSummary.warningCount} warnings. 可安全修复 ${projectPropertyAutoFixSummary.propertyCount} 个属性。`
+                          ? `${projectPropertyAutoFixSummary.errorCount} 个错误，${projectPropertyAutoFixSummary.warningCount} 个警告。可安全修复 ${projectPropertyAutoFixSummary.propertyCount} 个属性。`
                           : "项目内控件属性 schema 暂无问题。"}
                       </p>
                     </div>
@@ -17145,21 +17207,21 @@ export function BuilderShowcase() {
                       onClick={applyProjectPropertyAutoFixes}
                     >
                       <Wand2 aria-hidden className="size-4" />
-                      Fix project
+                      修复项目
                     </Button>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
                     <div className="rounded-2xl bg-surface-container-low p-2">
                       <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.fileCount}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">files</p>
+                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">文件</p>
                     </div>
                     <div className="rounded-2xl bg-surface-container-low p-2">
                       <p className="font-medium text-primary">{projectPropertyAutoFixSummary.targets.length}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">controls</p>
+                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">控件</p>
                     </div>
                     <div className="rounded-2xl bg-surface-container-low p-2">
                       <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.manualIssueCount}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">manual</p>
+                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">手动</p>
                     </div>
                   </div>
                   {projectPropertyAutoFixSummary.targets.length > 0 ? (
@@ -17173,7 +17235,7 @@ export function BuilderShowcase() {
                             focusBuildReadinessItem({
                               id: `property-repair-${target.fileId}-${target.itemId}`,
                               severity: "warning",
-                              title: "Property repair",
+                              title: "属性修复",
                               detail: "",
                               fileId: target.fileId,
                               fileName: target.fileName,
@@ -17185,7 +17247,7 @@ export function BuilderShowcase() {
                           <span className="min-w-0">
                             <span className="block truncate font-medium text-on-surface">{target.itemName}</span>
                             <span className="block truncate text-on-surface-variant">
-                              {target.fileName} · {target.itemType} · {target.propertyCount} fixes
+                              {target.fileName} · {target.itemType} · {target.propertyCount} 项修复
                             </span>
                           </span>
                           <MousePointer2 aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
@@ -17199,7 +17261,7 @@ export function BuilderShowcase() {
                   {activeProject.maintenanceHistory?.length ? (
                     <div className="mt-3 space-y-2 border-t border-outline-variant pt-3" data-builder-maintenance-history="">
                       <div className="flex items-center justify-between gap-3">
-                        <h5 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Repair history</h5>
+                        <h5 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">修复历史</h5>
                         <Badge variant="outline">{activeProject.maintenanceHistory.length}</Badge>
                       </div>
                       {activeProject.maintenanceHistory.slice(0, 4).map((entry) => (
@@ -17213,9 +17275,9 @@ export function BuilderShowcase() {
                           </div>
                           <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{entry.summary}</p>
                           <div className="mt-2 flex flex-wrap gap-1.5 text-[0.68rem] text-on-surface-variant">
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.fileCount} files</span>
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.itemCount} controls</span>
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.propertyCount} props</span>
+                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.fileCount} 文件</span>
+                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.itemCount} 控件</span>
+                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.propertyCount} 属性</span>
                           </div>
                           {entry.changes.length ? (
                             <div className="mt-2 space-y-1">
@@ -17279,7 +17341,7 @@ export function BuilderShowcase() {
                             </Button>
                           ) : null}
                           <Badge variant={item.severity === "error" ? "destructive" : item.severity === "warning" ? "outline" : "secondary"}>
-                            {item.severity}
+                            {buildReadinessSeverityLabel(item.severity)}
                           </Badge>
                         </div>
                       </div>
@@ -17349,7 +17411,7 @@ export function BuilderShowcase() {
                     <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">快速检查</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">先跑轻量检查，再决定是否完整输出 exe。</p>
                   </div>
-                  <Badge variant={checkingTarget ? "outline" : "secondary"}>{checkingTarget ?? "ready"}</Badge>
+                  <Badge variant={checkingTarget ? "outline" : "secondary"}>{checkingTarget ?? "就绪"}</Badge>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-5">
                   <Button
@@ -17412,27 +17474,27 @@ export function BuilderShowcase() {
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-task-center="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Task Center</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">任务中心</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                       队列化保存、生成、检查、验证、构建和打包动作。
                     </p>
                   </div>
                   <Badge variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}>
-                    {runningProjectTask ? "running" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "empty"}
+                    {runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
                   </Badge>
                 </div>
                 <div className="mb-3 grid grid-cols-3 gap-2 text-center text-[0.68rem]">
                   <div className="rounded-xl bg-surface-container-high px-2 py-2">
                     <p className="font-medium text-on-surface">{runningProjectTask ? 1 : 0}</p>
-                    <p className="mt-1 text-on-surface-variant">running</p>
+                    <p className="mt-1 text-on-surface-variant">运行中</p>
                   </div>
                   <div className="rounded-xl bg-surface-container-high px-2 py-2">
                     <p className="font-medium text-on-surface">{queuedProjectTaskCount}</p>
-                    <p className="mt-1 text-on-surface-variant">queued</p>
+                    <p className="mt-1 text-on-surface-variant">排队中</p>
                   </div>
                   <div className="rounded-xl bg-surface-container-high px-2 py-2">
                     <p className="font-medium text-on-surface">{failedProjectTaskCount}</p>
-                    <p className="mt-1 text-on-surface-variant">failed</p>
+                    <p className="mt-1 text-on-surface-variant">失败</p>
                   </div>
                 </div>
                 <div
@@ -17520,12 +17582,12 @@ export function BuilderShowcase() {
                       inputSize="sm"
                       value={customPresetTitle}
                       onChange={(event) => setCustomPresetTitle(event.target.value)}
-                      placeholder="Preset title"
-                      aria-label="Custom action preset title"
+                      placeholder="Preset 标题"
+                      aria-label="自定义操作 preset 标题"
                     />
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                       <Select value={customPresetDraftActionId} onValueChange={(value) => setCustomPresetDraftActionId(value as ProjectJumpActionId)}>
-                        <SelectTrigger inputSize="sm" aria-label="Add action to custom preset">
+                        <SelectTrigger inputSize="sm" aria-label="添加操作到自定义 preset">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -17546,8 +17608,8 @@ export function BuilderShowcase() {
                     className="min-h-16 text-xs"
                     value={customPresetDetail}
                     onChange={(event) => setCustomPresetDetail(event.target.value)}
-                    placeholder="Preset detail"
-                    aria-label="Custom action preset detail"
+                    placeholder="Preset 说明"
+                    aria-label="自定义操作 preset 说明"
                   />
                   <div className="flex flex-wrap gap-1.5">
                     {customPresetDraftActions.map((actionId, index) => (
@@ -17636,13 +17698,13 @@ export function BuilderShowcase() {
                       className="pl-8"
                       value={projectTaskSearchQuery}
                       onChange={(event) => setProjectTaskSearchQuery(event.target.value)}
-                      placeholder="Search tasks, paths, errors..."
-                      aria-label="Search project tasks"
+                      placeholder="搜索任务、路径、错误..."
+                      aria-label="搜索项目任务"
                     />
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <Select value={projectTaskStatusFilter} onValueChange={(value) => setProjectTaskStatusFilter(value as ProjectTaskStatusFilter)}>
-                      <SelectTrigger inputSize="sm" aria-label="Filter task status">
+                      <SelectTrigger inputSize="sm" aria-label="筛选任务状态">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -17654,7 +17716,7 @@ export function BuilderShowcase() {
                       </SelectContent>
                     </Select>
                     <Select value={projectTaskKindFilter} onValueChange={(value) => setProjectTaskKindFilter(value as ProjectTaskKindFilter)}>
-                      <SelectTrigger inputSize="sm" aria-label="Filter task kind">
+                      <SelectTrigger inputSize="sm" aria-label="筛选任务类型">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -17707,21 +17769,21 @@ export function BuilderShowcase() {
                                       <p className="truncate font-medium text-on-surface">{task.title}</p>
                                       <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
                                         {validationTimeLabel(task.startedAt ?? task.createdAt)}
-                                        {task.attempt > 1 ? ` · retry ${task.attempt}` : ""}
+                                        {task.attempt > 1 ? ` · 第 ${task.attempt} 次重试` : ""}
                                       </p>
                                     </div>
-                                    <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                                    <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
                                   </div>
                                   <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{task.summary ?? task.detail}</p>
                                   {task.error ? <p className="mt-2 line-clamp-2 font-mono text-[0.68rem] leading-4 text-destructive">{task.error}</p> : null}
                                   {task.status === "queued" && queueIndex >= 0 ? (
                                     <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-surface-container-low px-2 py-1.5 text-[0.68rem] text-on-surface-variant">
-                                      <span>queue #{queueIndex + 1}</span>
+                                      <span>队列 #{queueIndex + 1}</span>
                                       <div className="flex items-center gap-1">
                                         <Button
                                           size="icon-sm"
                                           variant="ghost"
-                                          aria-label={`Move ${task.title} up in queue`}
+                                          aria-label={`将 ${task.title} 在队列中上移`}
                                           data-builder-move-task-up={task.id}
                                           disabled={!canMoveQueuedProjectTask(task.id, -1)}
                                           onClick={(event) => {
@@ -17734,7 +17796,7 @@ export function BuilderShowcase() {
                                         <Button
                                           size="icon-sm"
                                           variant="ghost"
-                                          aria-label={`Move ${task.title} down in queue`}
+                                          aria-label={`将 ${task.title} 在队列中下移`}
                                           data-builder-move-task-down={task.id}
                                           disabled={!canMoveQueuedProjectTask(task.id, 1)}
                                           onClick={(event) => {
@@ -17766,28 +17828,28 @@ export function BuilderShowcase() {
                             <p className="truncate text-sm font-medium text-on-surface">{selectedProjectTask.title}</p>
                             <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{selectedProjectTask.detail}</p>
                           </div>
-                          <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{selectedProjectTask.status}</Badge>
+                          <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{projectTaskStatusLabel(selectedProjectTask.status)}</Badge>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-2 text-[0.68rem] xl:grid-cols-4">
                           <div className="rounded-xl bg-surface-container-low px-2 py-2">
-                            <p className="text-on-surface-variant">kind</p>
+                            <p className="text-on-surface-variant">类型</p>
                             <p className="mt-1 truncate font-medium text-on-surface">{projectTaskKindLabel(selectedProjectTask.kind)}</p>
                           </div>
                           <div className="rounded-xl bg-surface-container-low px-2 py-2">
-                            <p className="text-on-surface-variant">elapsed</p>
+                            <p className="text-on-surface-variant">耗时</p>
                             <p className="mt-1 truncate font-medium text-on-surface">{projectTaskElapsedLabel(selectedProjectTask)}</p>
                           </div>
                           <div className="rounded-xl bg-surface-container-low px-2 py-2">
-                            <p className="text-on-surface-variant">attempt</p>
+                            <p className="text-on-surface-variant">次数</p>
                             <p className="mt-1 truncate font-medium text-on-surface">{selectedProjectTask.attempt}</p>
                           </div>
                           <div className="rounded-xl bg-surface-container-low px-2 py-2">
-                            <p className="text-on-surface-variant">source</p>
-                            <p className="mt-1 truncate font-medium text-on-surface">{selectedProjectTask.backendTaskId ? "Rust task" : "Editor queue"}</p>
+                            <p className="text-on-surface-variant">来源</p>
+                            <p className="mt-1 truncate font-medium text-on-surface">{selectedProjectTask.backendTaskId ? "Rust 任务" : "编辑器队列"}</p>
                           </div>
                         </div>
                         <p className="mt-3 rounded-xl bg-surface-container-low p-2 leading-5 text-on-surface-variant">
-                          {selectedProjectTask.summary ?? "No task summary has been written yet."}
+                          {selectedProjectTask.summary ?? "这个任务还没有写入摘要。"}
                         </p>
                         {selectedProjectTask.error ? (
                           <p className="mt-2 rounded-xl bg-destructive/10 p-2 font-mono text-[0.68rem] leading-4 text-destructive">
@@ -17797,12 +17859,12 @@ export function BuilderShowcase() {
                         <div className="mt-3 space-y-2">
                           {selectedProjectTask.artifactPath ? (
                             <p className="break-all rounded-xl bg-surface-container-low p-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                              artifact: {selectedProjectTask.artifactPath}
+                              产物：{selectedProjectTask.artifactPath}
                             </p>
                           ) : null}
                           {selectedProjectTask.logPath ? (
                             <p className="break-all rounded-xl bg-surface-container-low p-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                              log: {selectedProjectTask.logPath}
+                              日志：{selectedProjectTask.logPath}
                             </p>
                           ) : null}
                         </div>
@@ -17854,9 +17916,9 @@ export function BuilderShowcase() {
                         </div>
                         <div className="mt-4" data-builder-task-log-search="">
                           <div className="mb-2 flex items-center justify-between gap-2">
-                            <p className="font-medium text-on-surface">Log preview</p>
+                            <p className="font-medium text-on-surface">日志预览</p>
                             <span className="text-[0.68rem] text-on-surface-variant">
-                              {projectTaskLogSearchQuery ? `${selectedProjectTaskLogMatchCount} match` : `${selectedProjectTaskLogLines.length} lines`}
+                              {projectTaskLogSearchQuery ? `${selectedProjectTaskLogMatchCount} 条匹配` : `${selectedProjectTaskLogLines.length} 行`}
                             </span>
                           </div>
                           <div className="relative">
@@ -17866,8 +17928,8 @@ export function BuilderShowcase() {
                               className="pl-8"
                               value={projectTaskLogSearchQuery}
                               onChange={(event) => setProjectTaskLogSearchQuery(event.target.value)}
-                              placeholder="Search this log..."
-                              aria-label="Search selected task log"
+                              placeholder="搜索这个日志..."
+                              aria-label="搜索选中任务日志"
                               disabled={!selectedProjectTask.logPreview}
                             />
                           </div>
@@ -17887,7 +17949,7 @@ export function BuilderShowcase() {
                                   </div>
                                 ))
                               ) : (
-                                <p className="px-3 py-2 text-on-surface-variant">No matching log lines.</p>
+                                <p className="px-3 py-2 text-on-surface-variant">没有匹配的日志行。</p>
                               )}
                             </div>
                           ) : (
@@ -17901,7 +17963,7 @@ export function BuilderShowcase() {
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs leading-5 text-on-surface-variant">
-                    还没有任务。点击检查、验证、构建或 Project Jump action 后会进入这里。
+                    还没有任务。点击检查、验证、构建或项目跳转操作后会进入这里。
                   </div>
                 )}
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -17933,14 +17995,14 @@ export function BuilderShowcase() {
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-release-pipelines="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Release Pipelines</h3>
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布流水线</h3>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                       每次运行 preset 都会归档为一条流水线，聚合步骤、日志、失败点和最终产物。
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
-                      {latestReleasePipeline ? latestReleasePipeline.status : "empty"}
+                      {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
                     </Badge>
                     <Button
                       size="sm"
@@ -17964,7 +18026,7 @@ export function BuilderShowcase() {
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="truncate font-medium text-on-surface">{entry.presetTitle}</p>
                               <Badge variant="outline">{entry.presetBadge}</Badge>
-                              <Badge variant={projectTaskStatusVariant(entry.status as ProjectTaskStatus)}>{entry.status}</Badge>
+                              <Badge variant={projectTaskStatusVariant(entry.status as ProjectTaskStatus)}>{projectTaskStatusLabel(entry.status)}</Badge>
                             </div>
                             <p className="mt-1 text-[0.68rem] text-on-surface-variant">
                               {validationTimeLabel(entry.startedAt ?? entry.createdAt)}
@@ -17973,7 +18035,7 @@ export function BuilderShowcase() {
                           </div>
                           <div className="min-w-[8rem] text-right">
                             <p className="font-medium text-on-surface">
-                              {entry.succeededCount + entry.skippedCount + entry.failedCount + entry.canceledCount}/{entry.stepCount} steps
+                              {entry.succeededCount + entry.skippedCount + entry.failedCount + entry.canceledCount}/{entry.stepCount} 步
                             </p>
                             <Progress className="mt-2 h-1.5" value={projectTaskProgress(entry.status as ProjectTaskStatus)} />
                           </div>
@@ -17983,7 +18045,7 @@ export function BuilderShowcase() {
                         </p>
                         {entry.recordPath ? (
                           <p className="mt-2 break-all rounded-xl bg-surface-container-low p-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                            record: {entry.recordPath}
+                            记录：{entry.recordPath}
                           </p>
                         ) : null}
                         <div className="mt-3 grid gap-1.5">
@@ -18001,18 +18063,18 @@ export function BuilderShowcase() {
                                 </p>
                                 {step.artifactEvidence ? (
                                   <p className="truncate text-on-surface-variant">
-                                    artifact:{" "}
+                                    产物：{" "}
                                     {step.artifactEvidence.exists
                                       ? `${byteSizeLabel(step.artifactEvidence.sizeBytes)}${step.artifactEvidence.sha256 ? ` · sha256 ${step.artifactEvidence.sha256.slice(0, 12)}` : ""}`
-                                      : "missing"}
+                                      : "缺失"}
                                   </p>
                                 ) : step.inputSnapshot ? (
                                   <p className="truncate text-on-surface-variant">
-                                    input: {step.inputSnapshot.fileCount} files · {step.inputSnapshot.controlCount} controls · {step.inputSnapshot.projectSnapshotHash}
+                                    输入：{step.inputSnapshot.fileCount} 文件 · {step.inputSnapshot.controlCount} 控件 · {step.inputSnapshot.projectSnapshotHash}
                                   </p>
                                 ) : null}
                               </div>
-                              <Badge variant={projectTaskStatusVariant(step.status as ProjectTaskStatus)}>{step.status}</Badge>
+                              <Badge variant={projectTaskStatusVariant(step.status as ProjectTaskStatus)}>{projectTaskStatusLabel(step.status)}</Badge>
                             </div>
                           ))}
                         </div>
@@ -18074,7 +18136,7 @@ export function BuilderShowcase() {
                             disabled={!entry.latestRecordPath}
                             onClick={() => void openLocalArtifact(entry.latestRecordPath ?? "")}
                           >
-                            latest
+                            最新
                           </Button>
                         </div>
                       </article>
@@ -18082,7 +18144,7 @@ export function BuilderShowcase() {
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs leading-5 text-on-surface-variant">
-                    还没有发布流水线。运行 Design preflight、Release exe 或 Installer bundle preset 后会在这里留下完整记录。
+                    还没有发布流水线。运行设计预检、发布 exe 或安装包流水线后会在这里留下完整记录。
                   </div>
                 )}
               </section>
@@ -18109,13 +18171,13 @@ export function BuilderShowcase() {
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-generated-file-preview="">
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <h2 className="text-sm font-medium">Generated file plan</h2>
+                    <h2 className="text-sm font-medium">生成文件计划</h2>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                       构建前预览 Nova 将写入的 manifest、UI、Rust module、Cargo 和 Tauri app 文件，并标记新增或更新。
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Badge variant="outline">Guided flow</Badge>
+                    <Badge variant="outline">引导流程</Badge>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -18124,7 +18186,7 @@ export function BuilderShowcase() {
                       onClick={() => setShowGeneratedPlanAdvanced((current) => !current)}
                     >
                       <Settings2 aria-hidden className="size-4" />
-                      Advanced
+                      高级
                     </Button>
                   </div>
                 </div>
@@ -18155,7 +18217,7 @@ export function BuilderShowcase() {
                           <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
                             {projectChangeImpactStatusLabel(projectChangeImpact.status)}
                           </Badge>
-                          {generatedFilePreview ? <Badge variant="outline">{projectChangeImpact.totalCount} files</Badge> : null}
+                          {generatedFilePreview ? <Badge variant="outline">{projectChangeImpact.totalCount} 文件</Badge> : null}
                         </div>
                         <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{generatedPlanStatusDetail}</p>
                       </div>
@@ -18178,7 +18240,7 @@ export function BuilderShowcase() {
                         onClick={() => openRelevantTaskDock()}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
-                        Tasks
+                        任务
                       </Button>
                     </div>
                   </div>
@@ -18187,9 +18249,9 @@ export function BuilderShowcase() {
                   <div className="mb-4 border-t border-outline-variant pt-3" data-builder-generated-plan-advanced="">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                       <div className="min-w-0">
-                        <p className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Advanced file controls</p>
+                        <p className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">高级文件控制</p>
                         <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                          Fine tune selected generated targets, rerun the preview, or execute the full computed plan when you need more control than the guided next step.
+                          精细选择生成目标、重新预览，或在需要更多控制时执行完整计算计划。
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -18259,7 +18321,7 @@ export function BuilderShowcase() {
                           onClick={runProjectChangeImpactPlan}
                         >
                           <Play aria-hidden className="size-4" />
-                          Run full plan
+                          运行完整计划
                         </Button>
                       </div>
                     </div>
@@ -18269,7 +18331,7 @@ export function BuilderShowcase() {
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Incremental impact</h3>
+                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">增量影响</h3>
                         <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
                           {projectChangeImpactStatusLabel(projectChangeImpact.status)}
                         </Badge>
@@ -18278,14 +18340,14 @@ export function BuilderShowcase() {
                       <p className="mt-2 text-xs leading-5 text-on-surface-variant">{projectChangeImpact.summary}</p>
                       {projectChangeImpact.previewSnapshotHash ? (
                         <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">
-                          preview {projectChangeImpact.previewSnapshotHash}
+                          预览 {projectChangeImpact.previewSnapshotHash}
                           {projectChangeImpact.previewRootPath ? ` · ${projectChangeImpact.previewRootPath}` : ""}
                         </p>
                       ) : null}
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-on-surface-variant">
                       <span className="rounded-full bg-surface-container-high px-2.5 py-1">
-                        Execute from the guided action above
+                        从上方引导操作执行
                       </span>
                     </div>
                   </div>
@@ -18296,7 +18358,7 @@ export function BuilderShowcase() {
                           <p className="font-medium text-on-surface">{projectChangeImpact.executionPlan.title}</p>
                           <Badge variant="outline">{projectChangeImpact.executionPlan.badge}</Badge>
                           <span className="text-[0.68rem] text-on-surface-variant">
-                            {projectChangeImpact.executionPlan.actions.length} action(s)
+                            {projectChangeImpact.executionPlan.actions.length} 个操作
                           </span>
                         </div>
                         <p className="mt-1 leading-5 text-on-surface-variant">{projectChangeImpact.executionPlan.detail}</p>
@@ -18314,18 +18376,18 @@ export function BuilderShowcase() {
                     <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-on-surface">Persisted dependency graph</p>
+                          <p className="font-medium text-on-surface">已保存依赖图</p>
                           <Badge variant={projectDependencyGraph ? dependencyGraphEventStatusVariant(projectDependencyGraph.lastEvent.status) : "outline"}>
-                            {projectDependencyGraph ? projectDependencyGraph.lastEvent.kind : "empty"}
+                            {projectDependencyGraph ? projectDependencyGraph.lastEvent.kind : "空"}
                           </Badge>
-                          {writingDependencyGraph ? <Badge variant="outline">writing</Badge> : null}
+                          {writingDependencyGraph ? <Badge variant="outline">写入中</Badge> : null}
                         </div>
                         <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">
                           {projectDependencyGraph
-                            ? `${projectDependencyGraph.summary} ${projectDependencyGraph.dirtyScopeCount} dirty scope(s), ${projectDependencyGraph.executionPlan.actions.length} planned action(s).`
+                            ? `${projectDependencyGraph.summary} ${projectDependencyGraph.dirtyScopeCount} 个脏范围，${projectDependencyGraph.executionPlan.actions.length} 个计划操作。`
                             : activeProject.rootPath
-                              ? "No dependency graph has been written for this project yet."
-                              : "Save the project to disk before Nova can persist dependency graph metadata."}
+                              ? "这个项目还没有写入依赖图。"
+                              : "先把项目保存到磁盘，Nova 才能持久化依赖图元数据。"}
                         </p>
                         {projectDependencyGraph?.recordPath ? (
                           <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">
@@ -18403,8 +18465,8 @@ export function BuilderShowcase() {
                     <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-on-surface">Selected source impact</p>
-                          <Badge variant="outline">{reverseDependencySummaries.length} tracked source(s)</Badge>
+                          <p className="font-medium text-on-surface">所选来源影响</p>
+                          <Badge variant="outline">{reverseDependencySummaries.length} 个追踪来源</Badge>
                         </div>
                         <p className="mt-1 leading-5 text-on-surface-variant">
                           反向查看当前选中控件、Rust 逻辑或发布配置会影响哪些生成文件、检查和构建动作。
@@ -18652,13 +18714,13 @@ export function BuilderShowcase() {
                                         : "outline"
                                   }
                                 >
-                                  {entry.status}
+                                  {generatedFileStatusLabel(entry.status)}
                                 </Badge>
                               </div>
                               <div className="flex flex-wrap items-center gap-2 text-[0.68rem]">
                                 <span className="rounded-full bg-surface-container-high px-2 py-0.5">{entry.kind}</span>
-                                <span>{entry.line_count ? `${entry.line_count} lines` : entry.exists ? "exists" : "planned"}</span>
-                                {entry.changed ? <span className="text-primary">changed</span> : null}
+                                <span>{entry.line_count ? `${entry.line_count} 行` : entry.exists ? "已存在" : "计划写入"}</span>
+                                {entry.changed ? <span className="text-primary">已变更</span> : null}
                               </div>
                             </button>
                           </article>
@@ -18674,7 +18736,7 @@ export function BuilderShowcase() {
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 <Badge variant={activeGeneratedPreviewEntry.changed ? "secondary" : "outline"}>
-                                  {activeGeneratedPreviewEntry.status}
+                                  {generatedFileStatusLabel(activeGeneratedPreviewEntry.status)}
                                 </Badge>
                                 <Button
                                   size="sm"
@@ -18712,7 +18774,7 @@ export function BuilderShowcase() {
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-release-readiness="">
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <h2 className="text-sm font-medium">Release readiness</h2>
+                    <h2 className="text-sm font-medium">发布就绪度</h2>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                       汇总构建、验证、签名、运行、smoke 和回滚证据，判断这个项目离可发布版本还有多远。
                     </p>
@@ -18726,17 +18788,17 @@ export function BuilderShowcase() {
                           : "secondary"
                     }
                   >
-                    {releaseReadinessSummary.status === "error" ? "blocked" : releaseReadinessSummary.status}
+                    {releaseReadinessSummary.status === "error" ? "阻塞" : buildReadinessSeverityLabel(releaseReadinessSummary.status)}
                   </Badge>
                 </div>
                 <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
                   <div className="rounded-2xl bg-surface-container p-4">
-                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Release score</p>
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布评分</p>
                     <p className="mt-3 text-4xl font-semibold tracking-normal">{releaseReadinessSummary.score}%</p>
                     <Progress className="mt-3" value={releaseReadinessSummary.score} />
                     <div className="mt-3 grid grid-cols-2 gap-2 text-center text-[0.68rem]">
-                      <span className="rounded-xl bg-surface-container-low px-2 py-1">{releaseReadinessSummary.blockers} blockers</span>
-                      <span className="rounded-xl bg-surface-container-low px-2 py-1">{releaseReadinessSummary.warnings} warnings</span>
+                      <span className="rounded-xl bg-surface-container-low px-2 py-1">{releaseReadinessSummary.blockers} 阻塞</span>
+                      <span className="rounded-xl bg-surface-container-low px-2 py-1">{releaseReadinessSummary.warnings} 警告</span>
                     </div>
                   </div>
                   <div className="grid gap-2 md:grid-cols-3">
@@ -18765,9 +18827,9 @@ export function BuilderShowcase() {
                 </div>
                 <div className="mt-3 rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <h3 className="font-medium">Next actions</h3>
+                    <h3 className="font-medium">下一步操作</h3>
                     <Badge variant={releaseReadinessActionItems.length ? "outline" : "secondary"}>
-                      {releaseReadinessActionItems.length || "clear"}
+                      {releaseReadinessActionItems.length || "已清理"}
                     </Badge>
                   </div>
                   {releaseReadinessActionItems.length ? (
@@ -18825,19 +18887,19 @@ export function BuilderShowcase() {
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
                   <div className="rounded-2xl bg-surface-container p-3">
                     <p className="font-medium">{windowVisualAudit.checkedFiles}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">files</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">文件</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container p-3">
                     <p className="font-medium">{windowVisualAudit.checkedItems}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">controls</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">控件</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container p-3">
                     <p className="font-medium text-destructive">{windowVisualAudit.errorCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">errors</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">错误</p>
                   </div>
                   <div className="rounded-2xl bg-surface-container p-3">
                     <p className="font-medium">{windowVisualAudit.warningCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">warnings</p>
+                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">警告</p>
                   </div>
                 </div>
                 {windowVisualAudit.issues.length === 0 ? (
@@ -18857,7 +18919,7 @@ export function BuilderShowcase() {
                             />
                             <span className="truncate font-medium">{issue.title}</span>
                           </div>
-                          <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity}</Badge>
+                          <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{visualAuditSeverityLabel(issue.severity)}</Badge>
                         </div>
                         <p className="leading-5 text-on-surface-variant">{issue.detail}</p>
                         <p className="mt-2 truncate font-mono text-[0.68rem] text-on-surface-variant">
@@ -19155,7 +19217,7 @@ export function BuilderShowcase() {
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-activity-timeline="">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-medium">Activity Timeline</h2>
+                    <h2 className="text-sm font-medium">活动时间线</h2>
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">项目级事件流，聚合验证、构建、运行、日志、smoke 和磁盘检查点。</p>
                   </div>
                   <Badge variant={activityTimeline.length ? "secondary" : "outline"}>{activityTimeline.length}</Badge>
@@ -19470,7 +19532,7 @@ export function BuilderShowcase() {
                     <p className="mt-1 text-xs text-on-surface-variant">这里显示 `npm install`、Tauri 构建和 Rust 编译输出。</p>
                   </div>
                   <Badge variant={activeBundlePath || activeProject.outputExePath ? "secondary" : "outline"}>
-                    {bundling ? "bundling" : activeBundlePath ? "bundle ready" : activeProject.outputExePath ? "exe ready" : building ? "building" : "idle"}
+                    {bundling ? "打包中" : activeBundlePath ? "安装包就绪" : activeProject.outputExePath ? "exe 就绪" : building ? "构建中" : "空闲"}
                   </Badge>
                 </div>
                 <Textarea
@@ -19489,7 +19551,7 @@ export function BuilderShowcase() {
                 <div className="min-w-0">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <FileJson aria-hidden className="size-4 text-primary" />
-                    <h2 className="truncate text-sm font-semibold">Export active UI file</h2>
+                    <h2 className="truncate text-sm font-semibold">导出当前 UI 文件</h2>
                     <Badge variant="secondary">{exportKind === "json" ? "JSON" : "React TSX"}</Badge>
                   </div>
                   <p className="mt-1 truncate text-xs text-on-surface-variant">
@@ -19517,10 +19579,10 @@ export function BuilderShowcase() {
                 </div>
               </div>
               <div className="mt-4 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
-                <PathRow label="Controls" value={`${items.length}`} />
-                <PathRow label="Lines" value={`${exportLineCount}`} />
-                <PathRow label="States" value={`${activeProject.stateVariables.length}`} />
-                <PathRow label="Commands" value={`${activeProject.rustCommands.length}`} />
+                <PathRow label="控件" value={`${items.length}`} />
+                <PathRow label="行数" value={`${exportLineCount}`} />
+                <PathRow label="状态" value={`${activeProject.stateVariables.length}`} />
+                <PathRow label="命令" value={`${activeProject.rustCommands.length}`} />
               </div>
               {exportFeedback ? (
                 <div
@@ -19804,10 +19866,10 @@ export function BuilderShowcase() {
                 <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-project-release-settings="">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Project Settings / Release</h3>
+                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置 / 发布</h3>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">Build 页只负责运行流水线；发布元数据在这里维护。</p>
                     </div>
-                    <Badge variant="outline">settings</Badge>
+                    <Badge variant="outline">设置</Badge>
                   </div>
                   <Field label="应用名称">
                     <Input
@@ -19817,7 +19879,7 @@ export function BuilderShowcase() {
                       onChange={(event) => updateReleaseConfig({ appName: event.target.value })}
                     />
                   </Field>
-                  <Field label="Bundle identifier">
+                  <Field label="Bundle 标识符">
                     <Input
                       inputSize="sm"
                       data-builder-project-release-identifier=""
@@ -19897,15 +19959,15 @@ export function BuilderShowcase() {
 
               {leftDockTab === "navigator" ? (
                 <NavigatorDock>
-              <PanelTitle icon={FileJson} title="Navigator" description="管理 UI 文件、对象层级和当前选择。" />
+              <PanelTitle icon={FileJson} title="导航器" description="管理 UI 文件、对象层级和当前选择。" />
               <div className="flex flex-col gap-3">
                 <section className="order-2 space-y-3 rounded-[22px] bg-surface-container-low p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-on-surface">UI files</p>
-                      <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{activeProject.files.length} files in project</p>
+                      <p className="truncate text-xs font-semibold text-on-surface">UI 文件</p>
+                      <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">项目内 {activeProject.files.length} 个文件</p>
                     </div>
-                    <Badge variant="outline">{activeFile.items.length} controls</Badge>
+                    <Badge variant="outline">{activeFile.items.length} 控件</Badge>
                   </div>
                   <Field label="当前文件">
                     <Input data-builder-file-name="" inputSize="sm" value={activeFile.name} onChange={(event) => renameActiveFile(event.target.value)} />
@@ -19924,7 +19986,7 @@ export function BuilderShowcase() {
                       >
                         <span className="min-w-0">
                           <span className="block truncate font-medium">{file.name}</span>
-                          <span className="block truncate opacity-70">{file.items.length} controls</span>
+                          <span className="block truncate opacity-70">{file.items.length} 控件</span>
                         </span>
                         <FileJson aria-hidden className="size-3.5 shrink-0" />
                       </button>
@@ -19950,13 +20012,13 @@ export function BuilderShowcase() {
                         <Layers aria-hidden className="size-4" />
                       </span>
                       <div className="min-w-0">
-                        <h3 className="truncate text-sm font-medium">Layer tree</h3>
+                        <h3 className="truncate text-sm font-medium">图层树</h3>
                         <p className="mt-1 truncate text-xs text-on-surface-variant">
-                          {visibleNavigatorTreeRows.length} of {treeRows.length} visible
+                          {treeRows.length} 个图层中显示 {visibleNavigatorTreeRows.length} 个
                         </p>
                       </div>
                     </div>
-                    <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} selected</Badge>
+                    <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} 个已选</Badge>
                   </div>
 
                   <div className="relative">
@@ -19965,7 +20027,7 @@ export function BuilderShowcase() {
                       inputSize="sm"
                       data-builder-navigator-search=""
                       aria-label="搜索对象层级"
-                      placeholder="Search layers..."
+                      placeholder="搜索图层..."
                       value={navigatorQuery}
                       className="h-9 rounded-2xl pl-9 text-xs"
                       onChange={(event) => {
@@ -20051,9 +20113,9 @@ export function BuilderShowcase() {
                   ) : visibleNavigatorTreeRows.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center">
                       <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
-                      <p className="mt-2 text-xs font-medium">No matching layers</p>
+                      <p className="mt-2 text-xs font-medium">没有匹配的图层</p>
                       <Button size="sm" variant="ghost" className="mt-3 h-8" data-builder-navigator-reset-search="" onClick={() => setNavigatorQuery("")}>
-                        Reset search
+                        重置搜索
                       </Button>
                     </div>
                   ) : (
@@ -20087,7 +20149,7 @@ export function BuilderShowcase() {
                                   {item.locked ? <Lock aria-hidden className="size-3 shrink-0 opacity-70" /> : null}
                                 </span>
                                 <span className="mt-0.5 block truncate text-[0.66rem] opacity-70">
-                                  {item.type} · {item.parentId ? "child" : "root"} · z {item.z}
+                                  {item.type} · {item.parentId ? "子级" : "根级"} · z {item.z}
                                 </span>
                               </span>
                             </button>
@@ -20176,7 +20238,7 @@ export function BuilderShowcase() {
                     inputSize="sm"
                     data-builder-component-search=""
                     aria-label="搜索控件工具箱"
-                    placeholder="Search controls..."
+                    placeholder="搜索控件..."
                     value={componentPaletteQuery}
                     className="h-9 rounded-2xl pl-9 text-xs"
                     onChange={(event) => setComponentPaletteQuery(event.target.value)}
@@ -20285,7 +20347,7 @@ export function BuilderShowcase() {
                   ) : (
                     <div className="rounded-[18px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center">
                       <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
-                      <p className="mt-2 text-xs font-medium">No matching controls</p>
+                      <p className="mt-2 text-xs font-medium">没有匹配的控件</p>
                       <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">清空搜索或切换分类后继续添加控件。</p>
                       <Button
                         size="sm"
@@ -20320,7 +20382,7 @@ export function BuilderShowcase() {
                           {preset.title} · {preset.description}
                         </SelectItem>
                       ))}
-                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value="custom">自定义</SelectItem>
                     </SelectContent>
                   </Select>
                   <SegmentedControl
@@ -20426,7 +20488,7 @@ export function BuilderShowcase() {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-semibold text-on-surface">
-                          {selectedItems.length > 1 ? `${selectedItems.length} controls selected` : selectedItem ? getItemSummary(selectedItem) : "Selection"}
+                          {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : selectedItem ? getItemSummary(selectedItem) : "当前选择"}
                         </h3>
                         {selectedItem ? <Badge variant="outline">{selectedItem.type}</Badge> : null}
                         {selectedItem && selectedEventName ? (
@@ -20465,7 +20527,7 @@ export function BuilderShowcase() {
                                     : "outline"
                               }
                             >
-                              {selectionStatusTone}
+                              {selectionStatusToneLabel}
                             </Badge>
                             <span className="min-w-0 truncate font-medium text-on-surface">{selectionStatusTitle}</span>
                           </div>
@@ -20521,7 +20583,7 @@ export function BuilderShowcase() {
                           </Badge>
                           {selectedLatestSimulatorTrace ? (
                             <Button size="sm" variant="ghost" className="h-7 shrink-0 px-2 text-xs" onClick={openSelectedConnections}>
-                              Trace
+                              追踪
                             </Button>
                           ) : null}
                           {mode === "preview" ? (
@@ -20533,7 +20595,7 @@ export function BuilderShowcase() {
                               onClick={returnToDesignEditor}
                             >
                               <MousePointer2 aria-hidden className="size-3.5" />
-                              Edit
+                              编辑
                             </Button>
                           ) : null}
                         </div>
@@ -20543,7 +20605,7 @@ export function BuilderShowcase() {
                   <div className="flex min-w-0 flex-wrap items-center gap-1.5 lg:justify-end">
                     <Button size="sm" variant="secondary" data-builder-actionbar-properties="" onClick={openSelectedProperties}>
                       <Settings2 aria-hidden className="size-4" />
-                      Properties
+                      属性
                     </Button>
                     <Button
                       size="sm"
@@ -20553,11 +20615,11 @@ export function BuilderShowcase() {
                       onClick={selectedEventCommand ? openSelectedConnections : selectedEventName ? () => createAndBindBackendIntegrationCommand() : openSelectedConnections}
                     >
                       <Braces aria-hidden className="size-4" />
-                      {selectedEventCommand ? "Connections" : selectedEventName ? "Create Binding" : "Connections"}
+                      {selectedEventCommand ? "连接" : selectedEventName ? "创建绑定" : "连接"}
                     </Button>
                     <Button size="sm" variant="secondary" data-builder-actionbar-preview="" disabled={!selectedItem} onClick={previewSelectedControl}>
                       <Monitor aria-hidden className="size-4" />
-                      Preview
+                      预览
                     </Button>
                     <Button
                       size="sm"
@@ -20567,11 +20629,11 @@ export function BuilderShowcase() {
                       onClick={runSelectedEventFromActionBar}
                     >
                       <Play aria-hidden className="size-4" />
-                      Run Event
+                      运行事件
                     </Button>
                     <Button size="sm" variant="ghost" data-builder-actionbar-impact="" onClick={() => setRightDockTab("impact")}>
                       <AlertTriangle aria-hidden className="size-4" />
-                      Impact
+                      影响
                     </Button>
                   </div>
                 </section>
@@ -20626,7 +20688,7 @@ export function BuilderShowcase() {
                           onPointerDown={(event) => event.stopPropagation()}
                         >
                           <MousePointer2 aria-hidden className="mx-auto mb-3 size-5 text-primary" />
-                          <p className="text-sm font-semibold">Start this UI file</p>
+                          <p className="text-sm font-semibold">开始这个 UI 文件</p>
                           <p className="mx-auto mt-1 max-w-[320px] text-xs leading-5 text-on-surface-variant">
                             Insert a first control here, or open the component library for the full toolbox.
                           </p>
@@ -20665,7 +20727,7 @@ export function BuilderShowcase() {
                             }}
                           >
                             <Layers aria-hidden className="size-4" />
-                            Open components
+                            打开控件
                           </Button>
                         </div>
                       </div>
@@ -20681,7 +20743,7 @@ export function BuilderShowcase() {
                           }}
                         >
                           <Move aria-hidden className="size-3" />
-                          <span className="truncate">Release to Canvas</span>
+                          <span className="truncate">释放到画布</span>
                           <span className="rounded-full bg-primary/10 px-1.5 py-0.5">{dropIntent.itemCount}</span>
                         </div>
                       </div>
@@ -20715,24 +20777,24 @@ export function BuilderShowcase() {
                       </span>
                       <div className="min-w-0">
                         <h2 className="truncate text-sm font-semibold">
-                          {selectedItems.length > 1 ? `${selectedItems.length} controls selected` : selectedItem ? getItemSummary(selectedItem) : activeFile.name}
+                          {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : selectedItem ? getItemSummary(selectedItem) : activeFile.name}
                         </h2>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
                           {selectedItems.length > 1
-                            ? `${selectedItems.filter((item) => item.locked).length} locked · ${activeFile.name}`
+                            ? `${selectedItems.filter((item) => item.locked).length} 个已锁定 · ${activeFile.name}`
                             : selectedItem
                               ? `${selectedItem.type} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
-                              : `${activeFile.items.length} controls · ${page.width} x ${page.height}`}
+                              : `${activeFile.items.length} 个控件 · ${page.width} x ${page.height}`}
                         </p>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       <Badge variant={selectedPropertyIssues.length > 0 ? "outline" : "secondary"}>
-                        {selectedItem ? `${selectedPropertyIssues.length} issue(s)` : "page"}
+                        {selectedItem ? `${selectedPropertyIssues.length} 个问题` : "页面"}
                       </Badge>
                       {selectedItem && selectedEventName ? (
                         <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
-                          {selectedEventCommand ? "event bound" : "event ready"}
+                          {selectedEventCommand ? "事件已绑定" : "事件就绪"}
                         </Badge>
                       ) : null}
                       {selectedControlReverseDependency ? (
@@ -20758,7 +20820,7 @@ export function BuilderShowcase() {
                   data-builder-inspector-workflow=""
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Next steps</p>
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">下一步</p>
                     <Badge variant={selectedEventCommand || selectedItems.length > 1 ? "secondary" : "outline"}>{inspectorWorkflowBadge}</Badge>
                   </div>
                   <div className="space-y-1.5">
@@ -20824,10 +20886,10 @@ export function BuilderShowcase() {
                 {rightDockTab === "properties" && selectedItem ? (
                   <div className="mt-3 grid grid-cols-4 gap-1.5" data-builder-inspector-property-map="">
                     {[
-                      { label: "Layout", value: `${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}` },
-                      { label: "Content", value: "text" in selectedItem.props ? String(selectedItem.props.text) : selectedItem.props.label ?? selectedItem.props.title ?? selectedItem.type },
-                      { label: "State", value: selectedBindableProps.length > 0 ? `${selectedBindableProps.length} bind` : "static" },
-                      { label: "Action", value: selectedEventCommand ? "bound" : selectedEventName ? "ready" : "none" },
+                      { label: "布局", value: `${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}` },
+                      { label: "内容", value: "text" in selectedItem.props ? String(selectedItem.props.text) : selectedItem.props.label ?? selectedItem.props.title ?? selectedItem.type },
+                      { label: "状态", value: selectedBindableProps.length > 0 ? `${selectedBindableProps.length} 个绑定` : "静态" },
+                      { label: "动作", value: selectedEventCommand ? "已绑定" : selectedEventName ? "就绪" : "无" },
                     ].map((group) => (
                       <div key={group.label} className="min-w-0 rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2">
                         <p className="truncate text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{group.label}</p>
@@ -20839,7 +20901,7 @@ export function BuilderShowcase() {
 
                 <div className="mt-3">
                   <div className="mb-1.5 flex items-center justify-between gap-2">
-                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Views</p>
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">视图</p>
                     <span className="text-[0.68rem] text-on-surface-variant">{rightDockTab}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -20879,9 +20941,9 @@ export function BuilderShowcase() {
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="truncate text-sm font-semibold">{getItemSummary(selectedItem)}</h3>
                           <Badge variant="outline">{selectedItem.type}</Badge>
-                          {selectedItem.locked ? <Badge variant="outline">locked</Badge> : null}
+                          {selectedItem.locked ? <Badge variant="outline">已锁定</Badge> : null}
                           <Badge variant={selectedEventCommand ? "secondary" : selectedEventName ? "outline" : "outline"}>
-                            {selectedEventCommand ? "event bound" : selectedEventName ? "event ready" : "no event"}
+                            {selectedEventCommand ? "事件已绑定" : selectedEventName ? "事件就绪" : "无事件"}
                           </Badge>
                         </div>
                         <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
@@ -20901,7 +20963,7 @@ export function BuilderShowcase() {
                     <div className="rounded-2xl border border-outline-variant bg-surface-container p-2" data-builder-selected-properties-workflow="">
                       <div className="mb-2 flex items-center justify-between gap-2 px-1">
                         <div className="min-w-0">
-                          <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Selection workflow</p>
+                          <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">选择工作流</p>
                           <p className="mt-0.5 line-clamp-1 text-[0.68rem] text-on-surface-variant">{selectionStatusDetail}</p>
                         </div>
                         <Badge
@@ -20914,7 +20976,7 @@ export function BuilderShowcase() {
                           }
                           className="shrink-0"
                         >
-                          {selectionStatusTone}
+                          {selectionStatusToneLabel}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
@@ -20971,11 +21033,11 @@ export function BuilderShowcase() {
 
                     <div className="grid grid-cols-5 gap-1.5" aria-label="属性分组">
                       {[
-                        { id: "layout" as const, label: "Layout" },
-                        { id: "content" as const, label: "Content" },
-                        { id: "state" as const, label: "State" },
-                        { id: "appearance" as const, label: "Style" },
-                        { id: "actions" as const, label: "Action" },
+                        { id: "layout" as const, label: "布局" },
+                        { id: "content" as const, label: "内容" },
+                        { id: "state" as const, label: "状态" },
+                        { id: "appearance" as const, label: "样式" },
+                        { id: "actions" as const, label: "动作" },
                       ].map((section) => (
                         <Button
                           key={section.id}
@@ -20992,7 +21054,7 @@ export function BuilderShowcase() {
 
                     <PropertySection
                       icon={Move}
-                      title="Layout"
+                      title="布局"
                       description={activeBreakpoint === "desktop" ? "编辑基础坐标、尺寸和父容器。" : `正在编辑 ${activeBreakpoint} 断点覆盖。`}
                       badge={activeBreakpoint}
                       open={openPropertySections.layout}
@@ -21038,7 +21100,7 @@ export function BuilderShowcase() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__canvas">Canvas</SelectItem>
+                            <SelectItem value="__canvas">画布</SelectItem>
                             {availableParentFrames.map((frame) => (
                               <SelectItem key={frame.id} value={frame.id}>
                                 {getItemSummary(frame)}
@@ -21050,7 +21112,7 @@ export function BuilderShowcase() {
                       {activeBreakpoint !== "desktop" ? (
                         <Button size="sm" variant="ghost" onClick={resetSelectedBreakpointOverride} disabled={!selectedBreakpointOverride}>
                           <RotateCcw aria-hidden className="size-4" />
-                          Reset breakpoint override
+                          重置断点覆盖
                         </Button>
                       ) : null}
                       {selectedParentAutoLayout ? (
@@ -21061,16 +21123,16 @@ export function BuilderShowcase() {
                       {selectedConstraints ? (
                         <div className="grid grid-cols-4 gap-1.5">
                           <Button size="sm" variant={selectedConstraints.left ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintLeft")}>
-                            Left
+                            左
                           </Button>
                           <Button size="sm" variant={selectedConstraints.right ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintRight")}>
-                            Right
+                            右
                           </Button>
                           <Button size="sm" variant={selectedConstraints.top ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintTop")}>
-                            Top
+                            上
                           </Button>
                           <Button size="sm" variant={selectedConstraints.bottom ? "secondary" : "outline"} disabled={selectedParentAutoLayout} onClick={() => toggleSelectedConstraint("constraintBottom")}>
-                            Bottom
+                            下
                           </Button>
                         </div>
                       ) : null}
@@ -21082,10 +21144,10 @@ export function BuilderShowcase() {
                               value={frameLayoutMode(selectedItem)}
                               onValueChange={(value) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
                               options={[
-                                { value: "free", label: "Free" },
-                                { value: "row", label: "Row" },
-                                { value: "column", label: "Column" },
-                                { value: "grid", label: "Grid" },
+                                { value: "free", label: "自由" },
+                                { value: "row", label: "行" },
+                                { value: "column", label: "列" },
+                                { value: "grid", label: "网格" },
                               ]}
                             />
                           </Field>
@@ -21113,7 +21175,7 @@ export function BuilderShowcase() {
 
                     <PropertySection
                       icon={Type}
-                      title="Content"
+                      title="内容"
                       description="文本、图片和表单候选项。"
                       open={openPropertySections.content}
                       onOpenChange={() => togglePropertySection("content")}
@@ -21150,9 +21212,9 @@ export function BuilderShowcase() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="cover">Cover</SelectItem>
-                                <SelectItem value="contain">Contain</SelectItem>
-                                <SelectItem value="fill">Fill</SelectItem>
+                                <SelectItem value="cover">覆盖</SelectItem>
+                                <SelectItem value="contain">完整显示</SelectItem>
+                                <SelectItem value="fill">拉伸填充</SelectItem>
                               </SelectContent>
                             </Select>
                           </Field>
@@ -21178,13 +21240,13 @@ export function BuilderShowcase() {
                       ) : null}
                       {selectedItem.type === "select" ? (
                         <div className="grid grid-cols-1 gap-2">
-                          <Field label="Option A">
+                          <Field label="选项 A">
                             <Input value={selectedItem.props.optionA ?? ""} onChange={(event) => updateSelectedProps({ optionA: event.target.value })} />
                           </Field>
-                          <Field label="Option B">
+                          <Field label="选项 B">
                             <Input value={selectedItem.props.optionB ?? ""} onChange={(event) => updateSelectedProps({ optionB: event.target.value })} />
                           </Field>
-                          <Field label="Option C">
+                          <Field label="选项 C">
                             <Input value={selectedItem.props.optionC ?? ""} onChange={(event) => updateSelectedProps({ optionC: event.target.value })} />
                           </Field>
                         </div>
@@ -21226,7 +21288,7 @@ export function BuilderShowcase() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="__none">No state</SelectItem>
+                                  <SelectItem value="__none">无状态</SelectItem>
                                   {activeProject.stateVariables.map((state) => (
                                     <SelectItem key={state.id} value={state.id}>
                                       {state.name}
@@ -21284,11 +21346,11 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="default">Primary</SelectItem>
-                              <SelectItem value="secondary">Secondary</SelectItem>
-                              <SelectItem value="outline">Outline</SelectItem>
-                              <SelectItem value="ghost">Ghost</SelectItem>
-                              <SelectItem value="destructive">Destructive</SelectItem>
+                              <SelectItem value="default">主要</SelectItem>
+                              <SelectItem value="secondary">次要</SelectItem>
+                              <SelectItem value="outline">描边</SelectItem>
+                              <SelectItem value="ghost">幽灵</SelectItem>
+                              <SelectItem value="destructive">危险</SelectItem>
                             </SelectContent>
                           </Select>
                         </Field>
@@ -21300,9 +21362,9 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="sm">Small</SelectItem>
-                              <SelectItem value="md">Medium</SelectItem>
-                              <SelectItem value="lg">Large</SelectItem>
+                              <SelectItem value="sm">小</SelectItem>
+                              <SelectItem value="md">中</SelectItem>
+                              <SelectItem value="lg">大</SelectItem>
                             </SelectContent>
                           </Select>
                         </Field>
@@ -21334,7 +21396,7 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="__none">No command</SelectItem>
+                              <SelectItem value="__none">无命令</SelectItem>
                               {activeProject.rustCommands.map((command) => (
                                 <SelectItem key={command.id} value={command.id}>
                                   {sanitizeRustCommandName(command.name)}
@@ -21389,9 +21451,9 @@ export function BuilderShowcase() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="grid">Grid</SelectItem>
-                          <SelectItem value="soft">Soft</SelectItem>
-                          <SelectItem value="plain">Plain</SelectItem>
+                          <SelectItem value="grid">网格</SelectItem>
+                          <SelectItem value="soft">柔和</SelectItem>
+                          <SelectItem value="plain">简洁</SelectItem>
                         </SelectContent>
                       </Select>
                     </Field>
@@ -21420,7 +21482,7 @@ export function BuilderShowcase() {
                       <div className="min-w-0">
                         <div className="mb-1 flex items-center gap-2">
                           <Braces aria-hidden className="size-4 text-primary" />
-                          <h3 className="text-sm font-medium">Live Simulator</h3>
+                          <h3 className="text-sm font-medium">实时模拟器</h3>
                         </div>
                         <p className="text-xs leading-5 text-on-surface-variant">
                           预演选中控件的事件参数、Rust 返回和 state patch。
@@ -21458,7 +21520,7 @@ export function BuilderShowcase() {
                     </div>
                     <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">State snapshot</span>
+                        <span className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">状态快照</span>
                         <span className="text-[0.68rem] text-on-surface-variant">{activeProject.stateVariables.length} states</span>
                       </div>
                       <div className="space-y-1">
@@ -21636,7 +21698,7 @@ export function BuilderShowcase() {
 
                     <div className="flex items-center justify-between gap-2 rounded-[18px] bg-surface-container-high p-3">
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-medium">Breakpoint</p>
+                        <p className="truncate text-xs font-medium">断点</p>
                         <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
                           {activeBreakpoint === "desktop" ? "Editing base layout" : `Editing ${activeBreakpoint} override`}
                         </p>
@@ -21654,7 +21716,7 @@ export function BuilderShowcase() {
                     <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3" data-builder-property-schema="">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Property schema</h4>
+                          <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">属性结构</h4>
                           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                             {selectedPropertyIssues.length > 0
                               ? `${selectedPropertyIssues.length} 个属性问题会进入构建前检查。`
@@ -21733,7 +21795,7 @@ export function BuilderShowcase() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Dependency impact</h4>
+                              <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">依赖影响</h4>
                               <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
                                 {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
                               </Badge>
@@ -21809,7 +21871,7 @@ export function BuilderShowcase() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__canvas">Canvas</SelectItem>
+                          <SelectItem value="__canvas">画布</SelectItem>
                           {availableParentFrames.map((frame) => (
                             <SelectItem key={frame.id} value={frame.id}>
                               {getItemSummary(frame)}
@@ -21829,7 +21891,7 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Constraints</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">约束</h4>
                             <p className="mt-1 text-xs text-on-surface-variant">父级尺寸变化时保持边距或拉伸。</p>
                           </div>
                           <Badge variant={selectedParentAutoLayout ? "outline" : "secondary"}>{selectedParentAutoLayout ? "layout" : "anchors"}</Badge>
@@ -21842,7 +21904,7 @@ export function BuilderShowcase() {
                             disabled={selectedParentAutoLayout}
                             onClick={() => toggleSelectedConstraint("constraintLeft")}
                           >
-                            Left
+                            左
                           </Button>
                           <Button
                             type="button"
@@ -21851,7 +21913,7 @@ export function BuilderShowcase() {
                             disabled={selectedParentAutoLayout}
                             onClick={() => toggleSelectedConstraint("constraintRight")}
                           >
-                            Right
+                            右
                           </Button>
                           <Button
                             type="button"
@@ -21860,7 +21922,7 @@ export function BuilderShowcase() {
                             disabled={selectedParentAutoLayout}
                             onClick={() => toggleSelectedConstraint("constraintTop")}
                           >
-                            Top
+                            上
                           </Button>
                           <Button
                             type="button"
@@ -21869,7 +21931,7 @@ export function BuilderShowcase() {
                             disabled={selectedParentAutoLayout}
                             onClick={() => toggleSelectedConstraint("constraintBottom")}
                           >
-                            Bottom
+                            下
                           </Button>
                         </div>
                       </section>
@@ -21879,7 +21941,7 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Frame Layout</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Frame 布局</h4>
                             <p className="mt-1 text-xs text-on-surface-variant">控制子控件的排列方式。</p>
                           </div>
                           <Badge variant={frameLayoutMode(selectedItem) === "free" ? "outline" : "secondary"}>{frameLayoutMode(selectedItem)}</Badge>
@@ -21890,10 +21952,10 @@ export function BuilderShowcase() {
                             value={frameLayoutMode(selectedItem)}
                             onValueChange={(value) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
                             options={[
-                              { value: "free", label: "Free" },
-                              { value: "row", label: "Row" },
-                              { value: "column", label: "Column" },
-                              { value: "grid", label: "Grid" },
+                                { value: "free", label: "自由" },
+                                { value: "row", label: "行" },
+                                { value: "column", label: "列" },
+                                { value: "grid", label: "网格" },
                             ]}
                           />
                         </Field>
@@ -21964,9 +22026,9 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="cover">Cover</SelectItem>
-                              <SelectItem value="contain">Contain</SelectItem>
-                              <SelectItem value="fill">Fill</SelectItem>
+                              <SelectItem value="cover">覆盖</SelectItem>
+                              <SelectItem value="contain">完整显示</SelectItem>
+                              <SelectItem value="fill">拉伸填充</SelectItem>
                             </SelectContent>
                           </Select>
                         </Field>
@@ -21998,19 +22060,19 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Select options</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">下拉选项</h4>
                             <p className="mt-1 text-xs text-on-surface-variant">候选项会写入生成 app 的 Select 控件。</p>
                           </div>
-                          <Badge variant="outline">{selectOptionsForItem(selectedItem).length} options</Badge>
+                          <Badge variant="outline">{selectOptionsForItem(selectedItem).length} 个选项</Badge>
                         </div>
                         <div className="grid grid-cols-1 gap-2">
-                          <Field label="Option A">
+                          <Field label="选项 A">
                             <Input value={selectedItem.props.optionA ?? ""} onChange={(event) => updateSelectedProps({ optionA: event.target.value })} />
                           </Field>
-                          <Field label="Option B">
+                          <Field label="选项 B">
                             <Input value={selectedItem.props.optionB ?? ""} onChange={(event) => updateSelectedProps({ optionB: event.target.value })} />
                           </Field>
-                          <Field label="Option C">
+                          <Field label="选项 C">
                             <Input value={selectedItem.props.optionC ?? ""} onChange={(event) => updateSelectedProps({ optionC: event.target.value })} />
                           </Field>
                         </div>
@@ -22039,10 +22101,10 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">State binding</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">状态绑定</h4>
                             <p className="mt-1 text-xs text-on-surface-variant">将控件属性绑定到项目级共享状态。</p>
                           </div>
-                          <Badge variant="outline">{activeProject.stateVariables.length} states</Badge>
+                          <Badge variant="outline">{activeProject.stateVariables.length} 个状态</Badge>
                         </div>
                         <div className="grid grid-cols-1 gap-2">
                           {selectedBindableProps.map((prop) => (
@@ -22055,7 +22117,7 @@ export function BuilderShowcase() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="__none">No state</SelectItem>
+                                  <SelectItem value="__none">无状态</SelectItem>
                                   {activeProject.stateVariables.map((state) => (
                                     <SelectItem key={state.id} value={state.id}>
                                       {state.name}
@@ -22076,11 +22138,11 @@ export function BuilderShowcase() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="default">Primary</SelectItem>
-                            <SelectItem value="secondary">Secondary</SelectItem>
-                            <SelectItem value="outline">Outline</SelectItem>
-                            <SelectItem value="ghost">Ghost</SelectItem>
-                            <SelectItem value="destructive">Destructive</SelectItem>
+                            <SelectItem value="default">主要</SelectItem>
+                            <SelectItem value="secondary">次要</SelectItem>
+                            <SelectItem value="outline">描边</SelectItem>
+                            <SelectItem value="ghost">幽灵</SelectItem>
+                            <SelectItem value="destructive">危险</SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -22093,16 +22155,16 @@ export function BuilderShowcase() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="sm">Small</SelectItem>
-                            <SelectItem value="md">Medium</SelectItem>
-                            <SelectItem value="lg">Large</SelectItem>
+                            <SelectItem value="sm">小</SelectItem>
+                            <SelectItem value="md">中</SelectItem>
+                            <SelectItem value="lg">大</SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
                     ) : null}
 
                     {selectedEventName ? (
-                      <Field label="Event binding">
+                      <Field label="事件绑定">
                         <Select
                           value={
                             selectedEventCommandId && activeProject.rustCommands.some((command) => command.id === selectedEventCommandId)
@@ -22115,7 +22177,7 @@ export function BuilderShowcase() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__none">No command</SelectItem>
+                            <SelectItem value="__none">无命令</SelectItem>
                             {activeProject.rustCommands.map((command) => (
                               <SelectItem key={command.id} value={command.id}>
                                 {sanitizeRustCommandName(command.name)}
@@ -22125,7 +22187,7 @@ export function BuilderShowcase() {
                         </Select>
                         <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
                           <div className="min-w-0">
-                            <Label className="text-xs font-medium">Command args</Label>
+                            <Label className="text-xs font-medium">命令参数</Label>
                             <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                               {selectedEventCommandArgs.length > 0
                                 ? `触发时会传入 ${selectedEventCommandArgs.length} 个命名参数。`
@@ -22140,7 +22202,7 @@ export function BuilderShowcase() {
                         </div>
                         {selectedEventCommand?.acceptsValue ? (
                           <div className="space-y-3 rounded-xl bg-surface-container-high p-3">
-                            <Field label="Payload mode">
+                            <Field label="载荷模式">
                               <Select
                                 value={selectedEventBinding?.payloadMode ?? "value"}
                                 disabled={!selectedEventBinding?.passValue || selectedEventCommandArgs.length > 0}
@@ -22155,8 +22217,8 @@ export function BuilderShowcase() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="value">Current value</SelectItem>
-                                  <SelectItem value="json">JSON payload</SelectItem>
+                                  <SelectItem value="value">当前值</SelectItem>
+                                  <SelectItem value="json">JSON 载荷</SelectItem>
                                 </SelectContent>
                               </Select>
                             </Field>
@@ -22187,14 +22249,14 @@ export function BuilderShowcase() {
                             ) : (
                               <p className="text-xs leading-5 text-on-surface-variant">
                                 {selectedEventCommandArgs.length > 0
-                                  ? "多参数命令使用命令属性里的来源映射；Payload mode 仅用于旧的单 value 参数。"
-                                  : "默认传入控件的当前 value/checked。切到 JSON payload 后可把事件上下文和 state 快照一起传给 Rust。"}
+                                  ? "多参数命令使用命令属性里的来源映射；载荷模式仅用于旧的单 value 参数。"
+                                  : "默认传入控件的当前 value/checked。切到 JSON 载荷后可把事件上下文和 state 快照一起传给 Rust。"}
                               </p>
                             )}
                           </div>
                         ) : null}
                         <div className="grid grid-cols-2 gap-2">
-                          <Field label="Result target">
+                          <Field label="结果目标">
                             <Select
                               value={selectedEventBinding?.resultTargetItemId || "__none"}
                               onValueChange={(value) =>
@@ -22208,7 +22270,7 @@ export function BuilderShowcase() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="__none">None</SelectItem>
+                                <SelectItem value="__none">无</SelectItem>
                                 {eventResultTargets.map((item) => (
                                   <SelectItem key={item.id} value={item.id}>
                                     {getItemSummary(item)}
@@ -22217,7 +22279,7 @@ export function BuilderShowcase() {
                               </SelectContent>
                             </Select>
                           </Field>
-                          <Field label="Target prop">
+                          <Field label="目标属性">
                             <Select
                               value={selectedEventBinding?.resultTargetProp || "__none"}
                               disabled={!selectedEventBinding?.resultTargetItemId}
@@ -22231,7 +22293,7 @@ export function BuilderShowcase() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="__none">None</SelectItem>
+                                <SelectItem value="__none">无</SelectItem>
                                 {eventResultTargetProps.map((prop) => (
                                   <SelectItem key={prop.value} value={prop.value}>
                                     {prop.label}
@@ -22241,7 +22303,7 @@ export function BuilderShowcase() {
                             </Select>
                           </Field>
                         </div>
-                        <Field label="Result state">
+                        <Field label="结果状态">
                           <Select
                             value={selectedEventBinding?.resultStateId || "__none"}
                             onValueChange={(value) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
@@ -22250,7 +22312,7 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="__none">No state</SelectItem>
+                              <SelectItem value="__none">无状态</SelectItem>
                               {activeProject.stateVariables.map((state) => (
                                 <SelectItem key={state.id} value={state.id}>
                                   {state.name}
@@ -22261,7 +22323,7 @@ export function BuilderShowcase() {
                         </Field>
                         <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
                           <div className="min-w-0">
-                            <Label className="text-xs font-medium">Apply JSON state patch</Label>
+                            <Label className="text-xs font-medium">应用 JSON 状态 patch</Label>
                             <p className="mt-1 text-xs leading-5 text-on-surface-variant">Rust 返回对象时，用 key 匹配 state name/id 并批量更新。</p>
                           </div>
                           <Switch
@@ -22310,16 +22372,16 @@ export function BuilderShowcase() {
                 </>
               ) : rightDockTab === "connections" ? (
                 <section className="space-y-4">
-                  <PanelTitle icon={Braces} title="Connections" description="把控件事件绑定到 Rust command，并设置结果回写。" />
+                  <PanelTitle icon={Braces} title="连接" description="把控件事件绑定到 Rust command，并设置结果回写。" />
                   {selectedItem && selectedEventName ? (
                     <div className="space-y-4 rounded-[22px] bg-surface-container-low p-3">
                       <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
                         <p className="truncate text-sm font-medium">{getItemSummary(selectedItem)}</p>
                         <p className="mt-1 text-xs text-on-surface-variant">
-                          {selectedItem.name} · {selectedItem.type} · event {selectedEventName}
+                          {selectedItem.name} · {selectedItem.type} · 事件 {selectedEventName}
                         </p>
                       </div>
-                      <Field label="Rust command">
+                      <Field label="Rust 命令">
                         <Select
                           value={
                             selectedEventCommandId && activeProject.rustCommands.some((command) => command.id === selectedEventCommandId)
@@ -22332,7 +22394,7 @@ export function BuilderShowcase() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__none">No command</SelectItem>
+                            <SelectItem value="__none">无命令</SelectItem>
                             {activeProject.rustCommands.map((command) => (
                               <SelectItem key={command.id} value={command.id}>
                                 {sanitizeRustCommandName(command.name)}
@@ -22349,39 +22411,39 @@ export function BuilderShowcase() {
                           disabled={!selectedEventCommand}
                         >
                           <Play aria-hidden className="size-4" />
-                          Simulate
+                          模拟
                         </Button>
                         <Button size="sm" variant="secondary" data-builder-connection-new-command="" onClick={() => createAndBindBackendIntegrationCommand()}>
                           <Plus aria-hidden className="size-4" />
-                          Bind new
+                          绑定新命令
                         </Button>
                       </div>
                       <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs" data-builder-connection-map="">
                         <div className="mb-3 flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="font-medium text-on-surface">Connection map</p>
+                            <p className="font-medium text-on-surface">连接映射</p>
                             <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">
                               {selectedEventCommand
                                 ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
-                                : `${selectedEventName} has no Rust command`}
+                                : `${selectedEventName} 没有 Rust 命令`}
                             </p>
                           </div>
-                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
+                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "已绑定" : "未绑定"}</Badge>
                         </div>
                         <div className="grid gap-2">
                           <div className="rounded-xl bg-surface-container-high px-3 py-2">
-                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Input</p>
+                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">输入</p>
                             <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">{selectedConnectionInputSummary}</p>
                           </div>
                           <div className="rounded-xl bg-surface-container-high px-3 py-2">
-                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Output</p>
+                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">输出</p>
                             <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">{selectedConnectionOutputSummary}</p>
                           </div>
                         </div>
                         <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-high px-3 py-2">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Verification</p>
+                              <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">验证</p>
                               <p className="mt-1 line-clamp-2 text-xs leading-4 text-on-surface-variant">{selectedConnectionVerificationDetail}</p>
                             </div>
                             <Badge variant={selectedConnectionVerificationVariant}>{selectedConnectionVerificationLabel}</Badge>
@@ -22389,11 +22451,11 @@ export function BuilderShowcase() {
                           <div className="mt-3 grid grid-cols-2 gap-2">
                             <Button size="sm" variant="secondary" disabled={!selectedEventCommand} onClick={runSelectedEventAndRevealLogs}>
                               <Play aria-hidden className="size-4" />
-                              Simulate
+                              模拟
                             </Button>
                             <Button size="sm" variant="ghost" disabled={!selectedEventCommand} onClick={revealSelectedConnectionLogs}>
                               <FileJson aria-hidden className="size-4" />
-                              Logs
+                              日志
                             </Button>
                           </div>
                         </div>
@@ -22402,7 +22464,7 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-connection-input="">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Input payload</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">输入载荷</h4>
                             <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionInputSummary}</p>
                           </div>
                           <Badge variant="outline">{selectedEventCommandArgs.length || (selectedEventBinding?.passValue ? 1 : 0)} arg</Badge>
@@ -22427,9 +22489,9 @@ export function BuilderShowcase() {
                           <>
                             <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
                               <div className="min-w-0">
-                                <Label className="text-xs font-medium">Pass control value</Label>
+                                <Label className="text-xs font-medium">传入控件值</Label>
                                 <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                                  {selectedEventCommand.acceptsValue ? "value / checked" : "command has no value parameter"}
+                                  {selectedEventCommand.acceptsValue ? "value / checked" : "命令没有 value 参数"}
                                 </p>
                               </div>
                               <Switch
@@ -22439,7 +22501,7 @@ export function BuilderShowcase() {
                               />
                             </div>
                             {selectedEventCommand.acceptsValue ? (
-                              <Field label="Payload mode">
+                              <Field label="载荷模式">
                                 <Select
                                   value={selectedEventBinding?.payloadMode ?? "value"}
                                   disabled={!selectedEventBinding?.passValue}
@@ -22454,8 +22516,8 @@ export function BuilderShowcase() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="value">Current value</SelectItem>
-                                    <SelectItem value="json">JSON payload</SelectItem>
+                                    <SelectItem value="value">当前值</SelectItem>
+                                    <SelectItem value="json">JSON 载荷</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </Field>
@@ -22488,7 +22550,7 @@ export function BuilderShowcase() {
                           </>
                         ) : (
                           <div className="rounded-xl border border-dashed border-outline-variant p-3 text-xs leading-5 text-on-surface-variant">
-                            Bind a Rust command before configuring payload.
+                            先绑定 Rust 命令，再配置载荷。
                           </div>
                         )}
                       </section>
@@ -22496,7 +22558,7 @@ export function BuilderShowcase() {
                       <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-connection-output="">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Result routing</h4>
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">结果路由</h4>
                             <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionOutputSummary}</p>
                           </div>
                           <Badge variant={selectedEventBinding?.resultTargetItemId || selectedEventBinding?.resultStateId ? "secondary" : "outline"}>
@@ -22504,7 +22566,7 @@ export function BuilderShowcase() {
                           </Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                          <Field label="Target">
+                          <Field label="目标">
                             <Select
                               value={selectedEventBinding?.resultTargetItemId || "__none"}
                               onValueChange={(value) =>
@@ -22518,7 +22580,7 @@ export function BuilderShowcase() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="__none">None</SelectItem>
+                                <SelectItem value="__none">无</SelectItem>
                                 {eventResultTargets.map((item) => (
                                   <SelectItem key={item.id} value={item.id}>
                                     {getItemSummary(item)}
@@ -22527,7 +22589,7 @@ export function BuilderShowcase() {
                               </SelectContent>
                             </Select>
                           </Field>
-                          <Field label="Prop">
+                          <Field label="属性">
                             <Select
                               value={selectedEventBinding?.resultTargetProp || "__none"}
                               disabled={!selectedEventBinding?.resultTargetItemId}
@@ -22541,7 +22603,7 @@ export function BuilderShowcase() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="__none">None</SelectItem>
+                                <SelectItem value="__none">无</SelectItem>
                                 {eventResultTargetProps.map((prop) => (
                                   <SelectItem key={prop.value} value={prop.value}>
                                     {prop.label}
@@ -22551,7 +22613,7 @@ export function BuilderShowcase() {
                             </Select>
                           </Field>
                         </div>
-                        <Field label="State">
+                        <Field label="状态">
                           <Select
                             value={selectedEventBinding?.resultStateId || "__none"}
                             onValueChange={(value) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
@@ -22560,7 +22622,7 @@ export function BuilderShowcase() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="__none">No state</SelectItem>
+                              <SelectItem value="__none">无状态</SelectItem>
                               {activeProject.stateVariables.map((state) => (
                                 <SelectItem key={state.id} value={state.id}>
                                   {state.name}
@@ -22571,8 +22633,8 @@ export function BuilderShowcase() {
                         </Field>
                         <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
                           <div className="min-w-0">
-                            <Label className="text-xs font-medium">Apply JSON state patch</Label>
-                            <p className="mt-1 text-xs leading-5 text-on-surface-variant">patch to state</p>
+                            <Label className="text-xs font-medium">应用 JSON 状态 patch</Label>
+                            <p className="mt-1 text-xs leading-5 text-on-surface-variant">将 patch 写入状态</p>
                           </div>
                           <Switch
                             checked={Boolean(selectedEventBinding?.applyJsonStatePatch)}
@@ -22653,34 +22715,34 @@ export function BuilderShowcase() {
                 </section>
               ) : rightDockTab === "responsive" ? (
                 <section className="space-y-4">
-                  <PanelTitle icon={Monitor} title="Responsive" description="查看当前断点、画布尺寸和选中控件的响应式状态。" />
+                  <PanelTitle icon={Monitor} title="响应式" description="查看当前断点、画布尺寸和选中控件的响应式状态。" />
                   <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3">
                     <SegmentedControl
                       aria-label="Inspector responsive breakpoint"
                       value={activeBreakpoint}
                       onValueChange={(value) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                       options={[
-                        { value: "desktop", label: "Desktop" },
-                        { value: "tablet", label: "Tablet" },
-                        { value: "mobile", label: "Mobile" },
+                        { value: "desktop", label: "桌面" },
+                        { value: "tablet", label: "平板" },
+                        { value: "mobile", label: "手机" },
                       ]}
                     />
                     <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
-                      <PathRow label="Canvas" value={`${page.width} x ${page.height} · ${responsiveBreakpointSize(activeBreakpoint, page).width}px guide`} />
-                      <PathRow label="Preset" value={page.preset} />
-                      <PathRow label="Zoom" value={`${Math.round(page.zoom * 100)}%`} />
+                      <PathRow label="画布" value={`${page.width} x ${page.height} · ${responsiveBreakpointSize(activeBreakpoint, page).width}px 参考线`} />
+                      <PathRow label="预设" value={page.preset} />
+                      <PathRow label="缩放" value={`${Math.round(page.zoom * 100)}%`} />
                     </div>
                     {selectedItem ? (
                       <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
-                        <PathRow label="Selected" value={getItemSummary(selectedItem)} />
-                        <PathRow label="Bounds" value={`x ${selectedItem.x}, y ${selectedItem.y}, ${selectedItem.width} x ${selectedItem.height}`} />
+                        <PathRow label="所选" value={getItemSummary(selectedItem)} />
+                        <PathRow label="边界" value={`x ${selectedItem.x}, y ${selectedItem.y}, ${selectedItem.width} x ${selectedItem.height}`} />
                         <PathRow
-                          label="Constraints"
+                          label="约束"
                           value={
                             Object.entries(itemConstraints(selectedItem))
                               .filter(([, enabled]) => enabled)
                               .map(([name]) => name)
-                              .join(", ") || "none"
+                              .join(", ") || "无"
                           }
                         />
                       </div>
@@ -22693,13 +22755,13 @@ export function BuilderShowcase() {
                 </section>
               ) : (
                 <section className="space-y-4">
-                  <PanelTitle icon={AlertTriangle} title="Impact" description="反向查看当前选择会影响哪些生成文件、检查和构建动作。" />
+                  <PanelTitle icon={AlertTriangle} title="影响" description="反向查看当前选择会影响哪些生成文件、检查和构建动作。" />
                   <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3">
                     {selectedControlReverseDependency ? (
                       <div className="rounded-2xl border border-outline-variant bg-surface-container p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">{selectedControlReverseDependency.target?.label ?? "Selected control"}</p>
+                            <p className="truncate text-sm font-medium">{selectedControlReverseDependency.target?.label ?? "所选控件"}</p>
                             <p className="mt-1 text-xs leading-5 text-on-surface-variant">{selectedControlReverseDependency.summary}</p>
                           </div>
                           <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
@@ -22774,7 +22836,7 @@ export function BuilderShowcase() {
                               : "outline"
                         }
                       >
-                        {feedbackSummaryTone}
+                        {feedbackSummaryToneLabel}
                       </Badge>
                     </div>
                     <p className="line-clamp-2 leading-5 text-on-surface-variant">{feedbackSummaryDetail}</p>
@@ -22785,7 +22847,7 @@ export function BuilderShowcase() {
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
                       onClick={() => openBottomDock("issues", false)}
                     >
-                      <span className="block text-[0.66rem] text-on-surface-variant">Issues</span>
+                      <span className="block text-[0.66rem] text-on-surface-variant">问题</span>
                       <span className="mt-0.5 block font-medium text-on-surface">{feedbackIssueCount}</span>
                     </button>
                     <button
@@ -22793,7 +22855,7 @@ export function BuilderShowcase() {
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
                       onClick={() => openRelevantTaskDock(null, false)}
                     >
-                      <span className="block text-[0.66rem] text-on-surface-variant">Tasks</span>
+                      <span className="block text-[0.66rem] text-on-surface-variant">任务</span>
                       <span className="mt-0.5 block font-medium text-on-surface">{activeProjectTasks.length}</span>
                     </button>
                     <button
@@ -22801,22 +22863,22 @@ export function BuilderShowcase() {
                       className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2 text-left transition hover:border-outline"
                       onClick={() => openBottomDock("output", false)}
                     >
-                      <span className="block text-[0.66rem] text-on-surface-variant">Output</span>
-                      <span className="mt-0.5 block font-medium text-on-surface">{activeProject.outputExePath ? "exe" : "idle"}</span>
+                      <span className="block text-[0.66rem] text-on-surface-variant">输出</span>
+                      <span className="mt-0.5 block font-medium text-on-surface">{activeProject.outputExePath ? "exe" : "空闲"}</span>
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <Button size="sm" variant={bottomDockTab === "issues" ? "secondary" : "ghost"} onClick={() => openBottomDock("issues", false)}>
                       <AlertTriangle aria-hidden className="size-4" />
-                      Issues
+                      问题
                     </Button>
                     <Button size="sm" variant={bottomDockTab === "tasks" ? "secondary" : "ghost"} onClick={() => openRelevantTaskDock(null, false)}>
                       <ClipboardCopy aria-hidden className="size-4" />
-                      Tasks
+                      任务
                     </Button>
                     <Button size="sm" variant={bottomDockTab === "logs" ? "secondary" : "ghost"} onClick={() => openBottomDock("logs", false)}>
                       <FileJson aria-hidden className="size-4" />
-                      Logs
+                      日志
                     </Button>
                   </div>
                 </div>
@@ -22852,9 +22914,9 @@ export function BuilderShowcase() {
                               }}
                             >
                               <span className="mb-1 flex min-w-0 items-center gap-2">
-                                <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity}</Badge>
+                                <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity === "error" ? "错误" : "警告"}</Badge>
                                 <Badge variant="secondary">{issue.sourceLabel}</Badge>
-                                {issue.fixable ? <Badge variant="outline">fixable</Badge> : null}
+                                {issue.fixable ? <Badge variant="outline">可修复</Badge> : null}
                                 {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">{issue.meta}</span> : null}
                               </span>
                               <span className="block truncate font-medium text-on-surface">{issue.title}</span>
@@ -22864,7 +22926,7 @@ export function BuilderShowcase() {
                         })
                       ) : (
                         <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                          No active issues. Design validation, build diagnostics, and runtime checks will appear here.
+                          没有活跃问题。设计验证、构建诊断和运行时检查会显示在这里。
                         </div>
                       )}
                     </div>
@@ -22894,22 +22956,22 @@ export function BuilderShowcase() {
                           </div>
                           <p className="leading-5 text-on-surface">{selectedBuilderIssue.diagnostic.message}</p>
                           <div className="grid gap-2 md:grid-cols-2">
-                            <PathRow label="File" value={selectedBuilderIssue.diagnostic.file || "Cargo output"} />
+                            <PathRow label="文件" value={selectedBuilderIssue.diagnostic.file || "Cargo 输出"} />
                             <PathRow
-                              label="Location"
+                              label="位置"
                               value={
                                 selectedBuilderIssue.diagnostic.line
-                                  ? `line ${selectedBuilderIssue.diagnostic.line}, column ${selectedBuilderIssue.diagnostic.column ?? 1}`
-                                  : "No direct source location"
+                                  ? `第 ${selectedBuilderIssue.diagnostic.line} 行，第 ${selectedBuilderIssue.diagnostic.column ?? 1} 列`
+                                  : "没有直接源码位置"
                               }
                             />
-                            <PathRow label="Mapped source" value={selectedBuilderIssue.diagnostic.sourceFile || "Not mapped to editor source"} />
+                            <PathRow label="映射源码" value={selectedBuilderIssue.diagnostic.sourceFile || "未映射到编辑器源码"} />
                             <PathRow
-                              label="Source line"
+                              label="源码行"
                               value={
                                 selectedBuilderIssue.diagnostic.sourceLine
-                                  ? `line ${selectedBuilderIssue.diagnostic.sourceLine}, column ${selectedBuilderIssue.diagnostic.sourceColumn ?? 1}`
-                                  : "Unavailable"
+                                  ? `第 ${selectedBuilderIssue.diagnostic.sourceLine} 行，第 ${selectedBuilderIssue.diagnostic.sourceColumn ?? 1} 列`
+                                  : "不可用"
                               }
                             />
                           </div>
@@ -22928,9 +22990,9 @@ export function BuilderShowcase() {
                         <div className="space-y-3">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
-                              <Badge variant={selectedBuilderIssue.severity === "error" ? "destructive" : "outline"}>{selectedBuilderIssue.severity}</Badge>
-                              <Badge variant="secondary">design</Badge>
-                              {selectedBuilderIssue.fixable ? <Badge variant="outline">safe fix</Badge> : <Badge variant="outline">manual</Badge>}
+                              <Badge variant={selectedBuilderIssue.severity === "error" ? "destructive" : "outline"}>{selectedBuilderIssue.severity === "error" ? "错误" : "警告"}</Badge>
+                              <Badge variant="secondary">设计</Badge>
+                              {selectedBuilderIssue.fixable ? <Badge variant="outline">安全修复</Badge> : <Badge variant="outline">手动处理</Badge>}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
                               <Button size="sm" variant="secondary" onClick={() => focusPropertyIssue(selectedBuilderIssue.propertyIssue!, { feedback: true })}>
@@ -22949,10 +23011,10 @@ export function BuilderShowcase() {
                           </div>
                           <p className="leading-5 text-on-surface">{selectedBuilderIssue.propertyIssue.message}</p>
                           <div className="grid gap-2 md:grid-cols-2">
-                            <PathRow label="UI file" value={selectedBuilderIssue.propertyIssue.fileName} />
-                            <PathRow label="Control" value={selectedBuilderIssue.propertyIssue.itemName} />
-                            <PathRow label="Property" value={`${selectedBuilderIssue.propertyIssue.label} / ${String(selectedBuilderIssue.propertyIssue.prop)}`} />
-                            <PathRow label="Panel" value={`${propertySectionForProp(selectedBuilderIssue.propertyIssue.prop)} section`} />
+                            <PathRow label="UI 文件" value={selectedBuilderIssue.propertyIssue.fileName} />
+                            <PathRow label="控件" value={selectedBuilderIssue.propertyIssue.itemName} />
+                            <PathRow label="属性" value={`${selectedBuilderIssue.propertyIssue.label} / ${String(selectedBuilderIssue.propertyIssue.prop)}`} />
+                            <PathRow label="面板" value={`${propertySectionForProp(selectedBuilderIssue.propertyIssue.prop)} 区段`} />
                           </div>
                           <p className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 leading-5 text-on-surface-variant">
                             这个问题来自设计器属性 schema。修复后会影响生成 UI、可访问性文本或构建前 readiness。
@@ -22960,7 +23022,7 @@ export function BuilderShowcase() {
                         </div>
                       ) : selectedBuilderIssue?.kind === "build-error" && buildError ? (
                         <div className="space-y-3">
-                          <Badge variant="destructive">build error</Badge>
+                          <Badge variant="destructive">构建错误</Badge>
                           <p className="leading-5 text-destructive">{buildError}</p>
                           <Button size="sm" variant="secondary" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                             <FileJson aria-hidden className="size-4" />
@@ -22969,7 +23031,7 @@ export function BuilderShowcase() {
                         </div>
                       ) : (
                         <div className="flex h-full min-h-36 items-center justify-center rounded-xl border border-dashed border-outline-variant text-center text-on-surface-variant">
-                          No issue selected.
+                          未选择问题。
                         </div>
                       )}
                     </div>
@@ -22996,9 +23058,9 @@ export function BuilderShowcase() {
                           }}
                         >
                           <span className="mb-1 flex min-w-0 items-center gap-2">
-                            <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity}</Badge>
+                            <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity === "error" ? "错误" : "警告"}</Badge>
                             <Badge variant="secondary">{issue.sourceLabel}</Badge>
-                            {issue.fixable ? <Badge variant="outline">fixable</Badge> : null}
+                            {issue.fixable ? <Badge variant="outline">可修复</Badge> : null}
                             {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem]">{issue.meta}</span> : null}
                           </span>
                           <span className="block truncate font-medium text-on-surface">{issue.title}</span>
@@ -23007,7 +23069,7 @@ export function BuilderShowcase() {
                       ))
                     ) : (
                       <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                        No active issues. Design validation, build diagnostics, and runtime checks will appear here.
+                        没有活跃问题。设计验证、构建诊断和运行时检查会显示在这里。
                       </div>
                     )}
                   </div>
@@ -23017,13 +23079,13 @@ export function BuilderShowcase() {
                   <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Pipeline</p>
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">流水线</p>
                         <p className={cn("mt-1 leading-5 text-on-surface", bottomDockExpanded ? "line-clamp-2" : "line-clamp-1")}>
-                          {latestReleasePipeline ? latestReleasePipeline.summary : "No release pipeline yet"}
+                          {latestReleasePipeline ? latestReleasePipeline.summary : "还没有发布流水线"}
                         </p>
                       </div>
                       <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
-                        {latestReleasePipeline?.status ?? "idle"}
+                        {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空闲"}
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -23033,27 +23095,27 @@ export function BuilderShowcase() {
                         onClick={() => openRelevantTaskDock()}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
-                        Tasks
+                        任务
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                         <FileJson aria-hidden className="size-4" />
-                        Logs
+                        日志
                       </Button>
                     </div>
                   </div>
                   <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Executable</p>
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">可执行文件</p>
                         <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">
-                          {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "Build output pending"}
+                          {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "等待构建输出"}
                         </p>
                       </div>
-                      <Badge variant={activeProject.outputExePath ? "secondary" : "outline"}>{activeProject.outputExePath ? "exe" : "pending"}</Badge>
+                      <Badge variant={activeProject.outputExePath ? "secondary" : "outline"}>{activeProject.outputExePath ? "exe" : "等待中"}</Badge>
                     </div>
                     {bottomDockExpanded ? (
                       <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                        {activeProject.outputExePath || "Run Build to produce a desktop executable."}
+                        {activeProject.outputExePath || "运行构建后会生成桌面可执行文件。"}
                       </p>
                     ) : null}
                     <div className="flex flex-wrap gap-1.5">
@@ -23063,42 +23125,42 @@ export function BuilderShowcase() {
                         data-builder-output-run-exe=""
                         loading={launchingExeId === "active-output"}
                         disabled={!activeProject.outputExePath || Boolean(launchingExeId)}
-                        title="Run the generated desktop executable"
+                        title="运行生成的桌面可执行文件"
                         onClick={() => void launchActiveOutputExecutable()}
                       >
                         <Play aria-hidden className="size-4" />
-                        {bottomDockExpanded ? "Run exe" : "Run"}
+                        {bottomDockExpanded ? "运行 exe" : "运行"}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         data-builder-output-reveal-exe=""
                         disabled={!activeProject.outputExePath}
-                        title="Reveal the executable folder"
+                        title="打开可执行文件所在文件夹"
                         onClick={() => void openLocalArtifact(parentPathFromPath(activeProject.outputExePath || ""))}
                       >
                         <FolderOpen aria-hidden className="size-4" />
-                        {bottomDockExpanded ? "Folder" : "Reveal"}
+                        {bottomDockExpanded ? "文件夹" : "打开"}
                       </Button>
                       <Button size="sm" variant="ghost" disabled={!activeProject.outputExePath} onClick={() => void copyArtifactPath(activeProject.outputExePath || "")}>
                         <ClipboardCopy aria-hidden className="size-4" />
-                        {copiedArtifactPath === activeProject.outputExePath ? "Copied" : "Copy"}
+                        {copiedArtifactPath === activeProject.outputExePath ? "已复制" : "复制"}
                       </Button>
                     </div>
                   </div>
                   <div className={cn("rounded-xl border border-outline-variant bg-surface-container-high", bottomDockExpanded ? "p-3" : "p-2.5")}>
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Bundle</p>
+                        <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">安装包</p>
                         <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">
-                          {activeBundlePath ? fileNameFromPath(activeBundlePath) : activeBundleDir ? fileNameFromPath(activeBundleDir) : "Bundle output pending"}
+                          {activeBundlePath ? fileNameFromPath(activeBundlePath) : activeBundleDir ? fileNameFromPath(activeBundleDir) : "等待安装包输出"}
                         </p>
                       </div>
-                      <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"}>{activeBundlePath ? "installer" : activeBundleDir ? "folder" : "pending"}</Badge>
+                      <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"}>{activeBundlePath ? "安装器" : activeBundleDir ? "文件夹" : "等待中"}</Badge>
                     </div>
                     {bottomDockExpanded ? (
                       <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                        {activeBundlePath || activeBundleDir || "Run Installer bundle to produce distributable artifacts."}
+                        {activeBundlePath || activeBundleDir || "运行安装器打包后会生成可分发产物。"}
                       </p>
                     ) : null}
                     <div className="flex flex-wrap gap-1.5">
@@ -23109,7 +23171,7 @@ export function BuilderShowcase() {
                         onClick={() => void openLocalArtifact(activeBundlePath || activeBundleDir || "")}
                       >
                         <FolderOpen aria-hidden className="size-4" />
-                        Open
+                        打开
                       </Button>
                       <Button
                         size="sm"
@@ -23118,7 +23180,7 @@ export function BuilderShowcase() {
                         onClick={() => void openLocalArtifact(activeBundleDir || parentPathFromPath(activeBundlePath || ""))}
                       >
                         <FolderOpen aria-hidden className="size-4" />
-                        {bottomDockExpanded ? "Folder" : "Dir"}
+                        {bottomDockExpanded ? "文件夹" : "目录"}
                       </Button>
                       <Button
                         size="sm"
@@ -23127,7 +23189,7 @@ export function BuilderShowcase() {
                         onClick={() => void copyArtifactPath(activeBundlePath || activeBundleDir || "")}
                       >
                         <ClipboardCopy aria-hidden className="size-4" />
-                        {copiedArtifactPath === (activeBundlePath || activeBundleDir) ? "Copied" : "Copy"}
+                        {copiedArtifactPath === (activeBundlePath || activeBundleDir) ? "已复制" : "复制"}
                       </Button>
                     </div>
                   </div>
@@ -23151,7 +23213,7 @@ export function BuilderShowcase() {
                         >
                           <span className="flex items-center justify-between gap-2">
                             <span className="truncate font-medium">{task.title}</span>
-                            <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                            <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
                           </span>
                           <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
                           <span className="mt-1 block line-clamp-1 text-[0.68rem] text-on-surface-variant">{task.summary ?? task.detail}</span>
@@ -23159,7 +23221,7 @@ export function BuilderShowcase() {
                       ))}
                       {visibleProjectTasks.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                          No tasks yet.
+                          暂无任务。
                         </div>
                       ) : null}
                     </div>
@@ -23173,7 +23235,7 @@ export function BuilderShowcase() {
                                 {selectedProjectTask.summary ?? selectedProjectTask.detail}
                               </p>
                             </div>
-                            <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{selectedProjectTask.status}</Badge>
+                            <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{projectTaskStatusLabel(selectedProjectTask.status)}</Badge>
                           </div>
                           {selectedProjectTask.error ? (
                             <p className="mt-2 line-clamp-2 rounded-xl bg-destructive/10 p-2 font-mono text-[0.68rem] leading-4 text-destructive">
@@ -23181,9 +23243,9 @@ export function BuilderShowcase() {
                             </p>
                           ) : null}
                           <div className="mt-3 grid grid-cols-3 gap-2 text-[0.68rem]">
-                            <PathRow label="Kind" value={projectTaskKindLabel(selectedProjectTask.kind)} />
-                            <PathRow label="Elapsed" value={projectTaskElapsedLabel(selectedProjectTask)} />
-                            <PathRow label="Source" value={selectedProjectTask.backendTaskId ? "Rust task" : "Editor queue"} />
+                            <PathRow label="类型" value={projectTaskKindLabel(selectedProjectTask.kind)} />
+                            <PathRow label="耗时" value={projectTaskElapsedLabel(selectedProjectTask)} />
+                            <PathRow label="来源" value={selectedProjectTask.backendTaskId ? "Rust 任务" : "编辑器队列"} />
                           </div>
                           {selectedProjectTask.logPreview ? (
                             <div className="mt-3 max-h-24 overflow-auto rounded-xl bg-surface-container-low py-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
@@ -23202,13 +23264,13 @@ export function BuilderShowcase() {
                             </div>
                           ) : (
                             <div className="mt-3 rounded-xl border border-dashed border-outline-variant p-3 text-center leading-5 text-on-surface-variant">
-                              No log preview for this task.
+                              该任务暂无日志预览。
                             </div>
                           )}
                         </div>
                       ) : (
                         <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                          Select a task to inspect it.
+                          选择任务后查看详情。
                         </div>
                       )}
                     </div>
@@ -23227,14 +23289,14 @@ export function BuilderShowcase() {
                       >
                         <span className="flex items-center justify-between gap-2">
                           <span className="truncate font-medium">{task.title}</span>
-                          <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                          <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
                         </span>
                         <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
                       </button>
                     ))}
                     {visibleProjectTasks.length === 0 ? (
                       <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                        No tasks yet.
+                        暂无任务。
                       </div>
                     ) : null}
                   </div>
@@ -23244,7 +23306,7 @@ export function BuilderShowcase() {
                   {selectedProjectTask?.logPreview ||
                     selectedSimulatorTraceLogPreview ||
                     latestRunSessionEntry?.runtimeLogPreview ||
-                    "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                    "运行检查、构建或启动生成应用后会显示运行时和任务日志。"}
                 </pre>
               )}
             </OutputDock>

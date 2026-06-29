@@ -23,10 +23,10 @@ export type BackendIntegrationPreset = BackendIntegrationConfigFields & {
 };
 
 export const backendIntegrationKinds: { value: BackendIntegrationKind; label: string; description: string }[] = [
-  { value: "rust-native", label: "Rust native", description: "默认 Tauri 后端，用 invoke 调用 Rust commands。" },
+  { value: "rust-native", label: "Rust 原生", description: "默认 Tauri 后端，用 invoke 调用 Rust commands。" },
   { value: "cpp-ffi", label: "C++ FFI", description: "由 Rust 包一层 C ABI / C++ 静态库或动态库。" },
-  { value: "sidecar", label: "Sidecar process", description: "由 Rust 启动外部进程，通过 stdio/socket/http 通信。" },
-  { value: "local-service", label: "Local service", description: "本地长期服务，适合 Go/Python/Node 或独立引擎。" },
+  { value: "sidecar", label: "Sidecar 进程", description: "由 Rust 启动外部进程，通过 stdio/socket/http 通信。" },
+  { value: "local-service", label: "本地服务", description: "本地长期服务，适合 Go/Python/Node 或独立引擎。" },
 ];
 
 export const backendIntegrationLanguages: { value: BackendIntegrationLanguage; label: string }[] = [
@@ -35,7 +35,7 @@ export const backendIntegrationLanguages: { value: BackendIntegrationLanguage; l
   { value: "go", label: "Go" },
   { value: "python", label: "Python" },
   { value: "node", label: "Node.js" },
-  { value: "other", label: "Other" },
+  { value: "other", label: "其他" },
 ];
 
 export const backendIntegrationTransports: { value: BackendIntegrationTransport; label: string }[] = [
@@ -44,7 +44,7 @@ export const backendIntegrationTransports: { value: BackendIntegrationTransport;
   { value: "stdio", label: "stdio" },
   { value: "http", label: "HTTP" },
   { value: "grpc", label: "gRPC" },
-  { value: "local-socket", label: "Local socket" },
+  { value: "local-socket", label: "本地 socket" },
 ];
 
 export function sanitizeRustModuleName(value: string, index = 0) {
@@ -68,7 +68,7 @@ export function createRustModule(index = 0): RustModule {
     enabled: true,
     source:
       index === 0
-        ? `pub fn app_label() -> &'static str {\n    "Nova generated app"\n}\n`
+        ? `pub fn app_label() -> &'static str {\n    "Nova 生成应用"\n}\n`
         : `pub fn ${name}_ready() -> bool {\n    true\n}\n`,
   };
 }
@@ -168,7 +168,7 @@ export function normalizeCargoDependencies(value: unknown): CargoDependency[] {
 }
 
 export function sanitizeBackendIntegrationName(value: string, index = 0) {
-  const fallback = index === 0 ? "Rust Tauri backend" : `Backend integration ${index + 1}`;
+  const fallback = index === 0 ? "Rust Tauri 后端" : `后端集成 ${index + 1}`;
   const name = value.trim().replace(/\s+/g, " ");
   return name || fallback;
 }
@@ -229,11 +229,11 @@ export function recommendedBackendIntegrationPreset(
       healthCheckCommand: "",
       startupTimeoutMs: 1000,
       captureOutput: false,
-      notes: "Default Nova backend: keep filesystem, generation, build orchestration, and native OS integration in Rust.",
+      notes: "默认 Nova 后端：文件系统、生成、构建编排和原生系统集成都保持在 Rust 中。",
       bundleResource: false,
       starterDirectory: "",
       buildCommand: "cargo build",
-      summary: "Rust/Tauri is the primary in-process backend and does not need an external starter artifact.",
+      summary: "Rust/Tauri 是主进程内后端，不需要额外 starter 产物。",
     };
   }
 
@@ -250,11 +250,11 @@ export function recommendedBackendIntegrationPreset(
       healthCheckCommand: "",
       startupTimeoutMs: 1000,
       captureOutput: false,
-      notes: "Nova will create a C++ FFI starter in backend/. Generated apps load the built library and call nova_backend_process through a C ABI.",
+      notes: "Nova 会在 backend/ 中创建 C++ FFI starter。生成应用会加载构建后的库，并通过 C ABI 调用 nova_backend_process。",
       bundleResource: true,
       starterDirectory,
       buildCommand: `${starterDirectory}/scripts/build.ps1`,
-      summary: "C++ FFI starter emits a dynamic library; generated apps call nova_backend_process from the bundled artifact.",
+      summary: "C++ FFI starter 会输出动态库；生成应用从打包产物中调用 nova_backend_process。",
     };
   }
 
@@ -270,11 +270,11 @@ export function recommendedBackendIntegrationPreset(
       healthCheckCommand: "python {resource}/service.py --health",
       startupTimeoutMs: 1500,
       captureOutput: true,
-      notes: "Nova will create a Python JSON-over-stdio sidecar starter. Bundle the service folder or replace it with a built executable.",
+      notes: "Nova 会创建 Python JSON-over-stdio sidecar starter。可以打包服务文件夹，或替换为构建后的可执行文件。",
       bundleResource: true,
       starterDirectory,
       buildCommand: `${starterDirectory}/scripts/run.ps1`,
-      summary: "Python sidecar starter runs as a script from the bundled resource directory.",
+      summary: "Python sidecar starter 会从打包资源目录以脚本方式运行。",
     };
   }
 
@@ -290,11 +290,11 @@ export function recommendedBackendIntegrationPreset(
       healthCheckCommand: "node {resource}/src/index.mjs --health",
       startupTimeoutMs: 1500,
       captureOutput: true,
-      notes: "Nova will create a Node JSON-over-stdio sidecar starter. Bundle the service folder or replace it with a built executable.",
+      notes: "Nova 会创建 Node JSON-over-stdio sidecar starter。可以打包服务文件夹，或替换为构建后的可执行文件。",
       bundleResource: true,
       starterDirectory,
       buildCommand: "npm start",
-      summary: "Node sidecar starter runs from the bundled resource directory.",
+      summary: "Node sidecar starter 会从打包资源目录运行。",
     };
   }
 
@@ -310,11 +310,11 @@ export function recommendedBackendIntegrationPreset(
       healthCheckCommand: "{resource} --health",
       startupTimeoutMs: 1500,
       captureOutput: true,
-      notes: "Nova will create a Go JSON-over-stdio sidecar starter. Build it before bundling so artifactPath exists.",
+      notes: "Nova 会创建 Go JSON-over-stdio sidecar starter。打包前请先构建，确保 artifactPath 存在。",
       bundleResource: true,
       starterDirectory,
       buildCommand: `${starterDirectory}/scripts/build.ps1`,
-      summary: "Go sidecar starter builds into target/backend-service.exe and can be bundled as a Tauri resource.",
+      summary: "Go sidecar starter 会构建到 target/backend-service.exe，并可作为 Tauri resource 打包。",
     };
   }
 
@@ -329,11 +329,11 @@ export function recommendedBackendIntegrationPreset(
     healthCheckCommand: "{resource} --health",
     startupTimeoutMs: 1500,
     captureOutput: true,
-    notes: "Keep this subsystem bounded and call it from Rust instead of moving the whole desktop backend out of Tauri.",
+    notes: "保持该子系统边界清晰，并从 Rust 调用它，而不是把整个桌面后端移出 Tauri。",
     bundleResource: false,
     starterDirectory,
     buildCommand: "",
-    summary: "Custom sidecar/local-service integration: provide artifactPath, command, and health check when ready.",
+    summary: "自定义 sidecar/本地服务集成：准备好后填写 artifactPath、command 和健康检查。",
   };
 }
 
@@ -342,7 +342,7 @@ export function backendIntegrationStarterHint(integration: BackendIntegration) {
   if (!preset.starterDirectory || integration.kind === "rust-native") {
     return "";
   }
-  return `${preset.summary} Starter: ${preset.starterDirectory}${preset.buildCommand ? `, build: ${preset.buildCommand}` : ""}.`;
+  return `${preset.summary} Starter：${preset.starterDirectory}${preset.buildCommand ? `，构建：${preset.buildCommand}` : ""}。`;
 }
 
 export function sanitizeBackendMethodName(value: string, index = 0) {
@@ -395,10 +395,10 @@ export function createBackendIntegrationMethod(index = 0): BackendIntegrationMet
     name,
     operation: name,
     path: index === 0 ? "/process" : `/method-${index + 1}`,
-    description: index === 0 ? "Receives UI event payloads and returns a Nova JSON envelope." : "Backend method declared for UI event binding.",
-    requestSchema: '{\n  "type": "object",\n  "required": ["event", "itemId", "value"],\n  "properties": {\n    "event": {\n      "type": "string",\n      "enum": ["click", "change"],\n      "default": "click"\n    },\n    "itemId": {\n      "type": "string",\n      "default": "preview-button"\n    },\n    "value": {\n      "type": "string",\n      "default": "Run backend method"\n    },\n    "state": {\n      "type": "object",\n      "properties": {\n        "statusText": {\n          "type": "string",\n          "default": "Ready"\n        }\n      }\n    }\n  }\n}',
+    description: index === 0 ? "接收 UI 事件载荷并返回 Nova JSON envelope。" : "为 UI 事件绑定声明的后端方法。",
+    requestSchema: '{\n  "type": "object",\n  "required": ["event", "itemId", "value"],\n  "properties": {\n    "event": {\n      "type": "string",\n      "enum": ["click", "change"],\n      "default": "click"\n    },\n    "itemId": {\n      "type": "string",\n      "default": "preview-button"\n    },\n    "value": {\n      "type": "string",\n      "default": "运行后端方法"\n    },\n    "state": {\n      "type": "object",\n      "properties": {\n        "statusText": {\n          "type": "string",\n          "default": "就绪"\n        }\n      }\n    }\n  }\n}',
     responseSchema: '{\n  "type": "object",\n  "required": ["success", "message"],\n  "properties": {\n    "success": {\n      "type": "boolean"\n    },\n    "message": {\n      "type": "string"\n    },\n    "patch": {\n      "type": "object",\n      "properties": {\n        "statusText": {\n          "type": "string"\n        }\n      }\n    }\n  }\n}',
-    samplePayload: '{\n  "event": "click",\n  "itemId": "preview-button",\n  "value": "Run backend method",\n  "state": {\n    "statusText": "Ready"\n  }\n}',
+    samplePayload: '{\n  "event": "click",\n  "itemId": "preview-button",\n  "value": "运行后端方法",\n  "state": {\n    "statusText": "就绪"\n  }\n}',
   };
 }
 
@@ -444,13 +444,13 @@ export function backendIntegrationDefaults(
 ): BackendIntegrationConfigFields {
   if (index === 0) {
     return recommendedBackendIntegrationPreset({
-      name: "Rust Tauri backend",
+      name: "Rust Tauri 后端",
       kind: "rust-native",
       language: "rust",
     });
   }
   return recommendedBackendIntegrationPreset({
-    name: `Backend integration ${index + 1}`,
+    name: `后端集成 ${index + 1}`,
     kind: "sidecar",
     language: "go",
   });
@@ -461,7 +461,7 @@ export function createBackendIntegration(index = 0): BackendIntegration {
   const methods = [createBackendIntegrationMethod(0)];
   return {
     id: createId(),
-    name: sanitizeBackendIntegrationName(index === 0 ? "Rust Tauri backend" : `Backend integration ${index + 1}`, index),
+    name: sanitizeBackendIntegrationName(index === 0 ? "Rust Tauri 后端" : `后端集成 ${index + 1}`, index),
     enabled: true,
     methods,
     activeMethodId: methods[0].id,
@@ -482,7 +482,7 @@ export function normalizeBackendIntegrations(value: unknown): BackendIntegration
       }
       const integration = rawIntegration as Partial<BackendIntegration>;
       const defaults = backendIntegrationDefaults(index);
-      const baseName = sanitizeBackendIntegrationName(integration.name || `Backend integration ${index + 1}`, index);
+      const baseName = sanitizeBackendIntegrationName(integration.name || `后端集成 ${index + 1}`, index);
       let name = baseName;
       let suffix = 2;
       while (names.has(name.toLowerCase())) {
