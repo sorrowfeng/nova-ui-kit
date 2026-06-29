@@ -13335,6 +13335,95 @@ export function BuilderShowcase() {
     return () => window.removeEventListener(NOVA_EDITOR_COMMAND_EVENT, handleEditorCommand);
   });
 
+  const projectLocatorControl = (
+    <div className="relative z-30 min-w-0 flex-1 xl:max-w-2xl" data-builder-project-jump="" data-builder-locator="">
+      <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
+      <Input
+        ref={projectJumpInputRef}
+        value={projectJumpQuery}
+        inputSize="sm"
+        aria-label="Project Locator"
+        placeholder="Locator: file, control, Rust command, action..."
+        className="h-9 rounded-2xl bg-surface-container-low pl-9 pr-16 text-xs"
+        onFocus={() => setProjectJumpFocused(true)}
+        onBlur={() => window.setTimeout(() => setProjectJumpFocused(false), 120)}
+        onChange={(event) => setProjectJumpQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setProjectJumpActiveIndex((current) => Math.min(current + 1, Math.max(projectJumpPanelResults.length - 1, 0)));
+            return;
+          }
+          if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setProjectJumpActiveIndex((current) => Math.max(current - 1, 0));
+            return;
+          }
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setProjectJumpQuery("");
+            setProjectJumpFocused(false);
+            projectJumpInputRef.current?.blur();
+            return;
+          }
+          if (event.key === "Enter" && projectJumpPanelResults[projectJumpActiveIndex]) {
+            event.preventDefault();
+            openProjectJumpResult(projectJumpPanelResults[projectJumpActiveIndex]);
+          }
+        }}
+      />
+      <span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-0.5 font-mono text-[0.62rem] text-on-surface-variant sm:inline-flex">
+        Enter
+      </span>
+      {projectJumpPanelOpen ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-[360px] overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-1 shadow-m3-2">
+          <div className="flex items-center justify-between px-3 py-2 text-[0.68rem] text-on-surface-variant">
+            <span>{projectJumpQuery.trim() ? "Search results" : recentProjectJumpResults.length > 0 ? "Recent and recommended" : "Recommended commands"}</span>
+            <span className="font-mono">Ctrl+P / Ctrl+K</span>
+          </div>
+          {projectJumpPanelResults.length > 0 ? (
+            projectJumpPanelResults.map((result, index) => (
+              <button
+                key={result.id}
+                type="button"
+                data-builder-project-jump-result={result.kind}
+                aria-selected={index === projectJumpActiveIndex}
+                className={cn(
+                  "focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-surface-container-high",
+                  index === projectJumpActiveIndex && "bg-secondary-container text-secondary-container-foreground",
+                )}
+                onMouseEnter={() => setProjectJumpActiveIndex(index)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => openProjectJumpResult(result)}
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
+                  <ProjectJumpIcon kind={result.kind} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="truncate font-medium text-on-surface">{result.title}</span>
+                    <Badge variant="outline" className="shrink-0">
+                      {result.badge}
+                    </Badge>
+                  </span>
+                  <span className="mt-1 block truncate text-on-surface-variant">{result.subtitle}</span>
+                </span>
+                <span className="hidden items-center gap-2 text-[0.68rem] text-on-surface-variant sm:flex">
+                  {projectJumpKindLabel(result.kind)}
+                  <ArrowRight aria-hidden className="size-3.5 shrink-0" />
+                </span>
+              </button>
+            ))
+          ) : (
+            <div className="flex min-h-10 flex-1 items-center rounded-xl border border-dashed border-outline-variant px-4 text-xs text-on-surface-variant">
+              No project matches
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">
       <Dialog open={Boolean(destructiveAction)} onOpenChange={(open) => !open && setDestructiveAction(null)}>
@@ -13382,8 +13471,8 @@ export function BuilderShowcase() {
             ))}
           </nav>
           <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-outline-variant p-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
+        <div className="flex flex-col gap-3 border-b border-outline-variant p-3 xl:flex-row xl:items-center">
+          <div className="min-w-0 shrink-0 xl:w-56">
             <div className="flex items-center gap-2">
               <span className="flex size-8 items-center justify-center rounded-full bg-secondary-container text-secondary-container-foreground">
                 <activeModeItem.icon aria-hidden className="size-4" />
@@ -13397,7 +13486,9 @@ export function BuilderShowcase() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {projectLocatorControl}
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
             <Badge variant="secondary">{activeModeItem.label}</Badge>
             <Button variant="ghost" size="sm" data-builder-save="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy}>
               {saved ? <CheckCircle2 aria-hidden className="size-4" /> : <Save aria-hidden className="size-4" />}
@@ -13417,97 +13508,6 @@ export function BuilderShowcase() {
             <Button variant="ghost" size="icon-sm" data-builder-reset="" aria-label="清空当前 UI 文件" onClick={requestResetCurrentFile}>
               <RotateCcw aria-hidden />
             </Button>
-          </div>
-        </div>
-
-        <div className="relative z-30 border-b border-outline-variant bg-surface-container-low px-4 py-3" data-builder-project-jump="" data-builder-locator="">
-          <div className="mx-auto max-w-5xl">
-            <div className="relative">
-              <Search aria-hidden className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
-              <Input
-                ref={projectJumpInputRef}
-                value={projectJumpQuery}
-                inputSize="sm"
-                aria-label="Project Locator"
-                placeholder="Locator: file, control, Rust command, action, artifact, settings..."
-                className="h-10 rounded-2xl pl-10 pr-20"
-                onFocus={() => setProjectJumpFocused(true)}
-                onBlur={() => window.setTimeout(() => setProjectJumpFocused(false), 120)}
-                onChange={(event) => setProjectJumpQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "ArrowDown") {
-                    event.preventDefault();
-                    setProjectJumpActiveIndex((current) => Math.min(current + 1, Math.max(projectJumpPanelResults.length - 1, 0)));
-                    return;
-                  }
-                  if (event.key === "ArrowUp") {
-                    event.preventDefault();
-                    setProjectJumpActiveIndex((current) => Math.max(current - 1, 0));
-                    return;
-                  }
-                  if (event.key === "Escape") {
-                    event.preventDefault();
-                    setProjectJumpQuery("");
-                    setProjectJumpFocused(false);
-                    projectJumpInputRef.current?.blur();
-                    return;
-                  }
-                  if (event.key === "Enter" && projectJumpPanelResults[projectJumpActiveIndex]) {
-                    event.preventDefault();
-                    openProjectJumpResult(projectJumpPanelResults[projectJumpActiveIndex]);
-                  }
-                }}
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-0.5 font-mono text-[0.66rem] text-on-surface-variant sm:inline-flex">
-                Enter
-              </span>
-            </div>
-            {projectJumpPanelOpen ? (
-            <div className="absolute left-4 right-4 top-[calc(100%-0.35rem)] z-50 mx-auto max-h-[360px] max-w-5xl overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-1 shadow-m3-2">
-              <div className="flex items-center justify-between px-3 py-2 text-[0.68rem] text-on-surface-variant">
-                <span>{projectJumpQuery.trim() ? "Search results" : recentProjectJumpResults.length > 0 ? "Recent and recommended" : "Recommended commands"}</span>
-                <span className="font-mono">Ctrl+P / Ctrl+K</span>
-              </div>
-              {projectJumpPanelResults.length > 0 ? (
-                projectJumpPanelResults.map((result, index) => (
-                  <button
-                    key={result.id}
-                    type="button"
-                    data-builder-project-jump-result={result.kind}
-                    aria-selected={index === projectJumpActiveIndex}
-                    className={cn(
-                      "focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition hover:bg-surface-container-high",
-                      index === projectJumpActiveIndex && "bg-secondary-container text-secondary-container-foreground",
-                    )}
-                    onMouseEnter={() => setProjectJumpActiveIndex(index)}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => openProjectJumpResult(result)}
-                  >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
-                      <ProjectJumpIcon kind={result.kind} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="truncate font-medium text-on-surface">{result.title}</span>
-                        <Badge variant="outline" className="shrink-0">
-                          {result.badge}
-                        </Badge>
-                      </span>
-                      <span className="mt-1 block truncate text-on-surface-variant">{result.subtitle}</span>
-                    </span>
-                    <span className="hidden items-center gap-2 text-[0.68rem] text-on-surface-variant sm:flex">
-                      {projectJumpKindLabel(result.kind)}
-                      <ArrowRight aria-hidden className="size-3.5 shrink-0" />
-                    </span>
-                  </button>
-                ))
-              ) : (
-                <div className="flex min-h-10 flex-1 items-center rounded-xl border border-dashed border-outline-variant px-4 text-xs text-on-surface-variant">
-                  No project matches
-                </div>
-              )}
-            </div>
-            ) : null}
           </div>
         </div>
 
