@@ -3838,6 +3838,11 @@ function buildReadiness(
       "Frame hierarchy",
       `${brokenParentItems.length} 个控件引用了不存在或无效的父 Frame。`,
       brokenParentItems[0].file.name,
+      {
+        fileId: brokenParentItems[0].file.id,
+        itemId: brokenParentItems[0].item.id,
+        itemName: itemVisualName(brokenParentItems[0].item),
+      },
     );
   } else {
     addItem("ready", "frame-hierarchy", "Frame hierarchy", "父子层级可以被保存并生成。");
@@ -3852,6 +3857,11 @@ function buildReadiness(
       "Image assets",
       `${missingAssetItems.length} 个 Image 控件绑定了不存在的项目资源。`,
       missingAssetItems[0].file.name,
+      {
+        fileId: missingAssetItems[0].file.id,
+        itemId: missingAssetItems[0].item.id,
+        itemName: itemVisualName(missingAssetItems[0].item),
+      },
     );
   } else if (unboundImages.length > 0) {
     addItem(
@@ -3860,6 +3870,11 @@ function buildReadiness(
       "Image assets",
       `${unboundImages.length} 个 Image 控件尚未绑定资源，生成窗口会显示占位内容。`,
       unboundImages[0].file.name,
+      {
+        fileId: unboundImages[0].file.id,
+        itemId: unboundImages[0].item.id,
+        itemName: itemVisualName(unboundImages[0].item),
+      },
     );
   } else {
     addItem("ready", "image-assets", "Image assets", "图片资源绑定可以被复制到生成 app。");
@@ -3880,6 +3895,11 @@ function buildReadiness(
       "State bindings",
       `${brokenStateBindings.length + brokenResultStates.length} 个 state 引用已经断开。`,
       (brokenStateBindings[0] ?? brokenResultStates[0])?.file.name,
+      {
+        fileId: (brokenStateBindings[0] ?? brokenResultStates[0]).file.id,
+        itemId: (brokenStateBindings[0] ?? brokenResultStates[0]).item.id,
+        itemName: itemVisualName((brokenStateBindings[0] ?? brokenResultStates[0]).item),
+      },
     );
   } else {
     addItem("ready", "state-bindings", "State bindings", `${project.stateVariables.length} 个共享 state 可用于控件绑定。`);
@@ -3902,6 +3922,11 @@ function buildReadiness(
       "Event bindings",
       `${missingEventCommands.length} 个控件事件绑定了不存在的 Rust command。`,
       missingEventCommands[0].file.name,
+      {
+        fileId: missingEventCommands[0].file.id,
+        itemId: missingEventCommands[0].item.id,
+        itemName: itemVisualName(missingEventCommands[0].item),
+      },
     );
   } else if (eventBindings.length === 0) {
     addItem("warning", "no-event-bindings", "Event bindings", "还没有 UI 事件连接 Rust command；生成 app 会偏静态。");
@@ -3916,6 +3941,11 @@ function buildReadiness(
       "Button actions",
       `${unboundButtons.length} 个按钮尚未绑定 click command。`,
       unboundButtons[0].file.name,
+      {
+        fileId: unboundButtons[0].file.id,
+        itemId: unboundButtons[0].item.id,
+        itemName: itemVisualName(unboundButtons[0].item),
+      },
     );
   }
 
@@ -3934,6 +3964,11 @@ function buildReadiness(
       "Result targets",
       `${brokenResultTargets.length} 个 Rust 结果写回目标无效。`,
       brokenResultTargets[0].file.name,
+      {
+        fileId: brokenResultTargets[0].file.id,
+        itemId: brokenResultTargets[0].item.id,
+        itemName: itemVisualName(brokenResultTargets[0].item),
+      },
     );
   } else {
     addItem("ready", "result-targets", "Result targets", "Rust 返回值写回目标检查通过。");
@@ -3953,6 +3988,11 @@ function buildReadiness(
       "JSON state patches",
       `${textPatchBindings.length} 个绑定启用了 JSON patch，但 command schema 仍是 Text result。`,
       textPatchBindings[0].file.name,
+      {
+        fileId: textPatchBindings[0].file.id,
+        itemId: textPatchBindings[0].item.id,
+        itemName: itemVisualName(textPatchBindings[0].item),
+      },
     );
   }
 
@@ -10460,6 +10500,107 @@ export function BuilderShowcase() {
     setMode("design");
   };
 
+  const buildReadinessActionLabel = (item: BuildReadinessItem) => {
+    if (item.fileId) {
+      return ["missing-event-commands", "unbound-buttons", "broken-result-targets", "text-result-json-patches", "broken-state-links"].includes(item.id)
+        ? "连接"
+        : "定位";
+    }
+    if (["project-name", "project-root", "release-config", "release-icon", "release-icon-format", "release-signing", "release-certificate-import", "installer-smoke-mode", "installer-smoke-runner"].includes(item.id)) {
+      return "设置";
+    }
+    if (item.id === "ui-files") {
+      return "文件";
+    }
+    if (item.id === "canvas-content") {
+      return "组件";
+    }
+    if (item.id === "tauri-runtime") {
+      return "输出";
+    }
+    if (item.id.startsWith("backend")) {
+      return "后端";
+    }
+    if (item.id.includes("rust") || item.id.includes("cargo") || item.id.includes("state")) {
+      return "Logic";
+    }
+    return "查看";
+  };
+
+  const openBuildReadinessItem = (item: BuildReadinessItem) => {
+    setBuildError("");
+
+    if (item.fileId) {
+      focusBuildReadinessItem(item);
+      setRightDockTab(
+        ["missing-event-commands", "unbound-buttons", "broken-result-targets", "text-result-json-patches", "broken-state-links"].includes(item.id)
+          ? "connections"
+          : "properties",
+      );
+      showProjectJumpFeedback(
+        item.severity === "error" ? "warning" : "success",
+        `Opened ${item.title}`,
+        item.itemName ? `${item.itemName} is selected for this readiness item.` : "The related UI file is active.",
+      );
+      return;
+    }
+
+    if (["project-name", "project-root", "release-config", "release-icon", "release-icon-format", "release-signing", "release-certificate-import", "installer-smoke-mode", "installer-smoke-runner"].includes(item.id)) {
+      setMode("design");
+      setLeftDockTab("project");
+      showProjectJumpFeedback("success", "Opened project settings", `${item.title} can be reviewed in the Project dock.`);
+      return;
+    }
+
+    if (item.id === "ui-files") {
+      setMode("design");
+      setLeftDockTab("navigator");
+      showProjectJumpFeedback("success", "Opened Navigator", "Create, duplicate, or restore UI files from the Navigator.");
+      return;
+    }
+
+    if (item.id === "canvas-content") {
+      setMode("design");
+      setLeftDockTab("components");
+      showProjectJumpFeedback("success", "Opened Components", "Insert a control into the active UI file to make the generated window visible.");
+      return;
+    }
+
+    if (item.id === "no-event-bindings") {
+      setMode("design");
+      setLeftDockTab("navigator");
+      setRightDockTab("connections");
+      showProjectJumpFeedback("warning", "Open Connections", "Select an event-capable control, then bind it to a Rust command.");
+      return;
+    }
+
+    if (item.id === "tauri-runtime") {
+      setMode("build");
+      openBottomDock("output", false);
+      showProjectJumpFeedback("warning", "Desktop runtime needed", "Build and disk actions run from the Tauri desktop app, not the browser preview.");
+      return;
+    }
+
+    if (item.id.startsWith("backend")) {
+      const firstBackend = activeProject.backendIntegrations.find((integration) => integration.enabled) ?? activeProject.backendIntegrations[0];
+      if (firstBackend) {
+        selectBackendIntegration(firstBackend.id);
+      }
+      setMode("logic");
+      showProjectJumpFeedback("success", "Opened backend integrations", `${item.title} can be reviewed in the Logic workspace.`);
+      return;
+    }
+
+    if (item.id.includes("rust") || item.id.includes("cargo") || item.id.includes("state")) {
+      setMode("logic");
+      showProjectJumpFeedback("success", "Opened Logic workspace", `${item.title} can be reviewed in commands, modules, dependencies, or state.`);
+      return;
+    }
+
+    setMode("build");
+    showProjectJumpFeedback("warning", "Readiness item selected", item.detail);
+  };
+
   const updateProjectTask = (taskId: string, patch: Partial<ProjectTaskEntry>) => {
     setProjectTasks((current) => current.map((task) => (task.id === taskId ? { ...task, ...patch } : task)));
   };
@@ -16786,16 +16927,16 @@ export function BuilderShowcase() {
                           <span className="truncate font-medium">{item.title}</span>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
-                          {item.fileId ? (
+                          {item.severity !== "ready" || item.fileId ? (
                             <Button
                               size="sm"
                               variant="ghost"
                               data-builder-focus-readiness={item.id}
-                              aria-label={`定位 ${item.title}`}
-                              onClick={() => focusBuildReadinessItem(item)}
+                              aria-label={`${buildReadinessActionLabel(item)} ${item.title}`}
+                              onClick={() => openBuildReadinessItem(item)}
                             >
-                              <MousePointer2 aria-hidden className="size-4" />
-                              定位
+                              {item.fileId ? <MousePointer2 aria-hidden className="size-4" /> : <ArrowRight aria-hidden className="size-4" />}
+                              {buildReadinessActionLabel(item)}
                             </Button>
                           ) : null}
                           <Badge variant={item.severity === "error" ? "destructive" : item.severity === "warning" ? "outline" : "secondary"}>
