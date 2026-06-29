@@ -19907,6 +19907,77 @@ export function BuilderShowcase() {
                       </div>
                     </div>
 
+                    <div className="rounded-2xl border border-outline-variant bg-surface-container p-2" data-builder-selected-properties-workflow="">
+                      <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                        <div className="min-w-0">
+                          <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Selection workflow</p>
+                          <p className="mt-0.5 line-clamp-1 text-[0.68rem] text-on-surface-variant">{selectionStatusDetail}</p>
+                        </div>
+                        <Badge
+                          variant={
+                            selectionStatusTone === "attention"
+                              ? "destructive"
+                              : selectionStatusTone === "interactive" || selectionStatusTone === "ready"
+                                ? "secondary"
+                                : "outline"
+                          }
+                          className="shrink-0"
+                        >
+                          {selectionStatusTone}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {inspectorWorkflowSteps.map((step, index) => {
+                          const StepIcon = step.icon;
+                          return (
+                            <button
+                              key={step.id}
+                              type="button"
+                              data-builder-selected-properties-workflow-step={step.id}
+                              disabled={step.disabled}
+                              className={cn(
+                                "focus-ring group flex min-w-0 items-start gap-2 rounded-xl border px-2 py-2 text-left text-xs transition",
+                                step.tone === "primary" && "border-primary/40 bg-primary/10 text-on-surface",
+                                step.tone === "ready" && "border-outline-variant bg-surface-container-high text-on-surface hover:border-primary/30 hover:bg-primary/5",
+                                step.tone === "warning" && "border-destructive/30 bg-destructive/10 text-on-surface hover:border-destructive/50",
+                                step.tone === "danger" && "border-destructive/30 bg-surface-container-high text-destructive hover:bg-destructive/10",
+                                step.tone === "muted" && "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                                step.disabled && "cursor-not-allowed opacity-55 hover:border-outline-variant hover:bg-surface-container-high hover:text-on-surface-variant",
+                              )}
+                              onClick={step.onAction}
+                            >
+                              <span
+                                className={cn(
+                                  "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg",
+                                  step.tone === "primary" && "bg-primary text-primary-foreground",
+                                  (step.tone === "warning" || step.tone === "danger") && "bg-destructive/10 text-destructive",
+                                  (step.tone === "ready" || step.tone === "muted") && "bg-surface-container-low text-primary",
+                                )}
+                              >
+                                <StepIcon aria-hidden className="size-3.5" />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate font-medium">{index + 1}. {step.title}</span>
+                                  <span
+                                    className={cn(
+                                      "hidden size-1.5 shrink-0 rounded-full sm:inline-flex",
+                                      step.tone === "primary" && "bg-primary",
+                                      step.tone === "warning" && "bg-destructive",
+                                      step.tone === "danger" && "bg-destructive",
+                                      step.tone === "ready" && "bg-primary/70",
+                                      step.tone === "muted" && "bg-outline",
+                                    )}
+                                  />
+                                </span>
+                                <span className="mt-0.5 block truncate text-[0.66rem] text-on-surface-variant">{step.actionLabel}</span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-5 gap-1.5" aria-label="属性分组">
                       {[
                         { id: "layout" as const, label: "Layout" },
