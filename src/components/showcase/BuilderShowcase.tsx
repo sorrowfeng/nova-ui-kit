@@ -532,6 +532,18 @@ type EditorWorkflowStep = {
   actions: ProjectJumpActionId[];
 };
 
+type InspectorWorkflowStep = {
+  id: string;
+  title: string;
+  detail: string;
+  badge: string;
+  icon: typeof Save;
+  actionLabel: string;
+  tone: "primary" | "ready" | "warning" | "danger" | "muted";
+  disabled?: boolean;
+  onAction: () => void;
+};
+
 type DestructiveActionRequest = {
   title: string;
   description: string;
@@ -13018,6 +13030,167 @@ export function BuilderShowcase() {
     runSelectedEventAndRevealLogs();
   };
 
+  const inspectorWorkflowSteps: InspectorWorkflowStep[] =
+    selectedItems.length > 1
+      ? [
+          {
+            id: "batch-properties",
+            title: "Batch layout",
+            detail: `${selectedItems.length} controls selected; shared edits stay in Properties.`,
+            badge: `${selectedItems.length} selected`,
+            icon: Layers,
+            actionLabel: "Properties",
+            tone: rightDockTab === "properties" ? "primary" : "ready",
+            onAction: openSelectedProperties,
+          },
+          {
+            id: "batch-duplicate",
+            title: "Duplicate",
+            detail: "Copy the selected controls with their current layout and bindings.",
+            badge: "copy",
+            icon: Copy,
+            actionLabel: "Duplicate",
+            tone: "ready",
+            onAction: duplicateSelected,
+          },
+          {
+            id: "batch-impact",
+            title: "Impact graph",
+            detail: "Check which generated files and validation steps depend on this selection.",
+            badge: "graph",
+            icon: AlertTriangle,
+            actionLabel: "Impact",
+            tone: rightDockTab === "impact" ? "primary" : "muted",
+            onAction: () => setRightDockTab("impact"),
+          },
+          {
+            id: "batch-delete",
+            title: "Delete",
+            detail: `${selectedItems.filter((item) => item.locked).length} locked control(s) will be skipped.`,
+            badge: "destructive",
+            icon: Trash2,
+            actionLabel: "Delete",
+            tone: "danger",
+            onAction: requestDeleteSelected,
+          },
+        ]
+      : selectedItem
+        ? [
+            {
+              id: "selected-properties",
+              title: selectedPropertyIssues.length > 0 ? "Fix properties" : "Properties",
+              detail:
+                selectedPropertyIssues.length > 0
+                  ? `${selectedPropertyIssues.length} issue(s) found; ${selectedPropertyAutoFixCount} can be fixed now.`
+                  : `${getItemSummary(selectedItem)} is ready for layout and content edits.`,
+              badge: selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} issue(s)` : "ready",
+              icon: selectedPropertyIssues.length > 0 ? AlertTriangle : Settings2,
+              actionLabel: selectedPropertyAutoFixCount > 0 ? "Fix now" : "Open",
+              tone: selectedPropertyIssues.length > 0 ? "warning" : rightDockTab === "properties" ? "primary" : "ready",
+              onAction: selectedPropertyAutoFixCount > 0 ? applySelectedPropertyAutoFix : openSelectedProperties,
+            },
+            {
+              id: "selected-connection",
+              title: selectedEventName ? (selectedEventCommand ? "Event" : "Bind event") : "Static",
+              detail: selectedEventName
+                ? selectedEventCommand
+                  ? `${selectedEventName} calls ${sanitizeRustCommandName(selectedEventCommand.name)}.`
+                  : `${selectedEventName} is available but has no Rust command yet.`
+                : "This control has no interactive event to bind.",
+              badge: selectedEventName ? (selectedEventCommand ? "bound" : "needs binding") : "static",
+              icon: Braces,
+              actionLabel: selectedEventName ? (selectedEventCommand ? "Open" : "Bind") : "Properties",
+              tone: selectedEventName ? (selectedEventCommand ? (rightDockTab === "connections" ? "primary" : "ready") : "warning") : "muted",
+              disabled: !selectedEventName,
+              onAction: selectedEventName
+                ? selectedEventCommand
+                  ? openSelectedConnections
+                  : () => createAndBindBackendIntegrationCommand()
+                : openSelectedProperties,
+            },
+            {
+              id: "selected-run-event",
+              title: selectedLatestSimulatorTrace ? "Last run" : "Run preview",
+              detail: selectedLatestSimulatorTrace
+                ? `${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
+                : selectedEventCommand
+                  ? "Execute the bound Rust command and reveal the simulator log."
+                  : "Bind a command first, then this run step becomes available.",
+              badge: selectedLatestSimulatorTrace?.status ?? (selectedEventCommand ? "ready" : "blocked"),
+              icon: Play,
+              actionLabel: selectedEventCommand ? "Run" : "Bind first",
+              tone: selectedLatestSimulatorTrace
+                ? selectedLatestSimulatorTrace.status === "success"
+                  ? "primary"
+                  : "warning"
+                : selectedEventCommand
+                  ? "ready"
+                  : "muted",
+              disabled: !selectedEventCommand,
+              onAction: runSelectedEventFromActionBar,
+            },
+            {
+              id: "selected-impact",
+              title: "Impact graph",
+              detail: selectedControlReverseDependency
+                ? selectedControlReverseDependency.summary
+                : "Show downstream files, checks, and generated outputs for this control.",
+              badge: selectedControlReverseDependency ? reverseDependencyStatusLabel(selectedControlReverseDependency.status) : "graph",
+              icon: AlertTriangle,
+              actionLabel: "Impact",
+              tone: rightDockTab === "impact" ? "primary" : "muted",
+              onAction: () => setRightDockTab("impact"),
+            },
+          ]
+        : [
+            {
+              id: "empty-select",
+              title: "Select",
+              detail: "Use Navigator or the canvas to focus the Properties and Connections workflow.",
+              badge: "start",
+              icon: MousePointer2,
+              actionLabel: "Navigator",
+              tone: "primary",
+              onAction: () => {
+                setLeftDockTab("navigator");
+                setRightDockTab("properties");
+              },
+            },
+            {
+              id: "empty-components",
+              title: "Insert",
+              detail: "Open the component library and drop controls into the active UI file.",
+              badge: `${palette.length} items`,
+              icon: Layers,
+              actionLabel: "Components",
+              tone: "ready",
+              onAction: () => setLeftDockTab("components"),
+            },
+            {
+              id: "empty-workflow",
+              title: "Build flow",
+              detail: nextWorkflowStepState
+                ? `${nextWorkflowStepState.step.title}: ${nextWorkflowStepState.step.detail}`
+                : "Save, generate, validate, and build from the workflow strip.",
+              badge: nextWorkflowStepState?.status ?? "idle",
+              icon: Download,
+              actionLabel: "Tasks",
+              tone: nextWorkflowStepState?.status === "failed" ? "warning" : "muted",
+              onAction: () => openBottomDock("tasks"),
+            },
+          ];
+
+  const inspectorWorkflowBadge =
+    selectedItems.length > 1
+      ? "Batch workflow"
+      : selectedItem
+        ? selectedEventName
+          ? selectedEventCommand
+            ? "Connected"
+            : "Needs binding"
+          : "Static control"
+        : "No selection";
+
   useEffect(() => {
     const handleEditorCommand = (event: Event) => {
       const command = (event as CustomEvent<NovaEditorCommandEventDetail>).detail?.command;
@@ -19050,70 +19223,77 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
 
-                {selectedItem && selectedEventName ? (
-                  <div className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-connection-path="">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-on-surface">Connection path</p>
-                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
-                          {selectedLatestSimulatorTrace
-                            ? `Last ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
-                            : selectedEventCommand
-                              ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
-                              : `${selectedEventName} event is ready for a Rust command`}
-                        </p>
-                      </div>
-                      <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
-                      <Button
-                        size="sm"
-                        variant={selectedEventCommand ? "secondary" : "default"}
-                        data-builder-connection-path-open=""
-                        data-builder-connection-path-primary=""
-                        aria-label={selectedEventCommand ? "Open bound Rust command" : "Create event binding"}
-                        onClick={selectedEventCommand ? openSelectedConnectionTarget : () => createAndBindBackendIntegrationCommand()}
-                      >
-                        <Braces aria-hidden className="size-4" />
-                        {selectedEventCommand ? "Command" : "Bind"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-builder-connection-path-create=""
-                        data-builder-connection-path-link=""
-                        aria-label="Open event connection settings"
-                        onClick={openSelectedConnections}
-                      >
-                        <Settings2 aria-hidden className="size-4" />
-                        Link
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-builder-connection-path-simulate=""
-                        data-builder-connection-path-run=""
-                        aria-label="Run selected event"
-                        disabled={!selectedEventCommand}
-                        onClick={runSelectedEventAndRevealLogs}
-                      >
-                        <Play aria-hidden className="size-4" />
-                        Run
-                      </Button>
-                    </div>
-                    {selectedLatestSimulatorTrace ? (
-                      <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs" data-builder-connection-path-last-run="">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate font-medium text-on-surface">{`${selectedLatestSimulatorTrace.eventName} -> ${selectedLatestSimulatorTrace.commandName}`}</span>
-                          <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
-                        </div>
-                        <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
-                      </div>
-                    ) : null}
+                <div className="mt-3 space-y-2" data-builder-inspector-workflow="">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Next steps</p>
+                    <Badge variant={selectedEventCommand || selectedItems.length > 1 ? "secondary" : "outline"}>{inspectorWorkflowBadge}</Badge>
                   </div>
-                ) : null}
+                  <div className="space-y-1.5">
+                    {inspectorWorkflowSteps.map((step, index) => {
+                      const StepIcon = step.icon;
+                      return (
+                        <button
+                          key={step.id}
+                          type="button"
+                          data-builder-inspector-workflow-step={step.id}
+                          disabled={step.disabled}
+                          className={cn(
+                            "focus-ring group flex w-full min-w-0 items-center gap-2 rounded-2xl border px-2.5 py-2.5 text-left text-xs transition",
+                            step.tone === "primary" && "border-primary/40 bg-primary/10 text-on-surface shadow-m3-1",
+                            step.tone === "ready" && "border-outline-variant bg-surface-container-high text-on-surface hover:border-primary/30 hover:bg-primary/5",
+                            step.tone === "warning" && "border-destructive/30 bg-destructive/10 text-on-surface hover:border-destructive/50",
+                            step.tone === "danger" && "border-destructive/30 bg-surface-container-high text-destructive hover:bg-destructive/10",
+                            step.tone === "muted" && "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                            step.disabled && "cursor-not-allowed opacity-55 hover:border-outline-variant hover:bg-surface-container-high hover:text-on-surface-variant",
+                          )}
+                          onClick={step.onAction}
+                        >
+                          <span
+                            className={cn(
+                              "flex size-7 shrink-0 items-center justify-center rounded-xl",
+                              step.tone === "primary" && "bg-primary text-primary-foreground",
+                              step.tone === "warning" && "bg-destructive/10 text-destructive",
+                              step.tone === "danger" && "bg-destructive/10 text-destructive",
+                              (step.tone === "ready" || step.tone === "muted") && "bg-surface-container-low text-primary",
+                            )}
+                          >
+                            <StepIcon aria-hidden className="size-3.5" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <span className="truncate font-medium">{index + 1}. {step.title}</span>
+                              <Badge
+                                variant={step.tone === "warning" || step.tone === "danger" ? "destructive" : step.tone === "primary" ? "secondary" : "outline"}
+                                className="hidden shrink-0 sm:inline-flex"
+                              >
+                                {step.badge}
+                              </Badge>
+                            </span>
+                            <span className="mt-0.5 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{step.detail}</span>
+                          </span>
+                          <span
+                            className={cn(
+                              "hidden shrink-0 items-center gap-1 rounded-full border px-2 py-1 text-[0.66rem] font-medium 2xl:inline-flex",
+                              step.tone === "primary"
+                                ? "border-primary/30 bg-primary/10 text-primary"
+                                : "border-outline-variant bg-surface-container-low text-on-surface-variant group-hover:text-on-surface",
+                            )}
+                          >
+                            {step.actionLabel}
+                            <ArrowRight aria-hidden className="size-3" />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-1.5">
+                <div className="mt-3">
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Views</p>
+                    <span className="text-[0.68rem] text-on-surface-variant">{rightDockTab}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
                   {rightDockTabs.map((tab) => {
                     const TabIcon = tab.icon;
                     return (
@@ -19134,28 +19314,7 @@ export function BuilderShowcase() {
                       </button>
                     );
                   })}
-                </div>
-
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
-                  <Button size="sm" variant="secondary" disabled={selectedItems.length === 0} onClick={duplicateSelected}>
-                    <Copy aria-hidden className="size-4" />
-                    Duplicate
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={selectedEventCommand ? "secondary" : "default"}
-                    data-builder-inspector-bind-action=""
-                    aria-label={selectedEventCommand ? "Open event connection" : "Create event binding"}
-                    disabled={!selectedItem || !selectedEventName}
-                    onClick={selectedEventCommand ? openSelectedConnections : () => createAndBindBackendIntegrationCommand()}
-                  >
-                    <Braces aria-hidden className="size-4" />
-                    {selectedEventCommand ? "Link" : "Bind"}
-                  </Button>
-                  <Button size="sm" variant="destructive" disabled={selectedItems.length === 0} onClick={requestDeleteSelected}>
-                    <Trash2 aria-hidden className="size-4" />
-                    Delete
-                  </Button>
+                  </div>
                 </div>
               </section>
 
