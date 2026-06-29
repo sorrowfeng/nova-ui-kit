@@ -13459,6 +13459,51 @@ export function BuilderShowcase() {
             : "Needs binding"
           : "Static control"
         : "No selection";
+  const selectionRecommendedStep =
+    inspectorWorkflowSteps.find((step) => step.tone === "warning" && !step.disabled) ??
+    inspectorWorkflowSteps.find((step) => step.tone === "danger" && !step.disabled) ??
+    inspectorWorkflowSteps.find((step) => step.tone === "primary" && !step.disabled) ??
+    inspectorWorkflowSteps.find((step) => step.tone === "ready" && !step.disabled) ??
+    inspectorWorkflowSteps.find((step) => !step.disabled) ??
+    inspectorWorkflowSteps[0] ??
+    null;
+  const SelectionRecommendedIcon = selectionRecommendedStep?.icon ?? MousePointer2;
+  const selectionStatusTone =
+    selectedItems.length > 1
+      ? selectedItems.some((item) => item.locked)
+        ? "attention"
+        : "batch"
+      : selectedPropertyIssues.length > 0
+        ? "attention"
+        : selectedItem && selectedEventName && !selectedEventCommand
+          ? "setup"
+          : selectedItem && selectedEventCommand
+            ? "interactive"
+            : "ready";
+  const selectionStatusTitle =
+    selectedItems.length > 1
+      ? `${selectedItems.length} selected for batch editing`
+      : selectedItem
+        ? selectedPropertyIssues.length > 0
+          ? "Selection needs property fixes"
+          : selectedEventName && !selectedEventCommand
+            ? "Event binding is the next step"
+            : selectedEventCommand
+              ? "Selection is interactive"
+              : "Selection ready for layout edits"
+        : "No selection";
+  const selectionStatusDetail =
+    selectedItems.length > 1
+      ? `${selectedItems.filter((item) => item.locked).length} locked · duplicate, delete, or inspect generated impact for the batch.`
+      : selectedItem
+        ? selectedPropertyIssues.length > 0
+          ? `${selectedPropertyIssues.length} issue(s), ${selectedPropertyAutoFixCount} safe fix(es).`
+          : selectedEventName
+            ? selectedEventCommand
+              ? `${selectedEventName} calls ${sanitizeRustCommandName(selectedEventCommand.name)}; preview or inspect the connection.`
+              : `${selectedEventName} can be wired to a Rust command from Connections.`
+            : `${activeFile.name} · ${selectedItem.type} · layout and content are editable.`
+        : "Select a layer or canvas node to edit it.";
 
   useEffect(() => {
     const handleEditorCommand = (event: Event) => {
@@ -19301,6 +19346,48 @@ export function BuilderShowcase() {
                             ? `${activeFile.name} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
                             : activeFile.name}
                       </p>
+                      <div
+                        className={cn(
+                          "mt-2 flex min-w-0 flex-col gap-2 rounded-xl border px-2.5 py-2 text-xs sm:flex-row sm:items-center sm:justify-between",
+                          selectionStatusTone === "attention"
+                            ? "border-destructive/30 bg-destructive/10"
+                            : selectionStatusTone === "interactive"
+                              ? "border-primary/30 bg-primary/10"
+                              : "border-outline-variant bg-surface-container-high",
+                        )}
+                        data-builder-selection-status=""
+                      >
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <Badge
+                              variant={
+                                selectionStatusTone === "attention"
+                                  ? "destructive"
+                                  : selectionStatusTone === "interactive" || selectionStatusTone === "ready"
+                                    ? "secondary"
+                                    : "outline"
+                              }
+                            >
+                              {selectionStatusTone}
+                            </Badge>
+                            <span className="min-w-0 truncate font-medium text-on-surface">{selectionStatusTitle}</span>
+                          </div>
+                          <p className="mt-1 line-clamp-1 text-[0.68rem] text-on-surface-variant">{selectionStatusDetail}</p>
+                        </div>
+                        {selectionRecommendedStep ? (
+                          <Button
+                            size="sm"
+                            variant={selectionStatusTone === "attention" || selectionStatusTone === "setup" ? "secondary" : "ghost"}
+                            className="h-7 shrink-0 px-2 text-xs"
+                            data-builder-selection-recommended-action={selectionRecommendedStep.id}
+                            disabled={selectionRecommendedStep.disabled}
+                            onClick={selectionRecommendedStep.onAction}
+                          >
+                            <SelectionRecommendedIcon aria-hidden className="size-3.5" />
+                            {selectionRecommendedStep.actionLabel}
+                          </Button>
+                        ) : null}
+                      </div>
                       {selectedActionFeedback ? (
                         <div
                           className={cn(
