@@ -366,6 +366,12 @@ import type {
   WindowsCertificateInspectionResult,
 } from "./builder/types";
 
+const READINESS_GATED_PROJECT_ACTIONS = new Set<ProjectJumpActionId>([
+  "validate-window",
+  "build-exe",
+  "bundle-installer",
+]);
+
 type ComponentDefinition = {
   type: BuilderComponentType;
   title: string;
@@ -11162,10 +11168,56 @@ export function BuilderShowcase() {
   const shouldSwitchTaskWorkspaceForActions = (actionIds: ProjectJumpActionId[]) =>
     !(actionIds.length === 1 && actionIds[0] === "save-project");
 
+  const revealReadinessGateForActions = (actionIds: ProjectJumpActionId[], label?: string) => {
+    const gatedActionId = actionIds.find((actionId) => READINESS_GATED_PROJECT_ACTIONS.has(actionId));
+    const blockers = buildReadinessSummary.items.filter((item) => item.severity === "error");
+    if (!gatedActionId || blockers.length === 0) {
+      return false;
+    }
+
+    const primaryBlocker = blockers[0];
+    const actionLabel = label ?? (actionIds.length === 1 ? projectTaskDefinitions[gatedActionId].title : "Release workflow");
+    const issueWord = blockers.length === 1 ? "issue" : "issues";
+    const summary = `${actionLabel} blocked by ${blockers.length} readiness ${issueWord}.`;
+    const detail = `${primaryBlocker.title}: ${primaryBlocker.detail}`;
+    const logPreview = blockers
+      .slice(0, 8)
+      .map((blocker, index) => `[${index + 1}] ${blocker.title}: ${blocker.detail}`)
+      .join("\n");
+    const timestamp = new Date().toISOString();
+    const skippedTask: ProjectTaskEntry = {
+      ...createProjectTask(gatedActionId, activeProject, 1),
+      status: "skipped",
+      startedAt: timestamp,
+      finishedAt: timestamp,
+      summary: `${summary} ${detail}`,
+      logPreview,
+    };
+
+    setMode("build");
+    setBuildError(`${summary}\n${detail}`);
+    setProjectTaskStatusFilter("all");
+    setProjectTaskKindFilter("all");
+    setProjectTaskSearchQuery("");
+    setProjectTasks((current) => [skippedTask, ...current].slice(0, 100));
+    setSelectedProjectTaskId(skippedTask.id);
+    setProjectTaskQueueMessage(`${summary} Open Build readiness or Issues before retrying.`);
+    setFeedbackPanelOpen(true);
+    openBottomDock("issues", false);
+    showProjectJumpFeedback("warning", "Release blocked", detail);
+    return true;
+  };
+
   const enqueueProjectTask = (actionId: ProjectJumpActionId, attempt = 1) => {
     const releasePreset = attempt === 1 ? releasePipelinePresetForAction(actionId) : null;
     if (releasePreset) {
+      if (revealReadinessGateForActions(releasePreset.actions, releasePreset.title)) {
+        return;
+      }
       runProjectActionsAsPipeline(releasePreset);
+      return;
+    }
+    if (revealReadinessGateForActions([actionId])) {
       return;
     }
     enqueueProjectTaskSequence([actionId], attempt);
@@ -11224,6 +11276,9 @@ export function BuilderShowcase() {
     }
     if (invalidActionIds.length > 0) {
       setBuildError(`Skipped unsupported pipeline action(s): ${invalidActionIds.join(", ")}`);
+    }
+    if (revealReadinessGateForActions(validActionIds, preset.title)) {
+      return;
     }
     const runId = createId();
     const tasks = enqueueProjectTaskSequence(validActionIds, 1, { runId, presetTitle: preset.title }, false);
