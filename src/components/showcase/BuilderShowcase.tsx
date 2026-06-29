@@ -2702,8 +2702,10 @@ function getSelectionBounds(items: BuilderItem[]) {
   };
 }
 
+type BuilderTreeRow = { item: BuilderItem; depth: number };
+
 function buildTreeRows(items: BuilderItem[]) {
-  const rows: Array<{ item: BuilderItem; depth: number }> = [];
+  const rows: BuilderTreeRow[] = [];
   const ordered = [...items].sort((a, b) => b.z - a.z);
   const walk = (parentId: string | undefined, depth: number) => {
     ordered
@@ -2715,6 +2717,30 @@ function buildTreeRows(items: BuilderItem[]) {
   };
   walk(undefined, 0);
   return rows;
+}
+
+function navigatorTreeRowMatches(row: BuilderTreeRow, query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const { item } = row;
+  return [
+    getItemSummary(item),
+    item.name,
+    item.type,
+    item.parentId ? "child" : "root",
+    item.locked ? "locked" : "unlocked",
+    item.props.title,
+    item.props.label,
+    item.props.description,
+    item.props.value,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .includes(normalizedQuery);
 }
 
 function loadSavedBuilderState(): SavedBuilderState | null {
@@ -5751,6 +5777,7 @@ export function BuilderShowcase() {
   const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("project");
   const [componentPaletteQuery, setComponentPaletteQuery] = useState("");
   const [componentPaletteCategory, setComponentPaletteCategory] = useState<ComponentPaletteCategoryId>("all");
+  const [navigatorQuery, setNavigatorQuery] = useState("");
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
@@ -6086,6 +6113,10 @@ export function BuilderShowcase() {
   const baseSortedItems = useMemo(() => [...baseItems].sort((a, b) => a.z - b.z), [baseItems]);
   const topLevelItems = useMemo(() => sortedItems.filter((item) => !item.parentId), [sortedItems]);
   const treeRows = useMemo(() => buildTreeRows(items), [items]);
+  const visibleNavigatorTreeRows = useMemo(
+    () => treeRows.filter((row) => navigatorTreeRowMatches(row, navigatorQuery)),
+    [navigatorQuery, treeRows],
+  );
   const combinedBuildLog = useMemo(() => [activeProject.buildLog, buildError].filter(Boolean).join("\n"), [activeProject.buildLog, buildError]);
   const activeRustSourceMap = useMemo(
     () => normalizeGeneratedRustSourceMap(activeProject.rustSourceMap) ?? parseRustSourceMapFromLog(combinedBuildLog),
@@ -18243,42 +18274,208 @@ export function BuilderShowcase() {
 
               {leftDockTab === "navigator" ? (
                 <NavigatorDock>
-              <PanelTitle icon={FileJson} title="UI 文件" description="一个项目可以包含多个界面文件。" />
-              <div className="mb-5 space-y-3 rounded-[22px] bg-surface-container-low p-3">
-                <Field label="文件名">
-                  <Input data-builder-file-name="" value={activeFile.name} onChange={(event) => renameActiveFile(event.target.value)} />
-                </Field>
-                <div className="max-h-44 space-y-1 overflow-auto pr-1">
-                  {activeProject.files.map((file) => (
-                    <button
-                      key={file.id}
-                      type="button"
-                      data-builder-file={file.name}
-                      className={cn(
-                        "focus-ring m3-state-layer flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-left text-xs transition-colors",
-                        file.id === activeFile.id ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
-                      )}
-                      onClick={() => selectFile(file.id)}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate font-medium">{file.name}</span>
-                        <span className="block truncate opacity-70">{file.items.length} controls</span>
+              <PanelTitle icon={FileJson} title="Navigator" description="管理 UI 文件、对象层级和当前选择。" />
+              <div className="flex flex-col gap-3">
+                <section className="order-2 space-y-3 rounded-[22px] bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-on-surface">UI files</p>
+                      <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{activeProject.files.length} files in project</p>
+                    </div>
+                    <Badge variant="outline">{activeFile.items.length} controls</Badge>
+                  </div>
+                  <Field label="当前文件">
+                    <Input data-builder-file-name="" inputSize="sm" value={activeFile.name} onChange={(event) => renameActiveFile(event.target.value)} />
+                  </Field>
+                  <div className="max-h-32 space-y-1 overflow-auto pr-1">
+                    {activeProject.files.map((file) => (
+                      <button
+                        key={file.id}
+                        type="button"
+                        data-builder-file={file.name}
+                        className={cn(
+                          "focus-ring m3-state-layer flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-left text-xs transition-colors",
+                          file.id === activeFile.id ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
+                        )}
+                        onClick={() => selectFile(file.id)}
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{file.name}</span>
+                          <span className="block truncate opacity-70">{file.items.length} controls</span>
+                        </span>
+                        <FileJson aria-hidden className="size-3.5 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button size="icon-sm" variant="secondary" data-builder-new-file="" aria-label="新建 UI 文件" title="新建 UI 文件" onClick={createNewFileFromNavigator}>
+                      <Plus aria-hidden />
+                    </Button>
+                    <Button size="icon-sm" variant="secondary" data-builder-duplicate-file="" aria-label="复制当前 UI 文件" title="复制当前 UI 文件" onClick={duplicateActiveFileFromNavigator}>
+                      <Copy aria-hidden />
+                    </Button>
+                    <Button size="icon-sm" variant="ghost" data-builder-delete-file="" aria-label="删除当前 UI 文件" title="删除当前 UI 文件" onClick={requestDeleteActiveFile}>
+                      <Trash2 aria-hidden />
+                    </Button>
+                  </div>
+                </section>
+
+                <section className="order-1 space-y-3 rounded-[22px] bg-surface-container-low p-3" data-builder-navigator-layers="">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-start gap-2">
+                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
+                        <Layers aria-hidden className="size-4" />
                       </span>
-                      <FileJson aria-hidden className="size-3.5 shrink-0" />
-                    </button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button size="icon-sm" variant="secondary" data-builder-new-file="" aria-label="新建 UI 文件" onClick={createNewFileFromNavigator}>
-                    <Plus aria-hidden />
-                  </Button>
-                  <Button size="icon-sm" variant="secondary" data-builder-duplicate-file="" aria-label="复制当前 UI 文件" onClick={duplicateActiveFileFromNavigator}>
-                    <Copy aria-hidden />
-                  </Button>
-                  <Button size="icon-sm" variant="ghost" data-builder-delete-file="" aria-label="删除当前 UI 文件" onClick={requestDeleteActiveFile}>
-                    <Trash2 aria-hidden />
-                  </Button>
-                </div>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-medium">Layer tree</h3>
+                        <p className="mt-1 truncate text-xs text-on-surface-variant">
+                          {visibleNavigatorTreeRows.length} of {treeRows.length} visible
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} selected</Badge>
+                  </div>
+
+                  <div className="relative">
+                    <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
+                    <Input
+                      inputSize="sm"
+                      data-builder-navigator-search=""
+                      aria-label="搜索对象层级"
+                      placeholder="Search layers..."
+                      value={navigatorQuery}
+                      className="h-9 rounded-2xl pl-9 text-xs"
+                      onChange={(event) => setNavigatorQuery(event.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-1.5">
+                    <Button
+                      size="icon-sm"
+                      variant="secondary"
+                      data-builder-navigator-select-all=""
+                      aria-label="选择全部控件"
+                      title="选择全部控件"
+                      onClick={selectAllItems}
+                      disabled={items.length === 0}
+                    >
+                      <CheckCircle2 aria-hidden />
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant="secondary"
+                      data-builder-navigator-clear-selection=""
+                      aria-label="清空选择"
+                      title="清空选择"
+                      onClick={clearSelection}
+                      disabled={selectedIds.length === 0}
+                    >
+                      <MousePointer2 aria-hidden />
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant="secondary"
+                      data-builder-navigator-duplicate-selection=""
+                      aria-label="复制选中控件"
+                      title="复制选中控件"
+                      onClick={duplicateSelected}
+                      disabled={selectedIds.length === 0}
+                    >
+                      <Copy aria-hidden />
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant="secondary"
+                      data-builder-navigator-toggle-lock=""
+                      aria-label="切换选中控件锁定状态"
+                      title="切换选中控件锁定状态"
+                      onClick={toggleSelectedLock}
+                      disabled={selectedIds.length === 0}
+                    >
+                      {selectedItems.some((item) => item.locked) ? <LockOpen aria-hidden /> : <Lock aria-hidden />}
+                    </Button>
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      data-builder-navigator-delete-selection=""
+                      aria-label="删除选中控件"
+                      title="删除选中控件"
+                      onClick={requestDeleteSelected}
+                      disabled={selectedIds.length === 0}
+                    >
+                      <Trash2 aria-hidden />
+                    </Button>
+                  </div>
+
+                  {treeRows.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs text-on-surface-variant">
+                      当前文件还没有控件。去 Components 面板添加一个控件开始编辑。
+                    </div>
+                  ) : visibleNavigatorTreeRows.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center">
+                      <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
+                      <p className="mt-2 text-xs font-medium">No matching layers</p>
+                      <Button size="sm" variant="ghost" className="mt-3 h-8" data-builder-navigator-reset-search="" onClick={() => setNavigatorQuery("")}>
+                        Reset search
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="max-h-72 space-y-1 overflow-auto pr-1">
+                      {visibleNavigatorTreeRows.map(({ item, depth }) => {
+                        const Icon = getDefinition(item.type).icon;
+                        const selected = selectedIds.includes(item.id);
+                        return (
+                          <div
+                            key={item.id}
+                            data-builder-navigator-row={item.id}
+                            className={cn(
+                              "grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-1 rounded-2xl p-1 transition-colors",
+                              selected ? "bg-secondary-container text-secondary-container-foreground" : "hover:bg-surface-container-high",
+                            )}
+                            style={{ paddingLeft: depth * 12 + 4 }}
+                          >
+                            <button
+                              type="button"
+                              className="focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl px-2 py-2 text-left"
+                              onClick={(event) => selectItem(item.id, event)}
+                            >
+                              <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
+                                <Icon aria-hidden className="size-3.5" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate text-xs font-medium">{getItemSummary(item)}</span>
+                                  {item.locked ? <Lock aria-hidden className="size-3 shrink-0 opacity-70" /> : null}
+                                </span>
+                                <span className="mt-0.5 block truncate text-[0.66rem] opacity-70">
+                                  {item.type} · {item.parentId ? "child" : "root"} · z {item.z}
+                                </span>
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              className="focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+                              aria-label="图层上移"
+                              title="图层上移"
+                              onClick={() => moveLayer(item.id, 1)}
+                            >
+                              <MoveUp aria-hidden className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              className="focus-ring rounded-full p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+                              aria-label="图层下移"
+                              title="图层下移"
+                              onClick={() => moveLayer(item.id, -1)}
+                            >
+                              <MoveDown aria-hidden className="size-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
               </div>
                 </NavigatorDock>
               ) : null}
