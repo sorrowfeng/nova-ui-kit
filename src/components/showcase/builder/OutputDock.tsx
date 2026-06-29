@@ -43,6 +43,7 @@ export function OutputDock<T extends string>({
       data-builder-output-dock=""
       data-builder-output-dock-expanded={expanded ? "true" : "false"}
       data-builder-output-dock-minimized={minimized ? "true" : "false"}
+      aria-label="Editor output dock"
     >
       {minimized ? (
         <div className="grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 py-2">
@@ -51,6 +52,7 @@ export function OutputDock<T extends string>({
             size="icon-sm"
             variant="secondary"
             aria-label="显示输出面板"
+            title="显示输出面板 (Ctrl+J)"
             data-builder-restore-output-dock=""
             onClick={() => onMinimizedChange?.(false)}
           >
@@ -68,6 +70,7 @@ export function OutputDock<T extends string>({
                     size="icon-sm"
                     variant="ghost"
                     aria-label="最小化输出面板"
+                    title="最小化输出面板 (Esc)"
                     data-builder-minimize-output-dock=""
                     onClick={() => onMinimizedChange(true)}
                   >

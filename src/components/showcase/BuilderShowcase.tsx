@@ -5719,6 +5719,20 @@ export function BuilderShowcase() {
     setFeedbackPanelOpen(true);
     setBottomDockMinimized(false);
   };
+  const outputDockWorkspacePadding = bottomDockMinimized ? "pb-16" : bottomDockExpanded ? "pb-72" : "pb-32";
+  const outputDockWorkspaceState = bottomDockMinimized ? "minimized" : bottomDockExpanded ? "expanded" : "standard";
+  const toggleOutputDockVisibility = () => {
+    setBottomDockMinimized((minimized) => {
+      const nextMinimized = !minimized;
+      if (nextMinimized) {
+        setBottomDockExpanded(false);
+        setFeedbackPanelOpen(false);
+      } else {
+        setFeedbackPanelOpen(true);
+      }
+      return nextMinimized;
+    });
+  };
   const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
@@ -12800,6 +12814,11 @@ export function BuilderShowcase() {
         return;
       }
 
+      if (commandOnly && key === "j") {
+        runShortcut(event, toggleOutputDockVisibility);
+        return;
+      }
+
       if (commandOnly && key === "s") {
         runShortcut(event, () => {
           setBuildError("");
@@ -12811,6 +12830,15 @@ export function BuilderShowcase() {
       }
 
       if (isTypingTarget(event.target)) {
+        return;
+      }
+
+      if (event.key === "Escape" && !bottomDockMinimized) {
+        runShortcut(event, () => {
+          setBottomDockExpanded(false);
+          setBottomDockMinimized(true);
+          setFeedbackPanelOpen(false);
+        });
         return;
       }
 
@@ -12841,7 +12869,7 @@ export function BuilderShowcase() {
 
     window.addEventListener("keydown", onKeyDown, { capture: true });
     return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
-  }, [selectedItems.length]);
+  }, [bottomDockMinimized, selectedItems.length]);
 
   const openSelectedProperties = () => {
     setRightDockTab("properties");
@@ -13441,7 +13469,10 @@ export function BuilderShowcase() {
         </div>
         ) : null}
 
-        <div className="min-h-0 flex-1 basis-0 overflow-hidden bg-surface-container-lowest pb-32">
+        <div
+          className={cn("min-h-0 flex-1 basis-0 overflow-hidden bg-surface-container-lowest", outputDockWorkspacePadding)}
+          data-builder-workspace-output-state={outputDockWorkspaceState}
+        >
         {mode === "logic" ? (
           <LogicWorkspace>
             <aside className="space-y-4 rounded-[24px] border border-outline-variant bg-surface-container p-4">
