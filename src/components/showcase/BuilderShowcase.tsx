@@ -6234,12 +6234,39 @@ export function BuilderShowcase() {
               }
           : null
     : null;
+  const selectedConnectionPayloadFields = selectedEventBinding?.payloadMode === "json" ? eventPayloadFieldSelection(selectedEventBinding) : [];
+  const selectedConnectionResultTarget = selectedEventBinding?.resultTargetItemId
+    ? items.find((item) => item.id === selectedEventBinding.resultTargetItemId) ?? null
+    : null;
+  const selectedConnectionResultState = selectedEventBinding?.resultStateId
+    ? activeProject.stateVariables.find((state) => state.id === selectedEventBinding.resultStateId) ?? null
+    : null;
+  const selectedConnectionInputSummary = selectedEventCommand
+    ? selectedEventCommandArgs.length > 0
+      ? `${selectedEventCommandArgs.length} named argument(s)`
+      : selectedEventBinding?.passValue
+        ? selectedEventBinding.payloadMode === "json"
+          ? `${selectedConnectionPayloadFields.length} JSON field(s)`
+          : "current value"
+        : "no payload"
+    : "no command";
+  const selectedConnectionOutputSummary = selectedEventCommand
+    ? [
+        selectedEventBinding?.resultTargetItemId
+          ? selectedConnectionResultTarget && selectedEventBinding.resultTargetProp
+            ? `${getItemSummary(selectedConnectionResultTarget)}.${selectedEventBinding.resultTargetProp}`
+            : "target missing"
+          : "",
+        selectedConnectionResultState ? `state ${selectedConnectionResultState.name}` : "",
+        selectedEventBinding?.applyJsonStatePatch ? "JSON patch" : "",
+      ].filter(Boolean).join(" · ") || "no write-back"
+    : "not configured";
   const eventResultTargets = useMemo(
     () =>
       items
-        .filter((item) => item.type !== "frame" && item.type !== "divider" && item.id !== selectedItem?.id)
+        .filter((item) => item.type !== "frame" && item.type !== "divider")
         .sort((a, b) => a.z - b.z),
-    [items, selectedItem?.id],
+    [items],
   );
   const selectedBindableProps = useMemo(
     () =>
@@ -20291,11 +20318,211 @@ export function BuilderShowcase() {
                           Bind new
                         </Button>
                       </div>
-                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs leading-5 text-on-surface-variant">
-                        {selectedEventCommand
-                          ? `${selectedEventCommandArgs.length} argument(s) · ${commandResultSchema(selectedEventCommand).mode} result · ${selectedEventBinding?.resultStateId ? "writes state" : "no state write"}`
-                          : "选择或创建 Rust command 后，Preview 模式可以真实模拟事件调用。"}
+                      <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs" data-builder-connection-map="">
+                        <div className="mb-3 flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-on-surface">Connection map</p>
+                            <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">
+                              {selectedEventCommand
+                                ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
+                                : `${selectedEventName} has no Rust command`}
+                            </p>
+                          </div>
+                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
+                        </div>
+                        <div className="grid gap-2">
+                          <div className="rounded-xl bg-surface-container-high px-3 py-2">
+                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Input</p>
+                            <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">{selectedConnectionInputSummary}</p>
+                          </div>
+                          <div className="rounded-xl bg-surface-container-high px-3 py-2">
+                            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Output</p>
+                            <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface">{selectedConnectionOutputSummary}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-connection-input="">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Input payload</h4>
+                            <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionInputSummary}</p>
+                          </div>
+                          <Badge variant="outline">{selectedEventCommandArgs.length || (selectedEventBinding?.passValue ? 1 : 0)} arg</Badge>
+                        </div>
+                        {selectedEventCommandArgs.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {selectedEventCommandArgs.map((arg) => (
+                              <div key={arg.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-xl bg-surface-container-high px-3 py-2 text-xs">
+                                <div className="min-w-0">
+                                  <p className="truncate font-mono text-on-surface">{arg.name}</p>
+                                  <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{arg.source}</p>
+                                </div>
+                                <Badge variant="outline">{arg.type}</Badge>
+                              </div>
+                            ))}
+                            <Button size="sm" variant="ghost" className="w-full" onClick={openSelectedConnectionTarget}>
+                              <Braces aria-hidden className="size-4" />
+                              Edit command args
+                            </Button>
+                          </div>
+                        ) : selectedEventCommand ? (
+                          <>
+                            <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
+                              <div className="min-w-0">
+                                <Label className="text-xs font-medium">Pass control value</Label>
+                                <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                                  {selectedEventCommand.acceptsValue ? "value / checked" : "command has no value parameter"}
+                                </p>
+                              </div>
+                              <Switch
+                                checked={Boolean(selectedEventBinding?.passValue && selectedEventCommand.acceptsValue)}
+                                disabled={!selectedEventCommand.acceptsValue}
+                                onCheckedChange={(passValue) => updateSelectedEventBinding(selectedEventName, { passValue })}
+                              />
+                            </div>
+                            {selectedEventCommand.acceptsValue ? (
+                              <Field label="Payload mode">
+                                <Select
+                                  value={selectedEventBinding?.payloadMode ?? "value"}
+                                  disabled={!selectedEventBinding?.passValue}
+                                  onValueChange={(payloadMode) =>
+                                    updateSelectedEventBinding(selectedEventName, {
+                                      payloadMode: payloadMode === "json" ? "json" : "value",
+                                      payloadFields: payloadMode === "json" ? eventPayloadFieldSelection(selectedEventBinding) : undefined,
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger data-builder-connection-payload-mode="">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="value">Current value</SelectItem>
+                                    <SelectItem value="json">JSON payload</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </Field>
+                            ) : null}
+                            {selectedEventBinding?.passValue && selectedEventBinding.payloadMode === "json" ? (
+                              <div className="grid grid-cols-2 gap-2">
+                                {eventPayloadFields.map((field) => (
+                                  <label
+                                    key={field.value}
+                                    className="flex min-w-0 items-start gap-2 rounded-xl border border-outline-variant bg-surface-container-high p-2 text-xs"
+                                  >
+                                    <Checkbox
+                                      className="mt-0.5 size-4"
+                                      checked={selectedConnectionPayloadFields.includes(field.value)}
+                                      onCheckedChange={(checked) =>
+                                        updateSelectedEventBinding(selectedEventName, {
+                                          payloadMode: "json",
+                                          payloadFields: payloadFieldsWithToggle(selectedEventBinding, field.value, Boolean(checked)),
+                                        })
+                                      }
+                                    />
+                                    <span className="min-w-0">
+                                      <span className="block truncate font-medium text-on-surface">{field.label}</span>
+                                      <span className="block truncate text-on-surface-variant">{field.description}</span>
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            ) : null}
+                          </>
+                        ) : (
+                          <div className="rounded-xl border border-dashed border-outline-variant p-3 text-xs leading-5 text-on-surface-variant">
+                            Bind a Rust command before configuring payload.
+                          </div>
+                        )}
+                      </section>
+
+                      <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-connection-output="">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Result routing</h4>
+                            <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionOutputSummary}</p>
+                          </div>
+                          <Badge variant={selectedEventBinding?.resultTargetItemId || selectedEventBinding?.resultStateId ? "secondary" : "outline"}>
+                            {selectedEventCommand ? commandResultSchema(selectedEventCommand).mode : "none"}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Field label="Target">
+                            <Select
+                              value={selectedEventBinding?.resultTargetItemId || "__none"}
+                              onValueChange={(value) =>
+                                updateSelectedEventBinding(selectedEventName, {
+                                  resultTargetItemId: value === "__none" ? "" : value,
+                                  resultTargetProp: value === "__none" ? undefined : selectedEventBinding?.resultTargetProp ?? "value",
+                                })
+                              }
+                            >
+                              <SelectTrigger data-builder-connection-result-target="">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none">None</SelectItem>
+                                {eventResultTargets.map((item) => (
+                                  <SelectItem key={item.id} value={item.id}>
+                                    {getItemSummary(item)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </Field>
+                          <Field label="Prop">
+                            <Select
+                              value={selectedEventBinding?.resultTargetProp || "__none"}
+                              disabled={!selectedEventBinding?.resultTargetItemId}
+                              onValueChange={(value) =>
+                                updateSelectedEventBinding(selectedEventName, {
+                                  resultTargetProp: value === "__none" ? undefined : (value as BuilderResultTargetProp),
+                                })
+                              }
+                            >
+                              <SelectTrigger data-builder-connection-result-prop="">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none">None</SelectItem>
+                                {eventResultTargetProps.map((prop) => (
+                                  <SelectItem key={prop.value} value={prop.value}>
+                                    {prop.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </Field>
+                        </div>
+                        <Field label="State">
+                          <Select
+                            value={selectedEventBinding?.resultStateId || "__none"}
+                            onValueChange={(value) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
+                          >
+                            <SelectTrigger data-builder-connection-result-state="">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none">No state</SelectItem>
+                              {activeProject.stateVariables.map((state) => (
+                                <SelectItem key={state.id} value={state.id}>
+                                  {state.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                        <div className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-high p-3">
+                          <div className="min-w-0">
+                            <Label className="text-xs font-medium">Apply JSON state patch</Label>
+                            <p className="mt-1 text-xs leading-5 text-on-surface-variant">patch to state</p>
+                          </div>
+                          <Switch
+                            checked={Boolean(selectedEventBinding?.applyJsonStatePatch)}
+                            onCheckedChange={(applyJsonStatePatch) => updateSelectedEventBinding(selectedEventName, { applyJsonStatePatch })}
+                          />
+                        </div>
+                      </section>
                       {selectedLatestSimulatorTrace ? (
                         <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs" data-builder-connection-last-run="">
                           <div className="mb-2 flex items-start justify-between gap-2">

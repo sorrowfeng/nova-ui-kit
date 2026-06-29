@@ -14,7 +14,7 @@ export function InspectorDock<T extends string>({
   children: ReactNode;
 }) {
   return (
-    <aside className="subtle-scrollbar relative z-10 h-full min-h-0 overflow-y-auto border-t border-outline-variant bg-surface-container xl:border-l xl:border-t-0">
+    <aside className="subtle-scrollbar relative z-10 h-full min-h-0 overflow-x-hidden overflow-y-auto border-t border-outline-variant bg-surface-container xl:border-l xl:border-t-0">
       <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-2 backdrop-blur">
         <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
       </div>
