@@ -12906,6 +12906,7 @@ export function BuilderShowcase() {
     latestFailedProjectTask?.summary ??
     latestProjectTask?.summary ??
     (activeProject.outputExePath ? `Latest exe: ${fileNameFromPath(activeProject.outputExePath)}` : "Issues, tasks, output, and logs will appear here.");
+  const feedbackStripVisible = mode !== "design" || feedbackPanelOpen;
   const runEditorWorkflowStep = (step: EditorWorkflowStep) => {
     setBuildError("");
     if (step.actions.length === 1) {
@@ -13682,107 +13683,111 @@ export function BuilderShowcase() {
                 </div>
               </div>
             ) : null}
-            <div
-              className="flex min-w-0 flex-wrap items-center gap-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1"
-              data-builder-feedback-strip=""
-            >
-              <Badge
-                variant={
-                  feedbackSummaryTone === "attention"
-                    ? "destructive"
-                    : feedbackSummaryTone === "running" || feedbackSummaryTone === "ready"
-                      ? "secondary"
-                      : "outline"
-                }
-              >
-                {feedbackSummaryTone}
-              </Badge>
-              <span className="max-w-[18rem] truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
-              <button
-                type="button"
-                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                onClick={() => openFeedbackPanel("issues")}
-              >
-                <AlertTriangle aria-hidden className="size-3.5" />
-                Issues {feedbackIssueCount}
-              </button>
-              <button
-                type="button"
-                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                onClick={() => openFeedbackPanel("tasks")}
-              >
-                <ClipboardCopy aria-hidden className="size-3.5" />
-                Tasks {activeProjectTasks.length}
-              </button>
-              <button
-                type="button"
-                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                onClick={() => openFeedbackPanel("output")}
-              >
-                <Download aria-hidden className="size-3.5" />
-                Output
-              </button>
-              <button
-                type="button"
-                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                onClick={() => openFeedbackPanel("logs")}
-              >
-                <FileJson aria-hidden className="size-3.5" />
-                Logs
-              </button>
-              <span className="min-w-[12rem] flex-1 truncate text-on-surface-variant">{feedbackSummaryDetail}</span>
-            </div>
-            {feedbackPanelOpen ? (
-              <div
-                className="grid min-w-0 gap-2 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 md:grid-cols-[12rem_minmax(0,1fr)]"
-                data-builder-feedback-inline-panel={bottomDockTab}
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <Badge variant="secondary">{bottomDockTab}</Badge>
-                  <span className="truncate text-on-surface-variant">
-                    {bottomDockTab === "issues"
-                      ? `${feedbackIssueCount} active`
-                      : bottomDockTab === "tasks"
-                        ? `${activeProjectTasks.length} total`
-                        : bottomDockTab === "output"
-                          ? activeProject.outputExePath ? "exe ready" : "pending"
-                          : selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview ? "task log" : "waiting"}
-                  </span>
+            {feedbackStripVisible ? (
+              <>
+                <div
+                  className="flex min-w-0 flex-wrap items-center gap-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1"
+                  data-builder-feedback-strip=""
+                >
+                  <Badge
+                    variant={
+                      feedbackSummaryTone === "attention"
+                        ? "destructive"
+                        : feedbackSummaryTone === "running" || feedbackSummaryTone === "ready"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {feedbackSummaryTone}
+                  </Badge>
+                  <span className="max-w-[18rem] truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
+                  <button
+                    type="button"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                    onClick={() => openFeedbackPanel("issues")}
+                  >
+                    <AlertTriangle aria-hidden className="size-3.5" />
+                    Issues {feedbackIssueCount}
+                  </button>
+                  <button
+                    type="button"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                    onClick={() => openFeedbackPanel("tasks")}
+                  >
+                    <ClipboardCopy aria-hidden className="size-3.5" />
+                    Tasks {activeProjectTasks.length}
+                  </button>
+                  <button
+                    type="button"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                    onClick={() => openFeedbackPanel("output")}
+                  >
+                    <Download aria-hidden className="size-3.5" />
+                    Output
+                  </button>
+                  <button
+                    type="button"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                    onClick={() => openFeedbackPanel("logs")}
+                  >
+                    <FileJson aria-hidden className="size-3.5" />
+                    Logs
+                  </button>
+                  <span className="min-w-[12rem] flex-1 truncate text-on-surface-variant">{feedbackSummaryDetail}</span>
                 </div>
-                <div className="min-w-0">
-                  {bottomDockTab === "issues" ? (
-                    <span className="block truncate text-on-surface-variant">
-                      {buildError || buildDiagnostics[0]?.message || "No active issues. Build diagnostics and validation problems will appear here."}
-                    </span>
-                  ) : bottomDockTab === "tasks" ? (
-                    <div className="flex min-w-0 flex-wrap gap-1.5">
-                      {visibleProjectTasks.slice(0, 3).map((task) => (
-                        <button
-                          key={task.id}
-                          type="button"
-                          className="focus-ring inline-flex max-w-[16rem] items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
-                          onClick={() => {
-                            setSelectedProjectTaskId(task.id);
-                            openBottomDock("tasks");
-                          }}
-                        >
-                          <span className="truncate">{task.title}</span>
-                          <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
-                        </button>
-                      ))}
-                      {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">No tasks yet.</span> : null}
+                {feedbackPanelOpen ? (
+                  <div
+                    className="grid min-w-0 gap-2 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 md:grid-cols-[12rem_minmax(0,1fr)]"
+                    data-builder-feedback-inline-panel={bottomDockTab}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Badge variant="secondary">{bottomDockTab}</Badge>
+                      <span className="truncate text-on-surface-variant">
+                        {bottomDockTab === "issues"
+                          ? `${feedbackIssueCount} active`
+                          : bottomDockTab === "tasks"
+                            ? `${activeProjectTasks.length} total`
+                            : bottomDockTab === "output"
+                              ? activeProject.outputExePath ? "exe ready" : "pending"
+                              : selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview ? "task log" : "waiting"}
+                      </span>
                     </div>
-                  ) : bottomDockTab === "output" ? (
-                    <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
-                      {activeProject.outputExePath || activeBundlePath || activeBundleDir || "Run Build or Bundle to produce desktop artifacts."}
-                    </span>
-                  ) : (
-                    <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
-                      {selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
-                    </span>
-                  )}
-                </div>
-              </div>
+                    <div className="min-w-0">
+                      {bottomDockTab === "issues" ? (
+                        <span className="block truncate text-on-surface-variant">
+                          {buildError || buildDiagnostics[0]?.message || "No active issues. Build diagnostics and validation problems will appear here."}
+                        </span>
+                      ) : bottomDockTab === "tasks" ? (
+                        <div className="flex min-w-0 flex-wrap gap-1.5">
+                          {visibleProjectTasks.slice(0, 3).map((task) => (
+                            <button
+                              key={task.id}
+                              type="button"
+                              className="focus-ring inline-flex max-w-[16rem] items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:text-on-surface"
+                              onClick={() => {
+                                setSelectedProjectTaskId(task.id);
+                                openBottomDock("tasks");
+                              }}
+                            >
+                              <span className="truncate">{task.title}</span>
+                              <Badge variant={projectTaskStatusVariant(task.status)}>{task.status}</Badge>
+                            </button>
+                          ))}
+                          {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">No tasks yet.</span> : null}
+                        </div>
+                      ) : bottomDockTab === "output" ? (
+                        <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
+                          {activeProject.outputExePath || activeBundlePath || activeBundleDir || "Run Build or Bundle to produce desktop artifacts."}
+                        </span>
+                      ) : (
+                        <span className="block truncate font-mono text-[0.68rem] text-on-surface-variant">
+                          {selectedProjectTask?.logPreview || selectedSimulatorTraceLogPreview || latestRunSessionEntry?.runtimeLogPreview || "Runtime and task logs will appear after checks, builds, or running the generated app."}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </div>
         </div>
