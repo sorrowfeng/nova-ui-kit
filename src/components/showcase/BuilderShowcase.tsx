@@ -18208,6 +18208,69 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
 
+                {selectedItem && selectedEventName ? (
+                  <div className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-connection-path="">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-on-surface">Connection path</p>
+                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                          {selectedLatestSimulatorTrace
+                            ? `Last ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
+                            : selectedEventCommand
+                              ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
+                              : `${selectedEventName} event is ready for a Rust command`}
+                        </p>
+                      </div>
+                      <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
+                    </div>
+                    <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
+                      <Button
+                        size="sm"
+                        variant={selectedEventCommand ? "secondary" : "default"}
+                        data-builder-connection-path-open=""
+                        data-builder-connection-path-primary=""
+                        aria-label={selectedEventCommand ? "Open bound Rust command" : "Create event binding"}
+                        onClick={selectedEventCommand ? openSelectedConnectionTarget : () => createAndBindBackendIntegrationCommand()}
+                      >
+                        <Braces aria-hidden className="size-4" />
+                        {selectedEventCommand ? "Command" : "Bind"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-builder-connection-path-create=""
+                        data-builder-connection-path-link=""
+                        aria-label="Open event connection settings"
+                        onClick={openSelectedConnections}
+                      >
+                        <Settings2 aria-hidden className="size-4" />
+                        Link
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        data-builder-connection-path-simulate=""
+                        data-builder-connection-path-run=""
+                        aria-label="Run selected event"
+                        disabled={!selectedEventCommand}
+                        onClick={() => simulateSelectedEvent()}
+                      >
+                        <Play aria-hidden className="size-4" />
+                        Run
+                      </Button>
+                    </div>
+                    {selectedLatestSimulatorTrace ? (
+                      <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs" data-builder-connection-path-last-run="">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate font-medium text-on-surface">{`${selectedLatestSimulatorTrace.eventName} -> ${selectedLatestSimulatorTrace.commandName}`}</span>
+                          <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 <div className="mt-3 grid grid-cols-2 gap-1.5">
                   {rightDockTabs.map((tab) => {
                     const TabIcon = tab.icon;
@@ -18252,63 +18315,6 @@ export function BuilderShowcase() {
                     Delete
                   </Button>
                 </div>
-
-                {selectedItem && selectedEventName ? (
-                  <div className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-connection-path="">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-on-surface">Connection path</p>
-                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
-                          {selectedLatestSimulatorTrace
-                            ? `Last ${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
-                            : selectedEventCommand
-                              ? `${selectedEventName} -> ${sanitizeRustCommandName(selectedEventCommand.name)}`
-                              : `${selectedEventName} event is ready for a Rust command`}
-                        </p>
-                      </div>
-                      <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "bound" : "unbound"}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-1.5 sm:grid-cols-3">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        data-builder-connection-path-open=""
-                        onClick={openSelectedConnectionTarget}
-                      >
-                        <Braces aria-hidden className="size-4" />
-                        {selectedEventCommand ? "Open command" : "Open"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={selectedEventCommand ? "ghost" : "secondary"}
-                        data-builder-connection-path-create=""
-                        onClick={() => createAndBindBackendIntegrationCommand()}
-                      >
-                        <Plus aria-hidden className="size-4" />
-                        Create
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-builder-connection-path-simulate=""
-                        disabled={!selectedEventCommand}
-                        onClick={() => simulateSelectedEvent()}
-                      >
-                        <Play aria-hidden className="size-4" />
-                        Simulate
-                      </Button>
-                    </div>
-                    {selectedLatestSimulatorTrace ? (
-                      <div className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs" data-builder-connection-path-last-run="">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate font-medium text-on-surface">{`${selectedLatestSimulatorTrace.eventName} -> ${selectedLatestSimulatorTrace.commandName}`}</span>
-                          <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
-                        </div>
-                        <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
               </section>
 
               {rightDockTab === "properties" ? (
