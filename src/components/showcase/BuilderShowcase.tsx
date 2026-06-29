@@ -5184,6 +5184,23 @@ function simulatorStateFromProject(project: DesignerProject) {
   return Object.fromEntries(project.stateVariables.map((state) => [state.id, state.initialValue || ""])) as Record<string, string>;
 }
 
+function countStateVariableReferences(project: DesignerProject, stateId: string) {
+  return project.files.reduce(
+    (total, file) =>
+      total +
+      file.items.reduce((itemTotal, item) => {
+        const propertyReferences = Object.values(item.props.stateBindings ?? {}).filter((candidate) => candidate === stateId).length;
+        const eventReferences = Object.values(item.props.events ?? {}).filter((binding) => binding?.resultStateId === stateId).length;
+        return itemTotal + propertyReferences + eventReferences;
+      }, 0),
+    0,
+  );
+}
+
+function formatStateReferenceCount(count: number) {
+  return `${count} state reference${count === 1 ? "" : "s"}`;
+}
+
 function compactJson(value: unknown) {
   if (value === undefined) {
     return "";
@@ -6207,6 +6224,11 @@ export function BuilderShowcase() {
     activeProject.stateVariables.find((state) => state.id === activeProject.activeStateVariableId) ??
     activeProject.stateVariables[0] ??
     createStateVariable(1);
+  const stateReferenceCounts = useMemo(
+    () => new Map(activeProject.stateVariables.map((state) => [state.id, countStateVariableReferences(activeProject, state.id)])),
+    [activeProject],
+  );
+  const activeStateReferenceCount = stateReferenceCounts.get(activeStateVariable.id) ?? 0;
   const sortedItems = useMemo(() => [...items].sort((a, b) => a.z - b.z), [items]);
   const baseSortedItems = useMemo(() => [...baseItems].sort((a, b) => a.z - b.z), [baseItems]);
   const topLevelItems = useMemo(() => sortedItems.filter((item) => !item.parentId), [sortedItems]);
@@ -10090,11 +10112,20 @@ export function BuilderShowcase() {
     });
   };
 
-  const selectStateVariable = (stateId: string) => {
+  const selectStateVariable = (stateId: string, options: { feedback?: boolean } = {}) => {
+    const state = activeProject.stateVariables.find((candidate) => candidate.id === stateId);
     updateActiveProject((project) => ({
       ...project,
       activeStateVariableId: stateId,
     }));
+    setMode("logic");
+    if (options.feedback && state) {
+      showProjectJumpFeedback(
+        "success",
+        "State selected",
+        `${state.name} is active in Logic. ${formatStateReferenceCount(countStateVariableReferences(activeProject, state.id))} linked.`,
+      );
+    }
   };
 
   const updateStateVariable = (stateId: string, patch: Partial<BuilderStateVariable>) => {
@@ -10112,31 +10143,36 @@ export function BuilderShowcase() {
     });
   };
 
-  const createStateVariableInProject = () => {
+  const createStateVariableInProject = (options: { feedback?: boolean } = {}) => {
+    const state = createStateVariable(activeProject.stateVariables.length + 1);
     updateActiveProject((project) => {
-      const state = createStateVariable(project.stateVariables.length + 1);
       return {
         ...project,
         stateVariables: [...project.stateVariables, state],
         activeStateVariableId: state.id,
       };
     });
+    setMode("logic");
+    if (options.feedback) {
+      showProjectJumpFeedback(
+        "success",
+        "State variable created",
+        `${state.name} is selected with Properties bindings and Connections result routing ready.`,
+      );
+    }
   };
 
   const deleteActiveStateVariable = () => {
+    const deletedId = activeProject.activeStateVariableId || activeProject.stateVariables[0]?.id;
+    const deletedState = activeProject.stateVariables.find((state) => state.id === deletedId);
+    const referenceCount = deletedId ? countStateVariableReferences(activeProject, deletedId) : 0;
+    const resetOnlyState = activeProject.stateVariables.length <= 1;
     updateActiveProject((project) => {
       const deletedId = project.activeStateVariableId || project.stateVariables[0]?.id;
-      if (!deletedId || project.stateVariables.length <= 1) {
-        const stateVariables = [createStateVariable(1)];
-        return {
-          ...project,
-          stateVariables,
-          activeStateVariableId: stateVariables[0].id,
-        };
-      }
-
-      const stateVariables = project.stateVariables.filter((state) => state.id !== deletedId);
       const cleanItem = (item: BuilderItem): BuilderItem => {
+        if (!deletedId) {
+          return item;
+        }
         const stateBindings = Object.fromEntries(
           Object.entries(item.props.stateBindings ?? {}).filter(([, stateId]) => stateId !== deletedId),
         ) as BuilderItemProps["stateBindings"];
@@ -10155,7 +10191,20 @@ export function BuilderShowcase() {
           },
         };
       };
+      if (!deletedId || project.stateVariables.length <= 1) {
+        const stateVariables = [createStateVariable(1)];
+        return {
+          ...project,
+          stateVariables,
+          activeStateVariableId: stateVariables[0].id,
+          files: project.files.map((file) => ({
+            ...file,
+            items: file.items.map(cleanItem),
+          })),
+        };
+      }
 
+      const stateVariables = project.stateVariables.filter((state) => state.id !== deletedId);
       return {
         ...project,
         stateVariables,
@@ -10166,6 +10215,20 @@ export function BuilderShowcase() {
         })),
       };
     });
+    setMode("logic");
+    if (resetOnlyState) {
+      showProjectJumpFeedback(
+        "warning",
+        "State store reset",
+        "Nova keeps one state variable available, so a fresh statusText state is ready for bindings.",
+      );
+      return;
+    }
+    showProjectJumpFeedback(
+      "success",
+      "State variable deleted",
+      `${deletedState?.name ?? "Selected state"} removed. ${formatStateReferenceCount(referenceCount)} cleared from bindings and command results.`,
+    );
   };
 
   const createNewFile = () => {
@@ -14414,7 +14477,7 @@ export function BuilderShowcase() {
                       key={state.id}
                       type="button"
                       data-builder-state-variable={state.name}
-                      onClick={() => selectStateVariable(state.id)}
+                      onClick={() => selectStateVariable(state.id, { feedback: true })}
                       className={cn(
                         "w-full rounded-2xl border p-3 text-left transition",
                         state.id === activeProject.activeStateVariableId
@@ -14423,11 +14486,13 @@ export function BuilderShowcase() {
                       )}
                     >
                       <span className="block truncate font-mono text-xs">{state.name}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">{state.initialValue || "empty"}</span>
+                      <span className="mt-1 block truncate text-[0.68rem]">
+                        {state.initialValue || "empty"} · {formatStateReferenceCount(stateReferenceCounts.get(state.id) ?? 0)}
+                      </span>
                     </button>
                   ))}
                 </div>
-                <Button className="mt-2 w-full" variant="secondary" data-builder-new-state="" onClick={createStateVariableInProject}>
+                <Button className="mt-2 w-full" variant="secondary" data-builder-new-state="" onClick={() => createStateVariableInProject({ feedback: true })}>
                   <Plus aria-hidden className="size-4" />
                   新建状态
                 </Button>
@@ -15487,9 +15552,19 @@ export function BuilderShowcase() {
                 </Button>
               </section>
               <section className="space-y-3 rounded-[20px] border border-outline-variant bg-surface-container-low p-3">
-                <div>
-                  <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">State variable</h3>
-                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">共享状态可驱动多个控件的显示属性。</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">State variable</h3>
+                    <p className="mt-1 truncate font-mono text-xs text-on-surface">{activeStateVariable.name}</p>
+                  </div>
+                  <Badge variant={activeStateReferenceCount > 0 ? "secondary" : "outline"} className="shrink-0">
+                    {formatStateReferenceCount(activeStateReferenceCount)}
+                  </Badge>
+                </div>
+                <div className="rounded-xl border border-outline-variant bg-surface-container-high p-2 text-xs">
+                  <PathRow label="Active" value={activeStateVariable.name} />
+                  <PathRow label="Initial" value={activeStateVariable.initialValue || "empty"} />
+                  <PathRow label="References" value={formatStateReferenceCount(activeStateReferenceCount)} />
                 </div>
                 <Field label="状态名">
                   <Input
