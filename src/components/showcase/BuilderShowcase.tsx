@@ -14101,10 +14101,20 @@ export function BuilderShowcase() {
   };
 
   const openSelectedConnections = () => {
-    if (!selectedItem || !selectedEventName) {
+    if (!selectedItem) {
+      setLeftDockTab("navigator");
+      setRightDockTab("connections");
+      showProjectJumpFeedback("warning", "先选择控件", "Navigator 已打开。选择可交互控件后即可查看事件连接。");
       return;
     }
     setRightDockTab("connections");
+    if (!selectedEventName) {
+      showProjectJumpFeedback(
+        "warning",
+        "静态控件",
+        `${getItemSummary(selectedItem)} 没有可绑定事件。可回到 Properties 编辑布局/内容，或插入可交互控件。`,
+      );
+    }
   };
 
   const openSelectedConnectionTarget = () => {
@@ -14205,17 +14215,16 @@ export function BuilderShowcase() {
                 ? selectedEventCommand
                   ? `${selectedEventName} calls ${sanitizeRustCommandName(selectedEventCommand.name)}.`
                   : `${selectedEventName} is available but has no Rust command yet.`
-                : "This control has no interactive event to bind.",
+                : "这个控件没有事件；Connections 会显示可用的下一步。",
               badge: selectedEventName ? (selectedEventCommand ? "bound" : "needs binding") : "static",
               icon: Braces,
-              actionLabel: selectedEventName ? (selectedEventCommand ? "Open" : "Bind") : "Properties",
+              actionLabel: selectedEventName ? (selectedEventCommand ? "Open" : "Bind") : "查看",
               tone: selectedEventName ? (selectedEventCommand ? (rightDockTab === "connections" ? "primary" : "ready") : "warning") : "muted",
-              disabled: !selectedEventName,
               onAction: selectedEventName
                 ? selectedEventCommand
                   ? openSelectedConnections
                   : () => createAndBindBackendIntegrationCommand()
-                : openSelectedProperties,
+                : openSelectedConnections,
             },
             {
               id: "selected-run-event",
@@ -20355,13 +20364,13 @@ export function BuilderShowcase() {
                     </Button>
                     <Button
                       size="sm"
-                      variant={selectedEventCommand ? "secondary" : "default"}
+                      variant={selectedEventCommand ? "secondary" : selectedEventName ? "default" : "ghost"}
                       data-builder-actionbar-connections=""
-                      disabled={!selectedItem || !selectedEventName}
-                      onClick={selectedEventCommand ? openSelectedConnections : () => createAndBindBackendIntegrationCommand()}
+                      disabled={!selectedItem}
+                      onClick={selectedEventCommand ? openSelectedConnections : selectedEventName ? () => createAndBindBackendIntegrationCommand() : openSelectedConnections}
                     >
                       <Braces aria-hidden className="size-4" />
-                      {selectedEventCommand ? "Connections" : "Create Binding"}
+                      {selectedEventCommand ? "Connections" : selectedEventName ? "Create Binding" : "Connections"}
                     </Button>
                     <Button size="sm" variant="secondary" data-builder-actionbar-preview="" disabled={!selectedItem} onClick={previewSelectedControl}>
                       <Monitor aria-hidden className="size-4" />
@@ -20697,7 +20706,7 @@ export function BuilderShowcase() {
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
-                        <Button size="icon-sm" variant="secondary" aria-label="打开连接设置" disabled={!selectedEventName} onClick={openSelectedConnections}>
+                        <Button size="icon-sm" variant="secondary" aria-label="打开连接设置" onClick={openSelectedConnections}>
                           <Braces aria-hidden className="size-4" />
                         </Button>
                         <Button variant="ghost" size="icon-sm" aria-label={selectedItem.locked ? "解锁控件" : "锁定控件"} onClick={toggleSelectedLock}>
@@ -21157,7 +21166,7 @@ export function BuilderShowcase() {
                           <Play aria-hidden className="size-4" />
                           Run Event
                         </Button>
-                        <Button size="sm" variant="secondary" disabled={!selectedEventName} onClick={openSelectedConnections}>
+                        <Button size="sm" variant="secondary" onClick={openSelectedConnections}>
                           <Braces aria-hidden className="size-4" />
                           Details
                         </Button>
@@ -22404,8 +22413,58 @@ export function BuilderShowcase() {
                       ) : null}
                     </div>
                   ) : (
-                    <div className="rounded-[22px] border border-dashed border-outline-variant p-6 text-center text-sm text-on-surface-variant">
-                      选择 Button、Input、Switch、Select 等可交互控件后，可以管理事件连接。
+                    <div className="space-y-3 rounded-[22px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-sm" data-builder-connections-empty="">
+                      <div className="flex items-start gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
+                          <Braces aria-hidden className="size-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-on-surface">{selectedItem ? "静态控件" : "未选择控件"}</h3>
+                          <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                            {selectedItem
+                              ? `${getItemSummary(selectedItem)} 没有可绑定事件。可以编辑属性，或插入 Button、Input、Switch、Select、Checkbox。`
+                              : "选择 Button、Input、Switch、Select 或 Checkbox 后，可以管理事件连接。"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setRightDockTab("properties");
+                            if (!selectedItem) {
+                              setLeftDockTab("navigator");
+                            }
+                          }}
+                        >
+                          <Settings2 aria-hidden className="size-4" />
+                          {selectedItem ? "属性" : "导航"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setMode("design");
+                            setLeftDockTab("components");
+                            insertComponentFromShortcut("button", { centered: items.length === 0, revealPalette: true });
+                          }}
+                        >
+                          <Plus aria-hidden className="size-4" />
+                          插入 Button
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setMode("design");
+                            setLeftDockTab("navigator");
+                          }}
+                        >
+                          <FileJson aria-hidden className="size-4" />
+                          图层
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </section>
