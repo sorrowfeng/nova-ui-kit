@@ -863,6 +863,51 @@ function getDefinition(type: BuilderComponentType) {
   return palette.find((item) => item.type === type) ?? palette[0];
 }
 
+type ComponentPaletteCategoryId = "all" | "layout" | "inputs" | "data" | "display";
+
+const componentPaletteCategoryOptions = [
+  { id: "all", label: "All", description: "全部控件" },
+  { id: "layout", label: "Layout", description: "布局与结构" },
+  { id: "inputs", label: "Inputs", description: "输入与设置" },
+  { id: "data", label: "Data", description: "数据展示" },
+  { id: "display", label: "Display", description: "内容与状态" },
+] as const satisfies ReadonlyArray<{ id: ComponentPaletteCategoryId; label: string; description: string }>;
+
+const componentPaletteQuickInsertTypes = ["button", "input", "frame", "table"] as const satisfies readonly BuilderComponentType[];
+
+function componentPaletteCategoryForType(type: BuilderComponentType): Exclude<ComponentPaletteCategoryId, "all"> {
+  if (["frame", "divider"].includes(type)) {
+    return "layout";
+  }
+  if (["button", "input", "textarea", "checkbox", "switch", "select"].includes(type)) {
+    return "inputs";
+  }
+  if (["stat", "table"].includes(type)) {
+    return "data";
+  }
+  return "display";
+}
+
+function componentPaletteCategoryLabel(category: ComponentPaletteCategoryId) {
+  return componentPaletteCategoryOptions.find((option) => option.id === category)?.label ?? category;
+}
+
+function componentPaletteMatchesSearch(definition: ComponentDefinition, query: string) {
+  if (!query.trim()) {
+    return true;
+  }
+  const category = componentPaletteCategoryForType(definition.type);
+  return [
+    definition.type,
+    definition.title,
+    definition.description,
+    componentPaletteCategoryLabel(category),
+  ]
+    .join(" ")
+    .toLowerCase()
+    .includes(query.trim().toLowerCase());
+}
+
 const emptyCanvasQuickStarts = ["button", "input", "frame"] as const satisfies readonly BuilderComponentType[];
 
 function escapeText(value = "") {
@@ -5704,6 +5749,8 @@ export function BuilderShowcase() {
   const [selectedProjectTemplateId, setSelectedProjectTemplateId] = useState<ProjectTemplateId>("dashboard");
   const [mode, setMode] = useState<BuilderMode>("design");
   const [leftDockTab, setLeftDockTab] = useState<BuilderLeftDockTab>("project");
+  const [componentPaletteQuery, setComponentPaletteQuery] = useState("");
+  const [componentPaletteCategory, setComponentPaletteCategory] = useState<ComponentPaletteCategoryId>("all");
   const [rightDockTab, setRightDockTab] = useState<BuilderRightDockTab>("properties");
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
@@ -5846,6 +5893,32 @@ export function BuilderShowcase() {
   const projectChangeImpactRef = useRef<ProjectChangeImpactSummary | null>(null);
   const projectDependencyGraphRef = useRef<ProjectDependencyGraphRecord | null>(null);
   const restoredProjectTaskQueueRef = useRef(false);
+  const componentPaletteCounts = useMemo(() => {
+    const counts: Record<ComponentPaletteCategoryId, number> = {
+      all: palette.length,
+      layout: 0,
+      inputs: 0,
+      data: 0,
+      display: 0,
+    };
+    for (const definition of palette) {
+      counts[componentPaletteCategoryForType(definition.type)] += 1;
+    }
+    return counts;
+  }, []);
+  const componentPaletteQuickInsertDefinitions = useMemo(
+    () => componentPaletteQuickInsertTypes.map((type) => getDefinition(type)),
+    [],
+  );
+  const showComponentPaletteQuickInsert = componentPaletteCategory === "all" && componentPaletteQuery.trim().length === 0;
+  const visibleComponentPalette = useMemo(
+    () =>
+      palette.filter((definition) => {
+        const matchesCategory = componentPaletteCategory === "all" || componentPaletteCategoryForType(definition.type) === componentPaletteCategory;
+        return matchesCategory && componentPaletteMatchesSearch(definition, componentPaletteQuery);
+      }),
+    [componentPaletteCategory, componentPaletteQuery],
+  );
   const activeProjectTasks = useMemo(
     () => projectTasks.filter((task) => !task.projectId || task.projectId === activeProject.id),
     [activeProject.id, projectTasks],
@@ -18256,34 +18329,139 @@ export function BuilderShowcase() {
               {leftDockTab === "components" ? (
                 <>
               <PanelTitle icon={Layers} title="控件工具箱" description="拖到画布任意位置，也可以单击快速添加。" />
-              <div className="grid gap-2">
-                {palette.map((definition) => {
-                  const Icon = definition.icon;
-                  return (
-                    <button
-                      key={definition.type}
-                      type="button"
-                      data-builder-palette-type={definition.type}
-                      draggable={false}
-                      onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
-                      onClick={() => {
-                        if (suppressPaletteClickRef.current) {
-                          return;
-                        }
-                        addComponent(definition.type);
-                      }}
-                      className="focus-ring m3-state-layer flex w-full items-start gap-3 rounded-[18px] border border-transparent bg-surface-container-low p-3 text-left transition-colors hover:border-outline-variant hover:bg-surface-container-high"
-                    >
-                      <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-container-highest text-primary">
-                        <Icon aria-hidden className="size-4" />
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
+                  <Input
+                    inputSize="sm"
+                    data-builder-component-search=""
+                    aria-label="搜索控件工具箱"
+                    placeholder="Search controls..."
+                    value={componentPaletteQuery}
+                    className="h-9 rounded-2xl pl-9 text-xs"
+                    onChange={(event) => setComponentPaletteQuery(event.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-1.5" aria-label="控件分类">
+                  {componentPaletteCategoryOptions.map((category) => {
+                    const active = category.id === componentPaletteCategory;
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        data-builder-component-category={category.id}
+                        aria-pressed={active}
+                        title={category.description}
+                        onClick={() => setComponentPaletteCategory(category.id)}
+                        className={cn(
+                          "focus-ring flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[0.68rem] font-medium transition",
+                          active
+                            ? "border-primary bg-primary text-primary-foreground shadow-m3-1"
+                            : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                        )}
+                      >
+                        <span>{category.label}</span>
+                        <span
+                          className={cn(
+                            "min-w-4 rounded-full px-1 text-center text-[0.62rem]",
+                            active ? "bg-primary-foreground/20" : "bg-surface-container-highest",
+                          )}
+                        >
+                          {componentPaletteCounts[category.id]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {showComponentPaletteQuickInsert ? (
+                  <section className="rounded-[18px] border border-outline-variant bg-surface-container-low p-2">
+                    <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
+                        Quick insert
                       </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium">{definition.title}</span>
-                        <span className="mt-1 block text-xs leading-5 text-on-surface-variant">{definition.description}</span>
-                      </span>
-                    </button>
-                  );
-                })}
+                      <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{palette.length} controls</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {componentPaletteQuickInsertDefinitions.map((definition) => {
+                        const Icon = definition.icon;
+                        return (
+                          <button
+                            key={definition.type}
+                            type="button"
+                            data-builder-component-quick-insert={definition.type}
+                            onClick={() => addComponent(definition.type)}
+                            className="focus-ring m3-state-layer flex min-w-0 items-center gap-2 rounded-2xl bg-surface-container px-2.5 py-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
+                          >
+                            <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
+                            <span className="truncate">{definition.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ) : null}
+
+                <div className="space-y-1.5">
+                  {visibleComponentPalette.length > 0 ? (
+                    visibleComponentPalette.map((definition) => {
+                      const Icon = definition.icon;
+                      const category = componentPaletteCategoryForType(definition.type);
+                      return (
+                        <button
+                          key={definition.type}
+                          type="button"
+                          data-builder-palette-type={definition.type}
+                          data-builder-palette-category={category}
+                          draggable={false}
+                          onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
+                          onClick={() => {
+                            if (suppressPaletteClickRef.current) {
+                              return;
+                            }
+                            addComponent(definition.type);
+                          }}
+                          className="focus-ring group m3-state-layer grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-[18px] border border-transparent bg-surface-container-low px-2.5 py-2.5 text-left transition-colors hover:border-outline-variant hover:bg-surface-container-high"
+                        >
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
+                            <Icon aria-hidden className="size-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <span className="truncate text-xs font-semibold">{definition.title}</span>
+                              <span className="shrink-0 rounded-full bg-surface-container-highest px-1.5 py-0.5 text-[0.6rem] font-medium text-on-surface-variant">
+                                {componentPaletteCategoryLabel(category)}
+                              </span>
+                            </span>
+                            <span className="mt-0.5 block truncate text-[0.68rem] leading-4 text-on-surface-variant">{definition.description}</span>
+                          </span>
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full text-on-surface-variant opacity-80 transition group-hover:text-primary">
+                            <Plus aria-hidden className="size-3.5" />
+                          </span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-[18px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center">
+                      <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
+                      <p className="mt-2 text-xs font-medium">No matching controls</p>
+                      <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">清空搜索或切换分类后继续添加控件。</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="mt-3 h-8"
+                        data-builder-component-search-reset=""
+                        onClick={() => {
+                          setComponentPaletteQuery("");
+                          setComponentPaletteCategory("all");
+                        }}
+                      >
+                        Reset filters
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
                 </>
               ) : null}
