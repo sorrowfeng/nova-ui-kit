@@ -5893,6 +5893,7 @@ export function BuilderShowcase() {
   const [checkingRunId, setCheckingRunId] = useState("");
   const [stoppingRunId, setStoppingRunId] = useState("");
   const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
+  const autoRunSessionRefreshRef = useRef<{ key: string; checkedAt: number }>({ key: "", checkedAt: 0 });
   const [readingRuntimeLogId, setReadingRuntimeLogId] = useState("");
   const [testingBackendMethodId, setTestingBackendMethodId] = useState("");
   const [buildError, setBuildError] = useState("");
@@ -11720,6 +11721,55 @@ export function BuilderShowcase() {
       setCheckingRunId("");
     }
   };
+
+  useEffect(() => {
+    const refreshLatestRunningSession = () => {
+      if (!isTauriRuntime()) {
+        return;
+      }
+      if (
+        !latestRunSessionEntry ||
+        latestRunSessionEntry.runStatus !== "running" ||
+        !latestRunSessionEntry.outputExePath ||
+        !latestRunSessionEntry.launchedPid
+      ) {
+        return;
+      }
+
+      const refreshKey = [
+        latestRunSessionEntry.id,
+        latestRunSessionEntry.launchedPid,
+        normalizeComparablePath(latestRunSessionEntry.outputExePath),
+      ].join(":");
+      const now = Date.now();
+      if (autoRunSessionRefreshRef.current.key === refreshKey && now - autoRunSessionRefreshRef.current.checkedAt < 12_000) {
+        return;
+      }
+      autoRunSessionRefreshRef.current = { key: refreshKey, checkedAt: now };
+      void refreshRunSession(latestRunSessionEntry);
+    };
+
+    refreshLatestRunningSession();
+    const handleWindowFocus = () => refreshLatestRunningSession();
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refreshLatestRunningSession();
+      }
+    };
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeProject.id,
+    latestRunSessionEntry?.id,
+    latestRunSessionEntry?.runStatus,
+    latestRunSessionEntry?.launchedPid,
+    latestRunSessionEntry?.outputExePath,
+  ]);
 
   const stopRunSession = async (entry: BuildHistoryEntry) => {
     if (!entry.outputExePath || !entry.launchedPid) {
