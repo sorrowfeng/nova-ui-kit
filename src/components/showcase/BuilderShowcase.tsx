@@ -429,6 +429,20 @@ type BuilderRightDockTab = "properties" | "connections" | "responsive" | "impact
 type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs";
 type BuilderPropertySectionId = "layout" | "content" | "state" | "appearance" | "actions";
 
+type BuilderIssueItem = {
+  id: string;
+  kind: "build-error" | "diagnostic" | "property";
+  severity: "warning" | "error";
+  sourceLabel: string;
+  title: string;
+  detail: string;
+  meta?: string;
+  fixable?: boolean;
+  diagnostic?: BuildDiagnostic;
+  diagnosticIndex?: number;
+  propertyIssue?: BuilderPropertyIssue;
+};
+
 function buildDiagnosticKey(diagnostic: BuildDiagnostic, index: number) {
   return [
     diagnostic.severity,
@@ -442,6 +456,26 @@ function buildDiagnosticKey(diagnostic: BuildDiagnostic, index: number) {
     diagnostic.message,
     index,
   ].join("::");
+}
+
+function propertySectionForProp(prop: keyof BuilderItemProps): BuilderPropertySectionId {
+  if (["layoutMode", "layoutGap", "layoutPadding", "layoutColumns"].includes(prop)) {
+    return "layout";
+  }
+  if (["checked", "value"].includes(prop)) {
+    return "state";
+  }
+  if (["variant", "size", "objectFit"].includes(prop)) {
+    return "appearance";
+  }
+  if (["command", "resultStateId", "resultTargetItemId", "resultTargetProp"].includes(prop)) {
+    return "actions";
+  }
+  return "content";
+}
+
+function builderIssueSeverityRank(severity: BuilderIssueItem["severity"]) {
+  return severity === "error" ? 0 : 1;
 }
 
 type PalettePointerDrag = {
@@ -5926,7 +5960,7 @@ export function BuilderShowcase() {
     setBottomDockMinimized(true);
     setFeedbackPanelOpen(false);
   }, [mode]);
-  const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
+  const [selectedBuilderIssueId, setSelectedBuilderIssueId] = useState("");
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
   const [palettePointerDrag, setPalettePointerDrag] = useState<PalettePointerDrag | null>(null);
@@ -6293,15 +6327,6 @@ export function BuilderShowcase() {
     () => parseBuildDiagnostics(combinedBuildLog, activeRustSourceMap),
     [combinedBuildLog, activeRustSourceMap],
   );
-  const selectedBuildDiagnostic = useMemo(() => {
-    if (buildDiagnostics.length === 0) {
-      return null;
-    }
-    return (
-      buildDiagnostics.find((diagnostic, index) => buildDiagnosticKey(diagnostic, index) === selectedBuildDiagnosticKey) ??
-      buildDiagnostics[0]
-    );
-  }, [buildDiagnostics, selectedBuildDiagnosticKey]);
   const rustEditorLines = useMemo(() => activeProject.rustLogic.split(/\r?\n/), [activeProject.rustLogic]);
   const rustDiagnosticsBySourceLine = useMemo(() => {
     const diagnosticsByLine = new Map<number, BuildDiagnostic[]>();
@@ -6457,7 +6482,69 @@ export function BuilderShowcase() {
   const selectedPropertyIssues = useMemo(() => (selectedItem ? propertyIssuesForItem(activeFile, selectedItem) : []), [activeFile, selectedItem]);
   const selectedPropertyAutoFixPatch = useMemo(() => (selectedItem ? propertyAutoFixPatchForItem(selectedItem) : {}), [selectedItem]);
   const selectedPropertyAutoFixCount = propertyPatchSize(selectedPropertyAutoFixPatch);
+  const projectPropertyIssues = useMemo(() => propertyIssuesForProject(activeProject), [activeProject]);
   const projectPropertyAutoFixSummary = useMemo(() => propertyAutoFixSummaryForProject(activeProject), [activeProject]);
+  const fixableProjectPropertyIssueKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const target of projectPropertyAutoFixSummary.targets) {
+      for (const prop of Object.keys(target.patch)) {
+        keys.add(`${target.fileId}:${target.itemId}:${prop}`);
+      }
+    }
+    return keys;
+  }, [projectPropertyAutoFixSummary]);
+  const builderIssues = useMemo<BuilderIssueItem[]>(() => {
+    const issues: BuilderIssueItem[] = [];
+    if (buildError) {
+      issues.push({
+        id: "build-error",
+        kind: "build-error",
+        severity: "error",
+        sourceLabel: "Build",
+        title: "Build error",
+        detail: buildError,
+        meta: "Editor message",
+      });
+    }
+    buildDiagnostics.forEach((diagnostic, index) => {
+      const key = buildDiagnosticKey(diagnostic, index);
+      const location = diagnostic.file
+        ? `${diagnostic.file}${diagnostic.line ? `:${diagnostic.line}` : ""}`
+        : diagnostic.origin || "Cargo output";
+      issues.push({
+        id: `diagnostic:${key}`,
+        kind: "diagnostic",
+        severity: diagnostic.severity === "error" ? "error" : "warning",
+        sourceLabel: diagnostic.origin || "Build",
+        title: diagnostic.code || "Compiler diagnostic",
+        detail: diagnostic.message,
+        meta: location,
+        diagnostic,
+        diagnosticIndex: index,
+      });
+    });
+    projectPropertyIssues.forEach((issue) => {
+      const fixable = fixableProjectPropertyIssueKeys.has(`${issue.fileId}:${issue.itemId}:${String(issue.prop)}`);
+      issues.push({
+        id: `property:${issue.id}`,
+        kind: "property",
+        severity: issue.severity,
+        sourceLabel: "Design",
+        title: `${issue.itemName} / ${issue.label}`,
+        detail: issue.message,
+        meta: `${issue.fileName} · ${issue.itemType}`,
+        fixable,
+        propertyIssue: issue,
+      });
+    });
+    return issues.sort((a, b) => builderIssueSeverityRank(a.severity) - builderIssueSeverityRank(b.severity));
+  }, [buildDiagnostics, buildError, fixableProjectPropertyIssueKeys, projectPropertyIssues]);
+  const selectedBuilderIssue = useMemo(
+    () => builderIssues.find((issue) => issue.id === selectedBuilderIssueId) ?? builderIssues[0] ?? null,
+    [builderIssues, selectedBuilderIssueId],
+  );
+  const builderIssueCount = builderIssues.length;
+  const builderIssueErrorCount = builderIssues.filter((issue) => issue.severity === "error").length;
   const projectJumpResults = useMemo(() => buildProjectJumpResults(activeProject, diskCheckpoints), [activeProject, diskCheckpoints]);
   const visibleProjectJumpResults = useMemo(
     () => filterProjectJumpResults(projectJumpResults, projectJumpQuery),
@@ -8195,6 +8282,101 @@ export function BuilderShowcase() {
     );
   };
 
+  const focusPropertyIssue = (issue: BuilderPropertyIssue, options: { feedback?: boolean } = {}) => {
+    const targetFile = activeProject.files.find((file) => file.id === issue.fileId);
+    if (!targetFile) {
+      const message = `找不到属性问题所属 UI 文件：${issue.fileName}`;
+      setBuildError(message);
+      showProjectJumpFeedback("error", "属性问题无法定位", message);
+      return;
+    }
+
+    const targetItem = targetFile.items.find((item) => item.id === issue.itemId);
+    if (!targetItem) {
+      const message = `找不到属性问题控件：${issue.itemName}`;
+      setBuildError(message);
+      showProjectJumpFeedback("error", "属性问题无法定位", message);
+      return;
+    }
+
+    updateActiveProject((project) => ({
+      ...project,
+      activeFileId: issue.fileId,
+    }));
+    setSelectedId(issue.itemId);
+    setMode("design");
+    setLeftDockTab("navigator");
+    setRightDockTab("properties");
+    setOpenPropertySections((current) => ({
+      ...current,
+      [propertySectionForProp(issue.prop)]: true,
+    }));
+    setBottomDockTab("issues");
+    setBottomDockExpanded(true);
+    setBottomDockMinimized(false);
+    if (mode !== "design") {
+      window.setTimeout(() => {
+        setBottomDockTab("issues");
+        setBottomDockExpanded(true);
+        setBottomDockMinimized(false);
+      }, 0);
+    }
+    if (options.feedback) {
+      showProjectJumpFeedback("success", "已定位属性问题", `${issue.itemName} 的 ${issue.label} 已选中，右侧 Properties 可编辑。`);
+    }
+  };
+
+  const applyPropertyIssueAutoFix = (issue: BuilderPropertyIssue) => {
+    const targetFile = activeProject.files.find((file) => file.id === issue.fileId);
+    const targetItem = targetFile?.items.find((item) => item.id === issue.itemId);
+    if (!targetFile || !targetItem) {
+      const message = `找不到可修复控件：${issue.itemName}`;
+      setBuildError(message);
+      showProjectJumpFeedback("error", "属性修复失败", message);
+      return;
+    }
+
+    const patch = propertyAutoFixPatchForItem(targetItem);
+    if (!Object.prototype.hasOwnProperty.call(patch, issue.prop)) {
+      showProjectJumpFeedback("warning", "需要手动处理", `${issue.itemName} 的 ${issue.label} 没有安全自动修复。`);
+      focusPropertyIssue(issue);
+      return;
+    }
+
+    pushHistorySnapshot(targetFile);
+    updateActiveProject((project) => ({
+      ...project,
+      activeFileId: issue.fileId,
+      files: project.files.map((file) =>
+        file.id === issue.fileId
+          ? {
+              ...file,
+              items: file.items.map((item) => (item.id === issue.itemId ? { ...item, props: { ...item.props, ...patch } } : item)),
+            }
+          : file,
+      ),
+    }));
+    setSelectedId(issue.itemId);
+    setMode("design");
+    setLeftDockTab("navigator");
+    setRightDockTab("properties");
+    setOpenPropertySections((current) => ({
+      ...current,
+      [propertySectionForProp(issue.prop)]: true,
+    }));
+    setBottomDockTab("issues");
+    setBottomDockExpanded(true);
+    setBottomDockMinimized(false);
+    if (mode !== "design") {
+      window.setTimeout(() => {
+        setBottomDockTab("issues");
+        setBottomDockExpanded(true);
+        setBottomDockMinimized(false);
+      }, 0);
+    }
+    showProjectJumpFeedback("success", "属性已修复", `${issue.itemName} 的 ${issue.label} 已应用安全默认值。`);
+  };
+
   const updateSelectedEventCommand = (eventName: BuilderEventName, commandId: string) => {
     const command = activeProject.rustCommands.find((candidate) => candidate.id === commandId) ?? null;
     const commandAcceptsValue = Boolean(command?.acceptsValue);
@@ -9578,7 +9760,8 @@ export function BuilderShowcase() {
   };
 
   const openBuildDiagnostic = (diagnostic: BuildDiagnostic, index: number, focusEditable = true) => {
-    setSelectedBuildDiagnosticKey(buildDiagnosticKey(diagnostic, index));
+    const key = buildDiagnosticKey(diagnostic, index);
+    setSelectedBuilderIssueId(`diagnostic:${key}`);
     openBottomDock("issues");
     if (focusEditable && isEditableRustDiagnostic(diagnostic)) {
       focusRustDiagnostic(diagnostic);
@@ -13731,7 +13914,7 @@ export function BuilderShowcase() {
     { value: "impact", label: "Impact", icon: AlertTriangle },
   ];
   const bottomDockTabs: BuilderDockTab<BuilderBottomDockTab>[] = [
-    { value: "issues", label: "Issues", icon: AlertTriangle, badge: <Badge variant={buildDiagnostics.length > 0 || buildError ? "destructive" : "outline"}>{buildDiagnostics.length + (buildError ? 1 : 0)}</Badge> },
+    { value: "issues", label: "Issues", icon: AlertTriangle, badge: <Badge variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}>{builderIssueCount}</Badge> },
     { value: "output", label: "Output", icon: Terminal },
     { value: "tasks", label: "Tasks", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
     { value: "logs", label: "Logs", icon: FileJson },
@@ -13881,7 +14064,7 @@ export function BuilderShowcase() {
     "Run Save, Generate, Check, Validate, or Build to see live task evidence here.";
   const operationMonitorStatus = operationMonitorTask?.status ?? (buildError ? "failed" : "queued");
   const operationMonitorVisible = Boolean(buildError || runningProjectTask || queuedProjectTaskCount > 0 || failedProjectTaskCount > 0);
-  const feedbackIssueCount = buildDiagnostics.length + (buildError ? 1 : 0);
+  const feedbackIssueCount = builderIssueCount;
   const feedbackSummaryTone = buildError || failedProjectTaskCount > 0
     ? "attention"
     : runningProjectTask
@@ -14906,7 +15089,7 @@ export function BuilderShowcase() {
                     <div className="min-w-0">
                       {bottomDockTab === "issues" ? (
                         <span className="block truncate text-on-surface-variant">
-                          {buildError || buildDiagnostics[0]?.message || "No active issues. Build diagnostics and validation problems will appear here."}
+                          {selectedBuilderIssue ? `${selectedBuilderIssue.title}: ${selectedBuilderIssue.detail}` : "No active issues. Design validation, build diagnostics, and runtime checks will appear here."}
                         </span>
                       ) : bottomDockTab === "tasks" ? (
                         <div className="flex min-w-0 flex-wrap gap-1.5">
@@ -22643,22 +22826,12 @@ export function BuilderShowcase() {
                 bottomDockExpanded ? (
                   <div className="grid gap-3 text-xs xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                     <div className="max-h-56 space-y-2 overflow-auto pr-1">
-                      {buildError ? (
-                        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive">
-                          <div className="mb-1 flex items-center gap-2">
-                            <AlertTriangle aria-hidden className="size-4" />
-                            <span className="font-medium">Build error</span>
-                          </div>
-                          <p className="line-clamp-2 leading-5">{buildError}</p>
-                        </div>
-                      ) : null}
-                      {buildDiagnostics.length > 0 ? (
-                        buildDiagnostics.slice(0, 16).map((diagnostic, index) => {
-                          const isSelected = diagnostic === selectedBuildDiagnostic;
-                          const canFocusDiagnostic = isEditableRustDiagnostic(diagnostic);
+                      {builderIssues.length > 0 ? (
+                        builderIssues.slice(0, 24).map((issue) => {
+                          const isSelected = issue.id === selectedBuilderIssue?.id;
                           return (
                             <button
-                              key={`${diagnostic.message}-${index}`}
+                              key={issue.id}
                               type="button"
                               aria-selected={isSelected}
                               className={cn(
@@ -22667,42 +22840,48 @@ export function BuilderShowcase() {
                                   ? "border-primary bg-primary/10"
                                   : "border-outline-variant bg-surface-container-high hover:border-outline",
                               )}
-                              onClick={() => openBuildDiagnostic(diagnostic, index, false)}
+                              onClick={() => {
+                                setSelectedBuilderIssueId(issue.id);
+                                if (issue.kind === "diagnostic" && issue.diagnostic && typeof issue.diagnosticIndex === "number") {
+                                  openBuildDiagnostic(issue.diagnostic, issue.diagnosticIndex, false);
+                                } else if (issue.kind === "property" && issue.propertyIssue) {
+                                  focusPropertyIssue(issue.propertyIssue, { feedback: false });
+                                } else {
+                                  openBottomDock("issues");
+                                }
+                              }}
                             >
                               <span className="mb-1 flex min-w-0 items-center gap-2">
-                                <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
-                                {diagnostic.code ? <Badge variant="outline">{diagnostic.code}</Badge> : null}
-                                {!canFocusDiagnostic ? <Badge variant="secondary">log</Badge> : null}
-                                {diagnostic.file ? (
-                                  <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">
-                                    {diagnostic.file}:{diagnostic.line ?? "-"}
-                                  </span>
-                                ) : null}
+                                <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity}</Badge>
+                                <Badge variant="secondary">{issue.sourceLabel}</Badge>
+                                {issue.fixable ? <Badge variant="outline">fixable</Badge> : null}
+                                {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">{issue.meta}</span> : null}
                               </span>
-                              <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                              <span className="block truncate font-medium text-on-surface">{issue.title}</span>
+                              <span className="line-clamp-2 leading-5 text-on-surface-variant">{issue.detail}</span>
                             </button>
                           );
                         })
-                      ) : !buildError ? (
+                      ) : (
                         <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                          No active issues. Build diagnostics and validation problems will appear here.
+                          No active issues. Design validation, build diagnostics, and runtime checks will appear here.
                         </div>
-                      ) : null}
+                      )}
                     </div>
                     <div className="min-h-44 rounded-xl border border-outline-variant bg-surface-container-high p-3">
-                      {selectedBuildDiagnostic ? (
+                      {selectedBuilderIssue?.kind === "diagnostic" && selectedBuilderIssue.diagnostic ? (
                         <div className="space-y-3">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
-                              <Badge variant={selectedBuildDiagnostic.severity === "error" ? "destructive" : "outline"}>
-                                {selectedBuildDiagnostic.severity}
+                              <Badge variant={selectedBuilderIssue.diagnostic.severity === "error" ? "destructive" : "outline"}>
+                                {selectedBuilderIssue.diagnostic.severity}
                               </Badge>
-                              {selectedBuildDiagnostic.code ? <Badge variant="outline">{selectedBuildDiagnostic.code}</Badge> : null}
-                              {selectedBuildDiagnostic.origin ? <Badge variant="secondary">{selectedBuildDiagnostic.origin}</Badge> : null}
+                              {selectedBuilderIssue.diagnostic.code ? <Badge variant="outline">{selectedBuilderIssue.diagnostic.code}</Badge> : null}
+                              {selectedBuilderIssue.diagnostic.origin ? <Badge variant="secondary">{selectedBuilderIssue.diagnostic.origin}</Badge> : null}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                              {isEditableRustDiagnostic(selectedBuildDiagnostic) ? (
-                                <Button size="sm" variant="secondary" onClick={() => focusRustDiagnostic(selectedBuildDiagnostic)}>
+                              {isEditableRustDiagnostic(selectedBuilderIssue.diagnostic) ? (
+                                <Button size="sm" variant="secondary" onClick={() => focusRustDiagnostic(selectedBuilderIssue.diagnostic!)}>
                                   <MousePointer2 aria-hidden className="size-4" />
                                   定位源码
                                 </Button>
@@ -22713,39 +22892,73 @@ export function BuilderShowcase() {
                               </Button>
                             </div>
                           </div>
-                          <p className="leading-5 text-on-surface">{selectedBuildDiagnostic.message}</p>
+                          <p className="leading-5 text-on-surface">{selectedBuilderIssue.diagnostic.message}</p>
                           <div className="grid gap-2 md:grid-cols-2">
-                            <PathRow label="File" value={selectedBuildDiagnostic.file || "Cargo output"} />
+                            <PathRow label="File" value={selectedBuilderIssue.diagnostic.file || "Cargo output"} />
                             <PathRow
                               label="Location"
                               value={
-                                selectedBuildDiagnostic.line
-                                  ? `line ${selectedBuildDiagnostic.line}, column ${selectedBuildDiagnostic.column ?? 1}`
+                                selectedBuilderIssue.diagnostic.line
+                                  ? `line ${selectedBuilderIssue.diagnostic.line}, column ${selectedBuilderIssue.diagnostic.column ?? 1}`
                                   : "No direct source location"
                               }
                             />
-                            <PathRow label="Mapped source" value={selectedBuildDiagnostic.sourceFile || "Not mapped to editor source"} />
+                            <PathRow label="Mapped source" value={selectedBuilderIssue.diagnostic.sourceFile || "Not mapped to editor source"} />
                             <PathRow
                               label="Source line"
                               value={
-                                selectedBuildDiagnostic.sourceLine
-                                  ? `line ${selectedBuildDiagnostic.sourceLine}, column ${selectedBuildDiagnostic.sourceColumn ?? 1}`
+                                selectedBuilderIssue.diagnostic.sourceLine
+                                  ? `line ${selectedBuilderIssue.diagnostic.sourceLine}, column ${selectedBuilderIssue.diagnostic.sourceColumn ?? 1}`
                                   : "Unavailable"
                               }
                             />
                           </div>
-                          {!isEditableRustDiagnostic(selectedBuildDiagnostic) ? (
+                          {!isEditableRustDiagnostic(selectedBuilderIssue.diagnostic) ? (
                             <p className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 leading-5 text-on-surface-variant">
                               这个诊断来自生成 app、依赖或 Cargo 输出，当前无法安全映射到编辑器里的 Rust 逻辑源码。
                             </p>
                           ) : null}
-                          {selectedBuildDiagnostic.rendered ? (
+                          {selectedBuilderIssue.diagnostic.rendered ? (
                             <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-low p-3 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
-                              {selectedBuildDiagnostic.rendered}
+                              {selectedBuilderIssue.diagnostic.rendered}
                             </pre>
                           ) : null}
                         </div>
-                      ) : buildError ? (
+                      ) : selectedBuilderIssue?.kind === "property" && selectedBuilderIssue.propertyIssue ? (
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                              <Badge variant={selectedBuilderIssue.severity === "error" ? "destructive" : "outline"}>{selectedBuilderIssue.severity}</Badge>
+                              <Badge variant="secondary">design</Badge>
+                              {selectedBuilderIssue.fixable ? <Badge variant="outline">safe fix</Badge> : <Badge variant="outline">manual</Badge>}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <Button size="sm" variant="secondary" onClick={() => focusPropertyIssue(selectedBuilderIssue.propertyIssue!, { feedback: true })}>
+                                <MousePointer2 aria-hidden className="size-4" />
+                                定位控件
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={selectedBuilderIssue.fixable ? "secondary" : "ghost"}
+                                onClick={() => applyPropertyIssueAutoFix(selectedBuilderIssue.propertyIssue!)}
+                              >
+                                <Wand2 aria-hidden className="size-4" />
+                                {selectedBuilderIssue.fixable ? "安全修复" : "查看属性"}
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="leading-5 text-on-surface">{selectedBuilderIssue.propertyIssue.message}</p>
+                          <div className="grid gap-2 md:grid-cols-2">
+                            <PathRow label="UI file" value={selectedBuilderIssue.propertyIssue.fileName} />
+                            <PathRow label="Control" value={selectedBuilderIssue.propertyIssue.itemName} />
+                            <PathRow label="Property" value={`${selectedBuilderIssue.propertyIssue.label} / ${String(selectedBuilderIssue.propertyIssue.prop)}`} />
+                            <PathRow label="Panel" value={`${propertySectionForProp(selectedBuilderIssue.propertyIssue.prop)} section`} />
+                          </div>
+                          <p className="rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 leading-5 text-on-surface-variant">
+                            这个问题来自设计器属性 schema。修复后会影响生成 UI、可访问性文本或构建前 readiness。
+                          </p>
+                        </div>
+                      ) : selectedBuilderIssue?.kind === "build-error" && buildError ? (
                         <div className="space-y-3">
                           <Badge variant="destructive">build error</Badge>
                           <p className="leading-5 text-destructive">{buildError}</p>
@@ -22763,40 +22976,40 @@ export function BuilderShowcase() {
                   </div>
                 ) : (
                   <div className="grid gap-2 text-xs xl:grid-cols-2">
-                    {buildError ? (
-                      <button
-                        type="button"
-                        className="focus-ring rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-left text-destructive"
-                        onClick={() => setBottomDockExpanded(true)}
-                      >
-                        <span className="mb-1 flex items-center gap-2 font-medium">
-                          <AlertTriangle aria-hidden className="size-4" />
-                          Build error
-                        </span>
-                        <span className="line-clamp-2 leading-5">{buildError}</span>
-                      </button>
-                    ) : null}
-                    {buildDiagnostics.length > 0 ? (
-                      buildDiagnostics.slice(0, 4).map((diagnostic, index) => (
+                    {builderIssues.length > 0 ? (
+                      builderIssues.slice(0, 4).map((issue) => (
                         <button
-                          key={`${diagnostic.message}-${index}`}
+                          key={issue.id}
                           type="button"
-                          className="focus-ring rounded-xl border border-outline-variant bg-surface-container-high p-3 text-left transition hover:border-outline"
-                          onClick={() => openBuildDiagnostic(diagnostic, index, false)}
+                          className={cn(
+                            "focus-ring rounded-xl border p-3 text-left transition hover:border-outline",
+                            issue.severity === "error" ? "border-destructive/25 bg-destructive/10" : "border-outline-variant bg-surface-container-high",
+                          )}
+                          onClick={() => {
+                            setBottomDockExpanded(true);
+                            setSelectedBuilderIssueId(issue.id);
+                            if (issue.kind === "diagnostic" && issue.diagnostic && typeof issue.diagnosticIndex === "number") {
+                              openBuildDiagnostic(issue.diagnostic, issue.diagnosticIndex, false);
+                            } else if (issue.kind === "property" && issue.propertyIssue) {
+                              focusPropertyIssue(issue.propertyIssue, { feedback: false });
+                            }
+                          }}
                         >
                           <span className="mb-1 flex min-w-0 items-center gap-2">
-                            <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
-                            {!isEditableRustDiagnostic(diagnostic) ? <Badge variant="secondary">log</Badge> : null}
-                            {diagnostic.file ? <span className="min-w-0 truncate font-mono text-[0.68rem]">{diagnostic.file}</span> : null}
+                            <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity}</Badge>
+                            <Badge variant="secondary">{issue.sourceLabel}</Badge>
+                            {issue.fixable ? <Badge variant="outline">fixable</Badge> : null}
+                            {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem]">{issue.meta}</span> : null}
                           </span>
-                          <span className="line-clamp-2 leading-5 text-on-surface-variant">{diagnostic.message}</span>
+                          <span className="block truncate font-medium text-on-surface">{issue.title}</span>
+                          <span className="line-clamp-2 leading-5 text-on-surface-variant">{issue.detail}</span>
                         </button>
                       ))
-                    ) : !buildError ? (
+                    ) : (
                       <div className="rounded-xl border border-dashed border-outline-variant p-4 text-center text-on-surface-variant">
-                        No active issues. Build diagnostics and validation problems will appear here.
+                        No active issues. Design validation, build diagnostics, and runtime checks will appear here.
                       </div>
-                    ) : null}
+                    )}
                   </div>
                 )
               ) : bottomDockTab === "output" ? (
