@@ -5805,7 +5805,7 @@ export function BuilderShowcase() {
   };
   const [bottomDockTab, setBottomDockTab] = useState<BuilderBottomDockTab>("issues");
   const [bottomDockExpanded, setBottomDockExpanded] = useState(false);
-  const [bottomDockMinimized, setBottomDockMinimized] = useState(false);
+  const [bottomDockMinimized, setBottomDockMinimized] = useState(true);
   const [feedbackPanelOpen, setFeedbackPanelOpen] = useState(false);
   const openBottomDock = (tab: BuilderBottomDockTab, expanded = true) => {
     setBottomDockTab(tab);
@@ -5831,6 +5831,14 @@ export function BuilderShowcase() {
       return nextMinimized;
     });
   };
+  useEffect(() => {
+    if (mode !== "design") {
+      return;
+    }
+    setBottomDockExpanded(false);
+    setBottomDockMinimized(true);
+    setFeedbackPanelOpen(false);
+  }, [mode]);
   const [selectedBuildDiagnosticKey, setSelectedBuildDiagnosticKey] = useState("");
   const [canvasPanMode, setCanvasPanMode] = useState(false);
   const [spacePanActive, setSpacePanActive] = useState(false);
