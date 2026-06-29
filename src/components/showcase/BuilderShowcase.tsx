@@ -8518,10 +8518,45 @@ export function BuilderShowcase() {
     showProjectJumpFeedback("success", "Selection pasted", `${formatControlCount(pastedItems.length)} inserted and selected on the canvas.`);
   };
 
+  const alignmentLabel = (alignment: AlignmentMode) => {
+    if (alignment === "left") {
+      return "left edges";
+    }
+    if (alignment === "center") {
+      return "horizontal centers";
+    }
+    if (alignment === "right") {
+      return "right edges";
+    }
+    if (alignment === "top") {
+      return "top edges";
+    }
+    if (alignment === "middle") {
+      return "vertical centers";
+    }
+    return "bottom edges";
+  };
+
   const alignSelected = (alignment: AlignmentMode) => {
+    if (selectedItems.length < 2) {
+      showProjectJumpFeedback("warning", "Alignment needs a selection", "Select at least two controls before using alignment tools.");
+      return;
+    }
     const movableItems = selectedItems.filter((item) => !item.locked);
+    const lockedCount = selectedItems.length - movableItems.length;
+    if (movableItems.length < 2) {
+      showProjectJumpFeedback(
+        "warning",
+        "Alignment skipped",
+        lockedCount > 0
+          ? `${lockedCount} locked control${lockedCount === 1 ? "" : "s"} cannot move. Unlock at least two controls to align them.`
+          : "Select at least two movable controls before using alignment tools.",
+      );
+      return;
+    }
     const bounds = getSelectionBounds(movableItems);
-    if (!bounds || movableItems.length < 2) {
+    if (!bounds) {
+      showProjectJumpFeedback("warning", "Alignment skipped", "The selected controls do not have measurable canvas bounds yet.");
       return;
     }
 
@@ -8548,6 +8583,11 @@ export function BuilderShowcase() {
         }
         return normalizeItemBounds({ ...item, y: bounds.bottom - item.height }, page);
       }),
+    );
+    showProjectJumpFeedback(
+      "success",
+      "Selection aligned",
+      `${formatControlCount(movableItems.length)} aligned by ${alignmentLabel(alignment)}${lockedCount > 0 ? `; ${lockedCount} locked stayed in place` : ""}.`,
     );
   };
 
