@@ -13081,6 +13081,14 @@ export function BuilderShowcase() {
     setRightDockTab("properties");
   };
 
+  const returnToDesignEditor = () => {
+    setMode("design");
+    setRightDockTab("properties");
+    setFeedbackPanelOpen(false);
+    setBottomDockExpanded(false);
+    setBottomDockMinimized(true);
+  };
+
   const openSelectedConnections = () => {
     if (!selectedItem || !selectedEventName) {
       return;
@@ -19121,6 +19129,18 @@ export function BuilderShowcase() {
                               Trace
                             </Button>
                           ) : null}
+                          {mode === "preview" ? (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-7 shrink-0 px-2 text-xs"
+                              data-builder-return-to-design=""
+                              onClick={returnToDesignEditor}
+                            >
+                              <MousePointer2 aria-hidden className="size-3.5" />
+                              Edit
+                            </Button>
+                          ) : null}
                         </div>
                       ) : null}
                     </div>
@@ -19940,7 +19960,13 @@ export function BuilderShowcase() {
                           预演选中控件的事件参数、Rust 返回和 state patch。
                         </p>
                       </div>
-                      <Badge variant={simulatorTrace.length > 0 ? "secondary" : "outline"}>{simulatorTrace.length}</Badge>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge variant={simulatorTrace.length > 0 ? "secondary" : "outline"}>{simulatorTrace.length}</Badge>
+                        <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" data-builder-simulator-edit-selected="" onClick={returnToDesignEditor}>
+                          <MousePointer2 aria-hidden className="size-3.5" />
+                          Edit
+                        </Button>
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
