@@ -12578,6 +12578,19 @@ export function BuilderShowcase() {
     editorWorkflowStepStates.find(({ status }) => status === "idle" || status === "skipped" || status === "canceled") ??
     null;
   const suggestedWorkflowStepId = nextWorkflowStepState?.step.id ?? null;
+  const suggestedWorkflowStepIndex = suggestedWorkflowStepId
+    ? editorWorkflowStepStates.findIndex(({ step }) => step.id === suggestedWorkflowStepId)
+    : -1;
+  const completedWorkflowStepCount = editorWorkflowStepStates.filter(({ status }) => status === "succeeded").length;
+  const workflowStepCount = editorWorkflowStepStates.length;
+  const workflowProgressValue = workflowRuntimeActive || workflowComplete
+    ? 100
+    : Math.round((completedWorkflowStepCount / Math.max(1, workflowStepCount)) * 100);
+  const workflowProgressLabel = workflowComplete
+    ? `${workflowStepCount}/${workflowStepCount} complete`
+    : suggestedWorkflowStepIndex >= 0
+      ? `Step ${suggestedWorkflowStepIndex + 1}/${workflowStepCount}`
+      : `${completedWorkflowStepCount}/${workflowStepCount} complete`;
   const workflowPrimaryActionLabel =
     workflowRuntimeActive
       ? stoppingRunId === activeWorkflowRuntimeStopId
@@ -12897,10 +12910,10 @@ export function BuilderShowcase() {
         </div>
 
         {mode !== "export" ? (
-        <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-2.5" data-builder-workflow-rail="">
-          <div className="mx-auto flex max-w-[82rem] flex-col gap-2">
-            <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
-              <div className="grid min-w-0 gap-2 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 xl:w-72">
+        <div className="border-b border-outline-variant bg-surface-container-lowest px-4 py-3" data-builder-workflow-rail="">
+          <div className="mx-auto flex w-full max-w-full flex-col gap-2">
+            <div className="flex min-w-0 max-w-full flex-col gap-2 overflow-hidden lg:flex-row lg:items-start">
+              <div className="grid min-w-0 gap-1.5 rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1 lg:w-80">
                 <div className="flex min-w-0 items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2 text-on-surface-variant">
                     <span
@@ -12927,6 +12940,13 @@ export function BuilderShowcase() {
                     {workflowRailDetail}
                   </p>
                 </div>
+                <div className="grid gap-1">
+                  <div className="flex items-center justify-between gap-2 text-[0.66rem] text-on-surface-variant">
+                    <span>{workflowProgressLabel}</span>
+                    <span>{workflowProgressValue}%</span>
+                  </div>
+                  <Progress className="h-1.5" value={workflowProgressValue} />
+                </div>
                 <div className="flex min-w-0 items-center gap-2">
                   <Button
                     size="sm"
@@ -12951,7 +12971,7 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
               </div>
-              <div className="grid min-w-0 flex-1 grid-cols-1 gap-1.5 md:grid-cols-5">
+              <div className="flex min-w-0 max-w-full flex-1 flex-wrap content-start gap-1.5 overflow-hidden" data-builder-workflow-path="">
                 {editorWorkflowStepStates.map(({ step, task, status }, index) => {
                   const StepIcon = step.icon;
                   const suggested = suggestedWorkflowStepId === step.id;
@@ -12961,13 +12981,14 @@ export function BuilderShowcase() {
                       type="button"
                       data-builder-workflow-step={step.id}
                       aria-current={suggested ? "step" : undefined}
+                      aria-label={`${step.title}: ${workflowStepStatusLabel(status)}`}
                       className={cn(
-                        "focus-ring group grid min-h-[4rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs transition",
+                        "focus-ring group grid min-h-[3.05rem] min-w-0 flex-[1_1_6rem] grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl border px-2 py-1.5 text-left text-xs transition lg:max-w-[6.25rem]",
                         workflowStepStatusClassName(status, suggested),
                       )}
                       onClick={() => runEditorWorkflowStep(step)}
                     >
-                      <span className="flex size-8 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
+                      <span className="flex size-7 items-center justify-center rounded-lg bg-surface-container-lowest/80 text-current shadow-m3-1">
                         <StepIcon aria-hidden className="size-4" />
                       </span>
                       <span className="min-w-0">
@@ -12975,11 +12996,12 @@ export function BuilderShowcase() {
                           <span className="font-mono text-[0.68rem] text-on-surface-variant">{index + 1}</span>
                           <span className="truncate font-medium text-on-surface">{step.title}</span>
                         </span>
-                        <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">{task?.summary ?? step.detail}</span>
+                        <span className="mt-1 flex min-w-0 items-center gap-1.5">
+                          <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0 px-1.5 py-0 text-[0.6rem]">
+                            {suggested && status === "idle" ? "next" : workflowStepStatusLabel(status)}
+                          </Badge>
+                        </span>
                       </span>
-                      <Badge variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"} className="shrink-0">
-                        {workflowStepStatusLabel(status)}
-                      </Badge>
                     </button>
                   );
                 })}
