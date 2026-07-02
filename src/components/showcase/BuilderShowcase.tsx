@@ -35676,21 +35676,25 @@ export function BuilderShowcase() {
         {mode === "project" ? (
           <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto p-4" data-builder-project-workspace="">
             <div className="mx-auto flex max-w-[1480px] flex-col gap-4">
-              <section className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4 shadow-m3-1">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-secondary-container text-secondary-container-foreground">
+              <section
+                className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-2.5"
+                data-builder-project-workspace-header=""
+                data-builder-project-workspace-header-density="compact-ide"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-secondary-container-foreground">
                         <FolderOpen aria-hidden className="size-4" />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="truncate text-base font-semibold text-on-surface">{activeProject.name || "Nova 项目"}</h2>
-                        <p className="mt-1 truncate text-xs text-on-surface-variant">
+                        <h2 className="truncate text-sm font-semibold text-on-surface">{activeProject.name || "Nova 项目"}</h2>
+                        <p className="truncate text-[0.68rem] text-on-surface-variant">
                           {activeProject.rootPath || "保存后会写入 Documents/Nova UI Projects"}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[0.68rem]">
                       <Badge variant={activeProject.rootPath ? "secondary" : "outline"}>{activeProject.rootPath ? "已落盘" : "未保存"}</Badge>
                       <Badge variant="outline">{projectExplorerModel.summary}</Badge>
                       <Badge variant="outline">Release {normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
@@ -35706,7 +35710,7 @@ export function BuilderShowcase() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="grid min-w-[18rem] grid-cols-2 gap-2">
+                  <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5" data-builder-project-workspace-header-actions="compact-toolbar">
                     <Button size="sm" variant="secondary" data-builder-project-workspace-save="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy || runningProjectTask?.actionId === "save-project"}>
                       <Save aria-hidden className="size-4" />
                       保存同步
@@ -36360,34 +36364,33 @@ export function BuilderShowcase() {
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3 grid grid-cols-4 gap-1.5 text-center text-[0.68rem]">
+                  <div
+                    className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.66rem]"
+                    data-builder-project-workspace-summary-strip=""
+                    data-builder-project-storage-boundaries=""
+                    data-builder-project-workspace-summary-density="single-row"
+                  >
                     {[
                       ["UI", activeProject.files.length],
                       ["控件", projectExplorerModel.controlCount],
                       ["Rust", activeProject.rustCommands.length + activeProject.rustModules.length],
                       [".nova", diskCheckpoints.length + 2],
                     ].map(([label, value]) => (
-                      <div key={label} className="rounded-xl bg-surface-container-low px-2 py-2">
-                        <p className="font-mono text-xs text-on-surface">{value}</p>
-                        <p className="mt-0.5 truncate text-on-surface-variant">{label}</p>
-                      </div>
+                      <span key={label} className="inline-flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-on-surface-variant">
+                        <span className="font-mono text-on-surface">{value}</span>
+                        <span className="truncate">{label}</span>
+                      </span>
                     ))}
-                  </div>
-                  <div className="mt-3 grid gap-2 text-[0.68rem] md:grid-cols-3" data-builder-project-storage-boundaries="">
+                    <span className="hidden h-4 w-px bg-outline-variant sm:inline-block" aria-hidden />
                     {[
-                      ["源码", `${activeProject.files.length} UI / ${activeProject.rustCommands.length} 命令`, "nova.project.json · ui/ · rust/"],
-                      ["生成", activeProject.outputExePath ? "exe 已生成" : "等待构建", "app/ · .nova/builds · .nova/runtime"],
-                      ["元数据", `${diskCheckpoints.length} 检查点`, ".nova/workspace.json · editor-state.json"],
-                    ].map(([label, value, detail]) => (
-                      <article key={label} className="min-w-0 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2">
-                        <div className="flex min-w-0 items-center justify-between gap-2">
-                          <span className="truncate font-medium text-on-surface">{label}</span>
-                          <span className="shrink-0 rounded-full bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">
-                            {value}
-                          </span>
-                        </div>
-                        <p className="mt-1 truncate font-mono text-[0.62rem] text-on-surface-variant">{detail}</p>
-                      </article>
+                      ["源码", `${activeProject.files.length} UI / ${activeProject.rustCommands.length} 命令`],
+                      ["生成", activeProject.outputExePath ? "exe 已生成" : "等待构建"],
+                      ["元数据", `${diskCheckpoints.length} 检查点`],
+                    ].map(([label, value]) => (
+                      <span key={label} className="inline-flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-0.5">
+                        <span className="text-on-surface-variant">{label}</span>
+                        <span className="truncate font-mono text-[0.62rem] text-on-surface">{value}</span>
+                      </span>
                     ))}
                   </div>
                   <div className="mt-3 grid grid-cols-4 gap-1.5 md:grid-cols-7" data-builder-project-workspace-filter="">
@@ -36691,29 +36694,22 @@ export function BuilderShowcase() {
                         </p>
                       </div>
                       <section
-                        className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-low p-3"
+                        className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
                         data-builder-project-node-action-strip=""
+                        data-builder-project-node-action-strip-density="compact-toolbar"
                         data-builder-project-node-action-strip-node={selectedProjectExplorerNode.id}
                         data-builder-project-node-action-strip-kind={selectedProjectExplorerDossier?.groupId ?? projectExplorerNodeGroupId(selectedProjectExplorerNode)}
                         data-builder-project-node-action-strip-file={selectedProjectExplorerFile?.id ?? "none"}
                       >
-                        <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <MousePointer2 aria-hidden className="size-4 shrink-0 text-primary" />
-                            <span className="truncate text-xs font-semibold text-on-surface">选中节点操作</span>
-                            <Badge variant="outline" className="shrink-0">
-                              {selectedProjectExplorerDossier?.groupLabel ?? "项目"}
-                            </Badge>
-                          </div>
-                          <span className="max-w-full truncate font-mono text-[0.66rem] text-on-surface-variant">
-                            {selectedProjectExplorerRelativePath || selectedProjectExplorerNode.label}
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                          <span className="mr-1 inline-flex min-w-0 max-w-[14rem] items-center gap-1.5 text-[0.68rem] text-on-surface-variant">
+                            <MousePointer2 aria-hidden className="size-3.5 shrink-0 text-primary" />
+                            <span className="truncate font-medium text-on-surface">{selectedProjectExplorerDossier?.groupLabel ?? "项目"}</span>
                           </span>
-                        </div>
-                        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                           <Button
                             size="sm"
                             variant="secondary"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-open=""
                             disabled={selectedProjectExplorerNode.action === "none"}
                             onClick={() => runProjectExplorerContextAction("open", selectedProjectExplorerNode)}
@@ -36724,7 +36720,7 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="subtle"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-rename=""
                             disabled={!selectedProjectExplorerFile}
                             onClick={() => runProjectExplorerContextAction("rename-ui-file", selectedProjectExplorerNode)}
@@ -36735,7 +36731,7 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="subtle"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-duplicate=""
                             disabled={!selectedProjectExplorerFile}
                             onClick={() => runProjectExplorerContextAction("duplicate-ui-file", selectedProjectExplorerNode)}
@@ -36746,7 +36742,7 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="subtle"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-new-ui=""
                             onClick={() => runProjectExplorerContextAction("new-ui-file", selectedProjectExplorerNode)}
                           >
@@ -36756,18 +36752,18 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-copy-path=""
                             disabled={!selectedProjectExplorerDisplayPath}
                             onClick={() => void copyArtifactPath(selectedProjectExplorerDisplayPath)}
                           >
                             <ClipboardCopy aria-hidden className="size-4" />
-                            复制完整路径
+                            复制路径
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-reveal=""
                             disabled={!selectedProjectExplorerDisplayPath || !isTauriRuntime()}
                             onClick={() => runProjectExplorerContextAction("reveal", selectedProjectExplorerNode)}
@@ -36778,7 +36774,7 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-filter=""
                             onClick={() => runProjectExplorerContextAction("filter-kind", selectedProjectExplorerNode)}
                           >
@@ -36788,7 +36784,7 @@ export function BuilderShowcase() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            className="justify-start"
+                            className="h-7 justify-start px-2 text-[0.68rem]"
                             data-builder-project-node-action-delete=""
                             disabled={!selectedProjectExplorerFile}
                             onClick={() => runProjectExplorerContextAction("delete-ui-file", selectedProjectExplorerNode)}
@@ -36796,15 +36792,19 @@ export function BuilderShowcase() {
                             <Trash2 aria-hidden className="size-4" />
                             删除 UI
                           </Button>
+                          <span className="ml-auto min-w-[6rem] max-w-[16rem] truncate font-mono text-[0.62rem] text-on-surface-variant">
+                            {selectedProjectExplorerRelativePath || selectedProjectExplorerNode.label}
+                          </span>
                         </div>
                       </section>
                       <div
-                        className="mt-3 grid gap-2 text-xs sm:grid-cols-3"
+                        className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.68rem]"
                         data-builder-project-tree-selected-context=""
+                        data-builder-project-tree-selected-context-density="single-row"
                       >
                         <button
                           type="button"
-                          className="focus-ring min-w-0 rounded-2xl border border-outline-variant bg-surface-container-low px-3 py-2 text-left transition hover:bg-surface-container-high"
+                          className="focus-ring inline-flex min-w-0 items-center gap-1.5 rounded-lg px-1.5 py-0.5 text-left transition hover:bg-surface-container-high"
                           data-builder-project-tree-parent-node={selectedProjectExplorerParentNode?.id ?? "none"}
                           disabled={!selectedProjectExplorerParentNode}
                           onClick={() => {
@@ -36813,26 +36813,26 @@ export function BuilderShowcase() {
                             }
                           }}
                         >
-                          <span className="block truncate font-medium text-on-surface">上级</span>
-                          <span className="mt-1 block truncate text-on-surface-variant">{selectedProjectExplorerParentNode?.label ?? "项目根"}</span>
+                          <span className="shrink-0 font-medium text-on-surface">上级</span>
+                          <span className="truncate text-on-surface-variant">{selectedProjectExplorerParentNode?.label ?? "项目根"}</span>
                         </button>
                         <div
-                          className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container-low px-3 py-2"
+                          className="inline-flex min-w-0 items-center gap-1.5 rounded-lg px-1.5 py-0.5"
                           data-builder-project-tree-selected-children={selectedProjectExplorerChildNodes.length}
                         >
-                          <span className="block truncate font-medium text-on-surface">子节点</span>
-                          <span className="mt-1 block truncate text-on-surface-variant">
+                          <span className="shrink-0 font-medium text-on-surface">子节点</span>
+                          <span className="truncate text-on-surface-variant">
                             {selectedProjectExplorerChildNodes.length > 0
                               ? selectedProjectExplorerChildNodes.slice(0, 3).map((node) => node.label).join(" / ")
                               : "没有子节点"}
                           </span>
                         </div>
                         <div
-                          className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container-low px-3 py-2"
+                          className="inline-flex min-w-0 flex-1 items-center gap-1.5 rounded-lg px-1.5 py-0.5"
                           data-builder-project-tree-relative-path=""
                         >
-                          <span className="block truncate font-medium text-on-surface">相对路径</span>
-                          <span className="mt-1 block truncate font-mono text-[0.68rem] text-on-surface-variant">{selectedProjectExplorerRelativePath || "."}</span>
+                          <span className="shrink-0 font-medium text-on-surface">相对路径</span>
+                          <span className="truncate font-mono text-[0.66rem] text-on-surface-variant">{selectedProjectExplorerRelativePath || "."}</span>
                         </div>
                       </div>
                       {selectedProjectExplorerDossier ? (
