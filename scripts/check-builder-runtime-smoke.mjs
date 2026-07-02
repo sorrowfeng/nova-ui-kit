@@ -2693,6 +2693,8 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const quickInsert = Array.from(document.querySelectorAll("[data-builder-component-quick-insert]"));
       const categories = Array.from(document.querySelectorAll("[data-builder-component-category]"));
       const collections = document.querySelector("[data-builder-component-collections]");
+      const collectionDetails = document.querySelector("[data-builder-component-collections-details]");
+      const collectionDetailList = document.querySelector("[data-builder-component-collections-detail-list]");
       const favorites = document.querySelector("[data-builder-component-favorites]");
       const recents = document.querySelector("[data-builder-component-recents]");
       const kits = Array.from(document.querySelectorAll("[data-builder-component-kit]"));
@@ -2710,6 +2712,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const md3ShellBadge = document.querySelector('[data-builder-component-coverage-missing="md3-application-shell"]');
       const completeGroups = missingBadges.filter((badge) => /完整/.test(badge.textContent || ""));
       const coverageRect = coverage?.getBoundingClientRect();
+      const collectionsRect = collections?.getBoundingClientRect();
       const quickInsertPriorityRect = quickInsertPriority?.getBoundingClientRect();
       const paletteHeaderRect = paletteHeader?.getBoundingClientRect();
       const kitLayoutRect = kitLayout?.getBoundingClientRect();
@@ -2749,9 +2752,13 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           kitScaffoldActions.length >= 5 &&
           compactRows.length >= 6 &&
           Boolean(collections) &&
+          collections?.getAttribute("data-builder-component-collections-mode") === "summary-strip" &&
+          Boolean(collectionsRect && collectionsRect.height <= 56) &&
+          Boolean(collectionDetails && !collectionDetails.open) &&
+          Boolean(collectionDetailList) &&
           Boolean(favorites) &&
           Boolean(recents),
-        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, quickInsert=\${quickInsert.length}, quickFirst=\${Boolean(quickInsertPriority)}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
+        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, quickInsert=\${quickInsert.length}, quickFirst=\${Boolean(quickInsertPriority)}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, collectionsMode=\${collections?.getAttribute("data-builder-component-collections-mode") || "missing"}, collectionsHeight=\${collectionsRect ? Math.round(collectionsRect.height) : "missing"}, collectionsOpen=\${Boolean(collectionDetails?.open)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
       };
     })()`,
     "MD3 and Qt desktop component palette coverage",
@@ -2760,6 +2767,10 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
   await waitFor(send, `Boolean(document.querySelector("[data-builder-component-coverage-details]")?.open)`, "component coverage details expand");
   await evaluate(send, `document.querySelector("[data-builder-component-coverage-details] > summary")?.click(); true`);
   await waitFor(send, `!document.querySelector("[data-builder-component-coverage-details]")?.open`, "component coverage details collapse");
+  await evaluate(send, `document.querySelector("[data-builder-component-collections-details] > summary")?.click(); true`);
+  await waitFor(send, `Boolean(document.querySelector("[data-builder-component-collections-details]")?.open)`, "component collections details expand");
+  await evaluate(send, `document.querySelector("[data-builder-component-collections-details] > summary")?.click(); true`);
+  await waitFor(send, `!document.querySelector("[data-builder-component-collections-details]")?.open`, "component collections details collapse");
   await evaluate(send, `document.querySelector('[data-builder-component-kit-focus="md3-window-shell"]')?.click(); true`);
   await waitFor(send, `document.querySelector("[data-builder-component-kits]")?.getAttribute("data-builder-component-active-kit") === "md3-window-shell"`, "component kit focus active");
   await assertRuntimeCheck(

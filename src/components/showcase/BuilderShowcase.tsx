@@ -47772,66 +47772,68 @@ export function BuilderShowcase() {
                 </section>
 
                 {showComponentPaletteCollections ? (
-                  <section className="space-y-2 rounded-[18px] border border-outline-variant bg-surface-container-low p-2" data-builder-component-collections="">
-                    <div className="flex items-center justify-between gap-2 px-1">
-                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-                        常用控件
-                      </span>
-                      <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteFavoriteTypes.length} favorite</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5" data-builder-component-favorites="">
-                      {componentPaletteFavoriteDefinitions.map((definition) => {
-                        const Icon = definition.icon;
-                        return (
-                          <div key={`favorite-${definition.type}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] overflow-hidden rounded-2xl bg-surface-container">
-                            <button
-                              type="button"
-                              data-builder-component-favorite={definition.type}
-                              onClick={() => addComponent(definition.type)}
-                              className="focus-ring flex min-w-0 items-center gap-2 px-2.5 py-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
-                            >
-                              <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                              <span className="truncate">{definition.title}</span>
-                            </button>
-                            <button
-                              type="button"
-                              data-builder-component-favorite-toggle={definition.type}
-                              aria-label={`取消收藏 ${definition.title}`}
-                              title="取消收藏"
-                              onClick={() => toggleComponentPaletteFavorite(definition.type)}
-                              className="focus-ring flex size-8 shrink-0 items-center justify-center text-primary transition hover:bg-surface-container-highest"
-                            >
-                              <Star aria-hidden className="size-3.5 fill-current" />
-                            </button>
+                  <section
+                    className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    data-builder-component-collections=""
+                    data-builder-component-collections-mode="summary-strip"
+                  >
+                    <details className="group" data-builder-component-collections-details="collapsed">
+                      <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-2 rounded-md px-2 text-xs text-on-surface transition hover:bg-surface-container [&::-webkit-details-marker]:hidden">
+                        <span className="min-w-0 flex-1 truncate font-semibold">快速访问</span>
+                        <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteFavoriteTypes.length} 常用</span>
+                        <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteRecentTypes.length} 最近</span>
+                        <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open:rotate-90" />
+                      </summary>
+                      <div className="mt-1 space-y-1 border-t border-outline-variant/70 pt-1" data-builder-component-collections-detail-list="">
+                        <div className="grid grid-cols-2 gap-1" data-builder-component-favorites="">
+                          {componentPaletteFavoriteDefinitions.map((definition) => {
+                            const Icon = definition.icon;
+                            return (
+                              <div key={`favorite-${definition.type}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md bg-surface-container">
+                                <button
+                                  type="button"
+                                  data-builder-component-favorite={definition.type}
+                                  onClick={() => addComponent(definition.type)}
+                                  className="focus-ring flex h-7 min-w-0 items-center gap-1.5 px-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
+                                >
+                                  <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
+                                  <span className="truncate">{definition.title}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-builder-component-favorite-toggle={definition.type}
+                                  aria-label={`取消收藏 ${definition.title}`}
+                                  title="取消收藏"
+                                  onClick={() => toggleComponentPaletteFavorite(definition.type)}
+                                  className="focus-ring flex h-7 shrink-0 items-center justify-center text-primary transition hover:bg-surface-container-highest"
+                                >
+                                  <Star aria-hidden className="size-3.5 fill-current" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="border-t border-outline-variant/70 pt-1" data-builder-component-recents="">
+                          <div className="flex flex-wrap gap-1">
+                            {componentPaletteRecentDefinitions.map((definition) => {
+                              const Icon = definition.icon;
+                              return (
+                                <button
+                                  key={`recent-${definition.type}`}
+                                  type="button"
+                                  data-builder-component-recent={definition.type}
+                                  onClick={() => addComponent(definition.type)}
+                                  className="focus-ring inline-flex max-w-full items-center gap-1.5 rounded-md border border-outline-variant bg-surface-container px-2 py-1 text-[0.66rem] font-medium transition hover:border-outline hover:bg-surface-container-high"
+                                >
+                                  <Icon aria-hidden className="size-3 shrink-0 text-primary" />
+                                  <span className="truncate">{definition.title}</span>
+                                </button>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                    <div className="border-t border-outline-variant pt-2" data-builder-component-recents="">
-                      <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
-                        <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-                          最近使用
-                        </span>
-                        <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteRecentTypes.length} recent</span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {componentPaletteRecentDefinitions.map((definition) => {
-                          const Icon = definition.icon;
-                          return (
-                            <button
-                              key={`recent-${definition.type}`}
-                              type="button"
-                              data-builder-component-recent={definition.type}
-                              onClick={() => addComponent(definition.type)}
-                              className="focus-ring inline-flex max-w-full items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-2.5 py-1.5 text-[0.68rem] font-medium transition hover:border-outline hover:bg-surface-container-high"
-                            >
-                              <Icon aria-hidden className="size-3 shrink-0 text-primary" />
-                              <span className="truncate">{definition.title}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    </details>
                   </section>
                 ) : null}
 
