@@ -1532,6 +1532,8 @@ mustContain(builder, 'data-builder-project-secondary-summary-density="single-row
 mustContain(builder, 'data-builder-project-workspace-header-density="compact-ide"', "Project workspace header uses compact IDE chrome instead of a hero card");
 mustContain(builder, 'data-builder-project-workspace-header-actions="compact-toolbar"', "Project workspace header actions stay in a compact toolbar");
 mustContain(builder, 'data-builder-project-workspace-summary-density="single-row"', "Project file tree summary uses a single-row strip instead of stacked statistic cards");
+mustContain(builder, 'data-builder-project-tree-toolbar-density="single-row-filter-search"', "Project file tree filters and search share one compact IDE toolbar");
+mustContain(builder, 'data-builder-project-workspace-filter-density="toolbar-segmented"', "Project file tree filters use compact segmented toolbar controls");
 mustContain(builder, 'data-builder-project-node-action-strip-density="compact-toolbar"', "Project selected-node actions use a toolbar instead of a large button matrix");
 mustContain(builder, 'data-builder-project-tree-selected-context-density="single-row"', "Project selected-node context uses a single-row strip");
 mustContain(designWorkspace, "xl:grid-cols-[56px_minmax(0,1fr)_56px]", "Design workspace supports compact rail columns for both side docks");

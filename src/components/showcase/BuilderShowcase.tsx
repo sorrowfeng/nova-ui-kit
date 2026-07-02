@@ -36400,66 +36400,76 @@ export function BuilderShowcase() {
                       </span>
                     ))}
                   </div>
-                  <div className="mt-3 grid grid-cols-4 gap-1.5 md:grid-cols-7" data-builder-project-workspace-filter="">
-                    {projectExplorerFilterOptions.map((option) => {
-                      const active = option.id === projectExplorerFilter;
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          aria-pressed={active}
-                          data-builder-project-filter-option={option.id}
-                          title={option.description}
-                          className={cn(
-                            "focus-ring min-w-0 rounded-xl border px-2 py-1.5 text-left text-[0.68rem] transition",
-                            active
-                              ? "border-primary bg-primary/10 text-on-surface"
-                              : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
-                          )}
-                          onClick={() => setProjectExplorerFilter(option.id)}
-                        >
-                          <span className="flex min-w-0 items-center justify-between gap-1">
-                            <span className="truncate font-medium">{option.label}</span>
-                            <span className="font-mono text-[0.62rem] opacity-70">{projectExplorerFilterCounts.get(option.id) ?? 0}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
                   <div
-                    className="relative mt-3"
-                    data-builder-project-workspace-search=""
-                    data-builder-project-workspace-search-active={projectExplorerLocatorActive ? "true" : "false"}
+                    className="mt-2 grid min-w-0 gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.66rem] sm:grid-cols-[minmax(8rem,1fr)_auto]"
+                    data-builder-project-tree-toolbar=""
+                    data-builder-project-tree-toolbar-density="single-row-filter-search"
                   >
-                    <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
-                    <Input
-                      value={projectExplorerQuery}
-                      inputSize="sm"
-                      aria-label="搜索工程文件树"
-                      placeholder="搜索文件、路径、类型..."
-                      className="h-9 rounded-2xl bg-surface-container-low pl-9 pr-16 text-xs"
-                      data-builder-project-workspace-search-input=""
-                      onChange={(event) => setProjectExplorerQuery(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && visibleProjectExplorerNodes[0]) {
-                          event.preventDefault();
-                          handleProjectExplorerNode(visibleProjectExplorerNodes[0]);
-                        }
-                        if (event.key === "Escape") {
-                          event.preventDefault();
-                          setProjectExplorerQuery("");
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="focus-ring absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[0.62rem] text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface disabled:opacity-40"
-                      disabled={!projectExplorerQuery}
-                      data-builder-project-workspace-search-clear=""
-                      onClick={() => setProjectExplorerQuery("")}
+                    <div
+                      className="relative min-w-0"
+                      data-builder-project-workspace-search=""
+                      data-builder-project-workspace-search-active={projectExplorerLocatorActive ? "true" : "false"}
                     >
-                      清空
-                    </button>
+                      <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
+                      <Input
+                        value={projectExplorerQuery}
+                        inputSize="sm"
+                        aria-label="搜索工程文件树"
+                        placeholder="搜索文件、路径、类型..."
+                        className="h-8 rounded-xl border-transparent bg-surface-container-high pl-8 pr-8 text-xs shadow-none"
+                        data-builder-project-workspace-search-input=""
+                        onChange={(event) => setProjectExplorerQuery(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" && visibleProjectExplorerNodes[0]) {
+                            event.preventDefault();
+                            handleProjectExplorerNode(visibleProjectExplorerNodes[0]);
+                          }
+                          if (event.key === "Escape") {
+                            event.preventDefault();
+                            setProjectExplorerQuery("");
+                          }
+                        }}
+                      />
+                      {projectExplorerQuery ? (
+                        <button
+                          type="button"
+                          aria-label="清空工程文件树搜索"
+                          className="focus-ring absolute right-1.5 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-highest hover:text-on-surface"
+                          data-builder-project-workspace-search-clear=""
+                          onClick={() => setProjectExplorerQuery("")}
+                        >
+                          <X aria-hidden className="size-3.5" />
+                        </button>
+                      ) : null}
+                    </div>
+                    <div
+                      className="subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto sm:justify-end"
+                      data-builder-project-workspace-filter=""
+                      data-builder-project-workspace-filter-density="toolbar-segmented"
+                    >
+                      {projectExplorerFilterOptions.map((option) => {
+                        const active = option.id === projectExplorerFilter;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            aria-pressed={active}
+                            data-builder-project-filter-option={option.id}
+                            title={option.description}
+                            className={cn(
+                              "focus-ring inline-flex h-8 flex-none items-center gap-1 rounded-lg border px-1.5 text-[0.64rem] transition",
+                              active
+                                ? "border-primary bg-primary/10 text-on-surface"
+                                : "border-transparent bg-transparent text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-high hover:text-on-surface",
+                            )}
+                            onClick={() => setProjectExplorerFilter(option.id)}
+                          >
+                            <span className="font-medium">{option.label}</span>
+                            <span className="font-mono text-[0.58rem] opacity-70">{projectExplorerFilterCounts.get(option.id) ?? 0}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   {projectExplorerLocatorActive ? (
                     <section
