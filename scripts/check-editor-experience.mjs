@@ -1719,8 +1719,10 @@ mustContain(builder, "insertComponentPaletteKitPrimary", "Component palette kits
 mustContain(builder, "insertComponentPaletteKitScaffold", "Component palette kits can batch-insert related controls as a canvas scaffold");
 mustContain(builder, 'data-builder-component-palette-header="toolbar"', "Component palette header uses low toolbar chrome instead of a card");
 mustContain(builder, 'data-builder-component-palette-layout="qt-compact-list"', "Component palette uses a compact Qt Creator-style list layout");
+mustContain(builder, 'data-builder-component-palette-priority="component-list-first"', "Component palette prioritizes the Widget Box control list before auxiliary tools");
 mustContain(builder, 'data-builder-component-category-strip="compact-grid"', "Component palette category filter avoids clipped horizontal pills");
-mustContain(builder, 'data-builder-component-quick-insert-priority="first"', "Component palette shows insertable controls before secondary kit and coverage content");
+mustContain(builder, 'data-builder-component-list-priority="first"', "Component palette renders the draggable control list immediately after search and categories");
+mustContain(builder, 'data-builder-component-quick-insert-priority="secondary-tools"', "Component palette keeps quick insert as secondary tooling instead of occupying the first widget-box viewport");
 mustContain(builder, 'data-builder-component-kits-layout="compact-list"', "Component palette kit launcher avoids large marketing-style cards");
 mustContain(builder, 'data-builder-component-kits-density="single-line"', "Component palette kit rows stay single-line like an IDE widget box");
 mustContain(builder, 'data-builder-component-collections-mode="summary-strip"', "Component palette secondary collections default to a compact summary strip");

@@ -2705,10 +2705,11 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const paletteLayout = document.querySelector("[data-builder-component-palette-layout]");
       const categoryStrip = document.querySelector("[data-builder-component-category-strip]");
       const kitLayout = document.querySelector("[data-builder-component-kits]");
-      const quickInsertPriority = document.querySelector('[data-builder-component-quick-insert-priority="first"]');
+      const quickInsertPriority = document.querySelector("[data-builder-component-quick-insert-priority]");
+      const componentListPriority = document.querySelector('[data-builder-component-list-priority="first"]');
       const paletteHeader = document.querySelector('[data-builder-component-palette-header="toolbar"]');
       const compactRows = Array.from(document.querySelectorAll('[data-builder-palette-row-layout="compact"]'));
-      const compactRowRects = compactRows.slice(0, 8).map((row) => row.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0);
+      const compactRowRects = compactRows.slice(0, 18).map((row) => row.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0);
       const rowCategoryMetadata = Array.from(document.querySelectorAll('[data-builder-palette-category-label="metadata"]'));
       const categoryMetadataRects = rowCategoryMetadata
         .slice(0, 8)
@@ -2720,6 +2721,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const coverageRect = coverage?.getBoundingClientRect();
       const collectionsRect = collections?.getBoundingClientRect();
       const quickInsertPriorityRect = quickInsertPriority?.getBoundingClientRect();
+      const componentListPriorityRect = componentListPriority?.getBoundingClientRect();
       const paletteHeaderRect = paletteHeader?.getBoundingClientRect();
       const kitLayoutRect = kitLayout?.getBoundingClientRect();
       const kitRowRects = kits.map((kit) => kit.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0);
@@ -2741,9 +2743,14 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           /完整/.test(md3ShellBadge?.textContent || "") &&
           Boolean(paletteHeader && paletteHeaderRect && paletteHeaderRect.height <= 32) &&
           quickInsert.length >= 6 &&
-          Boolean(quickInsertPriority && quickInsertPriorityRect && kitLayoutRect && quickInsertPriorityRect.top < kitLayoutRect.top) &&
+          quickInsertPriority?.getAttribute("data-builder-component-quick-insert-priority") === "secondary-tools" &&
+          Boolean(componentListPriority && componentListPriorityRect && componentListPriorityRect.top < (quickInsertPriorityRect?.top ?? Infinity)) &&
+          Boolean(componentListPriorityRect && componentListPriorityRect.top < (kitLayoutRect?.top ?? Infinity)) &&
+          Boolean(componentListPriorityRect && componentListPriorityRect.top < (coverageRect?.top ?? Infinity)) &&
+          Boolean(componentListPriorityRect && componentListPriorityRect.top < (collectionsRect?.top ?? Infinity)) &&
           categories.length >= 4 &&
           paletteLayout?.getAttribute("data-builder-component-palette-layout") === "qt-compact-list" &&
+          paletteLayout?.getAttribute("data-builder-component-palette-priority") === "component-list-first" &&
           categoryStrip?.getAttribute("data-builder-component-category-strip") === "compact-grid" &&
           kits.length >= 5 &&
           kitLayout?.getAttribute("data-builder-component-kits-layout") === "compact-list" &&
@@ -2760,6 +2767,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           compactRows.every((row) => row.getAttribute("data-builder-palette-row-density") === "single-line") &&
           compactRowRects.length >= 6 &&
           compactRowRects.every((rect) => rect.height <= 32) &&
+          compactRowRects.filter((rect) => rect.top >= 0 && rect.top < window.innerHeight).length >= 10 &&
           rowCategoryMetadata.length >= compactRows.length &&
           categoryMetadataRects.every((rect) => rect.width <= 2 && rect.height <= 2) &&
           Boolean(collections) &&
@@ -2769,7 +2777,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           Boolean(collectionDetailList) &&
           Boolean(favorites) &&
           Boolean(recents),
-        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, quickInsert=\${quickInsert.length}, quickFirst=\${Boolean(quickInsertPriority)}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, rowDensity=\${compactRows[0]?.getAttribute("data-builder-palette-row-density") || "missing"}, rowHeights=\${compactRowRects.map((rect) => Math.round(rect.height)).join("/")}, categoryMetadata=\${rowCategoryMetadata.length}, categoryMetadataRects=\${categoryMetadataRects.map((rect) => \`\${Math.round(rect.width)}x\${Math.round(rect.height)}\`).join("/")}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, collectionsMode=\${collections?.getAttribute("data-builder-component-collections-mode") || "missing"}, collectionsHeight=\${collectionsRect ? Math.round(collectionsRect.height) : "missing"}, collectionsOpen=\${Boolean(collectionDetails?.open)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
+        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, quickInsert=\${quickInsert.length}, quickPriority=\${quickInsertPriority?.getAttribute("data-builder-component-quick-insert-priority") || "missing"}, listPriority=\${componentListPriority ? "first" : "missing"}, listY=\${componentListPriorityRect ? Math.round(componentListPriorityRect.top) : "missing"}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, coverageY=\${coverageRect ? Math.round(coverageRect.top) : "missing"}, collectionsY=\${collectionsRect ? Math.round(collectionsRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, palettePriority=\${paletteLayout?.getAttribute("data-builder-component-palette-priority") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, visibleCompactRows=\${compactRowRects.filter((rect) => rect.top >= 0 && rect.top < window.innerHeight).length}, rowDensity=\${compactRows[0]?.getAttribute("data-builder-palette-row-density") || "missing"}, rowHeights=\${compactRowRects.map((rect) => Math.round(rect.height)).join("/")}, categoryMetadata=\${rowCategoryMetadata.length}, categoryMetadataRects=\${categoryMetadataRects.map((rect) => \`\${Math.round(rect.width)}x\${Math.round(rect.height)}\`).join("/")}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, collectionsMode=\${collections?.getAttribute("data-builder-component-collections-mode") || "missing"}, collectionsHeight=\${collectionsRect ? Math.round(collectionsRect.height) : "missing"}, collectionsOpen=\${Boolean(collectionDetails?.open)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
       };
     })()`,
     "MD3 and Qt desktop component palette coverage",

@@ -47529,8 +47529,12 @@ export function BuilderShowcase() {
                   {visibleComponentPalette.length}
                 </span>
               </div>
-              <div className="space-y-1.5" data-builder-component-palette-layout="qt-compact-list">
-                <div className="relative">
+              <div
+                className="flex flex-col gap-1.5"
+                data-builder-component-palette-layout="qt-compact-list"
+                data-builder-component-palette-priority="component-list-first"
+              >
+                <div className="relative order-1">
                   <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
                   <Input
                     inputSize="sm"
@@ -47546,7 +47550,7 @@ export function BuilderShowcase() {
                   />
                 </div>
 
-                <div className="grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
+                <div className="order-2 grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
                   {componentPaletteCategoryOptions.map((category) => {
                     const active = category.id === componentPaletteCategory;
                     return (
@@ -47576,8 +47580,8 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteQuickInsert ? (
                   <section
-                    className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
-                    data-builder-component-quick-insert-priority="first"
+                    className="order-4 rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    data-builder-component-quick-insert-priority="secondary-tools"
                   >
                     <div className="mb-0.5 flex items-center justify-between gap-2 px-1">
                       <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
@@ -47607,7 +47611,7 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteKits ? (
                   <section
-                    className="space-y-1 rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    className="order-5 space-y-1 rounded-lg border border-outline-variant bg-surface-container-low p-1"
                     data-builder-component-kits=""
                     data-builder-component-kits-layout="compact-list"
                     data-builder-component-kits-density="single-line"
@@ -47704,7 +47708,7 @@ export function BuilderShowcase() {
                 ) : null}
 
                 <section
-                  className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                  className="order-6 rounded-lg border border-outline-variant bg-surface-container-low p-1"
                   data-builder-component-coverage-panel=""
                   data-builder-component-coverage-mode="summary-strip"
                 >
@@ -47773,7 +47777,7 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteCollections ? (
                   <section
-                    className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    className="order-7 rounded-lg border border-outline-variant bg-surface-container-low p-1"
                     data-builder-component-collections=""
                     data-builder-component-collections-mode="summary-strip"
                   >
@@ -47837,7 +47841,7 @@ export function BuilderShowcase() {
                   </section>
                 ) : null}
 
-                <div className="space-y-1.5">
+                <div className="order-3 space-y-1.5" data-builder-component-list-priority="first">
                   {visibleComponentPalette.length > 0 ? (
                     visibleComponentPalette.map((definition) => {
                       const Icon = definition.icon;
