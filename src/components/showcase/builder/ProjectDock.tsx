@@ -31,6 +31,7 @@ export function ProjectDock<T extends string>({
         className="flex h-full min-h-0 flex-col items-center border-b border-outline-variant bg-surface-container xl:border-b-0 xl:border-r"
         data-builder-readable-dock="left"
         data-builder-side-dock="project"
+        data-builder-side-dock-active-tab={activeTab}
         data-builder-side-dock-collapsed="true"
       >
         <button
@@ -83,6 +84,7 @@ export function ProjectDock<T extends string>({
       className="subtle-scrollbar h-full min-h-0 overflow-y-auto border-b border-outline-variant bg-surface-container xl:border-b-0 xl:border-r"
       data-builder-readable-dock="left"
       data-builder-side-dock="project"
+      data-builder-side-dock-active-tab={activeTab}
       data-builder-side-dock-collapsed="false"
     >
       <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-2 backdrop-blur">

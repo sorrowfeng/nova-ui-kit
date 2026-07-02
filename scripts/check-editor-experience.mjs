@@ -1522,6 +1522,8 @@ mustContain(inspectorDock, "data-builder-right-dock-collapse", "Inspector dock c
 mustContain(inspectorDock, "data-builder-right-dock-expand", "Inspector dock can expand from the compact rail");
 mustContain(builder, "rightDockCollapsed, setRightDockCollapsed", "Builder keeps the inspector collapsed by default for a quieter canvas");
 mustContain(builder, 'useState<BuilderLeftDockTab>("components")', "Design workspace defaults the left dock to the component palette instead of project management");
+mustContain(builder, 'nextMode === "design" && leftDockTab === "project"', "Design mode reopens the component palette after leaving project management");
+mustContain(projectDock, "data-builder-side-dock-active-tab", "Project dock exposes the active left dock tab for runtime design-mode checks");
 mustContain(builder, "data-builder-workbench-layout-controls", "Canvas toolbar exposes layout controls for project, inspector, and output docks");
 mustContain(builder, "data-builder-toggle-left-dock", "Canvas toolbar can toggle the project dock");
 mustContain(builder, "data-builder-toggle-right-dock", "Canvas toolbar can toggle the inspector dock");

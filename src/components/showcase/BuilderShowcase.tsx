@@ -32037,6 +32037,9 @@ export function BuilderShowcase() {
     if (nextMode === "project") {
       setLeftDockTab("project");
     }
+    if (nextMode === "design" && leftDockTab === "project") {
+      setLeftDockTab("components");
+    }
   };
   const activeModeItem = modeBarItems.find((item) => item.mode === mode) ?? modeBarItems[0];
   const leftDockTabs: BuilderDockTab<BuilderLeftDockTab>[] = [
