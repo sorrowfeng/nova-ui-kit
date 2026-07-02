@@ -1722,6 +1722,7 @@ mustContain(builder, 'data-builder-component-palette-layout="qt-compact-list"', 
 mustContain(builder, 'data-builder-component-category-strip="compact-grid"', "Component palette category filter avoids clipped horizontal pills");
 mustContain(builder, 'data-builder-component-quick-insert-priority="first"', "Component palette shows insertable controls before secondary kit and coverage content");
 mustContain(builder, 'data-builder-component-kits-layout="compact-list"', "Component palette kit launcher avoids large marketing-style cards");
+mustContain(builder, 'data-builder-component-kits-density="single-line"', "Component palette kit rows stay single-line like an IDE widget box");
 mustContain(builder, 'data-builder-palette-row-layout="compact"', "Component palette rows use compact IDE-style density");
 mustContain(builder, "data-builder-component-kits", "Component palette exposes reusable component kits");
 mustContain(builder, "data-builder-component-kit", "Component palette renders kit rows");

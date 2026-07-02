@@ -47607,19 +47607,20 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteKits ? (
                   <section
-                    className="space-y-1 rounded-xl border border-outline-variant bg-surface-container-low p-1.5"
+                    className="space-y-1 rounded-lg border border-outline-variant bg-surface-container-low p-1"
                     data-builder-component-kits=""
                     data-builder-component-kits-layout="compact-list"
+                    data-builder-component-kits-density="single-line"
                     data-builder-component-active-kit={activeComponentPaletteKit?.id ?? "none"}
                   >
-                    <div className="flex items-center justify-between gap-2 px-1 pb-0.5">
+                    <div className="flex h-5 items-center justify-between gap-2 px-1">
                       <span className="truncate text-[0.66rem] font-semibold uppercase text-on-surface-variant">套件</span>
                       {activeComponentPaletteKit ? (
                         <button
                           type="button"
                           data-builder-component-kit-clear=""
                           onClick={clearComponentPaletteKit}
-                          className="focus-ring rounded-md px-1.5 py-0.5 text-[0.66rem] font-medium text-primary transition hover:bg-primary/10"
+                          className="focus-ring rounded-md px-1 py-0.5 text-[0.64rem] font-medium text-primary transition hover:bg-primary/10"
                         >
                           显示全部
                         </button>
@@ -47636,10 +47637,11 @@ export function BuilderShowcase() {
                           <div
                             key={row.id}
                             data-builder-component-kit={row.id}
+                            data-builder-component-kit-density="single-line"
                             data-builder-component-kit-active={active ? "true" : "false"}
                             data-builder-component-kit-available-count={row.availableCount}
                             className={cn(
-                              "grid min-w-0 grid-cols-[minmax(0,1fr)_2rem_2rem] overflow-hidden rounded-lg border transition-colors",
+                              "grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem_1.75rem] overflow-hidden rounded-md border transition-colors",
                               active ? "border-outline bg-surface-container-highest" : "border-transparent bg-transparent hover:bg-surface-container-high",
                             )}
                           >
@@ -47647,25 +47649,25 @@ export function BuilderShowcase() {
                               type="button"
                               data-builder-component-kit-focus={row.id}
                               aria-pressed={active}
+                              aria-label={`聚焦 ${row.title}，${row.availableCount}/${row.totalCount} 可用`}
                               onClick={() => focusComponentPaletteKit(row.id)}
-                              className="focus-ring grid min-w-0 gap-0.5 px-2 py-1.5 text-left"
+                              className="focus-ring flex h-8 min-w-0 items-center gap-2 px-2 text-left"
+                              title={row.description}
                             >
-                              <span className="flex min-w-0 items-center justify-between gap-2">
-                                <span className="truncate text-xs font-semibold text-on-surface" title={row.description}>
-                                  {row.title}
-                                </span>
-                                <span className="shrink-0 rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
-                                  {row.availableCount}/{row.totalCount}
-                                </span>
+                              <PrimaryIcon aria-hidden className="size-3.5 shrink-0 text-primary" />
+                              <span className="min-w-0 flex-1 truncate text-xs font-semibold text-on-surface">
+                                {row.title}
                               </span>
-                              <span className="flex min-w-0 gap-1 overflow-hidden text-[0.62rem] leading-4 text-on-surface-variant">
+                              <span className="shrink-0 font-mono text-[0.62rem] text-on-surface-variant">
+                                {row.availableCount}/{row.totalCount}
+                              </span>
+                              <span className="sr-only" aria-hidden="true">
                                 {row.sampleTypes.map((type) => {
                                   const definition = getDefinition(type);
                                   return (
                                     <span
                                       key={`${row.id}-${type}`}
                                       data-builder-component-kit-type={type}
-                                      className="max-w-[4.6rem] shrink-0 truncate"
                                     >
                                       {definition.title}
                                     </span>
@@ -47680,10 +47682,9 @@ export function BuilderShowcase() {
                               aria-label={`插入 ${row.title} 骨架`}
                               title={`插入 ${row.title} 骨架`}
                               onClick={() => insertComponentPaletteKitScaffold(row.id)}
-                              className="focus-ring flex shrink-0 flex-col items-center justify-center gap-0.5 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
+                              className="focus-ring flex h-8 shrink-0 items-center justify-center border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
                             >
                               <Layers aria-hidden className="size-3.5" />
-                              <span className="font-mono text-[0.56rem]">{row.availableCount}</span>
                             </button>
                             <button
                               type="button"
@@ -47691,10 +47692,9 @@ export function BuilderShowcase() {
                               aria-label={`插入 ${row.title} 的 ${primaryDefinition.title}`}
                               title={`插入 ${primaryDefinition.title}`}
                               onClick={() => insertComponentPaletteKitPrimary(row.id)}
-                              className="focus-ring flex shrink-0 flex-col items-center justify-center gap-0.5 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
+                              className="focus-ring flex h-8 shrink-0 items-center justify-center border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
                             >
                               <PrimaryIcon aria-hidden className="size-3.5" />
-                              <Plus aria-hidden className="size-3" />
                             </button>
                           </div>
                         );
