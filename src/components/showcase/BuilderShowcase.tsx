@@ -35678,7 +35678,7 @@ export function BuilderShowcase() {
         >
         {mode === "project" ? (
           <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto p-4" data-builder-project-workspace="">
-            <div className="mx-auto flex max-w-[1480px] flex-col gap-4">
+            <div className="mx-auto flex max-w-[1480px] flex-col gap-3">
               <section
                 className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-2.5"
                 data-builder-project-workspace-header=""
@@ -35741,18 +35741,22 @@ export function BuilderShowcase() {
               </section>
 
               <details
-                className="group rounded-[22px] border border-outline-variant bg-surface-container p-3 shadow-m3-1"
+                className="group rounded-xl border border-outline-variant bg-surface-container-low/80 px-2 py-1"
                 data-builder-project-secondary-details=""
+                data-builder-project-secondary-details-density="compact-toggle-strip"
               >
-                <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-2 py-1.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">
+                <summary
+                  className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1.5 py-1 text-xs font-medium text-on-surface transition hover:bg-surface-container-high"
+                  data-builder-project-secondary-summary-density="single-row"
+                >
                   <span className="flex min-w-0 items-center gap-2">
-                    <Layers aria-hidden className="size-4 shrink-0 text-primary" />
+                    <Layers aria-hidden className="size-3.5 shrink-0 text-primary" />
                     <span className="truncate">工程概览</span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-2 text-xs font-normal text-on-surface-variant">
+                  <span className="flex shrink-0 items-center gap-2 text-[0.68rem] font-normal text-on-surface-variant">
                     <span>{projectTopologyNodes.length} 拓扑</span>
                     <span>{projectSourceOverviewRows.length} 来源</span>
-                    <ChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+                    <ChevronDown aria-hidden className="size-3.5 transition-transform group-open:rotate-180" />
                   </span>
                 </summary>
                 <div className="mt-3 grid gap-3 2xl:grid-cols-2" data-builder-project-secondary-grid="">

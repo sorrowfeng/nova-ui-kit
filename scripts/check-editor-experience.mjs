@@ -1527,6 +1527,8 @@ mustContain(builder, 'data-builder-build-artifact-actions="compact-grid"', "Buil
 mustContain(builder, 'data-builder-release-settings-shortcut-density="summary"', "Build page release settings stay as a compact Project Dock shortcut");
 mustContain(builder, 'data-builder-project-workspace-layout="split-ide"', "Project workspace uses a split IDE layout instead of a long flat page");
 mustContain(builder, 'data-builder-project-secondary-details', "Project secondary overview is collapsed behind details");
+mustContain(builder, 'data-builder-project-secondary-details-density="compact-toggle-strip"', "Project secondary overview uses a compact toggle strip instead of a card bar");
+mustContain(builder, 'data-builder-project-secondary-summary-density="single-row"', "Project secondary overview summary remains a single-row control");
 mustContain(builder, 'data-builder-project-workspace-header-density="compact-ide"', "Project workspace header uses compact IDE chrome instead of a hero card");
 mustContain(builder, 'data-builder-project-workspace-header-actions="compact-toolbar"', "Project workspace header actions stay in a compact toolbar");
 mustContain(builder, 'data-builder-project-workspace-summary-density="single-row"', "Project file tree summary uses a single-row strip instead of stacked statistic cards");
