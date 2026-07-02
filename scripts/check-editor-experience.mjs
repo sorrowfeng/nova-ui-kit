@@ -124,7 +124,8 @@ mustContain(topbar, "commandHintsVisible", "Topbar responds to command hint pref
 
 mustContain(builder, 'data-builder-selection-visible="persistent"', "Canvas selection actionbar is always present");
 mustContain(builder, 'data-builder-selection-placement="canvas-top-external"', "Selection actionbar is outside the canvas content plane");
-mustContain(builder, '"pointer-events-auto relative z-10 mx-3 mt-1 flex h-10 shrink-0', "Selection actionbar occupies a compact stable external chrome track");
+mustContain(builder, '"pointer-events-auto relative z-10 mx-0 mt-0 flex h-8 shrink-0', "Selection actionbar occupies a low IDE-style external chrome track");
+mustContain(builder, 'data-builder-selection-chrome-style="ide-toolbar"', "Selection actionbar uses IDE toolbar chrome instead of a floating banner");
 mustContain(builder, "selectionActionBarReservedTrack", "Selection actionbar records toolbar state without changing placement");
 mustContain(builder, 'data-builder-selection-track="external-canvas-chrome"', "Selection actionbar exposes its external chrome track");
 mustContain(builder, 'const canvasViewportSelectionScrollPaddingClass = "scroll-pt-8"', "Canvas viewport uses local scroll padding after chrome leaves the content plane");

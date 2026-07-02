@@ -48180,16 +48180,17 @@ export function BuilderShowcase() {
 
               <section
                 className={cn(
-                  "pointer-events-auto relative z-10 mx-3 mt-1 flex h-10 shrink-0 items-center gap-2 overflow-hidden rounded-xl border px-2 py-1 backdrop-blur transition-colors supports-[backdrop-filter]:bg-surface-container-lowest/88",
+                  "pointer-events-auto relative z-10 mx-0 mt-0 flex h-8 shrink-0 items-center gap-1.5 overflow-hidden border-b border-x-0 border-t-0 px-2 py-0 backdrop-blur transition-colors supports-[backdrop-filter]:bg-surface-container-lowest/88",
                   hasCanvasSelection
-                    ? "border-outline-variant bg-surface-container-lowest/95 shadow-m3-2"
-                    : "border-outline-variant bg-surface-container/95 shadow-m3-1",
+                    ? "border-outline-variant bg-surface-container-lowest/95"
+                    : "border-outline-variant bg-surface-container-lowest/92",
                 )}
                 data-builder-selection-action-bar=""
                 data-builder-selection-anchor={selectionAnchorId}
                 data-builder-selection-state={selectionActionBarState}
                 data-builder-selection-actionbar-action-count={selectionActionBarActionCount}
                 data-builder-selection-actionbar-density="compact"
+                data-builder-selection-chrome-style="ide-toolbar"
                 data-builder-selection-placement="canvas-top-external"
                 data-builder-selection-track="external-canvas-chrome"
                 data-builder-selection-toolbar-state={selectionActionBarReservedTrack}
@@ -48198,16 +48199,16 @@ export function BuilderShowcase() {
               >
                 {hasCanvasSelection ? (
                   <>
-                  <div className="flex min-w-[12rem] max-w-[42%] items-center gap-2 overflow-hidden" data-builder-selection-actionbar-sticky-summary="">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-high text-primary">
-                      {selectedItems.length > 1 ? <Layers aria-hidden className="size-4" /> : <MousePointer2 aria-hidden className="size-4" />}
+                  <div className="flex min-w-[10rem] max-w-[30%] items-center gap-1.5 overflow-hidden" data-builder-selection-actionbar-sticky-summary="">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-container-high text-primary">
+                      {selectedItems.length > 1 ? <Layers aria-hidden className="size-3.5" /> : <MousePointer2 aria-hidden className="size-3.5" />}
                     </span>
                     <div className="min-w-0 flex-1 overflow-hidden">
-                      <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
+                      <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
                         <h3 className="truncate text-xs font-semibold text-on-surface">
                           {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : getItemSummary(selectedItems[0])}
                         </h3>
-                        {selectedItem ? <Badge variant="outline">{selectedItem.type}</Badge> : null}
+                        {selectedItem ? <Badge variant="outline" className="hidden 2xl:inline-flex">{selectedItem.type}</Badge> : null}
                         {selectedItem && selectedEventName ? (
                           <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
                             {selectedEventCommand ? `${selectedEventName} 已绑定` : `${selectedEventName} 就绪`}
@@ -48344,9 +48345,9 @@ export function BuilderShowcase() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden" data-builder-selection-actionbar-viewport="">
+                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" data-builder-selection-actionbar-viewport="">
                     <div
-                      className="hidden shrink-0 items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
+                      className="hidden shrink-0 items-center gap-1 rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
                       data-builder-selection-actionbar-overflow=""
                       aria-hidden
                     >
@@ -48354,7 +48355,7 @@ export function BuilderShowcase() {
                       {selectionActionBarActionCount} 项
                     </div>
                     <div
-                      className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg border border-outline-variant/60 bg-surface-container-high/70 px-1 py-0.5"
+                      className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-transparent bg-transparent px-0 py-0"
                       data-builder-selection-actionbar-scroll=""
                       tabIndex={0}
                       aria-label="选择命令滚动区"
@@ -48685,15 +48686,15 @@ export function BuilderShowcase() {
                   </>
                 ) : (
                   <>
-                  <div className="flex min-w-[12rem] max-w-[42%] items-center gap-2 overflow-hidden" data-builder-selection-action-bar-idle="" data-builder-selection-actionbar-sticky-summary="">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-high text-primary">
-                        <MousePointer2 aria-hidden className="size-4" />
+                  <div className="flex min-w-[7rem] max-w-[22%] items-center gap-1.5 overflow-hidden" data-builder-selection-action-bar-idle="" data-builder-selection-actionbar-sticky-summary="">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-container-high text-primary">
+                        <MousePointer2 aria-hidden className="size-3.5" />
                       </span>
                       <div className="min-w-0 flex-1 overflow-hidden">
-                        <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
-                          <h3 className="truncate text-xs font-semibold text-on-surface">未选择控件</h3>
-                          <Badge variant="outline">{items.length} 个节点</Badge>
-                          <Badge variant="outline" data-builder-selection-keyboard-nudge-hint="">Ctrl/Shift</Badge>
+                        <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
+                          <h3 className="truncate text-xs font-semibold text-on-surface">选择</h3>
+                          <span className="rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">{items.length}</span>
+                          <span className="sr-only" data-builder-selection-keyboard-nudge-hint="">Ctrl/Shift 多选快捷键</span>
                         </div>
                         <p className="sr-only">
                           点击控件选择，按住 Ctrl 叠加选择，按住 Shift 选择范围，也可以在画布空白处拖拽框选；选中后可用方向键微调位置。
@@ -48706,9 +48707,9 @@ export function BuilderShowcase() {
                         </div>
                       </div>
                     </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden" data-builder-selection-actionbar-viewport="">
+                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" data-builder-selection-actionbar-viewport="">
                       <div
-                        className="hidden shrink-0 items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
+                        className="hidden shrink-0 items-center gap-1 rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
                         data-builder-selection-actionbar-overflow=""
                         aria-hidden
                       >
@@ -48716,7 +48717,7 @@ export function BuilderShowcase() {
                         {selectionActionBarActionCount} 项
                       </div>
                       <div
-                        className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg border border-outline-variant/60 bg-surface-container-high/70 px-1 py-0.5"
+                        className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-transparent bg-transparent px-0 py-0"
                         data-builder-selection-actionbar-scroll=""
                         tabIndex={0}
                         aria-label="画布空闲命令滚动区"
