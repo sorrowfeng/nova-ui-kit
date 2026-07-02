@@ -36647,12 +36647,12 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[24px] border border-outline-variant bg-surface-container-low p-4 shadow-m3-1">
+                <div className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[24px] border border-outline-variant bg-surface-container-low p-3 shadow-m3-1">
                   {selectedProjectExplorerNode ? (
-                    <section className="rounded-[22px] border border-outline-variant bg-surface-container p-4" data-builder-project-workspace-detail="">
+                    <section className="rounded-[22px] border border-outline-variant bg-surface-container p-3" data-builder-project-workspace-detail="">
                       <div className="flex min-w-0 items-start gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                          <SelectedProjectExplorerIcon aria-hidden className="size-5" />
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
+                          <SelectedProjectExplorerIcon aria-hidden className="size-4" />
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -36664,7 +36664,7 @@ export function BuilderShowcase() {
                         </div>
                       </div>
                       <nav
-                        className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5 rounded-2xl border border-outline-variant bg-surface-container-low px-2.5 py-2 text-[0.68rem]"
+                        className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-1.5 text-[0.68rem]"
                         aria-label="当前项目节点路径"
                         data-builder-project-tree-breadcrumb=""
                       >
@@ -36691,13 +36691,13 @@ export function BuilderShowcase() {
                           );
                         })}
                       </nav>
-                      <div className="mt-3 rounded-2xl bg-surface-container-low px-3 py-2">
+                      <div className="mt-2 rounded-xl bg-surface-container-low px-2.5 py-1.5">
                         <p className="break-all font-mono text-xs leading-5 text-on-surface-variant">
                           {selectedProjectExplorerDisplayPath}
                         </p>
                       </div>
                       <section
-                        className="mt-3 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
+                        className="mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
                         data-builder-project-node-action-strip=""
                         data-builder-project-node-action-strip-density="compact-toolbar"
                         data-builder-project-node-action-strip-node={selectedProjectExplorerNode.id}
@@ -36840,13 +36840,14 @@ export function BuilderShowcase() {
                       </div>
                       {selectedProjectExplorerDossier ? (
                         <div
-                          className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-low p-3 text-xs"
+                          className="mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2 text-xs"
                           data-builder-project-node-dossier=""
+                          data-builder-project-node-dossier-density="compact-property-strip"
                           data-builder-project-node-dossier-domain={selectedProjectExplorerDossier.groupId}
                         >
-                          <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between">
+                          <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-center">
                             <div className="min-w-0">
-                              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 <Badge variant="secondary" data-builder-project-node-dossier-domain-label="">
                                   {selectedProjectExplorerDossier.groupLabel}
                                 </Badge>
@@ -36857,19 +36858,20 @@ export function BuilderShowcase() {
                                   {selectedProjectExplorerDossier.relatedTabCount} 标签
                                 </Badge>
                               </div>
-                              <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant" data-builder-project-node-dossier-source-of-truth="">
+                              <p className="mt-1 truncate leading-4 text-on-surface-variant" data-builder-project-node-dossier-source-of-truth="">
                                 事实来源：<span className="font-mono text-on-surface">{selectedProjectExplorerDossier.sourceOfTruth}</span>
                               </p>
-                              <p className="mt-1 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant" data-builder-project-node-dossier-save-target="">
-                                {selectedProjectExplorerDossier.saveTarget}
-                              </p>
                             </div>
-                            <div className="shrink-0 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2 text-right" data-builder-project-node-dossier-artifact-state="">
-                              <span className="block text-[0.62rem] uppercase tracking-[0.08em] text-on-surface-variant">状态</span>
-                              <span className="mt-1 block max-w-[12rem] truncate font-medium text-on-surface">{selectedProjectExplorerDossier.artifactState}</span>
+                            <p className="min-w-0 truncate break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant" data-builder-project-node-dossier-save-target="">
+                              <span className="mr-1 font-sans font-medium text-on-surface">保存目标</span>
+                              {selectedProjectExplorerDossier.saveTarget}
+                            </p>
+                            <div className="shrink-0 rounded-lg border border-outline-variant bg-surface-container px-2 py-1 text-right" data-builder-project-node-dossier-artifact-state="">
+                              <span className="mr-1 text-[0.62rem] uppercase tracking-[0.08em] text-on-surface-variant">状态</span>
+                              <span className="inline-block max-w-[10rem] truncate align-bottom font-medium text-on-surface">{selectedProjectExplorerDossier.artifactState}</span>
                             </div>
                           </div>
-                          <div className="mt-3 flex min-w-0 flex-wrap gap-1.5" data-builder-project-node-dossier-tasks="">
+                          <div className="mt-2 flex min-w-0 flex-wrap gap-1.5" data-builder-project-node-dossier-tasks="">
                             {selectedProjectExplorerDossier.taskIds.map((taskId) => (
                               <button
                                 key={taskId}
@@ -36888,9 +36890,10 @@ export function BuilderShowcase() {
                       ) : null}
                       {selectedProjectExplorerImpactItems.length > 0 ? (
                         <section
-                          className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-low p-3 text-xs"
+                          className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-low px-3 py-2.5 text-xs"
                           data-builder-project-node-impact=""
                           data-builder-project-node-impact-count={selectedProjectExplorerImpactItems.length}
+                          data-builder-project-node-impact-density="property-list"
                         >
                           <div className="mb-2 flex min-w-0 items-center justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-2">
@@ -36902,7 +36905,7 @@ export function BuilderShowcase() {
                               路径、同步状态、打开标签和推荐工程任务
                             </span>
                           </div>
-                          <div className="grid gap-2 xl:grid-cols-2" data-builder-project-node-impact-list="">
+                          <div className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-container" data-builder-project-node-impact-list="" data-builder-project-node-impact-list-density="single-column-property-rows">
                             {selectedProjectExplorerImpactItems.map((item) => {
                               const ImpactIcon = item.icon;
                               return (
@@ -36910,11 +36913,11 @@ export function BuilderShowcase() {
                                   key={item.id}
                                   type="button"
                                   className={cn(
-                                    "focus-ring grid min-h-[4.25rem] min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 rounded-2xl border px-3 py-2 text-left transition",
-                                    item.tone === "warning" && "border-destructive/25 bg-destructive/10 text-on-surface hover:border-destructive/50",
-                                    item.tone === "success" && "border-primary/25 bg-primary/10 text-on-surface hover:border-primary/50",
-                                    item.tone === "ready" && "border-tertiary/25 bg-tertiary-container/30 text-on-surface hover:border-tertiary/50",
-                                    item.tone === "muted" && "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                                    "focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-2 text-left transition hover:bg-surface-container-high",
+                                    item.tone === "warning" && "text-on-surface",
+                                    item.tone === "success" && "text-on-surface",
+                                    item.tone === "ready" && "text-on-surface",
+                                    item.tone === "muted" && "text-on-surface-variant hover:text-on-surface",
                                   )}
                                   data-builder-project-node-impact-item={item.id}
                                   data-builder-project-node-impact-tone={item.tone}
@@ -36922,22 +36925,30 @@ export function BuilderShowcase() {
                                   onClick={() => runSelectedProjectExplorerImpactAction(item)}
                                   title={item.detail}
                                 >
-                                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-lowest text-primary">
-                                    <ImpactIcon aria-hidden className="size-4" />
+                                  <span
+                                    className={cn(
+                                      "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                                      item.tone === "warning" && "bg-destructive/10 text-destructive",
+                                      item.tone === "success" && "bg-primary/10 text-primary",
+                                      item.tone === "ready" && "bg-tertiary-container text-tertiary",
+                                      item.tone === "muted" && "bg-surface-container-highest text-on-surface-variant",
+                                    )}
+                                  >
+                                    <ImpactIcon aria-hidden className="size-3.5" />
                                   </span>
                                   <span className="min-w-0">
                                     <span className="flex min-w-0 items-center gap-2">
                                       <span className="truncate font-medium text-on-surface">{item.title}</span>
-                                      <span className="shrink-0 rounded-full bg-surface-container-lowest px-1.5 py-0.5 text-[0.62rem] text-on-surface-variant">
+                                      <span className="shrink-0 rounded-full bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] text-on-surface-variant">
                                         {item.badge}
                                       </span>
                                     </span>
-                                    <span className="mt-1 line-clamp-2 break-all leading-4 text-on-surface-variant">
+                                    <span className="mt-0.5 block truncate break-all leading-4 text-on-surface-variant">
                                       {item.detail}
                                     </span>
                                   </span>
                                   <span
-                                    className="shrink-0 rounded-full bg-surface-container-lowest px-2 py-1 font-medium text-primary"
+                                    className="shrink-0 rounded-full bg-surface-container-high px-2 py-1 font-medium text-primary"
                                     data-builder-project-node-impact-action={item.action.kind}
                                   >
                                     {item.actionLabel}

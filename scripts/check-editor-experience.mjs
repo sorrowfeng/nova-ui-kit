@@ -1115,6 +1115,7 @@ mustContain(builder, "selectedProjectExplorerDossier", "Project workspace derive
 mustContain(builder, "projectExplorerDossierSourceOfTruth", "Project node dossier maps domains to source-of-truth paths");
 mustContain(builder, "projectExplorerDossierTasks", "Project node dossier maps domains to recommended project tasks");
 mustContain(builder, "data-builder-project-node-dossier", "Project workspace renders the selected-node dossier");
+mustContain(builder, 'data-builder-project-node-dossier-density="compact-property-strip"', "Project node dossier uses a compact property-strip density");
 mustContain(builder, "data-builder-project-node-dossier-source-of-truth", "Project node dossier shows source-of-truth files");
 mustContain(builder, "data-builder-project-node-dossier-save-target", "Project node dossier shows the save target");
 mustContain(builder, "data-builder-project-node-dossier-artifact-state", "Project node dossier shows artifact or sync state");
@@ -1124,7 +1125,9 @@ mustContain(builder, "type ProjectExplorerImpactItem", "Project workspace models
 mustContain(builder, "selectedProjectExplorerImpactItems", "Project workspace derives impact items for the selected node");
 mustContain(builder, "runSelectedProjectExplorerImpactAction", "Project workspace impact cards can run their recommended actions");
 mustContain(builder, "data-builder-project-node-impact", "Project workspace renders selected-node impact summary");
+mustContain(builder, 'data-builder-project-node-impact-density="property-list"', "Project node impact summary uses a compact property-list density");
 mustContain(builder, "data-builder-project-node-impact-list", "Project impact summary renders a list of impacts");
+mustContain(builder, 'data-builder-project-node-impact-list-density="single-column-property-rows"', "Project node impact list renders single-column property rows");
 mustContain(builder, "data-builder-project-node-impact-item", "Project impact summary exposes per-impact markers");
 mustContain(builder, "data-builder-project-node-impact-task", "Project impact summary links recommended project tasks");
 mustContain(builder, "data-builder-project-node-impact-action", "Project impact summary exposes clickable actions");
