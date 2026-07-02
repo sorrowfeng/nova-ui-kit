@@ -47703,73 +47703,72 @@ export function BuilderShowcase() {
                   </section>
                 ) : null}
 
-                <section className="space-y-2 rounded-[18px] border border-outline-variant bg-surface-container-low p-2" data-builder-component-coverage-panel="">
-                  <div className="flex items-start justify-between gap-3 px-1">
-                    <div className="min-w-0">
-                      <span className="block truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-                        控件覆盖度
+                <section
+                  className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                  data-builder-component-coverage-panel=""
+                  data-builder-component-coverage-mode="summary-strip"
+                >
+                  <details className="group" data-builder-component-coverage-details="collapsed">
+                    <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-2 rounded-md px-2 text-xs text-on-surface transition hover:bg-surface-container [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0 flex-1 truncate font-semibold">控件覆盖度</span>
+                      <span className="hidden min-w-0 truncate text-[0.66rem] text-on-surface-variant 2xl:inline" data-builder-component-coverage-filter="">
+                        {componentCoverageFilterLabel} · {visibleComponentPalette.length}
                       </span>
-                      <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant" data-builder-component-coverage-filter="">
-                        {componentCoverageFilterLabel} · {visibleComponentPalette.length} 个匹配
-                      </p>
-                    </div>
-                    <span
-                      className="shrink-0 rounded-full border border-outline-variant bg-surface-container px-2 py-1 text-[0.66rem] font-semibold text-on-surface"
-                      data-builder-component-coverage-count=""
-                    >
-                      {componentCoverageCompleteCount}/{componentCoverageRows.length}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {visibleComponentCoverageRows.length > 0 ? (
-                      visibleComponentCoverageRows.map((row) => {
-                        const complete = row.availableCount === row.totalCount;
-                        const focusType = row.visibleTypes[0] ?? row.types[0];
-                        return (
-                          <button
-                            key={row.id}
-                            type="button"
-                            data-builder-component-coverage-group={row.id}
-                            aria-label={`查看 ${row.title} 控件覆盖度`}
-                            onClick={() => {
-                              if (focusType) {
-                                setComponentPaletteCategory(componentPaletteCategoryForType(focusType));
-                                setComponentPaletteQuery("");
-                                setActiveComponentPaletteKitId("");
-                              }
-                            }}
-                            className="focus-ring w-full rounded-2xl border border-transparent bg-surface-container px-2.5 py-2 text-left transition hover:border-outline-variant hover:bg-surface-container-high"
-                          >
-                            <span className="flex min-w-0 items-center justify-between gap-2">
-                              <span className="truncate text-xs font-semibold text-on-surface">{row.title}</span>
+                      <span className="h-1 w-12 shrink-0 overflow-hidden rounded-full bg-surface-container-highest">
+                        <span
+                          className="block h-full rounded-full bg-primary"
+                          style={{ width: `${Math.round((componentCoverageCompleteCount / Math.max(componentCoverageRows.length, 1)) * 100)}%` }}
+                        />
+                      </span>
+                      <span className="shrink-0 font-mono text-[0.66rem] text-on-surface-variant" data-builder-component-coverage-count="">
+                        {componentCoverageCompleteCount}/{componentCoverageRows.length}
+                      </span>
+                      <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open:rotate-90" />
+                    </summary>
+                    <div className="mt-1 space-y-0.5 border-t border-outline-variant/70 pt-1" data-builder-component-coverage-detail-list="">
+                      {visibleComponentCoverageRows.length > 0 ? (
+                        visibleComponentCoverageRows.map((row) => {
+                          const complete = row.availableCount === row.totalCount;
+                          const focusType = row.visibleTypes[0] ?? row.types[0];
+                          return (
+                            <button
+                              key={row.id}
+                              type="button"
+                              data-builder-component-coverage-group={row.id}
+                              aria-label={`查看 ${row.title} 控件覆盖度`}
+                              title={row.description}
+                              onClick={() => {
+                                if (focusType) {
+                                  setComponentPaletteCategory(componentPaletteCategoryForType(focusType));
+                                  setComponentPaletteQuery("");
+                                  setActiveComponentPaletteKitId("");
+                                }
+                              }}
+                              className="focus-ring grid h-7 w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md px-2 text-left text-xs transition hover:bg-surface-container-high"
+                            >
+                              <span className="truncate font-medium text-on-surface">{row.title}</span>
+                              <span className="shrink-0 font-mono text-[0.62rem] text-on-surface-variant">
+                                {row.availableCount}/{row.totalCount}
+                              </span>
                               <span
                                 className={cn(
-                                  "shrink-0 rounded-full px-1.5 py-0.5 text-[0.6rem] font-semibold",
+                                  "shrink-0 rounded-md px-1.5 py-0.5 text-[0.58rem] font-semibold",
                                   complete ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive",
                                 )}
                                 data-builder-component-coverage-missing={row.id}
                               >
                                 {complete ? "完整" : `${row.missingTypes.length} 缺口`}
                               </span>
-                            </span>
-                            <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-surface-container-highest">
-                              <span className="block h-full rounded-full bg-primary" style={{ width: `${row.progress}%` }} />
-                            </span>
-                            <span className="mt-1.5 flex min-w-0 items-center justify-between gap-2 text-[0.64rem] text-on-surface-variant">
-                              <span className="truncate">{row.description}</span>
-                              <span className="shrink-0 font-mono">
-                                {row.availableCount}/{row.totalCount}
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container px-2.5 py-3 text-center text-[0.68rem] text-on-surface-variant">
-                        当前搜索没有匹配的覆盖组
-                      </div>
-                    )}
-                  </div>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="rounded-md border border-dashed border-outline-variant bg-surface-container px-2 py-2 text-center text-[0.68rem] text-on-surface-variant">
+                          当前搜索没有匹配的覆盖组
+                        </div>
+                      )}
+                    </div>
+                  </details>
                 </section>
 
                 {showComponentPaletteCollections ? (

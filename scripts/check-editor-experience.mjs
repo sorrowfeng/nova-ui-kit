@@ -1744,6 +1744,8 @@ mustContain(builder, 'id: "component-palette-kit-scaffold"', "Editor experience 
 mustContain(builder, 'id: "component-palette-collections"', "Editor experience audit checks component palette collections");
 mustContain(builder, "componentCoverageGroups", "Component palette tracks desktop control coverage groups");
 mustContain(builder, "data-builder-component-coverage-panel", "Component palette exposes coverage panel");
+mustContain(builder, 'data-builder-component-coverage-mode="summary-strip"', "Component coverage defaults to a compact summary strip");
+mustContain(builder, "data-builder-component-coverage-detail-list", "Component coverage details remain available without occupying the toolbox first screen");
 mustContain(builder, "data-builder-component-coverage-count", "Component palette exposes coverage summary count");
 mustContain(builder, "data-builder-component-coverage-filter", "Component palette coverage responds to current filter");
 mustContain(builder, "data-builder-component-coverage-group", "Component palette exposes per-group coverage rows");
