@@ -4426,6 +4426,9 @@ async function runShellCommandPlacementChecks(send, verified) {
       const evidence = document.querySelector("[data-builder-build-output-evidence]");
       const artifactActions = document.querySelector("[data-builder-build-artifact-actions]");
       const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
+      const buildTargetDock = document.querySelector("[data-builder-build-target-dock]");
+      const buildTargetSummary = document.querySelector("[data-builder-build-target-dock-summary]");
+      const buildTargetDetails = document.querySelector("[data-builder-build-target-dock-details]");
       const parityPanel = document.querySelector("[data-builder-runtime-parity-panel]");
       const paritySummary = document.querySelector("[data-builder-runtime-parity-summary]");
       const parityDetails = document.querySelector("[data-builder-runtime-parity-details]");
@@ -4438,6 +4441,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       const outputDockRect = outputDock?.getBoundingClientRect();
       const parityRect = parityPanel?.getBoundingClientRect();
       const settingsRect = settingsShortcut?.getBoundingClientRect();
+      const buildTargetRect = buildTargetDock?.getBoundingClientRect();
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4449,6 +4453,13 @@ async function runShellCommandPlacementChecks(send, verified) {
         settingsSummary?.getAttribute("data-builder-release-settings-shortcut-summary") === "single-row" &&
         settingsDetails?.getAttribute("data-builder-release-settings-shortcut-details") === "deferred" &&
         Boolean(settingsRect && settingsRect.height <= 52);
+      const buildTargetCollapsedDefault =
+        buildTargetDock?.tagName === "DETAILS" &&
+        !buildTargetDock.hasAttribute("open") &&
+        buildTargetDock.getAttribute("data-builder-build-target-dock-density") === "collapsed-summary" &&
+        buildTargetSummary?.getAttribute("data-builder-build-target-dock-summary") === "single-row" &&
+        buildTargetDetails?.getAttribute("data-builder-build-target-dock-details") === "deferred" &&
+        Boolean(buildTargetRect && buildTargetRect.height <= 52);
       const parityCollapsedDefault =
         parityPanel?.tagName === "DETAILS" &&
         !parityPanel.hasAttribute("open") &&
@@ -4468,11 +4479,12 @@ async function runShellCommandPlacementChecks(send, verified) {
           evidence?.getAttribute("data-builder-build-output-evidence") === "collapsed-default" &&
           artifactActions?.getAttribute("data-builder-build-artifact-actions") === "compact-grid" &&
           settingsCollapsedDefault &&
+          buildTargetCollapsedDefault &&
           Boolean(outputRect && outputRect.width <= 312) &&
           outputClearance &&
           parityCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -4509,6 +4521,42 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-release-settings-shortcut]")?.hasAttribute("open") === false`,
     "collapsed build release settings shortcut",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-target-dock-summary]")`, "build target readiness summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-target-dock]")?.hasAttribute("open") === true`,
+    "expanded build target readiness shortcut",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const targetDock = document.querySelector("[data-builder-build-target-dock]");
+      const details = document.querySelector("[data-builder-build-target-dock-details]");
+      const generated = document.querySelector("[data-builder-generated-incremental-summary]");
+      const readiness = document.querySelector("[data-builder-readiness]");
+      const repair = document.querySelector("[data-builder-property-repair-plan]");
+      const readinessItems = Array.from(document.querySelectorAll("[data-builder-focus-readiness]"));
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          targetDock?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-build-target-dock-details") === "deferred" &&
+          generated?.getAttribute("data-builder-generated-incremental-summary-density") === "compact-property-strip" &&
+          Boolean(readiness) &&
+          Boolean(repair) &&
+          readinessItems.length >= 1 &&
+          Boolean(detailsRect && detailsRect.height > 120),
+        detail: \`open=\${targetDock?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, generated=\${generated?.getAttribute("data-builder-generated-incremental-summary-density") || "missing"}, readiness=\${Boolean(readiness)}, repair=\${Boolean(repair)}, items=\${readinessItems.length}\`
+      };
+    })()`,
+    "build target readiness shortcut expands to generated target checks",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-target-dock-summary]")`, "collapse build target readiness summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-target-dock]")?.hasAttribute("open") === false`,
+    "collapsed build target readiness shortcut",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(

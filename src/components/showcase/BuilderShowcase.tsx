@@ -43426,44 +43426,26 @@ export function BuilderShowcase() {
                   {buildError}
                 </div>
               ) : null}
-              <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-generated-incremental-summary="">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">生成目标</h3>
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
-                      {latestGeneratedFileSummary
-                        ? latestGeneratedFileSummary.summary
-                        : "运行检查、构建或安装包任务后显示本次生成目标变更。未变化的文件不会重写，以保留 Vite/Cargo 增量缓存。"}
-                    </p>
-                  </div>
-                  <Badge variant={latestGeneratedFileSummary?.changed_count ? "outline" : "secondary"}>
-                    {latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} 个变更` : "待生成"}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.total_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">目标</p>
-                  </div>
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-primary">{latestGeneratedFileSummary?.created_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">新增</p>
-                  </div>
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.updated_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">更新</p>
-                  </div>
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-on-surface-variant">{latestGeneratedFileSummary?.unchanged_count ?? 0}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">未变化</p>
-                  </div>
-                </div>
-              </section>
-              <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-readiness="">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建就绪度</h3>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">构建前检查项目结构、Rust 同步、事件绑定和资源引用。</p>
+              <details
+                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                data-builder-build-target-dock=""
+                data-builder-build-target-dock-density="collapsed-summary"
+                data-builder-build-target-dock-state="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  data-builder-build-target-dock-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <div className="min-w-0">
+                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">生成目标</h3>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        {latestGeneratedFileSummary
+                          ? `${latestGeneratedFileSummary.total_count} 目标 · ${latestGeneratedFileSummary.changed_count} 变更`
+                          : `${buildReadinessSummary.score}% 就绪 · 展开查看增量和修复计划`}
+                      </p>
+                    </div>
                   </div>
                   <Badge
                     variant={
@@ -43473,60 +43455,117 @@ export function BuilderShowcase() {
                           ? "outline"
                           : "secondary"
                     }
+                    className="shrink-0"
                   >
                     {buildReadinessSummary.score}%
                   </Badge>
-                </div>
-                <Progress value={buildReadinessSummary.score} />
-                <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-destructive">{buildReadinessSummary.errorCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">错误</p>
-                  </div>
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-on-surface">{buildReadinessSummary.warningCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">警告</p>
-                  </div>
-                  <div className="rounded-2xl bg-surface-container-high p-2">
-                    <p className="font-medium text-primary">{buildReadinessSummary.readyCount}</p>
-                    <p className="mt-1 text-[0.68rem] text-on-surface-variant">就绪</p>
-                  </div>
-                </div>
-                <div className="mt-3 rounded-[18px] border border-outline-variant bg-surface-container-high p-3" data-builder-property-repair-plan="">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">属性修复计划</h4>
-                      <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                        {projectPropertyAutoFixSummary.issueCount > 0
-                          ? `${projectPropertyAutoFixSummary.errorCount} 个错误，${projectPropertyAutoFixSummary.warningCount} 个警告。可安全修复 ${projectPropertyAutoFixSummary.propertyCount} 个属性。`
-                          : "项目内控件属性 schema 暂无问题。"}
-                      </p>
+                </summary>
+                <div className="mt-2 space-y-2 border-t border-outline-variant pt-2" data-builder-build-target-dock-details="deferred">
+                  <section
+                    className="rounded-lg bg-surface-container-low px-2 py-2"
+                    data-builder-generated-incremental-summary=""
+                    data-builder-generated-incremental-summary-density="compact-property-strip"
+                  >
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">生成目标</h3>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
+                          {latestGeneratedFileSummary
+                            ? latestGeneratedFileSummary.summary
+                            : "运行检查、构建或安装包任务后显示本次生成目标变更。未变化的文件不会重写，以保留 Vite/Cargo 增量缓存。"}
+                        </p>
+                      </div>
+                      <Badge variant={latestGeneratedFileSummary?.changed_count ? "outline" : "secondary"}>
+                        {latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} 个变更` : "待生成"}
+                      </Badge>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={projectPropertyAutoFixSummary.targets.length === 0}
-                      data-builder-apply-project-property-fixes=""
-                      onClick={applyProjectPropertyAutoFixes}
-                    >
-                      <Wand2 aria-hidden className="size-4" />
-                      修复项目
-                    </Button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="rounded-2xl bg-surface-container-low p-2">
-                      <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.fileCount}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">文件</p>
+                    <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.total_count ?? 0}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">目标</p>
+                      </div>
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-primary">{latestGeneratedFileSummary?.created_count ?? 0}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">新增</p>
+                      </div>
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-on-surface">{latestGeneratedFileSummary?.updated_count ?? 0}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">更新</p>
+                      </div>
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-on-surface-variant">{latestGeneratedFileSummary?.unchanged_count ?? 0}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">未变化</p>
+                      </div>
                     </div>
-                    <div className="rounded-2xl bg-surface-container-low p-2">
-                      <p className="font-medium text-primary">{projectPropertyAutoFixSummary.targets.length}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">控件</p>
+                  </section>
+                  <section className="rounded-lg bg-surface-container-low px-2 py-2" data-builder-readiness="">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建就绪度</h3>
+                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">构建前检查项目结构、Rust 同步、事件绑定和资源引用。</p>
+                      </div>
+                      <Badge
+                        variant={
+                          buildReadinessSummary.errorCount > 0
+                            ? "destructive"
+                            : buildReadinessSummary.warningCount > 0
+                              ? "outline"
+                              : "secondary"
+                        }
+                      >
+                        {buildReadinessSummary.score}%
+                      </Badge>
                     </div>
-                    <div className="rounded-2xl bg-surface-container-low p-2">
-                      <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.manualIssueCount}</p>
-                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">手动</p>
+                    <Progress value={buildReadinessSummary.score} />
+                    <div className="mt-2 grid grid-cols-3 gap-1.5 text-center text-xs">
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-destructive">{buildReadinessSummary.errorCount}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">错误</p>
+                      </div>
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-on-surface">{buildReadinessSummary.warningCount}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">警告</p>
+                      </div>
+                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
+                        <p className="font-medium text-primary">{buildReadinessSummary.readyCount}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">就绪</p>
+                      </div>
                     </div>
-                  </div>
+                    <div className="mt-2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-2" data-builder-property-repair-plan="">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">属性修复计划</h4>
+                          <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                            {projectPropertyAutoFixSummary.issueCount > 0
+                              ? `${projectPropertyAutoFixSummary.errorCount} 个错误，${projectPropertyAutoFixSummary.warningCount} 个警告。可安全修复 ${projectPropertyAutoFixSummary.propertyCount} 个属性。`
+                              : "项目内控件属性 schema 暂无问题。"}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={projectPropertyAutoFixSummary.targets.length === 0}
+                          data-builder-apply-project-property-fixes=""
+                          onClick={applyProjectPropertyAutoFixes}
+                        >
+                          <Wand2 aria-hidden className="size-4" />
+                          修复项目
+                        </Button>
+                      </div>
+                      <div className="mt-2 grid grid-cols-3 gap-1.5 text-center text-xs">
+                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
+                          <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.fileCount}</p>
+                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">文件</p>
+                        </div>
+                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
+                          <p className="font-medium text-primary">{projectPropertyAutoFixSummary.targets.length}</p>
+                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">控件</p>
+                        </div>
+                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
+                          <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.manualIssueCount}</p>
+                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">手动</p>
+                        </div>
+                      </div>
                   {projectPropertyAutoFixSummary.targets.length > 0 ? (
                     <div className="mt-3 space-y-2">
                       {projectPropertyAutoFixSummary.targets.slice(0, 3).map((target) => (
@@ -43652,8 +43691,10 @@ export function BuilderShowcase() {
                       {item.fileName ? <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">{item.fileName}</p> : null}
                     </article>
                   ))}
+                  </div>
+                </section>
                 </div>
-              </section>
+              </details>
               <section className="rounded-[22px] bg-surface-container-low p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">诊断</h3>
