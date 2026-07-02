@@ -13,7 +13,7 @@ export function DesignWorkspace({
   return (
     <div
       className={cn(
-        "grid h-full min-h-0 grid-cols-1 bg-surface-container-low",
+        "grid h-full min-h-0 grid-cols-1 overflow-hidden bg-surface-container-low pb-11",
         leftCollapsed && rightCollapsed && "xl:grid-cols-[56px_minmax(0,1fr)_56px]",
         leftCollapsed && !rightCollapsed && "xl:grid-cols-[56px_minmax(0,1fr)_300px] 2xl:grid-cols-[56px_minmax(0,1fr)_320px]",
         !leftCollapsed && rightCollapsed && "xl:grid-cols-[336px_minmax(0,1fr)_56px] 2xl:grid-cols-[360px_minmax(0,1fr)_56px]",
@@ -23,6 +23,7 @@ export function DesignWorkspace({
       data-builder-workspace-layout="wide-left-dock"
       data-builder-left-dock-collapsed={leftCollapsed ? "true" : "false"}
       data-builder-right-dock-collapsed={rightCollapsed ? "true" : "false"}
+      data-builder-design-workspace-bottom-dock-clearance="reserved"
     >
       {children}
     </div>

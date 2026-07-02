@@ -1496,6 +1496,8 @@ mustContain(builder, 'data-builder-feedback-strip-mode="expanded-only"', "Build 
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.workflowRailCompactRuntime = true", "Browser smoke verifies the compact build workflow rail");
 mustContain(designWorkspace, 'data-builder-readable-workbench="qt-creator"', "Design workspace declares the Qt Creator readable layout contract");
 mustContain(designWorkspace, "data-builder-workspace-layout=\"wide-left-dock\"", "Design workspace gives the collapsible left dock enough desktop width");
+mustContain(designWorkspace, 'data-builder-design-workspace-bottom-dock-clearance="reserved"', "Design workspace reserves clearance above the bottom output dock");
+mustContain(designWorkspace, "overflow-hidden bg-surface-container-low pb-11", "Design workspace keeps canvas and side docks above the bottom output dock");
 mustContain(builder, 'data-builder-canvas-stage-alignment="centered-when-room"', "Design canvas stage centers in the available viewport when it fits");
 mustContain(builder, "canvasStageViewportStyle", "Design canvas stage has a dedicated viewport alignment wrapper");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-layout="code-primary"', "Logic workspace declares the Rust code-primary layout contract");

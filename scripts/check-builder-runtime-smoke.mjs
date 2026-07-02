@@ -4068,6 +4068,34 @@ async function runShellCommandPlacementChecks(send, verified) {
     })()`,
     "Qt Creator readable workbench layout controls",
   );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const workspace = document.querySelector("[data-builder-readable-workbench]");
+      const canvas = document.querySelector("[data-builder-readable-canvas]");
+      const canvasViewport = document.querySelector("[data-builder-canvas-viewport]");
+      const leftDock = document.querySelector('[data-builder-readable-dock="left"]');
+      const rightDock = document.querySelector('[data-builder-readable-dock="right"]');
+      const outputDock = document.querySelector("[data-builder-output-dock]");
+      const outputRect = outputDock?.getBoundingClientRect();
+      const canvasRect = canvas?.getBoundingClientRect();
+      const viewportRect = canvasViewport?.getBoundingClientRect();
+      const leftRect = leftDock?.getBoundingClientRect();
+      const rightRect = rightDock?.getBoundingClientRect();
+      const bottomLimit = outputRect ? outputRect.top - 4 : 0;
+      return {
+        passed:
+          workspace?.getAttribute("data-builder-design-workspace-bottom-dock-clearance") === "reserved" &&
+          Boolean(outputRect && canvasRect && viewportRect && leftRect && rightRect) &&
+          canvasRect.bottom <= bottomLimit &&
+          viewportRect.bottom <= bottomLimit &&
+          leftRect.bottom <= bottomLimit &&
+          rightRect.bottom <= bottomLimit,
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-design-workspace-bottom-dock-clearance") || "missing"}, outputTop=\${outputRect ? Math.round(outputRect.top) : "missing"}, canvasBottom=\${canvasRect ? Math.round(canvasRect.bottom) : "missing"}, viewportBottom=\${viewportRect ? Math.round(viewportRect.bottom) : "missing"}, leftBottom=\${leftRect ? Math.round(leftRect.bottom) : "missing"}, rightBottom=\${rightRect ? Math.round(rightRect.bottom) : "missing"}\`
+      };
+    })()`,
+    "design workspace bottom output dock clearance",
+  );
   await evaluate(
     send,
     `(() => {
