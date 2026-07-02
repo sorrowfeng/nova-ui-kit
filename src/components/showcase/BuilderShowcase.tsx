@@ -37958,9 +37958,32 @@ export function BuilderShowcase() {
                 </Button>
                 </div>
               </details>
-              <div className={cn("border-t border-outline-variant pt-4", !logicResourceVisible("dependencies") && "hidden")} data-builder-logic-resource-section="dependencies">
-                <PanelTitle icon={Box} title="Cargo 依赖" description="管理会追加到生成 app Cargo.toml 的 crate。" />
-                <div className="space-y-2">
+              <details
+                key={`logic-resource-dependencies-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("dependencies") && "hidden")}
+                data-builder-logic-resource-section="dependencies"
+                data-builder-logic-resource-section-density="collapsed-in-all"
+              >
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="dependencies"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <Box aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">Cargo 依赖</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">写入 Cargo.toml 的 crate</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredCargoDependencies.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="dependencies">
                   {filteredCargoDependencies.map((dependency) => (
                     <button
                       key={dependency.id}
@@ -37986,15 +38009,38 @@ export function BuilderShowcase() {
                       没有匹配的 Cargo 依赖。
                     </div>
                   ) : null}
-                </div>
-                <Button className="mt-2 w-full" variant="secondary" data-builder-new-cargo-dependency="" onClick={createCargoDependencyInProject}>
+                <Button className="w-full" variant="secondary" data-builder-new-cargo-dependency="" onClick={createCargoDependencyInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建依赖
                 </Button>
-              </div>
-              <div className={cn("border-t border-outline-variant pt-4", !logicResourceVisible("integrations") && "hidden")} data-builder-logic-resource-section="integrations">
-                <PanelTitle icon={Terminal} title="后端集成" description="登记 Rust 管理的 C++ FFI、sidecar 或本地服务。" />
-                <div className="space-y-2">
+                </div>
+              </details>
+              <details
+                key={`logic-resource-integrations-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("integrations") && "hidden")}
+                data-builder-logic-resource-section="integrations"
+                data-builder-logic-resource-section-density="collapsed-in-all"
+              >
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="integrations"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <Terminal aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">后端集成</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">C++ FFI、sidecar、本地服务</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredBackendIntegrations.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="integrations">
                   {filteredBackendIntegrations.map((integration) => (
                     <button
                       key={integration.id}
@@ -38019,15 +38065,38 @@ export function BuilderShowcase() {
                       没有匹配的后端集成。
                     </div>
                   ) : null}
-                </div>
-                <Button className="mt-2 w-full" variant="secondary" data-builder-new-backend-integration="" onClick={createBackendIntegrationInProject}>
+                <Button className="w-full" variant="secondary" data-builder-new-backend-integration="" onClick={createBackendIntegrationInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建集成
                 </Button>
-              </div>
-              <div className={cn("border-t border-outline-variant pt-4", !logicResourceVisible("state") && "hidden")} data-builder-logic-resource-section="state">
-                <PanelTitle icon={ToggleLeft} title="状态存储" description="项目级共享状态，可绑定到多个控件。" />
-                <div className="space-y-2">
+                </div>
+              </details>
+              <details
+                key={`logic-resource-state-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("state") && "hidden")}
+                data-builder-logic-resource-section="state"
+                data-builder-logic-resource-section-density="collapsed-in-all"
+              >
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="state"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <ToggleLeft aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">状态存储</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">共享状态和控件绑定</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredStateVariables.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="state">
                   {filteredStateVariables.map((state) => (
                     <button
                       key={state.id}
@@ -38052,12 +38121,12 @@ export function BuilderShowcase() {
                       没有匹配的状态变量。
                     </div>
                   ) : null}
-                </div>
-                <Button className="mt-2 w-full" variant="secondary" data-builder-new-state="" onClick={() => createStateVariableInProject({ feedback: true })}>
+                <Button className="w-full" variant="secondary" data-builder-new-state="" onClick={() => createStateVariableInProject({ feedback: true })}>
                   <Plus aria-hidden className="size-4" />
                   新建状态
                 </Button>
-              </div>
+                </div>
+              </details>
             </aside>
             <section
               className="flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-outline-variant bg-surface-container-low p-2"

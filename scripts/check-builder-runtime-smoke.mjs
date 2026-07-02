@@ -3246,23 +3246,24 @@ async function runLogicRustChecks(send, verified) {
   );
   await waitFor(
     send,
-    `Array.from(document.querySelectorAll("[data-builder-logic-resource-section]")).filter((section) => section.offsetParent !== null).length >= 3`,
+    `Array.from(document.querySelectorAll("[data-builder-logic-resource-section]")).filter((section) => section.offsetParent !== null).length >= 6`,
     "logic all resource sections visible",
   );
   await assertRuntimeCheck(
     send,
     `(() => {
-      const sections = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section="\${id}"]\`));
-      const summaries = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section-summary="\${id}"]\`));
-      const contents = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section-content="\${id}"]\`));
+      const ids = ["connections", "commands", "modules", "dependencies", "integrations", "state"];
+      const sections = ids.map((id) => document.querySelector(\`[data-builder-logic-resource-section="\${id}"]\`));
+      const summaries = ids.map((id) => document.querySelector(\`[data-builder-logic-resource-section-summary="\${id}"]\`));
+      const contents = ids.map((id) => document.querySelector(\`[data-builder-logic-resource-section-content="\${id}"]\`));
       const visibleSections = sections.filter((section) => section && section.offsetParent !== null);
       const closedSections = sections.filter((section) => section?.tagName === "DETAILS" && section.open === false);
       const compactSections = sections.filter((section) => (section?.getBoundingClientRect().height || 999) <= 56);
       return {
         passed:
-          visibleSections.length === 3 &&
-          closedSections.length === 3 &&
-          compactSections.length === 3 &&
+          visibleSections.length === 6 &&
+          closedSections.length === 6 &&
+          compactSections.length === 6 &&
           summaries.every(Boolean) &&
           contents.every(Boolean) &&
           sections.every((section) => section?.getAttribute("data-builder-logic-resource-section-density") === "collapsed-in-all"),
@@ -3270,6 +3271,38 @@ async function runLogicRustChecks(send, verified) {
       };
     })()`,
     "logic all resource sections collapse by default",
+  );
+  await clickElementCenter(send, `document.querySelector('[data-builder-logic-resource-section-summary="dependencies"]')`, "logic dependencies resource summary");
+  await waitFor(
+    send,
+    `document.querySelector('[data-builder-logic-resource-section="dependencies"]')?.open === true`,
+    "logic dependencies resource expanded",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const section = document.querySelector('[data-builder-logic-resource-section="dependencies"]');
+      const content = document.querySelector('[data-builder-logic-resource-section-content="dependencies"]');
+      const rows = Array.from(document.querySelectorAll("[data-builder-cargo-dependency]"));
+      const addButton = document.querySelector("[data-builder-new-cargo-dependency]");
+      const rect = content?.getBoundingClientRect();
+      return {
+        passed:
+          section?.open === true &&
+          content?.getAttribute("data-builder-logic-resource-section-content") === "dependencies" &&
+          rows.length >= 1 &&
+          Boolean(addButton) &&
+          Boolean(rect && rect.height > 80),
+        detail: \`open=\${section?.open}, rows=\${rows.length}, add=\${Boolean(addButton)}, height=\${Math.round(rect?.height || 0)}\`
+      };
+    })()`,
+    "logic dependencies resource expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector('[data-builder-logic-resource-section-summary="dependencies"]')`, "collapse logic dependencies resource summary");
+  await waitFor(
+    send,
+    `document.querySelector('[data-builder-logic-resource-section="dependencies"]')?.open === false`,
+    "logic dependencies resource collapsed",
   );
   await clickElementCenter(
     send,

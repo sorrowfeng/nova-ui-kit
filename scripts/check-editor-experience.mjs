@@ -1542,9 +1542,15 @@ mustContain(builder, 'data-builder-logic-resource-section-density="collapsed-in-
 mustContain(builder, 'data-builder-logic-resource-section-summary="connections"', "Logic connections resource section exposes a compact summary row");
 mustContain(builder, 'data-builder-logic-resource-section-summary="commands"', "Logic commands resource section exposes a compact summary row");
 mustContain(builder, 'data-builder-logic-resource-section-summary="modules"', "Logic modules resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-summary="dependencies"', "Logic dependencies resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-summary="integrations"', "Logic integrations resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-summary="state"', "Logic state resource section exposes a compact summary row");
 mustContain(builder, 'data-builder-logic-resource-section-content="connections"', "Logic connections details are deferred behind the summary");
 mustContain(builder, 'data-builder-logic-resource-section-content="commands"', "Logic commands details are deferred behind the summary");
 mustContain(builder, 'data-builder-logic-resource-section-content="modules"', "Logic modules details are deferred behind the summary");
+mustContain(builder, 'data-builder-logic-resource-section-content="dependencies"', "Logic dependency details are deferred behind the summary");
+mustContain(builder, 'data-builder-logic-resource-section-content="integrations"', "Logic integration details are deferred behind the summary");
+mustContain(builder, 'data-builder-logic-resource-section-content="state"', "Logic state details are deferred behind the summary");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
 mustContain(buildWorkspace, 'data-builder-build-workspace-bottom-dock-clearance="reserved"', "Build workspace reserves clearance above the bottom output dock");
 mustContain(buildWorkspace, "px-2 pt-2 pb-11", "Build sidebar layout keeps build content above the bottom output dock");
