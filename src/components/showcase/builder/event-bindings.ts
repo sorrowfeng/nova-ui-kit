@@ -18,10 +18,135 @@ export const eventPayloadFields: Array<{ value: BuilderEventPayloadField; label:
 ];
 
 export function eventNameForItem(item: BuilderItem): BuilderEventName | null {
-  if (item.type === "button") {
+  if (
+    item.type === "button" ||
+    item.type === "dialog-button-box" ||
+    item.type === "command-link-button" ||
+    item.type === "menu-button" ||
+    item.type === "split-button" ||
+    item.type === "tool-button" ||
+    item.type === "icon-button" ||
+    item.type === "link-label" ||
+    item.type === "tabs" ||
+    item.type === "menu-bar" ||
+    item.type === "menu" ||
+    item.type === "list" ||
+    item.type === "list-item" ||
+    item.type === "list-view" ||
+    item.type === "column-view" ||
+    item.type === "icon-view" ||
+    item.type === "command-list" ||
+    item.type === "tree-view" ||
+    item.type === "tree-table" ||
+    item.type === "system-tray" ||
+    item.type === "breadcrumb-bar" ||
+    item.type === "pagination" ||
+    item.type === "toolbar" ||
+    item.type === "top-app-bar" ||
+    item.type === "bottom-app-bar" ||
+    item.type === "navigation-bar" ||
+    item.type === "navigation-item" ||
+    item.type === "navigation-suite" ||
+    item.type === "status-bar" ||
+    item.type === "split-view" ||
+    item.type === "supporting-pane" ||
+    item.type === "scroll-area" ||
+    item.type === "stacked-pages" ||
+    item.type === "dock-panel" ||
+    item.type === "navigation" ||
+    item.type === "navigation-drawer" ||
+    item.type === "navigation-rail" ||
+    item.type === "side-sheet" ||
+    item.type === "bottom-sheet" ||
+    item.type === "sheet-drag-handle" ||
+    item.type === "accordion" ||
+    item.type === "tool-box" ||
+    item.type === "carousel" ||
+    item.type === "empty-state" ||
+    item.type === "dialog" ||
+    item.type === "stepper" ||
+    item.type === "banner" ||
+    item.type === "section-header" ||
+    item.type === "alert" ||
+    item.type === "elevated-card" ||
+    item.type === "filled-card" ||
+    item.type === "outlined-card" ||
+    item.type === "snackbar" ||
+    item.type === "toast" ||
+    item.type === "fab" ||
+    item.type === "extended-fab" ||
+    item.type === "assist-chip" ||
+    item.type === "input-chip" ||
+    item.type === "suggestion-chip" ||
+    item.type === "floating-toolbar" ||
+    item.type === "avatar" ||
+    item.type === "avatar-group" ||
+    item.type === "image-list" ||
+    item.type === "empty-panel" ||
+    item.type === "search-suggestion-list" ||
+    item.type === "calendar-scheduler" ||
+    item.type === "kanban-board" ||
+    item.type === "table-view" ||
+    item.type === "data-grid" ||
+    item.type === "property-grid" ||
+    item.type === "inspector-section" ||
+    item.type === "console-panel" ||
+    item.type === "problems-panel" ||
+    item.type === "breakpoints-panel" ||
+    item.type === "watch-panel" ||
+    item.type === "call-stack" ||
+    item.type === "timeline" ||
+    item.type === "status-indicator" ||
+    item.type === "progress-list" ||
+    item.type === "chips"
+  ) {
     return "click";
   }
-  if (item.type === "input" || item.type === "textarea" || item.type === "checkbox" || item.type === "switch" || item.type === "select") {
+  if (
+    item.type === "input" ||
+    item.type === "password-field" ||
+    item.type === "number-field" ||
+    item.type === "spin-box" ||
+    item.type === "double-spin-box" ||
+    item.type === "dial" ||
+    item.type === "textarea" ||
+    item.type === "plain-text-edit" ||
+    item.type === "rich-text-editor" ||
+    item.type === "search-bar" ||
+    item.type === "search-view" ||
+    item.type === "filter-bar" ||
+    item.type === "tag-input" ||
+    item.type === "checkbox" ||
+    item.type === "checkbox-group" ||
+    item.type === "radio" ||
+    item.type === "radio-group" ||
+    item.type === "switch" ||
+    item.type === "slider" ||
+    item.type === "range-slider" ||
+    item.type === "rating" ||
+    item.type === "scroll-bar" ||
+    item.type === "color-picker" ||
+    item.type === "file-picker" ||
+    item.type === "folder-picker" ||
+    item.type === "shortcut-recorder" ||
+    item.type === "select" ||
+    item.type === "multi-select" ||
+    item.type === "combobox" ||
+    item.type === "autocomplete" ||
+    item.type === "font-combo-box" ||
+    item.type === "button-group" ||
+    item.type === "toggle-group" ||
+    item.type === "date-picker" ||
+    item.type === "date-range-picker" ||
+    item.type === "time-picker" ||
+    item.type === "date-time-picker" ||
+    item.type === "calendar-widget" ||
+    item.type === "segmented" ||
+    item.type === "filter-chip" ||
+    item.type === "splitter" ||
+    item.type === "size-grip" ||
+    item.type === "form-layout"
+  ) {
     return "change";
   }
   return null;

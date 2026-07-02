@@ -19,13 +19,14 @@ export type ProjectJumpActionId =
   | "add-state-variable"
   | "sync-rust"
   | "add-image-asset"
-  | "preview-generated-files"
+  | "generate-file-plan"
   | "apply-generated-files"
   | "apply-generated-changes"
   | "build-backend-artifacts"
   | "quick-check-frontend"
   | "quick-check-rust"
   | "quick-check-all"
+  | "audit-editor-experience"
   | "validate-window"
   | "build-exe"
   | "bundle-installer"
@@ -116,7 +117,7 @@ export const projectTaskDefinitions: Record<
 > = {
   "save-project": {
     title: "保存项目",
-    detail: "保存工作区、UI 文件、Rust 逻辑和项目元数据。",
+    detail: "保存工作区、UI 文件、Rust 逻辑、项目元数据，并同步生成目标文件。",
     kind: "project",
     mode: "build",
   },
@@ -154,7 +155,7 @@ export const projectTaskDefinitions: Record<
     title: "运行所选事件",
     detail: "模拟所选控件事件并显示最新运行结果。",
     kind: "logic",
-    mode: "preview",
+    mode: "design",
   },
   "add-rust-command": {
     title: "添加 Rust 命令",
@@ -180,21 +181,21 @@ export const projectTaskDefinitions: Record<
     kind: "design",
     mode: "design",
   },
-  "preview-generated-files": {
-    title: "预览生成文件",
-    detail: "写入前查看目标应用文件计划和磁盘差异。",
+  "generate-file-plan": {
+    title: "生成文件计划",
+    detail: "写入项目文件夹前计算目标应用文件和磁盘差异。",
     kind: "generate",
     mode: "build",
   },
   "apply-generated-files": {
     title: "应用所选生成文件",
-    detail: "带写入前快照地写入所选生成目标文件。",
+    detail: "带写入前快照地把所选目标文件保存到项目文件夹。",
     kind: "generate",
     mode: "build",
   },
   "apply-generated-changes": {
     title: "应用生成变更",
-    detail: "预览并带写入前快照地写入全部已变化目标文件。",
+    detail: "基于最新文件计划，带写入前快照地保存全部已变化目标文件。",
     kind: "generate",
     mode: "build",
   },
@@ -219,6 +220,12 @@ export const projectTaskDefinitions: Record<
   "quick-check-all": {
     title: "运行全部快速检查",
     detail: "构建可执行文件前运行前端和 Rust 检查。",
+    kind: "check",
+    mode: "build",
+  },
+  "audit-editor-experience": {
+    title: "编辑器体验审计",
+    detail: "检查选择、多选、输出 Dock、窗口壳、项目树、Rust 逻辑和运行区等关键编辑器体验。",
     kind: "check",
     mode: "build",
   },
@@ -274,23 +281,23 @@ export const projectActionPresets: ProjectActionPresetDefinition[] = [
   {
     id: "design-preflight",
     title: "设计预检",
-    detail: "保存、预览并应用生成文件、构建后端产物、运行全部快速检查，然后验证生成窗口。",
+    detail: "保存并同步生成文件、构建后端产物、运行全部快速检查、审计编辑器体验，然后验证生成窗口。",
     badge: "预检",
-    actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window"],
+    actions: ["save-project", "build-backend-artifacts", "quick-check-all", "audit-editor-experience", "validate-window"],
   },
   {
     id: "release-exe",
     title: "发布 exe",
-    detail: "保存项目、应用生成变更、构建后端产物、运行检查和验证，然后编译生成应用可执行文件。",
+    detail: "保存并同步项目、构建后端产物、运行检查、审计编辑器体验和验证，然后编译生成应用可执行文件。",
     badge: "exe",
-    actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window", "build-exe"],
+    actions: ["save-project", "build-backend-artifacts", "quick-check-all", "audit-editor-experience", "validate-window", "build-exe"],
   },
   {
     id: "installer-bundle",
     title: "安装包流水线",
     detail: "执行完整发布链路，包含 exe 构建和安装包产物收集。",
     badge: "安装包",
-    actions: ["save-project", "preview-generated-files", "apply-generated-changes", "build-backend-artifacts", "quick-check-all", "validate-window", "build-exe", "bundle-installer"],
+    actions: ["save-project", "build-backend-artifacts", "quick-check-all", "audit-editor-experience", "validate-window", "build-exe", "bundle-installer"],
   },
   {
     id: "logic-sync",

@@ -74,8 +74,8 @@ use project_model::{
 };
 use project_paths::{
     managed_project_root, managed_projects_dir, project_builds_dir, project_checkpoints_dir,
-    project_paths, project_paths_for_project, project_root_from_project, project_with_root_path,
-    write_readme,
+    project_editor_state_path, project_paths, project_paths_for_project, project_root_from_project,
+    project_with_root_path, write_readme,
 };
 use project_persistence::{
     create_editor_project, create_project_checkpoint, diff_project_checkpoint,
@@ -110,6 +110,8 @@ use text_utils::{html_text, json_string, json_string_array, to_error};
 struct EditorProjectPaths {
     root_path: String,
     manifest_path: String,
+    editor_state_path: String,
+    workspace_metadata_path: String,
     ui_dir: String,
     rust_logic_path: String,
     rust_source_map_path: String,
@@ -395,6 +397,67 @@ mod tests {
             "activeRustCommandId": "cmd-app-message",
             "rustLogic": DEFAULT_RUST_LOGIC,
             "activeFileId": "main",
+            "editorState": {
+                "openFileIds": ["main"],
+                "activeMode": "logic",
+                "activeEditorTabId": "logic:rust",
+                "activeLeftDockTab": "project",
+                "activeRightDockTab": "connections",
+                "leftDockCollapsed": false,
+                "rightDockCollapsed": true,
+                "activeBottomDockTab": "output",
+                "bottomDockExpanded": true,
+                "bottomDockMinimized": false,
+                "bottomDockHeight": 384,
+                "bottomDockExpandedHeight": 640,
+                "bottomDockLogSearchQuery": "panic",
+                "selectedRailActionPresetId": "release-exe",
+                "canvasControlsExpanded": true,
+                "tabOrderOverlayVisible": true,
+                "canvasActiveBreakpoint": "tablet",
+                "canvasZoom": 0.75,
+                "canvasViewportScrollLeft": 128,
+                "canvasViewportScrollTop": 96,
+                "selectedItemIds": ["hero-button", "status-label"],
+                "selectionAnchorId": "hero-button",
+                "projectExplorerFilter": "rust",
+                "projectExplorerQuery": "logic",
+                "selectedProjectExplorerNodeId": "rust-folder",
+                "collapsedProjectExplorerNodeIds": ["app-folder", "nova-folder"],
+                "navigatorQuery": "hero",
+                "componentPaletteQuery": "button",
+                "componentPaletteCategory": "inputs",
+                "componentPaletteRecentTypes": ["button", "input", "table"],
+                "componentPaletteFavoriteTypes": ["top-app-bar", "frame"],
+                "inspectorPropertySections": {
+                    "layout": true,
+                    "content": false,
+                    "state": true,
+                    "appearance": true,
+                    "actions": false
+                },
+                "inspectorPropertyQuery": "label",
+                "rustFindQuery": "invoke",
+                "rustFindCaseSensitive": true,
+                "logicSearchQuery": "slot status",
+                "logicResourceView": "modules",
+                "logicConnectionFilter": "unbound",
+                "rustEditorScrollTop": 220,
+                "rustEditorScrollLeft": 18,
+                "rustEditorWordWrap": true,
+                "rustEditorSelectionStart": 32,
+                "rustEditorSelectionEnd": 46,
+                "projectTaskSearchQuery": "release",
+                "projectTaskStatusFilter": "failed",
+                "projectTaskKindFilter": "build",
+                "selectedProjectTaskId": "task-build-exe",
+                "projectTaskLogSearchQuery": "warning",
+                "projectTaskQueuePaused": true,
+                "activeGeneratedPreviewPath": "app/src/App.tsx",
+                "selectedGeneratedPreviewPaths": ["app/src/App.tsx", "app/src-tauri/src/lib.rs"],
+                "showGeneratedPlanAdvanced": true,
+                "selectedBuilderIssueId": "diagnostic:app/src-tauri/src/lib.rs:42"
+            },
             "files": [
                 {
                     "id": "main",
@@ -409,12 +472,40 @@ mod tests {
                         "height": 420,
                         "background": "grid",
                         "showGrid": true,
+                        "showRulers": true,
                         "snapToGrid": true,
                         "gridSize": 8,
                         "zoom": 1,
                         "autoSave": true
                     },
-                    "items": []
+                    "items": [
+                        {
+                            "id": "hero-button",
+                            "type": "button",
+                            "name": "Hero Button",
+                            "x": 24,
+                            "y": 24,
+                            "width": 140,
+                            "height": 40,
+                            "z": 1,
+                            "props": {
+                                "label": "Save"
+                            }
+                        },
+                        {
+                            "id": "status-label",
+                            "type": "label",
+                            "name": "Status Label",
+                            "x": 24,
+                            "y": 76,
+                            "width": 180,
+                            "height": 32,
+                            "z": 2,
+                            "props": {
+                                "label": "Ready"
+                            }
+                        }
+                    ]
                 }
             ],
             "createdAt": "2026-06-28T00:00:00.000Z",
@@ -518,6 +609,553 @@ mod tests {
         assert!(
             manifest.contains("Checkpoint Project") && !manifest.contains("Changed Project"),
             "restore should write checkpoint data back to the main manifest"
+        );
+    }
+
+    #[test]
+    fn save_project_files_writes_editor_state_metadata() {
+        let root = env::temp_dir().join("nova-ui-editor-state-metadata");
+        if root.exists() {
+            fs::remove_dir_all(&root).expect("remove old editor state project");
+        }
+
+        let project = checkpoint_test_project(&root);
+        save_project_files(&root, &project, DEFAULT_RUST_LOGIC).expect("save project files");
+
+        let state_path = root.join(".nova").join("editor-state.json");
+        assert!(
+            state_path.exists(),
+            "editor-state metadata should live under .nova"
+        );
+        let state: Value = serde_json::from_str(
+            &fs::read_to_string(&state_path).expect("read editor-state metadata"),
+        )
+        .expect("parse editor-state metadata");
+
+        assert_eq!(state["schema"], "nova.editorState.v1");
+        assert_eq!(state["project"]["activeFileId"], "main");
+        assert_eq!(state["project"]["activeFileName"], "Main.ui");
+        assert_eq!(state["activeWindow"]["kind"], "main");
+        assert_eq!(state["activeWindow"]["titlebarStyle"], "nova");
+        assert_eq!(state["activeWindow"]["designRulers"], true);
+        assert_eq!(state["workspace"]["activeMode"], "logic");
+        assert_eq!(state["workspace"]["activeEditorTabId"], "logic:rust");
+        assert_eq!(state["workspace"]["openFileIds"][0], "main");
+        assert_eq!(
+            state["workspace"]["openTabs"][0]["relativePath"],
+            "ui/Main.ui.json"
+        );
+        assert_eq!(state["workspace"]["rightDockTab"], "connections");
+        assert_eq!(state["workspace"]["leftDockCollapsed"], false);
+        assert_eq!(state["workspace"]["rightDockCollapsed"], true);
+        assert_eq!(state["workspace"]["bottomDock"]["expanded"], true);
+        assert_eq!(state["workspace"]["bottomDock"]["minimized"], false);
+        assert_eq!(state["workspace"]["bottomDock"]["height"], 384);
+        assert_eq!(state["workspace"]["bottomDock"]["expandedHeight"], 640);
+        assert_eq!(state["workspace"]["bottomDock"]["logSearchQuery"], "panic");
+        assert_eq!(
+            state["workspace"]["selectedRailActionPresetId"],
+            "release-exe"
+        );
+        assert_eq!(state["workspace"]["canvas"]["controlsExpanded"], true);
+        assert_eq!(state["workspace"]["canvas"]["tabOrderOverlayVisible"], true);
+        assert_eq!(state["workspace"]["canvas"]["activeBreakpoint"], "tablet");
+        assert_eq!(state["workspace"]["canvas"]["zoom"], 0.75);
+        assert_eq!(state["workspace"]["canvas"]["viewport"]["scrollLeft"], 128);
+        assert_eq!(state["workspace"]["canvas"]["viewport"]["scrollTop"], 96);
+        assert_eq!(
+            state["workspace"]["canvas"]["selection"]["selectedItemIds"][0],
+            "hero-button"
+        );
+        assert_eq!(
+            state["workspace"]["canvas"]["selection"]["selectedItemIds"][1],
+            "status-label"
+        );
+        assert_eq!(
+            state["workspace"]["canvas"]["selection"]["anchorId"],
+            "hero-button"
+        );
+        assert_eq!(
+            state["workspace"]["canvas"]["selection"]["selectedCount"],
+            2
+        );
+        assert_eq!(state["workspace"]["projectExplorer"]["filter"], "rust");
+        assert_eq!(state["workspace"]["projectExplorer"]["query"], "logic");
+        assert_eq!(
+            state["workspace"]["projectExplorer"]["selectedNodeId"],
+            "rust-folder"
+        );
+        assert_eq!(
+            state["workspace"]["projectExplorer"]["collapsedNodeIds"][0],
+            "app-folder"
+        );
+        assert_eq!(
+            state["workspace"]["projectExplorer"]["collapsedNodeIds"][1],
+            "nova-folder"
+        );
+        assert_eq!(state["workspace"]["navigator"]["query"], "hero");
+        assert_eq!(state["workspace"]["componentPalette"]["query"], "button");
+        assert_eq!(state["workspace"]["componentPalette"]["category"], "inputs");
+        assert_eq!(
+            state["workspace"]["componentPalette"]["recentTypes"][2],
+            "table"
+        );
+        assert_eq!(
+            state["workspace"]["componentPalette"]["favoriteTypes"][1],
+            "frame"
+        );
+        assert_eq!(
+            state["workspace"]["inspector"]["propertySections"]["content"],
+            false
+        );
+        assert_eq!(
+            state["workspace"]["inspector"]["propertySections"]["state"],
+            true
+        );
+        assert_eq!(
+            state["workspace"]["inspector"]["propertySections"]["appearance"],
+            true
+        );
+        assert_eq!(state["workspace"]["inspector"]["query"], "label");
+        assert_eq!(state["workspace"]["rustEditor"]["findQuery"], "invoke");
+        assert_eq!(state["workspace"]["rustEditor"]["findCaseSensitive"], true);
+        assert_eq!(state["workspace"]["rustEditor"]["scrollTop"], 220);
+        assert_eq!(state["workspace"]["rustEditor"]["scrollLeft"], 18);
+        assert_eq!(state["workspace"]["rustEditor"]["wordWrap"], true);
+        assert_eq!(state["workspace"]["rustEditor"]["selectionStart"], 32);
+        assert_eq!(state["workspace"]["rustEditor"]["selectionEnd"], 46);
+        assert_eq!(state["workspace"]["logic"]["searchQuery"], "slot status");
+        assert_eq!(state["workspace"]["logic"]["view"], "modules");
+        assert_eq!(state["workspace"]["logic"]["connectionFilter"], "unbound");
+        assert_eq!(state["workspace"]["taskCenter"]["searchQuery"], "release");
+        assert_eq!(state["workspace"]["taskCenter"]["statusFilter"], "failed");
+        assert_eq!(state["workspace"]["taskCenter"]["kindFilter"], "build");
+        assert_eq!(
+            state["workspace"]["taskCenter"]["selectedTaskId"],
+            "task-build-exe"
+        );
+        assert_eq!(
+            state["workspace"]["taskCenter"]["logSearchQuery"],
+            "warning"
+        );
+        assert_eq!(state["workspace"]["taskCenter"]["queuePaused"], true);
+        assert_eq!(
+            state["workspace"]["generatedPlan"]["activePath"],
+            "app/src/App.tsx"
+        );
+        assert_eq!(
+            state["workspace"]["generatedPlan"]["selectedPaths"][1],
+            "app/src-tauri/src/lib.rs"
+        );
+        assert_eq!(state["workspace"]["generatedPlan"]["advancedOpen"], true);
+        assert_eq!(
+            state["workspace"]["issues"]["selectedIssueId"],
+            "diagnostic:app/src-tauri/src/lib.rs:42"
+        );
+        assert_eq!(state["counts"]["files"], 1);
+        assert_eq!(state["counts"]["controls"], 2);
+        assert!(
+            state["paths"]["metadata"]
+                .as_str()
+                .is_some_and(|path| path.ends_with(".nova")),
+            "metadata path should point at the hidden .nova folder"
+        );
+
+        let workspace_path = root.join(".nova").join("workspace.json");
+        assert!(
+            workspace_path.exists(),
+            "workspace metadata index should live under .nova"
+        );
+        let workspace: Value = serde_json::from_str(
+            &fs::read_to_string(&workspace_path).expect("read workspace metadata"),
+        )
+        .expect("parse workspace metadata");
+        assert_eq!(workspace["schema"], "nova.workspace.v1");
+        assert_eq!(workspace["project"]["activeFileName"], "Main.ui");
+        assert_eq!(workspace["counts"]["files"], 1);
+        assert_eq!(workspace["counts"]["rustCommands"], 1);
+        assert_eq!(workspace["editor"]["activeMode"], "logic");
+        assert_eq!(workspace["editor"]["openFileIds"][0], "main");
+        assert_eq!(workspace["editor"]["openFileCount"], 1);
+        assert_eq!(workspace["files"][0]["relativePath"], "ui/Main.ui.json");
+        assert_eq!(workspace["files"][0]["window"]["titlebarStyle"], "nova");
+        assert_eq!(workspace["files"][0]["window"]["designRulers"], true);
+        assert_eq!(workspace["files"][0]["window"]["runtimeGrid"], false);
+        assert_eq!(workspace["release"]["titlebarStyle"], "nova");
+        assert_eq!(workspace["release"]["showRuntimePanel"], false);
+        assert_eq!(workspace["rust"]["logicPath"], "rust/logic.rs");
+        assert!(
+            workspace["paths"]["workspaceMetadata"]
+                .as_str()
+                .is_some_and(|path| path.ends_with(".nova\\workspace.json")
+                    || path.ends_with(".nova/workspace.json")),
+            "workspace metadata path should point at .nova/workspace.json"
+        );
+        assert!(
+            workspace["managedFolders"]
+                .as_array()
+                .is_some_and(|folders| folders.iter().any(|folder| folder == ".nova/checkpoints")),
+            "workspace metadata should describe managed hidden project folders"
+        );
+    }
+
+    #[test]
+    fn read_editor_project_merges_hidden_editor_state_metadata() {
+        let root = env::temp_dir().join("nova-ui-read-hidden-editor-state");
+        if root.exists() {
+            fs::remove_dir_all(&root).expect("remove old hidden editor state project");
+        }
+
+        let project = checkpoint_test_project(&root);
+        save_project_files(&root, &project, DEFAULT_RUST_LOGIC).expect("save project files");
+
+        let manifest_path = root.join("nova.project.json");
+        let mut manifest: Value =
+            serde_json::from_str(&fs::read_to_string(&manifest_path).expect("read manifest"))
+                .expect("parse manifest");
+        manifest["editorState"]["activeMode"] = json!("design");
+        manifest["editorState"]["selectedRailActionPresetId"] = json!("design-preflight");
+        manifest["editorState"]["bottomDockLogSearchQuery"] = json!("stale-output");
+        manifest["editorState"]["selectedItemIds"] = json!(["stale-control"]);
+        manifest["editorState"]["selectionAnchorId"] = json!("stale-control");
+        manifest["editorState"]["navigatorQuery"] = json!("stale-navigator");
+        manifest["editorState"]["componentPaletteQuery"] = json!("stale-component");
+        manifest["editorState"]["componentPaletteCategory"] = json!("display");
+        manifest["editorState"]["componentPaletteRecentTypes"] = json!(["stale-control"]);
+        manifest["editorState"]["componentPaletteFavoriteTypes"] = json!(["stale-control"]);
+        manifest["editorState"]["inspectorPropertySections"] = json!({
+            "layout": false,
+            "content": true,
+            "state": false,
+            "appearance": false,
+            "actions": true
+        });
+        manifest["editorState"]["rustFindQuery"] = json!("stale-find");
+        manifest["editorState"]["logicSearchQuery"] = json!("stale-logic");
+        manifest["editorState"]["logicResourceView"] = json!("state");
+        manifest["editorState"]["logicConnectionFilter"] = json!("bound");
+        manifest["editorState"]["rustEditorScrollTop"] = json!(0);
+        manifest["editorState"]["rustEditorSelectionStart"] = json!(0);
+        manifest["editorState"]["projectTaskSearchQuery"] = json!("stale-task");
+        manifest["editorState"]["projectTaskQueuePaused"] = json!(false);
+        manifest["editorState"]["activeGeneratedPreviewPath"] = json!("stale/generated.txt");
+        manifest["editorState"]["selectedGeneratedPreviewPaths"] = json!(["stale/generated.txt"]);
+        manifest["editorState"]["showGeneratedPlanAdvanced"] = json!(false);
+        manifest["editorState"]["selectedBuilderIssueId"] = json!("stale-issue");
+        fs::write(
+            &manifest_path,
+            serde_json::to_string_pretty(&manifest).expect("format stale manifest"),
+        )
+        .expect("write stale manifest");
+
+        let read = read_editor_project(root.display().to_string()).expect("read editor project");
+        assert_eq!(read["rootPath"], Value::String(root.display().to_string()));
+        assert_eq!(read["activeFileId"], "main");
+        assert_eq!(read["editorState"]["activeMode"], "logic");
+        assert_eq!(read["editorState"]["activeEditorTabId"], "logic:rust");
+        assert_eq!(read["editorState"]["leftDockCollapsed"], false);
+        assert_eq!(read["editorState"]["rightDockCollapsed"], true);
+        assert_eq!(
+            read["editorState"]["selectedRailActionPresetId"],
+            "release-exe"
+        );
+        assert_eq!(read["editorState"]["bottomDockExpanded"], true);
+        assert_eq!(read["editorState"]["bottomDockMinimized"], false);
+        assert_eq!(read["editorState"]["bottomDockLogSearchQuery"], "panic");
+        assert_eq!(read["editorState"]["projectExplorerFilter"], "rust");
+        assert_eq!(
+            read["editorState"]["selectedProjectExplorerNodeId"],
+            "rust-folder"
+        );
+        assert_eq!(
+            read["editorState"]["collapsedProjectExplorerNodeIds"][1],
+            "nova-folder"
+        );
+        assert_eq!(read["editorState"]["navigatorQuery"], "hero");
+        assert_eq!(read["editorState"]["componentPaletteQuery"], "button");
+        assert_eq!(read["editorState"]["componentPaletteCategory"], "inputs");
+        assert_eq!(
+            read["editorState"]["componentPaletteRecentTypes"][2],
+            "table"
+        );
+        assert_eq!(
+            read["editorState"]["componentPaletteFavoriteTypes"][1],
+            "frame"
+        );
+        assert_eq!(read["editorState"]["canvasActiveBreakpoint"], "tablet");
+        assert_eq!(read["editorState"]["canvasZoom"], 0.75);
+        assert_eq!(read["editorState"]["canvasViewportScrollLeft"], 128);
+        assert_eq!(read["editorState"]["canvasViewportScrollTop"], 96);
+        assert_eq!(read["editorState"]["selectedItemIds"][0], "hero-button");
+        assert_eq!(read["editorState"]["selectedItemIds"][1], "status-label");
+        assert_eq!(read["editorState"]["selectionAnchorId"], "hero-button");
+        assert_eq!(
+            read["editorState"]["inspectorPropertySections"]["content"],
+            false
+        );
+        assert_eq!(
+            read["editorState"]["inspectorPropertySections"]["state"],
+            true
+        );
+        assert_eq!(
+            read["editorState"]["inspectorPropertySections"]["appearance"],
+            true
+        );
+        assert_eq!(read["editorState"]["inspectorPropertyQuery"], "label");
+        assert_eq!(read["editorState"]["rustFindQuery"], "invoke");
+        assert_eq!(read["editorState"]["rustFindCaseSensitive"], true);
+        assert_eq!(read["editorState"]["rustEditorScrollTop"], 220);
+        assert_eq!(read["editorState"]["rustEditorScrollLeft"], 18);
+        assert_eq!(read["editorState"]["rustEditorWordWrap"], true);
+        assert_eq!(read["editorState"]["rustEditorSelectionStart"], 32);
+        assert_eq!(read["editorState"]["rustEditorSelectionEnd"], 46);
+        assert_eq!(read["editorState"]["logicSearchQuery"], "slot status");
+        assert_eq!(read["editorState"]["logicResourceView"], "modules");
+        assert_eq!(read["editorState"]["logicConnectionFilter"], "unbound");
+        assert_eq!(read["editorState"]["projectTaskSearchQuery"], "release");
+        assert_eq!(read["editorState"]["projectTaskStatusFilter"], "failed");
+        assert_eq!(read["editorState"]["projectTaskKindFilter"], "build");
+        assert_eq!(
+            read["editorState"]["selectedProjectTaskId"],
+            "task-build-exe"
+        );
+        assert_eq!(read["editorState"]["projectTaskLogSearchQuery"], "warning");
+        assert_eq!(read["editorState"]["projectTaskQueuePaused"], true);
+        assert_eq!(
+            read["editorState"]["activeGeneratedPreviewPath"],
+            "app/src/App.tsx"
+        );
+        assert_eq!(
+            read["editorState"]["selectedGeneratedPreviewPaths"][1],
+            "app/src-tauri/src/lib.rs"
+        );
+        assert_eq!(read["editorState"]["showGeneratedPlanAdvanced"], true);
+        assert_eq!(
+            read["editorState"]["selectedBuilderIssueId"],
+            "diagnostic:app/src-tauri/src/lib.rs:42"
+        );
+    }
+
+    #[test]
+    fn save_project_files_writes_gitignore_without_overwriting_user_rules() {
+        let root = env::temp_dir().join("nova-ui-project-gitignore");
+        if root.exists() {
+            fs::remove_dir_all(&root).expect("remove old gitignore project");
+        }
+        fs::create_dir_all(&root).expect("create gitignore project");
+        fs::write(
+            root.join(".gitignore"),
+            "custom.local\n\n# >>> Nova UI Editor managed ignores\nold-generated-rule\n# <<< Nova UI Editor managed ignores\n\n!important.keep\n",
+        )
+        .expect("write existing gitignore");
+
+        let project = checkpoint_test_project(&root);
+        save_project_files(&root, &project, DEFAULT_RUST_LOGIC).expect("save project files");
+
+        let gitignore = fs::read_to_string(root.join(".gitignore")).expect("read gitignore");
+        assert!(
+            gitignore.contains("custom.local") && gitignore.contains("!important.keep"),
+            "existing user gitignore rules should be preserved"
+        );
+        assert!(
+            gitignore.contains("app/node_modules/")
+                && gitignore.contains("app/src-tauri/target/")
+                && gitignore.contains(".nova/runtime/")
+                && gitignore.contains(".nova/checkpoints/")
+                && gitignore.contains("backend/**/target/"),
+            "Nova managed ignore block should cover dependencies, build outputs, runtime logs, checkpoints, and backend artifacts"
+        );
+        assert!(
+            !gitignore.lines().any(|line| {
+                let trimmed = line.trim();
+                trimmed == ".nova/"
+                    || trimmed == ".nova/workspace.json"
+                    || trimmed == ".nova/editor-state.json"
+            }),
+            "reusable .nova workspace metadata should remain trackable"
+        );
+        assert!(
+            !gitignore.contains("old-generated-rule"),
+            "old Nova managed block should be replaced"
+        );
+    }
+
+    #[test]
+    fn generated_runtime_uses_nova_drag_titlebar_without_editor_grid() {
+        let project = checkpoint_test_project(Path::new("C:/nova-runtime-titlebar"));
+        let release = release_config(&project, "Nova Runtime Titlebar");
+        let tauri_conf = generated_tauri_conf(&release, &[], &[]);
+        let capabilities = generated_capabilities_default();
+        let generated_app = generated_app_tsx();
+        let generated_css = generated_styles();
+        let generated_capture = generated_capture_window_script();
+
+        assert!(
+            tauri_conf.contains(r#""decorations": false"#),
+            "generated Nova titlebar windows should be borderless so the custom titlebar is the visible shell"
+        );
+        assert!(
+            tauri_conf.contains(r#""maximized": true"#),
+            "generated desktop exe windows should open maximized by default"
+        );
+        assert!(
+            tauri_conf.contains(r#""transparent": true"#)
+                && tauri_conf.contains(r#""shadow": true"#),
+            "generated custom chrome windows should use a transparent shadowed desktop shell like the editor"
+        );
+        assert!(
+            capabilities.contains("core:window:allow-start-dragging")
+                && capabilities.contains("core:window:allow-minimize")
+                && capabilities.contains("core:window:allow-toggle-maximize")
+                && capabilities.contains("core:window:allow-close"),
+            "generated app capabilities should allow custom titlebar dragging and controls"
+        );
+        assert!(
+            generated_app.contains(r#"className="window-titlebar""#)
+                && generated_app.contains(r#"className="titlebar-drag-region""#)
+                && generated_app.contains(r#"data-tauri-drag-region=""#)
+                && generated_app.contains(r#"data-titlebar-drag-shell=""#)
+                && generated_app.contains(r#"data-titlebar-drag-region=""#)
+                && generated_app.contains(r#"data-titlebar-drag-strip=""#)
+                && generated_app.contains(r#"data-titlebar-drag-hit-target="background""#)
+                && generated_app.contains(r#"data-titlebar-drag-hit-target="brand""#)
+                && generated_app.contains("onMouseDown={startWindowDrag}")
+                && generated_app.contains("getCurrentWindow().startDragging()")
+                && generated_app.contains("event.detail > 1")
+                && generated_app.contains(r#"[data-titlebar-interactive='true']"#)
+                && generated_app.contains(r#"[data-titlebar-interactive-control]"#)
+                && generated_app.contains(r#"data-titlebar-interactive-control=""#)
+                && generated_app.contains(r#"data-runtime-titlebar="nova""#)
+                && generated_app.contains("data-window-kind={windowKind}")
+                && generated_app.contains(r#"data-titlebar-status={status ? "active" : "idle"}"#)
+                && generated_app.contains(r#"data-window-control="minimize""#)
+                && generated_app.contains(r#"data-window-control="toggle-maximize""#)
+                && generated_app.contains(r#"data-window-control="close""#)
+                && generated_app.contains(r#"className="window-control-icon window-minimize-icon""#)
+                && generated_app.contains(r#"className="window-control-icon window-maximize-icon""#)
+                && generated_app.contains(r#"className="window-control-icon window-close-icon""#),
+            "generated runtime should expose a stable drag region while keeping controls interactive"
+        );
+        assert!(
+            generated_app.contains(r#"data-runtime-grid="off""#)
+                && generated_app.contains(r#"data-runtime-style-contract="nova-desktop-shell""#)
+                && generated_app.contains(r#"data-runtime-design-artifacts="none""#)
+                && generated_app.contains(r#"data-runtime-body="nova-surface""#)
+                && generated_app.contains(r#"data-runtime-surface="viewport""#)
+                && generated_app.contains(r#"data-runtime-surface="app-canvas""#)
+                && generated_app.contains(r#"data-runtime-design-grid="absent""#)
+                && generated_app.contains(r#"data-runtime-rulers="absent""#)
+                && generated_app.contains("runtimePageBackground")
+                && generated_app.contains(r#"type RuntimePageBackground = "plain" | "soft";"#)
+                && generated_app.contains(r#"return value === "soft" ? "soft" : "plain";"#)
+                && generated_app.contains("canvas-background-${runtimeBackground}")
+                && generated_app.contains("data-runtime-shell={titlebarStyle === \"nova\" ? \"nova\" : titlebarStyle}"),
+            "generated runtime should explicitly separate runtime shell/background from editor-only grid settings"
+        );
+        assert!(
+            generated_css.contains(".titlebar-drag-region")
+                && generated_css.contains(".titlebar-hit-strip")
+                && generated_css.contains(".window-controls")
+                && generated_css.contains(".window-control-icon")
+                && generated_css.contains(".window-minimize-icon::before")
+                && generated_css.contains(".window-maximize-icon::before")
+                && generated_css.contains(".window-close-icon::after")
+                && generated_css.contains(".app-dialog")
+                && generated_css.contains(".app-tool")
+                && generated_css.contains(".canvas-viewport")
+                && generated_css.contains(".canvas-background-soft")
+                && generated_css.contains(".canvas-background-plain")
+                && generated_css.contains("--nova-runtime-radius")
+                && generated_css.contains("--nova-runtime-border")
+                && generated_css.contains(r#"[data-runtime-style-contract="nova-desktop-shell"]"#)
+                && generated_css.contains(r#"[data-runtime-surface="viewport"]"#)
+                && generated_css.contains("@media (prefers-color-scheme: dark)")
+                && generated_css.contains("color-scheme: dark")
+                && generated_css.contains(".runtime-panel")
+                && generated_css.contains("border: 0;")
+                && generated_css.contains("box-shadow: none;"),
+            "generated runtime CSS should use the Nova titlebar shell and app-like canvas surface"
+        );
+        assert!(
+            !generated_app.contains("showGrid")
+                && !generated_app.contains("showRulers")
+                && !generated_app.contains("gridSize")
+                && !generated_app.contains("canvas-background-grid"),
+            "editor-only grid and ruler settings should not be rendered by the generated runtime app"
+        );
+        assert!(
+            !generated_css.contains(".canvas-grid")
+                && !generated_css.contains("[data-design-grid]")
+                && !generated_css.contains("[data-builder-canvas-grid]")
+                && !generated_css.contains(".canvas-background-grid"),
+            "generated runtime CSS should not ship editor-only canvas grid selectors"
+        );
+        assert!(
+            generated_capture.contains(r#"[data-runtime-shell]"#)
+                && generated_capture.contains("Runtime shell marker missing")
+                && generated_capture.contains("Runtime grid marker is not disabled")
+                && generated_capture.contains("Runtime style contract missing")
+                && generated_capture.contains("Runtime design artifacts marker is not disabled")
+                && generated_capture.contains("Runtime app surface markers missing")
+                && generated_capture.contains("Editor design grid rendered in runtime")
+                && generated_capture.contains("Nova titlebar missing")
+                && generated_capture.contains("hasNovaTitlebarDragRegions")
+                && generated_capture.contains("hasNovaTitlebarDragStrip")
+                && generated_capture.contains("Nova titlebar drag regions missing")
+                && generated_capture.contains("hasInteractiveTitlebarControls")
+                && generated_capture.contains("hasNovaTitlebarMetadata")
+                && generated_capture.contains("hasWindowControlMarkers")
+                && generated_capture.contains("hasWindowControlsProtectedFromDrag")
+                && generated_capture.contains("Nova titlebar metadata missing")
+                && generated_capture.contains("Nova window controls are not identifiable")
+                && generated_capture.contains("Nova window controls can start drag")
+                && generated_capture.contains("shell,"),
+            "generated capture audit should verify exe shell metadata, titlebar rendering, and absence of editor design grid artifacts"
+        );
+    }
+
+    #[test]
+    fn active_ui_window_shape_drives_generated_exe_shell() {
+        let root = env::temp_dir().join("nova-ui-active-window-shape");
+        let mut project = checkpoint_test_project(&root);
+        project["releaseConfig"] = json!({
+            "appName": "Shell Sync",
+            "windowTitle": "Release Window",
+            "windowKind": "main",
+            "titlebarStyle": "native",
+            "titlebarSubtitle": "Release subtitle",
+            "windowWidth": 1200,
+            "windowHeight": 800,
+            "minWindowWidth": 360,
+            "minWindowHeight": 260,
+            "resizable": true
+        });
+        project["files"][0]["page"]["title"] = json!("Inspector Dialog");
+        project["files"][0]["page"]["windowKind"] = json!("dialog");
+        project["files"][0]["page"]["titlebarStyle"] = json!("hidden");
+        project["files"][0]["page"]["titlebarSubtitle"] = json!("Page subtitle");
+        project["files"][0]["page"]["width"] = json!(860);
+        project["files"][0]["page"]["height"] = json!(540);
+
+        let release = release_config(&project, "Shell Sync");
+        let tauri_conf = generated_tauri_conf(&release, &[], &[]);
+
+        assert_eq!(release.window_title, "Inspector Dialog");
+        assert_eq!(release.window_kind, "dialog");
+        assert_eq!(release.titlebar_style, "hidden");
+        assert_eq!(release.titlebar_subtitle, "Page subtitle");
+        assert_eq!(release.window_width, 860);
+        assert_eq!(release.window_height, 540);
+        assert!(
+            tauri_conf.contains(r#""decorations": false"#)
+                && tauri_conf.contains(r#""transparent": true"#)
+                && tauri_conf.contains(r#""shadow": true"#)
+                && tauri_conf.contains(r#""center": true"#)
+                && tauri_conf.contains(r#""maximized": true"#)
+                && tauri_conf.contains(r#""title": "Inspector Dialog""#)
+                && tauri_conf.contains(r#""width": 860"#)
+                && tauri_conf.contains(r#""height": 540"#),
+            "generated Tauri shell should follow the active UI file window shape"
         );
     }
 
@@ -1537,6 +2175,7 @@ fn app_message() -> String {
                         "height": 520,
                         "background": "grid",
                         "showGrid": true,
+                        "showRulers": true,
                         "snapToGrid": true,
                         "gridSize": 8,
                         "zoom": 0.8,
@@ -1828,6 +2467,7 @@ fn run_go_worker(app: tauri::AppHandle, payload: serde_json::Value) -> String {
                 && generated_tauri_conf.contains(r#""title": "Build Check Window""#)
                 && generated_tauri_conf.contains(r#""width": 720"#)
                 && generated_tauri_conf.contains(r#""height": 520"#)
+                && generated_tauri_conf.contains(r#""maximized": true"#)
                 && generated_tauri_conf.contains(r#""resizable": false"#),
             "generated tauri.conf.json should use release identity and window settings"
         );
@@ -1928,8 +2568,8 @@ fn run_go_worker(app: tauri::AppHandle, payload: serde_json::Value) -> String {
                 && generated_app.contains("backendRuntimeContext")
                 && generated_app.contains("withBackendRuntimeContext")
                 && generated_app.contains("backendRuntimeLogs")
-                && generated_app.contains("Preview log")
-                && generated_app.contains("Open log")
+                && generated_app.contains("Log summary")
+                && generated_app.contains("Open full log")
                 && generated_app.contains("backend-log-preview")
                 && generated_app.contains("logPath")
                 && generated_app.contains("onStartBackend")

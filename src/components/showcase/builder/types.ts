@@ -1,20 +1,176 @@
 export type BuilderComponentType =
   | "frame"
+  | "group-box"
+  | "spacer"
   | "heading"
+  | "label"
+  | "link-label"
+  | "text-browser"
+  | "help-viewer"
   | "image"
+  | "image-list"
+  | "web-view"
+  | "media-player"
+  | "pdf-viewer"
+  | "map-view"
+  | "graphics-view"
   | "button"
+  | "button-group"
+  | "dialog-button-box"
+  | "command-link-button"
+  | "menu-button"
+  | "split-button"
+  | "tool-button"
+  | "toggle-button"
+  | "toggle-group"
   | "input"
+  | "password-field"
+  | "number-field"
+  | "spin-box"
+  | "double-spin-box"
+  | "dial"
   | "textarea"
+  | "plain-text-edit"
+  | "rich-text-editor"
+  | "code-editor"
+  | "search-bar"
+  | "search-view"
+  | "search-suggestion-list"
+  | "filter-bar"
+  | "tag-input"
   | "checkbox"
+  | "checkbox-group"
+  | "radio"
+  | "radio-group"
   | "switch"
+  | "slider"
+  | "range-slider"
+  | "rating"
+  | "scroll-bar"
+  | "color-picker"
+  | "color-swatch-grid"
+  | "file-picker"
+  | "folder-picker"
+  | "shortcut-recorder"
   | "select"
+  | "multi-select"
+  | "combobox"
+  | "autocomplete"
+  | "font-combo-box"
+  | "date-picker"
+  | "date-range-picker"
+  | "time-picker"
+  | "date-time-picker"
+  | "calendar-widget"
+  | "calendar-scheduler"
+  | "segmented"
+  | "chips"
+  | "assist-chip"
+  | "filter-chip"
+  | "input-chip"
+  | "suggestion-chip"
+  | "tabs"
+  | "list-item"
+  | "navigation-item"
+  | "menu-bar"
+  | "ribbon-bar"
+  | "menu"
+  | "context-menu"
+  | "list"
+  | "list-view"
+  | "column-view"
+  | "icon-view"
+  | "command-list"
+  | "command-palette"
+  | "notification-center"
+  | "system-tray"
+  | "activity-bar"
+  | "shortcut-table"
+  | "resource-browser"
+  | "asset-grid"
+  | "task-list"
+  | "settings-list"
+  | "tree-view"
+  | "tree-table"
+  | "outline-view"
+  | "signal-slot-editor"
+  | "node-graph"
+  | "log-viewer"
+  | "problems-panel"
+  | "breakpoints-panel"
+  | "watch-panel"
+  | "call-stack"
+  | "property-browser"
+  | "layer-panel"
+  | "breadcrumb-bar"
+  | "pagination"
+  | "top-app-bar"
+  | "bottom-app-bar"
+  | "navigation-bar"
+  | "navigation-suite"
+  | "status-bar"
+  | "toolbar"
+  | "floating-toolbar"
+  | "split-view"
+  | "splitter"
+  | "size-grip"
+  | "supporting-pane"
+  | "scroll-area"
+  | "stacked-pages"
+  | "dock-panel"
+  | "mdi-area"
+  | "navigation"
+  | "navigation-drawer"
+  | "navigation-rail"
+  | "side-sheet"
+  | "bottom-sheet"
+  | "sheet-drag-handle"
+  | "accordion"
+  | "tool-box"
   | "card"
+  | "section-header"
+  | "elevated-card"
+  | "filled-card"
+  | "outlined-card"
+  | "carousel"
+  | "empty-state"
+  | "empty-panel"
+  | "dialog"
+  | "popover"
+  | "stepper"
+  | "wizard"
+  | "banner"
+  | "alert"
+  | "tooltip"
+  | "snackbar"
+  | "toast"
+  | "fab"
+  | "extended-fab"
+  | "icon-button"
   | "stat"
+  | "lcd-display"
+  | "chart-view"
+  | "progress"
+  | "circular-progress"
+  | "progress-list"
+  | "avatar"
+  | "avatar-group"
   | "table"
+  | "table-view"
+  | "kanban-board"
+  | "data-grid"
+  | "property-grid"
+  | "key-value-list"
+  | "inspector-section"
+  | "form-layout"
+  | "console-panel"
+  | "terminal-view"
+  | "timeline"
+  | "status-indicator"
   | "divider"
   | "badge";
 
-export type BuilderMode = "design" | "logic" | "build" | "preview" | "export";
+export type BuilderMode = "project" | "design" | "logic" | "build";
 export type ButtonVariant = "default" | "secondary" | "outline" | "ghost" | "destructive";
 export type ControlSize = "sm" | "md" | "lg";
 export type ImageFit = "cover" | "contain" | "fill";
@@ -59,12 +215,16 @@ export type BuilderStateVariable = {
 
 export type PageConfig = {
   title: string;
+  windowKind: ReleaseWindowKind;
+  titlebarStyle: ReleaseTitlebarStyle;
+  titlebarSubtitle: string;
   preset: CanvasPresetId;
   activeBreakpoint?: ResponsiveBreakpointId;
   width: number;
   height: number;
   background: CanvasBackground;
   showGrid: boolean;
+  showRulers: boolean;
   snapToGrid: boolean;
   gridSize: number;
   zoom: number;
@@ -86,6 +246,10 @@ export type BuilderItemProps = {
   actionCommandId?: string;
   events?: Partial<Record<BuilderEventName, BuilderEventBinding>>;
   stateBindings?: Partial<Record<BuilderResultTargetProp, string>>;
+  enabled?: boolean;
+  visible?: boolean;
+  readOnly?: boolean;
+  tabIndex?: number;
   assetId?: string;
   assetPath?: string;
   alt?: string;
@@ -506,6 +670,63 @@ export type ProjectMaintenanceEntry = {
   changes: ProjectMaintenanceChange[];
 };
 
+export type ProjectEditorState = {
+  openFileIds: string[];
+  activeMode: BuilderMode;
+  activeLeftDockTab?: string;
+  activeRightDockTab?: string;
+  leftDockCollapsed?: boolean;
+  rightDockCollapsed?: boolean;
+  activeBottomDockTab?: string;
+  bottomDockExpanded?: boolean;
+  bottomDockMinimized?: boolean;
+  bottomDockHeight?: number;
+  bottomDockExpandedHeight?: number;
+  selectedRailActionPresetId?: string;
+  canvasControlsExpanded?: boolean;
+  tabOrderOverlayVisible?: boolean;
+  canvasActiveBreakpoint?: ResponsiveBreakpointId;
+  canvasZoom?: number;
+  canvasViewportScrollLeft?: number;
+  canvasViewportScrollTop?: number;
+  selectedItemIds?: string[];
+  selectionAnchorId?: string;
+  projectExplorerFilter?: string;
+  projectExplorerQuery?: string;
+  selectedProjectExplorerNodeId?: string;
+  collapsedProjectExplorerNodeIds?: string[];
+  navigatorQuery?: string;
+  componentPaletteQuery?: string;
+  componentPaletteCategory?: string;
+  componentPaletteRecentTypes?: string[];
+  componentPaletteFavoriteTypes?: string[];
+  inspectorPropertySections?: Partial<Record<"layout" | "content" | "state" | "appearance" | "actions", boolean>>;
+  inspectorPropertyQuery?: string;
+  rustFindQuery?: string;
+  rustFindCaseSensitive?: boolean;
+  logicSearchQuery?: string;
+  logicResourceView?: string;
+  logicConnectionFilter?: string;
+  rustEditorScrollTop?: number;
+  rustEditorScrollLeft?: number;
+  rustEditorWordWrap?: boolean;
+  rustEditorSelectionStart?: number;
+  rustEditorSelectionEnd?: number;
+  projectTaskSearchQuery?: string;
+  projectTaskStatusFilter?: string;
+  projectTaskKindFilter?: string;
+  selectedProjectTaskId?: string;
+  projectTaskLogSearchQuery?: string;
+  bottomDockLogSearchQuery?: string;
+  projectTaskQueuePaused?: boolean;
+  activeGeneratedPreviewPath?: string;
+  selectedGeneratedPreviewPaths?: string[];
+  showGeneratedPlanAdvanced?: boolean;
+  selectedBuilderIssueId?: string;
+  activeEditorTabId?: string;
+  updatedAt: string;
+};
+
 export type DesignerProject = {
   id: string;
   name: string;
@@ -546,6 +767,7 @@ export type DesignerProject = {
   maintenanceHistory?: ProjectMaintenanceEntry[];
   files: DesignerFile[];
   activeFileId: string;
+  editorState?: ProjectEditorState;
   releaseConfig: ProjectReleaseConfig;
   createdAt: string;
   updatedAt: string;
@@ -559,6 +781,8 @@ export type DesignerWorkspace = {
 export type EditorProjectPaths = {
   root_path: string;
   manifest_path: string;
+  editor_state_path: string;
+  workspace_metadata_path: string;
   ui_dir: string;
   rust_logic_path: string;
   rust_source_map_path: string;
@@ -1014,6 +1238,8 @@ export type GeneratedRustSourceMap = {
   entries: GeneratedRustSourceMapEntry[];
 };
 
+export type ResizeHandle = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
+
 export type DragSession =
   | {
       kind: "move";
@@ -1026,6 +1252,7 @@ export type DragSession =
   | {
       kind: "resize";
       id: string;
+      handle: ResizeHandle;
       startClientX: number;
       startClientY: number;
       originWidth: number;

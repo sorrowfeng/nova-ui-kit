@@ -100,8 +100,35 @@ pub(super) fn project_name(project: &Value) -> String {
         .to_string()
 }
 
+fn active_project_page(project: &Value) -> Option<&Value> {
+    let files = project.get("files").and_then(Value::as_array)?;
+    let active_file_id = project
+        .get("activeFileId")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    files
+        .iter()
+        .find(|file| {
+            !active_file_id.is_empty()
+                && file
+                    .get("id")
+                    .and_then(Value::as_str)
+                    .is_some_and(|id| id == active_file_id)
+        })
+        .or_else(|| files.first())
+        .and_then(|file| file.get("page"))
+}
+
+fn page_has_window_shape_settings(page: &Value) -> bool {
+    page.get("windowKind").is_some()
+        || page.get("titlebarStyle").is_some()
+        || page.get("titlebarSubtitle").is_some()
+}
+
 pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedReleaseConfig {
     let config = project.get("releaseConfig").unwrap_or(&Value::Null);
+    let active_page = active_project_page(project);
+    let page_overrides_window = active_page.is_some_and(page_has_window_shape_settings);
     let app_name = string_field(config, "appName", project_name);
     let slug = slugify(&app_name);
     let identifier = bundle_identifier(
@@ -135,10 +162,68 @@ pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedRe
             .and_then(Value::as_str)
             .unwrap_or("unsigned"),
     );
-    let window_width = number_field(config, "windowWidth", 1200, 320, 3840);
-    let window_height = number_field(config, "windowHeight", 800, 240, 2160);
+    let configured_window_width = number_field(config, "windowWidth", 1200, 320, 3840);
+    let configured_window_height = number_field(config, "windowHeight", 800, 240, 2160);
+    let window_width = if page_overrides_window {
+        active_page
+            .map(|page| number_field(page, "width", configured_window_width, 320, 3840))
+            .unwrap_or(configured_window_width)
+    } else {
+        configured_window_width
+    };
+    let window_height = if page_overrides_window {
+        active_page
+            .map(|page| number_field(page, "height", configured_window_height, 240, 2160))
+            .unwrap_or(configured_window_height)
+    } else {
+        configured_window_height
+    };
     let min_window_width = number_field(config, "minWindowWidth", 720, 240, window_width);
     let min_window_height = number_field(config, "minWindowHeight", 480, 180, window_height);
+    let configured_window_kind = config
+        .get("windowKind")
+        .and_then(Value::as_str)
+        .unwrap_or("main");
+    let window_kind_source = if page_overrides_window {
+        active_page
+            .and_then(|page| page.get("windowKind"))
+            .and_then(Value::as_str)
+            .unwrap_or(configured_window_kind)
+    } else {
+        configured_window_kind
+    };
+    let window_kind = release_window_kind(window_kind_source);
+    let configured_titlebar_style = config
+        .get("titlebarStyle")
+        .and_then(Value::as_str)
+        .unwrap_or("nova");
+    let titlebar_style_source = if page_overrides_window {
+        active_page
+            .and_then(|page| page.get("titlebarStyle"))
+            .and_then(Value::as_str)
+            .unwrap_or(configured_titlebar_style)
+    } else {
+        configured_titlebar_style
+    };
+    let titlebar_style = release_titlebar_style(titlebar_style_source, &window_kind);
+    let window_title = if page_overrides_window {
+        string_field(
+            active_page.unwrap_or(config),
+            "title",
+            &string_field(config, "windowTitle", &app_name),
+        )
+    } else {
+        string_field(config, "windowTitle", &app_name)
+    };
+    let titlebar_subtitle = if page_overrides_window {
+        string_field(
+            active_page.unwrap_or(config),
+            "titlebarSubtitle",
+            &string_field(config, "titlebarSubtitle", "Desktop app"),
+        )
+    } else {
+        string_field(config, "titlebarSubtitle", "Desktop app")
+    };
 
     GeneratedReleaseConfig {
         app_name: app_name.clone(),
@@ -203,24 +288,10 @@ pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedRe
             .map(str::trim)
             .filter(|value| !value.is_empty())
             .map(ToString::to_string),
-        window_title: string_field(config, "windowTitle", &app_name),
-        window_kind: release_window_kind(
-            config
-                .get("windowKind")
-                .and_then(Value::as_str)
-                .unwrap_or("main"),
-        ),
-        titlebar_style: release_titlebar_style(
-            config
-                .get("titlebarStyle")
-                .and_then(Value::as_str)
-                .unwrap_or("nova"),
-            config
-                .get("windowKind")
-                .and_then(Value::as_str)
-                .unwrap_or("main"),
-        ),
-        titlebar_subtitle: string_field(config, "titlebarSubtitle", "Desktop app"),
+        window_title,
+        window_kind,
+        titlebar_style,
+        titlebar_subtitle,
         window_width,
         window_height,
         min_window_width,

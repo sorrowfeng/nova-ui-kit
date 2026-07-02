@@ -1,9 +1,33 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { ChevronUp, Maximize2, Minimize2, X } from "lucide-react";
 import type { BuilderDockTab } from "./ProjectDock";
 import { DockTabList } from "./ProjectDock";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+const OUTPUT_DOCK_MIN_HEIGHT = 300;
+const OUTPUT_DOCK_COMPACT_MIN_HEIGHT = 192;
+const OUTPUT_DOCK_DEFAULT_HEIGHT = 360;
+const OUTPUT_DOCK_RESIZE_STEP = 24;
+const OUTPUT_DOCK_VIEWPORT_MARGIN = 88;
+const OUTPUT_DOCK_STATUS_BAR_OFFSET = "2rem";
+
+function outputDockViewportMaxHeight() {
+  if (typeof window === "undefined") {
+    return 720;
+  }
+  return Math.max(OUTPUT_DOCK_COMPACT_MIN_HEIGHT, window.innerHeight - OUTPUT_DOCK_VIEWPORT_MARGIN);
+}
+
+function outputDockMinHeight() {
+  return Math.min(OUTPUT_DOCK_MIN_HEIGHT, outputDockViewportMaxHeight());
+}
+
+function boundedOutputDockHeight(height: number) {
+  const viewportMax = outputDockViewportMaxHeight();
+  const viewportMin = outputDockMinHeight();
+  return Math.min(Math.max(Math.round(height), viewportMin), viewportMax);
+}
 
 export function OutputDock<T extends string>({
   tabs,
@@ -14,7 +38,10 @@ export function OutputDock<T extends string>({
   minimized = false,
   onMinimizedChange,
   avoidDesignSideDocks = false,
+  height,
+  onHeightChange,
   summary,
+  minimizedSummary,
   children,
 }: {
   tabs: BuilderDockTab<T>[];
@@ -25,32 +52,194 @@ export function OutputDock<T extends string>({
   minimized?: boolean;
   onMinimizedChange?: (minimized: boolean) => void;
   avoidDesignSideDocks?: boolean;
+  height?: number;
+  onHeightChange?: (height: number) => void;
   summary?: ReactNode;
+  minimizedSummary?: ReactNode;
   children: ReactNode;
 }) {
+  const [fallbackHeight, setFallbackHeight] = useState(OUTPUT_DOCK_DEFAULT_HEIGHT);
+  const [resizing, setResizing] = useState(false);
+  const resizeStartRef = useRef<{ pointerId: number; startY: number; startHeight: number } | null>(null);
   const ExpandIcon = expanded ? Minimize2 : Maximize2;
+  const dockMinHeight = outputDockMinHeight();
+  const dockMaxHeight = outputDockViewportMaxHeight();
+  const dockHeight = boundedOutputDockHeight(height ?? fallbackHeight);
+  const dockShortViewport = dockMaxHeight < OUTPUT_DOCK_MIN_HEIGHT;
+  const dockHeightClass = minimized ? "h-[3.25rem]" : "max-h-[calc(100vh-5.5rem)]";
+  const dockShellClass = "pointer-events-none overflow-visible rounded-none border border-transparent bg-transparent shadow-none backdrop-blur-0";
+  const dockPanelChromeClass =
+    "pointer-events-auto relative overflow-hidden rounded-[26px] border border-outline-variant/90 bg-surface-container-lowest/98 shadow-m3-3 backdrop-blur-2xl";
+  const dockMotionClass = minimized ? "transition-none" : "transition-[height]";
+  const dockSurfaceStyle = {
+    "--builder-output-dock-statusbar-offset": OUTPUT_DOCK_STATUS_BAR_OFFSET,
+    "--builder-output-dock-safe-bottom": "calc(var(--builder-output-dock-statusbar-offset) + max(0.5rem, env(safe-area-inset-bottom)))",
+    bottom: "var(--builder-output-dock-safe-bottom)",
+    contain: "layout paint",
+  } as CSSProperties;
+  const dockStyle = minimized
+    ? ({
+        ...dockSurfaceStyle,
+        height: "3.25rem",
+        minHeight: "3.25rem",
+        maxHeight: "3.25rem",
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        boxShadow: "none",
+      } as CSSProperties)
+    : ({
+        ...dockSurfaceStyle,
+        "--builder-output-dock-height": `${dockHeight}px`,
+        "--builder-output-dock-min-height": `${dockMinHeight}px`,
+        "--builder-output-dock-max-height": `${dockMaxHeight}px`,
+        height: "min(var(--builder-output-dock-height), var(--builder-output-dock-max-height))",
+        minHeight: "var(--builder-output-dock-min-height)",
+        maxHeight: "var(--builder-output-dock-max-height)",
+      } as CSSProperties);
+  const bodyLayoutClass = expanded
+    ? cn(
+        "grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[minmax(220px,300px)_minmax(0,1fr)] lg:grid-rows-1",
+        dockShortViewport ? "gap-2 p-2 pt-3" : "gap-2.5 p-2.5 pt-4",
+      )
+    : cn("grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)]", dockShortViewport ? "gap-1.5 p-2 pt-3" : "gap-2 p-2.5 pt-4");
+  const summaryLayoutClass = expanded
+    ? "grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-2 overflow-hidden"
+    : "grid min-w-0 gap-2";
+  const summaryCardClass = expanded
+    ? "subtle-scrollbar min-h-0 min-w-0 overflow-auto overscroll-contain break-words rounded-[22px] border border-outline-variant/70 bg-surface-container-low p-2.5 [overflow-wrap:anywhere]"
+    : "subtle-scrollbar max-h-[5.75rem] min-w-0 overflow-auto overscroll-contain break-words rounded-[20px] border border-outline-variant/70 bg-surface-container-low p-2 [overflow-wrap:anywhere]";
+  const contentPanelClass =
+    "subtle-scrollbar h-full min-h-0 min-w-0 overflow-auto overscroll-contain break-words rounded-[24px] border border-outline-variant bg-surface-container p-3 shadow-m3-1 [overflow-wrap:anywhere]";
+  const dockPanelStyle = {
+    backgroundColor: "hsl(var(--surface-container-lowest) / 0.98)",
+    borderColor: "hsl(var(--outline-variant) / 0.9)",
+    boxShadow: "0 4px 8px 3px hsl(var(--shadow) / 0.08), 0 1px 3px hsl(var(--shadow) / 0.16)",
+    WebkitBackdropFilter: "blur(24px)",
+    backdropFilter: "blur(24px)",
+  } as CSSProperties;
+  const minimizedPillStyle = {
+    maxWidth: "min(54rem, calc(100vw - 2rem))",
+    backgroundColor: "hsl(var(--surface-container-lowest) / 0.98)",
+    borderColor: "hsl(var(--outline-variant) / 0.9)",
+    boxShadow: "0 4px 8px 3px hsl(var(--shadow) / 0.08), 0 1px 3px hsl(var(--shadow) / 0.16)",
+    WebkitBackdropFilter: "blur(24px)",
+    backdropFilter: "blur(24px)",
+  } as CSSProperties;
   const handleTabChange = (tab: T) => {
     onTabChange(tab);
     if (minimized) {
       onMinimizedChange?.(false);
     }
   };
+  const commitHeight = (nextHeight: number) => {
+    const bounded = boundedOutputDockHeight(nextHeight);
+    if (height === undefined) {
+      setFallbackHeight(bounded);
+    }
+    onHeightChange?.(bounded);
+  };
+  const startResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (minimized || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    resizeStartRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startHeight: dockHeight,
+    };
+    setResizing(true);
+  };
+  const moveResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const session = resizeStartRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+    commitHeight(session.startHeight + session.startY - event.clientY);
+  };
+  const stopResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const session = resizeStartRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+    resizeStartRef.current = null;
+    setResizing(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+  const resizeFromKeyboard = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      commitHeight(dockHeight + OUTPUT_DOCK_RESIZE_STEP);
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      commitHeight(dockHeight - OUTPUT_DOCK_RESIZE_STEP);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      commitHeight(OUTPUT_DOCK_MIN_HEIGHT);
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      commitHeight(outputDockViewportMaxHeight());
+    }
+  };
 
   return (
     <section
       className={cn(
-        "fixed bottom-3 left-3 right-3 z-20 shrink-0 overflow-hidden rounded-[22px] border border-outline-variant bg-surface-container-lowest/95 shadow-m3-3 backdrop-blur transition-[height,left,right,bottom] md:left-[104px] md:right-4",
-        avoidDesignSideDocks && "xl:left-[360px] xl:right-[336px]",
-        minimized ? "h-[52px]" : expanded ? "h-[288px]" : "h-[132px]",
+        "isolate fixed bottom-2 left-2 right-2 z-40 shrink-0 md:left-[96px] md:right-3",
+        resizing && "select-none",
+        avoidDesignSideDocks && "xl:left-[348px] xl:right-[324px]",
+        dockShellClass,
+        dockMotionClass,
+        dockHeightClass,
       )}
+      style={dockStyle}
       data-builder-output-dock=""
       data-builder-output-dock-expanded={expanded ? "true" : "false"}
+      data-builder-output-dock-layout={minimized ? "minimized" : expanded ? "expanded" : "standard"}
+      data-builder-output-dock-height={minimized ? "minimized" : dockHeight}
+      data-builder-output-dock-min-height={minimized ? "minimized" : dockMinHeight}
+      data-builder-output-dock-max-height={minimized ? "minimized" : dockMaxHeight}
+      data-builder-output-dock-viewport-fit=""
+      data-builder-output-dock-short-viewport={dockShortViewport ? "true" : "false"}
       data-builder-output-dock-minimized={minimized ? "true" : "false"}
+      data-builder-output-dock-resizing={resizing ? "true" : "false"}
+      data-builder-output-dock-shell="floating-rounded"
+      data-builder-output-dock-minimized-chrome={minimized ? "floating-pill" : "full-panel"}
+      data-builder-output-dock-no-reserved-band=""
+      data-builder-output-dock-safe-area="bottom"
+      data-builder-output-dock-statusbar-offset=""
+      data-builder-output-dock-transparent-shell=""
+      data-builder-output-dock-no-background-shield=""
+      data-builder-output-dock-content-clip="scroll-panels"
       aria-label="Editor output dock"
     >
       {minimized ? (
-        <div className="grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2">
+        <div
+          className={cn(
+            "pointer-events-auto mx-auto grid h-full max-w-[min(46rem,calc(100vw-2rem))] min-w-0 items-center gap-2 overflow-hidden rounded-[18px] border border-outline-variant/90 bg-surface-container-lowest/98 px-2 py-1.5 shadow-m3-3 backdrop-blur-2xl md:max-w-[min(54rem,calc(100vw-8rem))]",
+            minimizedSummary
+              ? "grid-cols-[minmax(9rem,0.8fr)_minmax(0,1.2fr)_auto]"
+              : "grid-cols-[minmax(0,1fr)_auto]",
+          )}
+          style={minimizedPillStyle}
+          data-builder-output-dock-minimized-shell=""
+        >
           <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
+          {minimizedSummary ? (
+            <div
+              className="subtle-scrollbar hidden min-w-0 items-center overflow-x-auto rounded-2xl border border-outline-variant/70 bg-surface-container px-2 py-1 text-xs md:flex"
+              data-builder-output-dock-minimized-summary=""
+              data-builder-output-dock-minimized-peek=""
+            >
+              {minimizedSummary}
+            </div>
+          ) : null}
           <Button
             size="icon-sm"
             variant="secondary"
@@ -63,9 +252,37 @@ export function OutputDock<T extends string>({
           </Button>
         </div>
       ) : (
-        <div className="grid h-full min-h-0 gap-3 px-3 py-3 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
-          <div className="grid min-h-0 gap-2">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <div
+          className={cn(
+            bodyLayoutClass,
+            dockPanelChromeClass,
+            resizing && "border-primary/60 shadow-[0_18px_60px_hsl(var(--shadow)/0.24)]",
+          )}
+          style={dockPanelStyle}
+          data-builder-output-dock-body=""
+          data-builder-output-dock-panel="surface"
+        >
+          <button
+            type="button"
+            className={cn(
+              "focus-ring absolute left-10 right-10 top-1.5 z-10 flex h-3 cursor-row-resize items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary",
+              resizing && "bg-primary/12 text-primary",
+            )}
+            aria-label="调整输出面板高度"
+            aria-valuemin={dockMinHeight}
+            aria-valuemax={dockMaxHeight}
+            aria-valuenow={dockHeight}
+            data-builder-output-dock-resize-handle=""
+            onPointerDown={startResize}
+            onPointerMove={moveResize}
+            onPointerUp={stopResize}
+            onPointerCancel={stopResize}
+            onKeyDown={resizeFromKeyboard}
+          >
+            <span className="h-1 w-14 rounded-full bg-current opacity-40" />
+          </button>
+          <div className={summaryLayoutClass}>
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2" data-builder-output-dock-header="">
               <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
               <div className="flex items-start gap-1">
                 {onMinimizedChange ? (
@@ -93,9 +310,22 @@ export function OutputDock<T extends string>({
                 ) : null}
               </div>
             </div>
-            {summary ? <div className="min-h-0 overflow-auto">{summary}</div> : null}
+            {summary ? (
+              <div
+                className={summaryCardClass}
+                data-builder-output-dock-summary=""
+                data-builder-output-dock-rounded-panel=""
+              >
+                {summary}
+              </div>
+            ) : null}
           </div>
-          <div className="min-h-0 overflow-auto rounded-2xl border border-outline-variant bg-surface-container p-3">
+          <div
+            className={contentPanelClass}
+            data-builder-output-dock-content=""
+            data-builder-output-dock-rounded-content=""
+            data-builder-output-dock-wrap-policy="break-anywhere"
+          >
             {children}
           </div>
         </div>

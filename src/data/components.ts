@@ -37,7 +37,7 @@ export const showcaseNavItems: ShowcaseNavItem[] = [
     description: "新建项目、管理 UI 文件，并通过自由画布拖拽构建桌面界面。",
     category: "编辑器",
     icon: PanelsTopLeft,
-    tags: ["项目", "UI 文件", "拖拽", "画布", "属性面板", "导出", "Tauri"],
+    tags: ["项目", "UI 文件", "拖拽", "画布", "属性面板", "构建", "Tauri"],
   },
 ];
 

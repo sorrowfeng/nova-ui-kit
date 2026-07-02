@@ -1,4 +1,5 @@
-import { Bell, Check, Command, Download, Menu, Moon, Palette, Save, Search, Settings, SlidersHorizontal, Sun } from "lucide-react";
+import { useRef, useState } from "react";
+import { Bell, Check, Command, Menu, MoreHorizontal, Save, Search, Settings, X } from "lucide-react";
 import type { AppCopy } from "@/lib/i18n";
 import type { AppLanguage, Density, ThemeMode, ThemeScheme } from "@/lib/preferences";
 import { densityOptions, schemeOptions, themeOptions } from "@/lib/preferences";
@@ -18,6 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type TopbarProps = {
   searchQuery: string;
@@ -33,9 +35,11 @@ type TopbarProps = {
   onOpenCommand: () => void;
   onOpenSettings: () => void;
   onSaveProject: () => void;
-  onExportProject: () => void;
   onOpenMobileNav: () => void;
   onToast: () => void;
+  notificationsEnabled: boolean;
+  toolbarLabelsVisible: boolean;
+  commandHintsVisible: boolean;
 };
 
 export function Topbar({
@@ -52,15 +56,32 @@ export function Topbar({
   onOpenCommand,
   onOpenSettings,
   onSaveProject,
-  onExportProject,
   onOpenMobileNav,
   onToast,
+  notificationsEnabled,
+  toolbarLabelsVisible,
+  commandHintsVisible,
 }: TopbarProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchVisible = searchOpen || searchQuery.trim().length > 0;
+  const openSearch = () => {
+    setSearchOpen(true);
+    window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    });
+  };
+
   return (
-    <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 bg-surface-container-lowest px-5">
+    <header
+      className="sticky top-0 z-30 flex h-10 shrink-0 items-center gap-2 border-b border-outline-variant/70 bg-surface-container-lowest px-3"
+      data-showcase-topbar="compact-library-only"
+      data-topbar-scope="component-library"
+    >
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         aria-label={copy.topbar.openNav}
         className="lg:hidden"
         onClick={onOpenMobileNav}
@@ -68,67 +89,116 @@ export function Topbar({
         <Menu />
       </Button>
 
-      <div className="relative min-w-0 flex-1 md:max-w-xl">
-        <Search aria-hidden className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant" />
-        <Input
-          aria-label={copy.topbar.searchAria}
-          value={searchQuery}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={copy.topbar.searchPlaceholder}
-          className="h-12 rounded-full bg-surface-container-high pl-12 pr-24 text-base"
-        />
-        <button
-          type="button"
-          className="focus-ring absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-full bg-surface-container-highest px-3 py-1 text-xs font-medium text-on-surface-variant transition-colors hover:text-on-surface md:flex"
-          onClick={onOpenCommand}
-          aria-label={copy.topbar.openCommand}
-        >
-          <Command aria-hidden className="size-3" />
-          K
-        </button>
-      </div>
-
-      <div className="ml-auto hidden items-center gap-2 xl:flex">
-        <SegmentedControl
-          aria-label={copy.topbar.density}
-          value={density}
-          onValueChange={(value) => onDensityChange(value as Density)}
-          options={densityOptions.map((option) => ({
-            value: option.value,
-            label: language === "zh-CN" ? option.labelZh : option.labelEn,
-          }))}
-        />
+      <div
+        className={cn(
+          "relative min-w-0 flex-none transition-[width] duration-150",
+          searchVisible ? "w-[min(28rem,44vw)]" : "w-8",
+        )}
+        data-topbar-search-state={searchVisible ? "expanded" : "collapsed"}
+      >
+        {searchVisible ? (
+          <>
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
+            <Input
+              ref={searchInputRef}
+              aria-label={copy.topbar.searchAria}
+              value={searchQuery}
+              onChange={(event) => onSearchChange(event.target.value)}
+              onBlur={() => window.setTimeout(() => !searchQuery.trim() && setSearchOpen(false), 120)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  onSearchChange("");
+                  setSearchOpen(false);
+                  searchInputRef.current?.blur();
+                }
+              }}
+              placeholder={copy.topbar.searchPlaceholder}
+              className={cn("h-8 rounded-lg border-outline-variant bg-surface-container pl-8 text-xs shadow-none", commandHintsVisible ? "pr-20" : "pr-9")}
+              data-topbar-search-expanded=""
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="focus-ring absolute right-1.5 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
+                aria-label={copy.topbar.clearSearch}
+                data-topbar-search-clear=""
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onSearchChange("");
+                  searchInputRef.current?.focus();
+                }}
+              >
+                <X aria-hidden className="size-3.5" />
+              </button>
+            ) : commandHintsVisible ? (
+              <button
+                type="button"
+                className="focus-ring absolute right-1.5 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] font-medium text-on-surface-variant transition-colors hover:text-on-surface md:flex"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={onOpenCommand}
+                aria-label={copy.topbar.openCommand}
+              >
+                <Command aria-hidden className="size-3" />
+                K
+              </button>
+            ) : null}
+          </>
+        ) : (
+          <button
+            type="button"
+            className="focus-ring flex size-8 items-center justify-center rounded-lg border border-outline-variant bg-surface-container text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
+            aria-label={copy.topbar.searchAria}
+            title={copy.topbar.searchPlaceholder}
+            data-topbar-search-collapsed=""
+            onClick={openSearch}
+          >
+            <Search aria-hidden className="size-3.5" />
+          </button>
+        )}
       </div>
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label={copy.topbar.openCommand} onClick={onOpenCommand}>
+          <Button variant="ghost" size="icon-sm" className="md:hidden" aria-label={copy.topbar.openCommand} onClick={onOpenCommand}>
             <Command />
           </Button>
         </TooltipTrigger>
         <TooltipContent>{copy.topbar.commandPalette}</TooltipContent>
       </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label={copy.topbar.openSettings} onClick={onOpenSettings}>
-            <Settings />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{copy.topbar.openSettings}</TooltipContent>
-      </Tooltip>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="hidden gap-2 md:inline-flex" aria-label={copy.topbar.theme}>
-            {theme === "dark" ? <Moon aria-hidden /> : theme === "light" ? <Sun aria-hidden /> : <Palette aria-hidden />}
-            {copy.topbar.theme}
+          <Button
+            variant="ghost"
+            size={toolbarLabelsVisible ? "sm" : "icon-sm"}
+            className={cn("h-8 rounded-lg", toolbarLabelsVisible ? "gap-1.5 px-2 text-xs" : "px-0")}
+            aria-label={copy.topbar.densityControl}
+          >
+            <MoreHorizontal aria-hidden className="size-4" />
+            <span className={toolbarLabelsVisible ? "" : "sr-only"}>{copy.topbar.tools}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuContent align="end" className="w-60">
+          <DropdownMenuLabel>{copy.topbar.tools}</DropdownMenuLabel>
+          <DropdownMenuItem onSelect={onOpenCommand}>
+            <Command aria-hidden className="size-4" />
+            <span className="min-w-0 flex-1 truncate">{copy.topbar.commandPalette}</span>
+            {commandHintsVisible ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span> : null}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onSaveProject}>
+            <Save aria-hidden className="size-4" />
+            <span className="min-w-0 flex-1 truncate">{copy.topbar.saveProject}</span>
+            {commandHintsVisible ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+S</span> : null}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={!notificationsEnabled} onSelect={onToast}>
+            <Bell aria-hidden className="size-4" />
+            {notificationsEnabled ? copy.topbar.notify : copy.topbar.notifyDisabled}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuLabel>{copy.topbar.displayMode}</DropdownMenuLabel>
           {themeOptions.map((option) => (
-            <DropdownMenuItem key={option.value} onClick={() => onThemeChange(option.value)}>
+            <DropdownMenuItem key={option.value} onSelect={() => onThemeChange(option.value)}>
               <Check aria-hidden className={theme === option.value ? "opacity-100" : "opacity-0"} />
               {language === "zh-CN" ? option.labelZh : option.labelEn}
             </DropdownMenuItem>
@@ -136,57 +206,29 @@ export function Topbar({
           <DropdownMenuSeparator />
           <DropdownMenuLabel>{copy.topbar.colorScheme}</DropdownMenuLabel>
           {schemeOptions.map((option) => (
-            <DropdownMenuItem key={option.value} onClick={() => onSchemeChange(option.value)}>
+            <DropdownMenuItem key={option.value} onSelect={() => onSchemeChange(option.value)}>
               <Check aria-hidden className={scheme === option.value ? "opacity-100" : "opacity-0"} />
               {language === "zh-CN" ? option.labelZh : option.labelEn}
             </DropdownMenuItem>
           ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label={copy.topbar.sendNotification} onClick={onToast}>
-            <Bell />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{copy.topbar.notify}</TooltipContent>
-      </Tooltip>
-
-      <Button variant="secondary" className="hidden gap-2 md:inline-flex" onClick={onSaveProject}>
-        <Save aria-hidden />
-        {copy.topbar.saveProject}
-      </Button>
-
-      <Button className="hidden gap-2 md:inline-flex" onClick={onExportProject}>
-        <Download aria-hidden />
-        {copy.topbar.export}
-      </Button>
-
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label={copy.topbar.densityControl} className="xl:hidden">
-                <SlidersHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            {copy.topbar.density}：
-            {language === "zh-CN"
-              ? densityOptions.find((option) => option.value === density)?.labelZh
-              : densityOptions.find((option) => option.value === density)?.labelEn}
-          </TooltipContent>
-        </Tooltip>
-        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuSeparator />
           <DropdownMenuLabel>{copy.topbar.density}</DropdownMenuLabel>
-          {densityOptions.map((option) => (
-            <DropdownMenuItem key={option.value} onClick={() => onDensityChange(option.value)}>
-              <Check aria-hidden className={density === option.value ? "opacity-100" : "opacity-0"} />
-              {language === "zh-CN" ? option.labelZh : option.labelEn}
-            </DropdownMenuItem>
-          ))}
+          <div className="px-2 py-1">
+            <SegmentedControl
+              aria-label={copy.topbar.density}
+              value={density}
+              onValueChange={(value) => onDensityChange(value as Density)}
+              options={densityOptions.map((option) => ({
+                value: option.value,
+                label: language === "zh-CN" ? option.labelZh : option.labelEn,
+              }))}
+            />
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onOpenSettings}>
+            <Settings aria-hidden className="size-4" />
+            {copy.topbar.openSettings}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

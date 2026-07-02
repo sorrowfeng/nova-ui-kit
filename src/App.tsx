@@ -3,11 +3,9 @@ import {
   Box,
   CheckCircle2,
   Download,
-  FileDown,
   FilePlus2,
   FolderOpen,
   HelpCircle,
-  Monitor,
   Play,
   Save,
   Settings,
@@ -25,12 +23,16 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
+  toastIconClassName,
 } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { showcaseNavItems, type ShowcaseId } from "@/data/components";
 import { getAppCopy, type AppCopy } from "@/lib/i18n";
 import { dispatchNovaEditorCommand, type NovaEditorCommand } from "@/lib/editor-commands";
-import type { AppLanguage, Density, MotionPreference, ThemeMode, ThemeScheme } from "@/lib/preferences";
+import { DEFAULT_APP_LANGUAGE, type AppLanguage, type Density, type FontScale, type MotionPreference, type ThemeMode, type ThemeScheme } from "@/lib/preferences";
+
+const LANGUAGE_USER_SET_KEY = "nova-language-user-set";
+const LANGUAGE_ZH_DEFAULT_MIGRATION_KEY = "nova-language-zh-default-migrated";
 
 function createEditorCommandActions(copy: AppCopy): CommandPaletteAction[] {
   return [
@@ -70,6 +72,15 @@ function createEditorCommandActions(copy: AppCopy): CommandPaletteAction[] {
     icon: Settings,
     tags: ["settings", "preferences", "language", "theme", "设置", "语言", "主题"],
     command: "open-app-settings",
+  },
+  {
+    id: "editor-action-mode-project",
+    title: copy.commands.modeProject[0],
+    description: copy.commands.modeProject[1],
+    category: copy.commands.categories.mode,
+    icon: FolderOpen,
+    tags: ["project", "files", "metadata", "工程", "项目", "文件树"],
+    command: "mode-project",
   },
   {
     id: "editor-action-mode-design",
@@ -124,24 +135,6 @@ function createEditorCommandActions(copy: AppCopy): CommandPaletteAction[] {
     icon: Terminal,
     tags: ["build", "output", "logs", "构建", "输出"],
     command: "open-build-output",
-  },
-  {
-    id: "editor-action-mode-preview",
-    title: copy.commands.modePreview[0],
-    description: copy.commands.modePreview[1],
-    category: copy.commands.categories.mode,
-    icon: Monitor,
-    tags: ["preview", "simulate", "预览", "模拟"],
-    command: "mode-preview",
-  },
-  {
-    id: "editor-action-mode-export",
-    title: copy.commands.modeExport[0],
-    description: copy.commands.modeExport[1],
-    category: copy.commands.categories.mode,
-    icon: FileDown,
-    tags: ["export", "code", "files", "导出", "代码"],
-    command: "mode-export",
   },
   {
     id: "editor-action-run-event",
@@ -217,13 +210,24 @@ function getInitialScheme(): ThemeScheme {
 
 function getInitialLanguage(): AppLanguage {
   if (typeof window === "undefined") {
-    return "zh-CN";
+    return DEFAULT_APP_LANGUAGE;
   }
   const stored = window.localStorage.getItem("nova-language");
-  if (stored === "zh-CN" || stored === "en-US") {
-    return stored;
+  const storedLanguage = stored === "zh-CN" || stored === "en-US" ? stored : null;
+  const userSetLanguage = window.localStorage.getItem(LANGUAGE_USER_SET_KEY) === "true";
+  if (storedLanguage && userSetLanguage) {
+    window.localStorage.setItem(LANGUAGE_ZH_DEFAULT_MIGRATION_KEY, "true");
+    return storedLanguage;
   }
-  return "zh-CN";
+  if (!userSetLanguage) {
+    window.localStorage.setItem(LANGUAGE_ZH_DEFAULT_MIGRATION_KEY, "true");
+    window.localStorage.setItem("nova-language", DEFAULT_APP_LANGUAGE);
+    return DEFAULT_APP_LANGUAGE;
+  }
+  window.localStorage.setItem(LANGUAGE_USER_SET_KEY, "false");
+  window.localStorage.setItem(LANGUAGE_ZH_DEFAULT_MIGRATION_KEY, "true");
+  window.localStorage.setItem("nova-language", DEFAULT_APP_LANGUAGE);
+  return DEFAULT_APP_LANGUAGE;
 }
 
 function getInitialDensity(): Density {
@@ -246,6 +250,17 @@ function getInitialMotion(): MotionPreference {
     return stored;
   }
   return "full";
+}
+
+function getInitialFontScale(): FontScale {
+  if (typeof window === "undefined") {
+    return "default";
+  }
+  const stored = window.localStorage.getItem("nova-font-scale");
+  if (stored === "small" || stored === "default" || stored === "large") {
+    return stored;
+  }
+  return "default";
 }
 
 function getInitialBoolean(key: string, fallback: boolean) {
@@ -274,7 +289,14 @@ function App() {
   const [scheme, setScheme] = useState<ThemeScheme>(() => getInitialScheme());
   const [density, setDensity] = useState<Density>(() => getInitialDensity());
   const [motion, setMotion] = useState<MotionPreference>(() => getInitialMotion());
+  const [fontScale, setFontScale] = useState<FontScale>(() => getInitialFontScale());
   const [statusBarVisible, setStatusBarVisible] = useState(() => getInitialBoolean("nova-status-bar-visible", true));
+  const [toolbarLabelsVisible, setToolbarLabelsVisible] = useState(() => getInitialBoolean("nova-toolbar-labels-visible", true));
+  const [commandHintsVisible, setCommandHintsVisible] = useState(() => getInitialBoolean("nova-command-hints-visible", true));
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => getInitialBoolean("nova-auto-save-enabled", true));
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => getInitialBoolean("nova-notifications-enabled", true));
+  const [compactSidebar, setCompactSidebar] = useState(() => getInitialBoolean("nova-sidebar-compact", false));
+  const [focusModeEnabled, setFocusModeEnabled] = useState(() => getInitialBoolean("nova-focus-mode-enabled", false));
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
@@ -284,6 +306,14 @@ function App() {
   );
   const copy = useMemo(() => getAppCopy(language), [language]);
   const editorCommandActions = useMemo(() => createEditorCommandActions(copy), [copy]);
+
+  const handleLanguageChange = useCallback((nextLanguage: AppLanguage) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_USER_SET_KEY, "true");
+      window.localStorage.setItem(LANGUAGE_ZH_DEFAULT_MIGRATION_KEY, "true");
+    }
+    setLanguage(nextLanguage);
+  }, []);
 
   const runEditorCommand = useCallback((command: NovaEditorCommand) => {
     if (command === "open-app-settings") {
@@ -307,22 +337,49 @@ function App() {
     document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
     document.documentElement.dataset.theme = scheme;
     document.documentElement.dataset.motion = motion;
+    document.documentElement.dataset.toolbarLabels = toolbarLabelsVisible ? "visible" : "icons";
+    document.documentElement.dataset.commandHints = commandHintsVisible ? "visible" : "hidden";
+    document.documentElement.dataset.autoSave = autoSaveEnabled ? "enabled" : "manual";
+    document.documentElement.dataset.notifications = notificationsEnabled ? "enabled" : "muted";
+    document.documentElement.dataset.sidebar = compactSidebar ? "compact" : "full";
+    document.documentElement.dataset.focusMode = focusModeEnabled ? "enabled" : "disabled";
+    document.documentElement.dataset.fontScale = fontScale;
+    document.documentElement.dataset.density = density;
+    document.documentElement.dataset.language = language;
     document.documentElement.lang = language;
     window.localStorage.setItem("nova-theme-mode", theme);
     window.localStorage.setItem("nova-theme-scheme", scheme);
     window.localStorage.setItem("nova-density", density);
     window.localStorage.setItem("nova-language", language);
     window.localStorage.setItem("nova-motion", motion);
+    window.localStorage.setItem("nova-font-scale", fontScale);
     window.localStorage.setItem("nova-status-bar-visible", String(statusBarVisible));
-  }, [density, language, motion, scheme, statusBarVisible, systemDark, theme]);
+    window.localStorage.setItem("nova-toolbar-labels-visible", String(toolbarLabelsVisible));
+    window.localStorage.setItem("nova-command-hints-visible", String(commandHintsVisible));
+    window.localStorage.setItem("nova-auto-save-enabled", String(autoSaveEnabled));
+    window.localStorage.setItem("nova-notifications-enabled", String(notificationsEnabled));
+    window.localStorage.setItem("nova-sidebar-compact", String(compactSidebar));
+    window.localStorage.setItem("nova-focus-mode-enabled", String(focusModeEnabled));
+  }, [autoSaveEnabled, commandHintsVisible, compactSidebar, density, focusModeEnabled, fontScale, language, motion, notificationsEnabled, scheme, statusBarVisible, systemDark, theme, toolbarLabelsVisible]);
 
   const resetPreferences = useCallback(() => {
-    setLanguage("zh-CN");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LANGUAGE_USER_SET_KEY, "false");
+      window.localStorage.setItem(LANGUAGE_ZH_DEFAULT_MIGRATION_KEY, "true");
+    }
+    setLanguage(DEFAULT_APP_LANGUAGE);
     setTheme("system");
     setScheme("violet");
     setDensity("cozy");
     setMotion("full");
+    setFontScale("default");
     setStatusBarVisible(true);
+    setToolbarLabelsVisible(true);
+    setCommandHintsVisible(true);
+    setAutoSaveEnabled(true);
+    setNotificationsEnabled(true);
+    setCompactSidebar(false);
+    setFocusModeEnabled(false);
   }, []);
 
   useEffect(() => {
@@ -393,13 +450,21 @@ function App() {
   const activeItem = showcaseNavItems.find((item) => item.id === activeId) ?? showcaseNavItems[0];
 
   const showToast = () => {
+    if (!notificationsEnabled) {
+      return;
+    }
     setToastOpen(false);
     window.setTimeout(() => setToastOpen(true), 20);
   };
 
+  const effectiveStatusBarVisible = statusBarVisible && !focusModeEnabled;
+  const effectiveToolbarLabelsVisible = toolbarLabelsVisible && !focusModeEnabled;
+  const effectiveCommandHintsVisible = commandHintsVisible && !focusModeEnabled;
+  const effectiveCompactSidebar = compactSidebar || focusModeEnabled;
+
   return (
     <TooltipProvider delayDuration={350}>
-      <ToastProvider swipeDirection="right">
+      <ToastProvider swipeDirection="up">
         <AppShell
           activeId={activeId}
           filteredItems={filteredItems}
@@ -414,12 +479,16 @@ function App() {
           onSchemeChange={setScheme}
           density={density}
           onDensityChange={setDensity}
-          statusBarVisible={statusBarVisible}
+          statusBarVisible={effectiveStatusBarVisible}
+          toolbarLabelsVisible={effectiveToolbarLabelsVisible}
+          commandHintsVisible={effectiveCommandHintsVisible}
+          autoSaveEnabled={autoSaveEnabled}
+          notificationsEnabled={notificationsEnabled}
+          compactSidebar={effectiveCompactSidebar}
           onOpenCommand={() => setCommandOpen(true)}
           onOpenSettings={() => setSettingsOpen(true)}
           onRunEditorCommand={runEditorCommand}
           onSaveProject={() => runEditorCommand("save-project")}
-          onExportProject={() => runEditorCommand("mode-export")}
           onToast={showToast}
         >
           <ShowcasePage item={activeItem} onOpenCommand={() => setCommandOpen(true)} onToast={showToast} />
@@ -430,7 +499,7 @@ function App() {
           onOpenChange={setSettingsOpen}
           copy={copy}
           language={language}
-          onLanguageChange={setLanguage}
+          onLanguageChange={handleLanguageChange}
           theme={theme}
           onThemeChange={setTheme}
           scheme={scheme}
@@ -439,6 +508,20 @@ function App() {
           onDensityChange={setDensity}
           statusBarVisible={statusBarVisible}
           onStatusBarVisibleChange={setStatusBarVisible}
+          toolbarLabelsVisible={toolbarLabelsVisible}
+          onToolbarLabelsVisibleChange={setToolbarLabelsVisible}
+          commandHintsVisible={commandHintsVisible}
+          onCommandHintsVisibleChange={setCommandHintsVisible}
+          autoSaveEnabled={autoSaveEnabled}
+          onAutoSaveEnabledChange={setAutoSaveEnabled}
+          notificationsEnabled={notificationsEnabled}
+          onNotificationsEnabledChange={setNotificationsEnabled}
+          compactSidebar={compactSidebar}
+          onCompactSidebarChange={setCompactSidebar}
+          focusModeEnabled={focusModeEnabled}
+          onFocusModeEnabledChange={setFocusModeEnabled}
+          fontScale={fontScale}
+          onFontScaleChange={setFontScale}
           motion={motion}
           onMotionChange={setMotion}
           onResetDefaults={resetPreferences}
@@ -455,7 +538,7 @@ function App() {
         />
 
         <Toast open={toastOpen} onOpenChange={setToastOpen}>
-          <div className="flex size-8 items-center justify-center rounded-full bg-primary/12 text-primary">
+          <div className={toastIconClassName}>
             <CheckCircle2 aria-hidden className="size-4" />
           </div>
           <div>

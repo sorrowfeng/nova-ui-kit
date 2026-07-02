@@ -12,11 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "Nova UI Editor",
+        "title": "Nova UI 编辑器",
         "width": 1440,
         "height": 960,
         "minWidth": 1120,
         "minHeight": 720,
+        "maximized": true,
         "decorations": false,
         "resizable": true
       }

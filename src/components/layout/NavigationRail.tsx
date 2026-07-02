@@ -14,6 +14,7 @@ type NavigationRailProps = {
   onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
   onToast: () => void;
+  notificationsEnabled: boolean;
   copy: AppCopy;
 };
 
@@ -25,6 +26,7 @@ export function NavigationRail({
   onOpenSettings,
   onRunEditorCommand,
   onToast,
+  notificationsEnabled,
   copy,
 }: NavigationRailProps) {
   return (
@@ -71,7 +73,14 @@ export function NavigationRail({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button variant="ghost" size="icon" aria-label={copy.nav.notification} onClick={onToast}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={notificationsEnabled ? copy.nav.notification : copy.nav.notificationDisabled}
+          title={notificationsEnabled ? copy.nav.notification : copy.nav.notificationDisabled}
+          disabled={!notificationsEnabled}
+          onClick={onToast}
+        >
           <Bell />
         </Button>
         <Button variant="ghost" size="icon" aria-label={copy.nav.appSettings} onClick={onOpenSettings}>

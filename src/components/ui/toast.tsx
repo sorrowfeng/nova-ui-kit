@@ -4,13 +4,23 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ToastProvider = ToastPrimitive.Provider;
+const toastViewportClassName =
+  "pointer-events-none fixed left-1/2 top-[calc(3.25rem+env(safe-area-inset-top))] z-[120] flex max-h-[calc(100vh-6rem)] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 flex-col items-stretch gap-2 outline-none";
+const toastSurfaceClassName =
+  "pointer-events-auto grid w-full grid-cols-[auto_1fr_auto] items-start gap-x-3 gap-y-1 overflow-hidden rounded-[20px] border border-outline-variant bg-surface-container-lowest/98 p-3 text-on-surface shadow-m3-3 backdrop-blur data-[state=open]:animate-fade-in";
+const toastIconClassName =
+  "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-container text-primary";
+
 const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Viewport
     ref={ref}
-    className={cn("fixed right-4 top-4 z-[100] flex max-h-screen w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 outline-none", className)}
+    className={cn(toastViewportClassName, className)}
+    data-toast-viewport-placement="top-center"
+    data-toast-viewport-avoids-search=""
+    data-toast-viewport-unified-style=""
     {...props}
   />
 ));
@@ -22,7 +32,8 @@ const Toast = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Root
     ref={ref}
-    className={cn("grid grid-cols-[auto_1fr_auto] items-start gap-x-3 gap-y-1 rounded-[28px] border border-outline-variant bg-inverse-surface p-4 text-inverse-on-surface shadow-m3-3 data-[state=open]:animate-slide-in-bottom", className)}
+    className={cn(toastSurfaceClassName, className)}
+    data-toast-surface-style="nova-surface"
     {...props}
   />
 ));
@@ -35,7 +46,7 @@ const ToastClose = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Close
     ref={ref}
-    className={cn("focus-ring m3-state-layer rounded-full p-1 text-inverse-on-surface/80 hover:text-inverse-on-surface", className)}
+    className={cn("focus-ring m3-state-layer rounded-full p-1 text-on-surface-variant hover:text-on-surface", className)}
     toast-close=""
     {...props}
   >
@@ -56,7 +67,7 @@ const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Description ref={ref} className={cn("text-sm text-inverse-on-surface/80", className)} {...props} />
+  <ToastPrimitive.Description ref={ref} className={cn("text-sm leading-5 text-on-surface-variant", className)} {...props} />
 ));
 ToastDescription.displayName = ToastPrimitive.Description.displayName;
 
@@ -68,4 +79,7 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+  toastIconClassName,
+  toastSurfaceClassName,
+  toastViewportClassName,
 };

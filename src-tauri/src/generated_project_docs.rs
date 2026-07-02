@@ -153,6 +153,8 @@ This project is managed by Nova UI Editor.
 - `backend/<integration>/` stores create-only starter code for C++ FFI or sidecar/local-service integrations when configured.
 - `app/src-tauri/src/backend_integrations.rs` stores generated wrapper/launcher templates and the backend integration status data source.
 - `app/` is the generated Tauri application that can be built into an executable.
+- `.nova/workspace.json` and `.nova/editor-state.json` store reusable local editor metadata.
+- `.gitignore` keeps generated dependencies, build outputs, runtime logs, checkpoints, and transient `.nova` caches out of source control while leaving project source files trackable.
 "#
     )
 }

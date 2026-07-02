@@ -132,7 +132,9 @@ pub fn generated_tauri_conf(
     };
     let windows_bundle_config = generated_windows_bundle_config(release);
     let resizable = release.resizable;
-    let decorations = release.titlebar_style == "native";
+    let custom_chrome = release.titlebar_style != "native";
+    let decorations = !custom_chrome;
+    let transparent = custom_chrome;
     let center = release.window_kind == "dialog" || release.window_kind == "tool";
     let _runtime_shape = (&release.titlebar_subtitle, release.show_runtime_panel);
     let width = release.window_width;
@@ -158,7 +160,10 @@ pub fn generated_tauri_conf(
         "height": {height},
         "minWidth": {min_width},
         "minHeight": {min_height},
+        "maximized": true,
         "decorations": {decorations},
+        "transparent": {transparent},
+        "shadow": true,
         "resizable": {resizable},
         "center": {center}
       }}
@@ -235,7 +240,7 @@ pub fn generated_index_html(project_name: &str) -> String {
     let title = html_text(project_name);
     format!(
         r#"<!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

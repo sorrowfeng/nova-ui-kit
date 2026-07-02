@@ -71,7 +71,7 @@ export function InspectorPanel({
             {copy.inspector.theme}
           </div>
           <SegmentedControl
-            aria-label="主题模式"
+            aria-label={copy.settings.themeMode}
             value={theme}
             onValueChange={(value) => onThemeChange(value as ThemeMode)}
             className="w-full justify-between"

@@ -171,6 +171,22 @@
     --panel-gap: 1.25rem;
   }
 
+  [data-font-scale="small"] {
+    font-size: 15px;
+  }
+
+  [data-font-scale="default"] {
+    font-size: 16px;
+  }
+
+  [data-font-scale="large"] {
+    font-size: 17px;
+  }
+
+  [data-focus-mode="enabled"] {
+    --panel-gap: 0.75rem;
+  }
+
   [data-motion="reduced"] *,
   [data-motion="reduced"] *::before,
   [data-motion="reduced"] *::after {
@@ -216,6 +232,12 @@
   [data-tauri-drag-region] {
     -webkit-app-region: drag;
     app-region: drag;
+  }
+
+  [data-titlebar-interactive="true"],
+  [data-titlebar-interactive="true"] * {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
   }
 
   [data-tauri-drag-region] button,

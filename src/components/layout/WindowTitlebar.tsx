@@ -1,6 +1,6 @@
-import type { PointerEvent } from "react";
+import type { MouseEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Box, Check, Copy, Download, FileDown, FilePlus2, FolderOpen, HelpCircle, Minus, Monitor, Play, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
+import { Box, Check, Copy, Download, FilePlus2, FolderOpen, HelpCircle, Minus, Play, RotateCcw, Save, Settings, Sparkles, Square, Terminal, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AppCopy } from "@/lib/i18n";
 import {
@@ -22,6 +22,7 @@ type TitleMenuItem = {
 };
 type WindowTitlebarProps = {
   copy: AppCopy;
+  commandHintsVisible: boolean;
   onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
 };
@@ -35,6 +36,7 @@ const TITLEBAR_INTERACTIVE_SELECTOR = [
   "[role='button']",
   "[role='menuitem']",
   "[data-titlebar-interactive='true']",
+  "[data-titlebar-interactive-control]",
   "[contenteditable='true']",
 ].join(",");
 
@@ -59,8 +61,11 @@ async function runWindowAction(action: WindowAction) {
   }
 }
 
-function startWindowDrag(event: PointerEvent<HTMLElement>) {
+function startWindowDrag(event: MouseEvent<HTMLElement>) {
   if (event.button !== 0) {
+    return;
+  }
+  if (event.detail > 1) {
     return;
   }
   if (isTitlebarInteractiveTarget(event.target)) {
@@ -72,22 +77,31 @@ function startWindowDrag(event: PointerEvent<HTMLElement>) {
   });
 }
 
+function toggleMaximizeFromDragRegion(event: MouseEvent<HTMLElement>) {
+  if (!isTitlebarInteractiveTarget(event.target)) {
+    void runWindowAction("toggleMaximize");
+  }
+}
+
 function TitleMenu({
   label,
   items,
   onRunCommand,
   commandHelpLabel,
+  showShortcuts,
 }: {
   label: string;
   items: TitleMenuItem[];
   onRunCommand: (command: NovaEditorCommand) => void;
   commandHelpLabel: string;
+  showShortcuts: boolean;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
+          data-titlebar-interactive-control=""
           className="focus-ring rounded-md px-2 py-1 transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
         >
           {label}
@@ -99,18 +113,18 @@ function TitleMenu({
           const Icon = item.icon;
 
           return (
-            <DropdownMenuItem key={item.command} onSelect={() => onRunCommand(item.command)}>
+            <DropdownMenuItem key={item.command} data-titlebar-menu-command={item.command} onSelect={() => onRunCommand(item.command)}>
               <Icon aria-hidden className="size-4" />
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {item.shortcut ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">{item.shortcut}</span> : null}
+              {showShortcuts && item.shortcut ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">{item.shortcut}</span> : null}
             </DropdownMenuItem>
           );
         })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => onRunCommand("help-guide")}>
+        <DropdownMenuItem data-titlebar-menu-command="help-guide" onSelect={() => onRunCommand("help-guide")}>
           <Settings aria-hidden className="size-4" />
           <span className="min-w-0 flex-1 truncate">{commandHelpLabel}</span>
-          <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span>
+          {showShortcuts ? <span className="ml-auto text-[0.66rem] text-on-surface-variant">Ctrl+K</span> : null}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -129,6 +143,7 @@ function WindowMenu({ copy }: { copy: AppCopy }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
+          data-titlebar-interactive-control=""
           className="focus-ring rounded-md px-2 py-1 transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
         >
           {copy.titlebar.window}
@@ -151,38 +166,48 @@ function WindowMenu({ copy }: { copy: AppCopy }) {
   );
 }
 
-export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: WindowTitlebarProps) {
+export function WindowTitlebar({ copy, commandHintsVisible, onOpenSettings, onRunEditorCommand }: WindowTitlebarProps) {
   return (
     <div
-      data-tauri-drag-region=""
       className="relative flex h-10 shrink-0 select-none items-center border-b border-outline-variant bg-surface px-3 pr-32 text-xs text-on-surface-variant"
-      onPointerDown={startWindowDrag}
-      onDoubleClick={(event) => {
-        if (!isTitlebarInteractiveTarget(event.target)) {
-          void runWindowAction("toggleMaximize");
-        }
-      }}
+      data-window-titlebar=""
+      data-titlebar-drag-shell=""
+      onMouseDown={startWindowDrag}
+      onDoubleClick={toggleMaximizeFromDragRegion}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div
+        aria-hidden="true"
+        data-tauri-drag-region=""
+        data-titlebar-drag-region=""
+        data-titlebar-drag-strip=""
+        data-titlebar-drag-hit-target="background"
+        className="absolute inset-y-0 left-0 right-32 z-0"
+      />
+
+      <div className="relative z-10 flex h-full min-w-0 flex-1 items-center gap-3">
         <div
-          className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary-container text-primary-container-foreground"
+          data-tauri-drag-region=""
+          data-titlebar-drag-region=""
+          data-titlebar-drag-hit-target="brand"
+          className="flex h-full min-w-0 shrink-0 items-center gap-3 self-stretch"
         >
-          <Sparkles aria-hidden className="size-3.5" />
-        </div>
-        <div
-          className="flex min-w-0 shrink-0 items-center gap-2"
-        >
-          <span className="shrink-0 font-medium text-on-surface">{copy.appName}</span>
-          <span className="truncate">{copy.titlebar.subtitle}</span>
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary-container text-primary-container-foreground">
+            <Sparkles aria-hidden className="size-3.5" />
+          </span>
+          <span className="flex min-w-0 shrink-0 items-center gap-2">
+            <span className="shrink-0 font-medium text-on-surface">{copy.appName}</span>
+            <span className="truncate">{copy.titlebar.subtitle}</span>
+          </span>
         </div>
         <div
           data-titlebar-interactive="true"
-          className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden text-on-surface-variant md:flex"
+          className="ml-3 hidden min-w-0 shrink items-center gap-1 overflow-hidden whitespace-nowrap text-on-surface-variant lg:flex"
         >
           <TitleMenu
             label={copy.titlebar.file}
             onRunCommand={onRunEditorCommand}
             commandHelpLabel={copy.titlebar.commandHelp}
+            showShortcuts={commandHintsVisible}
             items={[
               { label: copy.titlebar.newProject, command: "new-project", icon: FilePlus2 },
               { label: copy.titlebar.openProject, command: "open-project", icon: FolderOpen },
@@ -194,6 +219,7 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
             label={copy.titlebar.edit}
             onRunCommand={onRunEditorCommand}
             commandHelpLabel={copy.titlebar.commandHelp}
+            showShortcuts={commandHintsVisible}
             items={[
               { label: copy.titlebar.undo, command: "undo", icon: Undo2, shortcut: "Ctrl+Z" },
               { label: copy.titlebar.redo, command: "redo", icon: RotateCcw, shortcut: "Ctrl+Y" },
@@ -204,31 +230,35 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
             label={copy.titlebar.view}
             onRunCommand={onRunEditorCommand}
             commandHelpLabel={copy.titlebar.commandHelp}
+            showShortcuts={commandHintsVisible}
             items={[
+              { label: copy.titlebar.projectMode, command: "mode-project", icon: FolderOpen },
               { label: copy.titlebar.designMode, command: "mode-design", icon: Sparkles },
               { label: copy.titlebar.logicMode, command: "mode-logic", icon: Settings },
               { label: copy.titlebar.buildMode, command: "mode-build", icon: Terminal },
-              { label: copy.titlebar.previewMode, command: "mode-preview", icon: Monitor },
-              { label: copy.titlebar.exportMode, command: "mode-export", icon: FileDown },
             ]}
           />
-          <TitleMenu
-            label={copy.titlebar.build}
-            onRunCommand={onRunEditorCommand}
-            commandHelpLabel={copy.titlebar.commandHelp}
-            items={[
-              { label: copy.titlebar.quickCheck, command: "quick-check-all", icon: Terminal },
-              { label: copy.titlebar.runEvent, command: "run-selected-event", icon: Play, shortcut: "F5" },
-              { label: copy.titlebar.buildExe, command: "build-exe", icon: Download, shortcut: "Ctrl+Shift+B" },
-              { label: copy.titlebar.bundleInstaller, command: "bundle-installer", icon: Box },
-            ]}
-          />
+          <div className="hidden xl:block" data-titlebar-build-menu-secondary="" data-titlebar-command-overflow="build-run-secondary">
+            <TitleMenu
+              label={copy.titlebar.build}
+              onRunCommand={onRunEditorCommand}
+              commandHelpLabel={copy.titlebar.commandHelp}
+              showShortcuts={commandHintsVisible}
+              items={[
+                { label: copy.titlebar.quickCheck, command: "quick-check-all", icon: Terminal },
+                { label: copy.titlebar.runEvent, command: "run-selected-event", icon: Play, shortcut: "F5" },
+                { label: copy.titlebar.buildExe, command: "build-exe", icon: Download, shortcut: "Ctrl+Shift+B" },
+                { label: copy.titlebar.bundleInstaller, command: "bundle-installer", icon: Box },
+              ]}
+            />
+          </div>
           <WindowMenu copy={copy} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="focus-ring rounded-md px-2 py-1 transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
+                data-titlebar-interactive-control=""
+                className="focus-ring rounded-md px-2 py-1 whitespace-nowrap transition-colors hover:bg-surface-container-high hover:text-on-surface data-[state=open]:bg-surface-container-high"
               >
                 {copy.titlebar.help}
               </button>
@@ -246,23 +276,23 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
                 <FilePlus2 aria-hidden className="size-4" />
                 {copy.titlebar.templates}
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onRunEditorCommand("bundle-installer")}>
-                <FileDown aria-hidden className="size-4" />
-                {copy.titlebar.exportPackage}
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       <div
+        data-tauri-drag-region=""
+        data-titlebar-drag-region=""
         className="min-w-8 flex-1 self-stretch"
       />
 
-      <div data-titlebar-interactive="true" className="absolute inset-y-0 right-3 flex shrink-0 items-center gap-1">
+      <div data-titlebar-interactive="true" className="absolute inset-y-0 right-3 z-20 flex shrink-0 items-center gap-1">
         <Button
           variant="ghost"
           size="icon-sm"
+          data-titlebar-interactive-control=""
+          data-window-control="settings"
           className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
           aria-label={copy.titlebar.settingsAria}
           onClick={onOpenSettings}
@@ -272,6 +302,8 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
         <Button
           variant="ghost"
           size="icon-sm"
+          data-titlebar-interactive-control=""
+          data-window-control="minimize"
           className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
           aria-label={copy.titlebar.minimizeAria}
           onClick={() => runWindowAction("minimize")}
@@ -281,6 +313,8 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
         <Button
           variant="ghost"
           size="icon-sm"
+          data-titlebar-interactive-control=""
+          data-window-control="toggle-maximize"
           className="rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
           aria-label={copy.titlebar.maximizeAria}
           onClick={() => runWindowAction("toggleMaximize")}
@@ -290,6 +324,8 @@ export function WindowTitlebar({ copy, onOpenSettings, onRunEditorCommand }: Win
         <Button
           variant="ghost"
           size="icon-sm"
+          data-titlebar-interactive-control=""
+          data-window-control="close"
           className="rounded-lg text-on-surface-variant hover:bg-destructive hover:text-destructive-foreground"
           aria-label={copy.titlebar.closeAria}
           onClick={() => runWindowAction("close")}

@@ -3,10 +3,13 @@ export type ThemeMode = "light" | "dark" | "system";
 export type ThemeScheme = "violet" | "blue" | "green";
 export type Density = "compact" | "cozy" | "comfortable";
 export type MotionPreference = "full" | "reduced";
+export type FontScale = "small" | "default" | "large";
 
-export const languageOptions: Array<{ value: AppLanguage; label: string; detail: string }> = [
-  { value: "zh-CN", label: "中文", detail: "简体中文" },
-  { value: "en-US", label: "English", detail: "United States" },
+export const DEFAULT_APP_LANGUAGE: AppLanguage = "zh-CN";
+
+export const languageOptions: Array<{ value: AppLanguage; label: string; detailZh: string; detailEn: string }> = [
+  { value: "zh-CN", label: "中文", detailZh: "简体中文", detailEn: "Simplified Chinese" },
+  { value: "en-US", label: "English", detailZh: "美式英语", detailEn: "United States English" },
 ];
 
 export const themeOptions: Array<{ value: ThemeMode; labelZh: string; labelEn: string }> = [
@@ -30,4 +33,10 @@ export const densityOptions: Array<{ value: Density; labelZh: string; labelEn: s
 export const motionOptions: Array<{ value: MotionPreference; labelZh: string; labelEn: string }> = [
   { value: "full", labelZh: "完整动效", labelEn: "Full motion" },
   { value: "reduced", labelZh: "减少动效", labelEn: "Reduced motion" },
+];
+
+export const fontScaleOptions: Array<{ value: FontScale; labelZh: string; labelEn: string }> = [
+  { value: "small", labelZh: "小", labelEn: "Small" },
+  { value: "default", labelZh: "标准", labelEn: "Default" },
+  { value: "large", labelZh: "大", labelEn: "Large" },
 ];

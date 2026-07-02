@@ -7,7 +7,7 @@ import type {
 } from "./types";
 import type { ProjectJumpActionId } from "./task-center";
 
-export type ProjectChangeImpactStatus = "needs-preview" | "stale" | "dirty" | "clean";
+export type ProjectChangeImpactStatus = "needs-plan" | "stale" | "dirty" | "clean";
 
 export type ProjectChangeScopeId =
   | "project"
@@ -353,7 +353,7 @@ export function createProjectReverseDependencySummary(
   const scopeLabel = scopeIds.map((scopeId) => scopeDefinitionForId(scopeId).label).slice(0, 4).join(", ");
   const source =
     status === "tracked"
-      ? "当前预览"
+      ? "当前生成计划"
       : status === "persisted"
         ? "已保存图谱"
         : "项目模型";
@@ -380,16 +380,16 @@ function createExecutionPlan(
   dirtyScopes: ProjectChangeScope[],
   changedCount: number,
 ): ProjectChangeImpactPlan {
-  if (status === "needs-preview" || status === "stale") {
+  if (status === "needs-plan" || status === "stale") {
     return {
       id: "impact-refresh",
-      title: "刷新影响预览",
+      title: "刷新生成影响计划",
       detail:
         status === "stale"
-          ? "项目在上次生成文件预览后发生了变化。应用生成目标前请先刷新。"
-          : "运行生成文件预览，让 Nova 计算脏范围和范围化执行计划。",
+          ? "项目在上次生成计划后发生了变化。应用生成目标前请先刷新。"
+          : "运行生成计划，让 Nova 计算脏范围和范围化执行计划。",
       badge: "刷新",
-      actions: ["preview-generated-files"],
+      actions: ["generate-file-plan"],
       scopeIds: [],
       ready: true,
     };
@@ -725,7 +725,7 @@ function scopeIdsForEntry(entry: GeneratedFilePreviewEntry): ProjectChangeScopeI
 
 function scopeSummary(definition: ProjectChangeScopeDefinition, preview: GeneratedFilePreviewResult | null, changedCount: number) {
   if (!preview) {
-    return "运行生成文件预览后可计算该范围。";
+    return "运行生成计划后可计算该范围。";
   }
   return changedCount > 0 ? definition.dirtySummary(changedCount) : definition.cleanSummary;
 }
@@ -761,15 +761,15 @@ export function createProjectChangeImpact(
 
   const dirtyScopes = scopes.filter((scope) => scope.status === "dirty");
   const status: ProjectChangeImpactStatus = !preview
-    ? "needs-preview"
+    ? "needs-plan"
     : previewIsStale
       ? "stale"
       : changedEntries.length > 0
         ? "dirty"
         : "clean";
   const recommendedActions: ProjectJumpActionId[] =
-    status === "needs-preview" || status === "stale"
-      ? ["preview-generated-files"]
+    status === "needs-plan" || status === "stale"
+      ? ["generate-file-plan"]
         : changedEntries.length > 0
           ? uniqueActions([
               "apply-generated-changes",
@@ -779,13 +779,13 @@ export function createProjectChangeImpact(
   const executionPlan = createExecutionPlan(project, status, dirtyScopes, changedEntries.length);
 
   const summary =
-    status === "needs-preview"
-      ? `${project.name} 需要先运行生成文件预览，Nova 才能计算范围化失效。`
+    status === "needs-plan"
+      ? `${project.name} 需要先运行生成计划，Nova 才能计算范围化失效。`
       : status === "stale"
-        ? `${project.name} 在上次预览后发生了变化；请刷新，避免应用过期生成目标。`
+        ? `${project.name} 在上次生成计划后发生了变化；请刷新，避免应用过期生成目标。`
         : status === "dirty"
           ? `${changedEntries.length} 个生成目标在 ${dirtyScopes.length} 个范围内发生变化。`
-          : `${project.name} 的生成目标已与上次预览同步。`;
+          : `${project.name} 的生成目标已与上次生成计划同步。`;
 
   return {
     status,

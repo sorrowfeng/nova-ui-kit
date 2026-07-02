@@ -34,11 +34,15 @@ type AppShellProps = {
   density: Density;
   onDensityChange: (value: Density) => void;
   statusBarVisible: boolean;
+  toolbarLabelsVisible: boolean;
+  commandHintsVisible: boolean;
+  autoSaveEnabled: boolean;
+  notificationsEnabled: boolean;
+  compactSidebar: boolean;
   onOpenCommand: () => void;
   onOpenSettings: () => void;
   onRunEditorCommand: (command: NovaEditorCommand) => void;
   onSaveProject: () => void;
-  onExportProject: () => void;
   onToast: () => void;
   children: ReactNode;
 };
@@ -58,11 +62,15 @@ export function AppShell({
   density,
   onDensityChange,
   statusBarVisible,
+  toolbarLabelsVisible,
+  commandHintsVisible,
+  autoSaveEnabled,
+  notificationsEnabled,
+  compactSidebar,
   onOpenCommand,
   onOpenSettings,
   onRunEditorCommand,
   onSaveProject,
-  onExportProject,
   onToast,
   children,
 }: AppShellProps) {
@@ -76,19 +84,35 @@ export function AppShell({
 
   if (builderWorkspace) {
     return (
-      <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface-container-lowest text-on-surface" data-density={density}>
-        <WindowTitlebar copy={copy} onOpenSettings={onOpenSettings} onRunEditorCommand={onRunEditorCommand} />
-        <main className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest">
+      <div
+        className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface-container-lowest text-on-surface"
+        data-density={density}
+        data-editor-shell="builder"
+        data-editor-toolbar-policy="titlebar-left-rail"
+        data-editor-omits-showcase-topbar=""
+      >
+        <WindowTitlebar
+          copy={copy}
+          commandHintsVisible={commandHintsVisible}
+          onOpenSettings={onOpenSettings}
+          onRunEditorCommand={onRunEditorCommand}
+        />
+        <main className="min-h-0 flex-1 overflow-hidden bg-surface-container-lowest" data-editor-builder-main="">
           {children}
         </main>
-        {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} /> : null}
+        {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} autoSaveEnabled={autoSaveEnabled} /> : null}
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface text-on-surface" data-density={density}>
-      <WindowTitlebar copy={copy} onOpenSettings={onOpenSettings} onRunEditorCommand={onRunEditorCommand} />
+    <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-surface text-on-surface" data-density={density} data-editor-shell="showcase">
+      <WindowTitlebar
+        copy={copy}
+        commandHintsVisible={commandHintsVisible}
+        onOpenSettings={onOpenSettings}
+        onRunEditorCommand={onRunEditorCommand}
+      />
 
       <div className="flex min-h-0 flex-1">
         <NavigationRail
@@ -99,6 +123,7 @@ export function AppShell({
           onOpenSettings={onOpenSettings}
           onRunEditorCommand={onRunEditorCommand}
           onToast={onToast}
+          notificationsEnabled={notificationsEnabled}
           copy={copy}
         />
 
@@ -109,14 +134,15 @@ export function AppShell({
           onOpenSettings={onOpenSettings}
           onRunEditorCommand={onRunEditorCommand}
           copy={copy}
+          compact={compactSidebar}
           className="hidden lg:flex"
         />
 
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent side="left" className="w-[286px] p-0">
             <SheetHeader className="sr-only">
-              <SheetTitle>导航</SheetTitle>
-              <SheetDescription>组件库导航</SheetDescription>
+              <SheetTitle>{copy.sidebar.navigationTitle}</SheetTitle>
+              <SheetDescription>{copy.sidebar.navigationDescription}</SheetDescription>
             </SheetHeader>
             <Sidebar
               activeId={activeId}
@@ -125,6 +151,7 @@ export function AppShell({
               onOpenSettings={onOpenSettings}
               onRunEditorCommand={onRunEditorCommand}
               copy={copy}
+              compact={false}
               className="w-full border-r-0"
             />
           </SheetContent>
@@ -145,9 +172,11 @@ export function AppShell({
             onOpenCommand={onOpenCommand}
             onOpenSettings={onOpenSettings}
             onSaveProject={onSaveProject}
-            onExportProject={onExportProject}
             onOpenMobileNav={() => setMobileOpen(true)}
             onToast={onToast}
+            notificationsEnabled={notificationsEnabled}
+            toolbarLabelsVisible={toolbarLabelsVisible}
+            commandHintsVisible={commandHintsVisible}
           />
           <div className="flex min-h-0 flex-1">
             <main className="subtle-scrollbar min-h-0 flex-1 overflow-y-auto bg-surface-container-lowest">
@@ -175,7 +204,7 @@ export function AppShell({
               />
             )}
           </div>
-          {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} /> : null}
+          {statusBarVisible ? <StatusBar copy={copy} language={language} theme={theme} scheme={scheme} density={density} autoSaveEnabled={autoSaveEnabled} /> : null}
         </div>
       </div>
     </div>

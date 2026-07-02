@@ -160,10 +160,18 @@ fn svg_item_fill(item_type: &str) -> (&'static str, &'static str) {
         "frame" => ("#f7f2fa", "#6750a4"),
         "button" => ("#6750a4", "#6750a4"),
         "image" => ("#e7e0ec", "#79747e"),
-        "input" | "textarea" | "select" => ("#ffffff", "#79747e"),
-        "checkbox" | "switch" => ("#f3edf7", "#79747e"),
-        "table" | "card" | "stat" => ("#fffbfe", "#cac4d0"),
-        "heading" => ("#fffbfe", "#fffbfe"),
+        "input" | "textarea" | "plain-text-edit" | "rich-text-editor" | "search-bar" | "select"
+        | "combobox" | "date-picker" | "time-picker" | "calendar-widget" | "radio" | "slider"
+        | "range-slider" | "segmented" | "chips" => ("#ffffff", "#79747e"),
+        "checkbox" | "switch" | "tabs" | "menu" | "tooltip" | "banner" | "stepper" => {
+            ("#f3edf7", "#79747e")
+        }
+        "table" | "card" | "empty-state" | "stat" | "progress" | "list" | "tree-view"
+        | "toolbar" | "top-app-bar" | "bottom-app-bar" | "navigation" | "navigation-drawer"
+        | "navigation-rail" | "side-sheet" | "dialog" | "avatar" | "snackbar" | "fab" => {
+            ("#fffbfe", "#cac4d0")
+        }
+        "heading" | "label" | "link-label" | "text-browser" => ("#fffbfe", "#fffbfe"),
         _ => ("#fef7ff", "#cac4d0"),
     }
 }

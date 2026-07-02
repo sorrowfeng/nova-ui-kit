@@ -64,6 +64,14 @@ pub(super) fn project_dependency_graph_path(root: &Path) -> PathBuf {
     root.join(".nova").join("dependency-graph.json")
 }
 
+pub(super) fn project_editor_state_path(root: &Path) -> PathBuf {
+    root.join(".nova").join("editor-state.json")
+}
+
+pub(super) fn project_workspace_metadata_path(root: &Path) -> PathBuf {
+    root.join(".nova").join("workspace.json")
+}
+
 pub(super) fn project_paths(root: &Path, project_name: &str) -> EditorProjectPaths {
     let slug = slugify(project_name);
     project_paths_with_slug(root, &slug)
@@ -90,6 +98,8 @@ fn project_paths_with_slug(root: &Path, slug: &str) -> EditorProjectPaths {
     EditorProjectPaths {
         root_path: root.display().to_string(),
         manifest_path: root.join("nova.project.json").display().to_string(),
+        editor_state_path: project_editor_state_path(root).display().to_string(),
+        workspace_metadata_path: project_workspace_metadata_path(root).display().to_string(),
         ui_dir: root.join("ui").display().to_string(),
         rust_logic_path: root.join("rust").join("logic.rs").display().to_string(),
         rust_source_map_path: root

@@ -1,12 +1,12 @@
 use crate::{
     managed_project_root, managed_projects_dir, normalized_checkpoint_created_at,
-    project_checkpoints_dir, project_name, project_paths, project_paths_for_project,
-    project_root_from_project, project_with_root_path, read_json_file, safe_file_name,
-    save_project_files, slugify, to_error, write_readme, EditorProjectPaths, ManagedProjectSummary,
-    ProjectCheckpointDiff, ProjectCheckpointFileDiff, ProjectCheckpointResult,
-    ProjectCheckpointSummary, DEFAULT_RUST_LOGIC,
+    project_checkpoints_dir, project_editor_state_path, project_name, project_paths,
+    project_paths_for_project, project_root_from_project, project_with_root_path, read_json_file,
+    safe_file_name, save_project_files, slugify, to_error, write_readme, EditorProjectPaths,
+    ManagedProjectSummary, ProjectCheckpointDiff, ProjectCheckpointFileDiff,
+    ProjectCheckpointResult, ProjectCheckpointSummary, DEFAULT_RUST_LOGIC,
 };
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
@@ -44,8 +44,406 @@ pub(super) fn read_editor_project(root_path: String) -> Result<Value, String> {
     let root = PathBuf::from(root_path);
     let manifest_path = root.join("nova.project.json");
     let content = fs::read_to_string(manifest_path).map_err(to_error)?;
-    let project = serde_json::from_str(&content).map_err(to_error)?;
+    let project = merge_project_editor_state_metadata(
+        serde_json::from_str(&content).map_err(to_error)?,
+        &root,
+    );
     Ok(project_with_root_path(project, &root))
+}
+
+fn merge_project_editor_state_metadata(mut project: Value, root: &Path) -> Value {
+    let Some(metadata) = read_json_file(&project_editor_state_path(root)) else {
+        return project;
+    };
+    if metadata.get("schema").and_then(Value::as_str) != Some("nova.editorState.v1") {
+        return project;
+    }
+
+    if let Some(active_file_id) = metadata
+        .get("project")
+        .and_then(|project| project.get("activeFileId"))
+        .and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty())
+    {
+        if let Value::Object(ref mut project_object) = project {
+            project_object.insert(
+                "activeFileId".to_string(),
+                Value::String(active_file_id.to_string()),
+            );
+        }
+    }
+
+    let current_editor_state = project
+        .get("editorState")
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default();
+    let mut editor_state = current_editor_state;
+    apply_editor_state_metadata(&mut editor_state, &metadata);
+
+    if let Value::Object(ref mut project_object) = project {
+        project_object.insert("editorState".to_string(), Value::Object(editor_state));
+    }
+    project
+}
+
+fn apply_editor_state_metadata(editor_state: &mut Map<String, Value>, metadata: &Value) {
+    let workspace = metadata.get("workspace").unwrap_or(&Value::Null);
+    let bottom_dock = workspace.get("bottomDock").unwrap_or(&Value::Null);
+    let canvas = workspace.get("canvas").unwrap_or(&Value::Null);
+    let project_explorer = workspace.get("projectExplorer").unwrap_or(&Value::Null);
+    let navigator = workspace.get("navigator").unwrap_or(&Value::Null);
+    let component_palette = workspace.get("componentPalette").unwrap_or(&Value::Null);
+    let inspector = workspace.get("inspector").unwrap_or(&Value::Null);
+    let rust_editor = workspace.get("rustEditor").unwrap_or(&Value::Null);
+    let logic = workspace.get("logic").unwrap_or(&Value::Null);
+    let task_center = workspace.get("taskCenter").unwrap_or(&Value::Null);
+    let generated_plan = workspace.get("generatedPlan").unwrap_or(&Value::Null);
+    let issues = workspace.get("issues").unwrap_or(&Value::Null);
+
+    copy_string_field(editor_state, "activeMode", workspace, "activeMode");
+    copy_string_field(
+        editor_state,
+        "activeEditorTabId",
+        workspace,
+        "activeEditorTabId",
+    );
+    copy_string_array_field(editor_state, "openFileIds", workspace, "openFileIds");
+    copy_string_field(editor_state, "activeLeftDockTab", workspace, "leftDockTab");
+    copy_string_field(
+        editor_state,
+        "activeRightDockTab",
+        workspace,
+        "rightDockTab",
+    );
+    copy_bool_field(editor_state, "leftDockCollapsed", workspace, "leftDockCollapsed");
+    copy_bool_field(
+        editor_state,
+        "rightDockCollapsed",
+        workspace,
+        "rightDockCollapsed",
+    );
+    copy_string_field(
+        editor_state,
+        "activeBottomDockTab",
+        workspace,
+        "bottomDockTab",
+    );
+    copy_bool_field(editor_state, "bottomDockExpanded", bottom_dock, "expanded");
+    copy_bool_field(
+        editor_state,
+        "bottomDockMinimized",
+        bottom_dock,
+        "minimized",
+    );
+    copy_i64_field(editor_state, "bottomDockHeight", bottom_dock, "height");
+    copy_i64_field(
+        editor_state,
+        "bottomDockExpandedHeight",
+        bottom_dock,
+        "expandedHeight",
+    );
+    copy_string_field(
+        editor_state,
+        "bottomDockLogSearchQuery",
+        bottom_dock,
+        "logSearchQuery",
+    );
+    copy_string_field(
+        editor_state,
+        "selectedRailActionPresetId",
+        workspace,
+        "selectedRailActionPresetId",
+    );
+    copy_bool_field(
+        editor_state,
+        "canvasControlsExpanded",
+        canvas,
+        "controlsExpanded",
+    );
+    copy_bool_field(
+        editor_state,
+        "tabOrderOverlayVisible",
+        canvas,
+        "tabOrderOverlayVisible",
+    );
+    copy_string_field(
+        editor_state,
+        "canvasActiveBreakpoint",
+        canvas,
+        "activeBreakpoint",
+    );
+    copy_number_field(editor_state, "canvasZoom", canvas, "zoom");
+    let canvas_viewport = canvas.get("viewport").unwrap_or(&Value::Null);
+    copy_i64_field(
+        editor_state,
+        "canvasViewportScrollLeft",
+        canvas_viewport,
+        "scrollLeft",
+    );
+    copy_i64_field(
+        editor_state,
+        "canvasViewportScrollTop",
+        canvas_viewport,
+        "scrollTop",
+    );
+    let canvas_selection = canvas.get("selection").unwrap_or(&Value::Null);
+    copy_string_array_field(
+        editor_state,
+        "selectedItemIds",
+        canvas_selection,
+        "selectedItemIds",
+    );
+    copy_string_field(
+        editor_state,
+        "selectionAnchorId",
+        canvas_selection,
+        "anchorId",
+    );
+    copy_string_field(
+        editor_state,
+        "projectExplorerFilter",
+        project_explorer,
+        "filter",
+    );
+    copy_string_field(
+        editor_state,
+        "projectExplorerQuery",
+        project_explorer,
+        "query",
+    );
+    copy_string_field(
+        editor_state,
+        "selectedProjectExplorerNodeId",
+        project_explorer,
+        "selectedNodeId",
+    );
+    copy_string_array_field(
+        editor_state,
+        "collapsedProjectExplorerNodeIds",
+        project_explorer,
+        "collapsedNodeIds",
+    );
+    copy_string_field(editor_state, "navigatorQuery", navigator, "query");
+    copy_string_field(
+        editor_state,
+        "componentPaletteQuery",
+        component_palette,
+        "query",
+    );
+    copy_string_field(
+        editor_state,
+        "componentPaletteCategory",
+        component_palette,
+        "category",
+    );
+    copy_string_array_field(
+        editor_state,
+        "componentPaletteRecentTypes",
+        component_palette,
+        "recentTypes",
+    );
+    copy_string_array_field(
+        editor_state,
+        "componentPaletteFavoriteTypes",
+        component_palette,
+        "favoriteTypes",
+    );
+    copy_string_field(editor_state, "inspectorPropertyQuery", inspector, "query");
+    let inspector_property_sections = inspector.get("propertySections").unwrap_or(&Value::Null);
+    copy_property_section_state(editor_state, inspector_property_sections);
+    copy_string_field(editor_state, "rustFindQuery", rust_editor, "findQuery");
+    copy_bool_field(
+        editor_state,
+        "rustFindCaseSensitive",
+        rust_editor,
+        "findCaseSensitive",
+    );
+    copy_i64_field(
+        editor_state,
+        "rustEditorScrollTop",
+        rust_editor,
+        "scrollTop",
+    );
+    copy_i64_field(
+        editor_state,
+        "rustEditorScrollLeft",
+        rust_editor,
+        "scrollLeft",
+    );
+    copy_bool_field(
+        editor_state,
+        "rustEditorWordWrap",
+        rust_editor,
+        "wordWrap",
+    );
+    copy_i64_field(
+        editor_state,
+        "rustEditorSelectionStart",
+        rust_editor,
+        "selectionStart",
+    );
+    copy_i64_field(
+        editor_state,
+        "rustEditorSelectionEnd",
+        rust_editor,
+        "selectionEnd",
+    );
+    copy_string_field(editor_state, "logicSearchQuery", logic, "searchQuery");
+    copy_string_field(editor_state, "logicResourceView", logic, "view");
+    copy_string_field(
+        editor_state,
+        "logicConnectionFilter",
+        logic,
+        "connectionFilter",
+    );
+    copy_string_field(
+        editor_state,
+        "projectTaskSearchQuery",
+        task_center,
+        "searchQuery",
+    );
+    copy_string_field(
+        editor_state,
+        "projectTaskStatusFilter",
+        task_center,
+        "statusFilter",
+    );
+    copy_string_field(
+        editor_state,
+        "projectTaskKindFilter",
+        task_center,
+        "kindFilter",
+    );
+    copy_string_field(
+        editor_state,
+        "selectedProjectTaskId",
+        task_center,
+        "selectedTaskId",
+    );
+    copy_string_field(
+        editor_state,
+        "projectTaskLogSearchQuery",
+        task_center,
+        "logSearchQuery",
+    );
+    copy_bool_field(
+        editor_state,
+        "projectTaskQueuePaused",
+        task_center,
+        "queuePaused",
+    );
+    copy_string_field(
+        editor_state,
+        "activeGeneratedPreviewPath",
+        generated_plan,
+        "activePath",
+    );
+    copy_string_array_field(
+        editor_state,
+        "selectedGeneratedPreviewPaths",
+        generated_plan,
+        "selectedPaths",
+    );
+    copy_bool_field(
+        editor_state,
+        "showGeneratedPlanAdvanced",
+        generated_plan,
+        "advancedOpen",
+    );
+    copy_string_field(
+        editor_state,
+        "selectedBuilderIssueId",
+        issues,
+        "selectedIssueId",
+    );
+    copy_string_field(editor_state, "updatedAt", metadata, "savedAt");
+}
+
+fn copy_string_field(
+    target: &mut Map<String, Value>,
+    target_key: &str,
+    source: &Value,
+    source_key: &str,
+) {
+    if let Some(value) = source
+        .get(source_key)
+        .and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty())
+    {
+        target.insert(target_key.to_string(), Value::String(value.to_string()));
+    }
+}
+
+fn copy_bool_field(
+    target: &mut Map<String, Value>,
+    target_key: &str,
+    source: &Value,
+    source_key: &str,
+) {
+    if let Some(value) = source.get(source_key).and_then(Value::as_bool) {
+        target.insert(target_key.to_string(), Value::Bool(value));
+    }
+}
+
+fn copy_i64_field(
+    target: &mut Map<String, Value>,
+    target_key: &str,
+    source: &Value,
+    source_key: &str,
+) {
+    if let Some(value) = source.get(source_key).and_then(Value::as_i64) {
+        target.insert(target_key.to_string(), Value::Number(value.into()));
+    }
+}
+
+fn copy_number_field(
+    target: &mut Map<String, Value>,
+    target_key: &str,
+    source: &Value,
+    source_key: &str,
+) {
+    if let Some(value) = source
+        .get(source_key)
+        .and_then(Value::as_f64)
+        .and_then(serde_json::Number::from_f64)
+    {
+        target.insert(target_key.to_string(), Value::Number(value));
+    }
+}
+
+fn copy_property_section_state(target: &mut Map<String, Value>, source: &Value) {
+    let mut sections = Map::new();
+    for key in ["layout", "content", "state", "appearance", "actions"] {
+        if let Some(value) = source.get(key).and_then(Value::as_bool) {
+            sections.insert(key.to_string(), Value::Bool(value));
+        }
+    }
+    if !sections.is_empty() {
+        target.insert(
+            "inspectorPropertySections".to_string(),
+            Value::Object(sections),
+        );
+    }
+}
+
+fn copy_string_array_field(
+    target: &mut Map<String, Value>,
+    target_key: &str,
+    source: &Value,
+    source_key: &str,
+) {
+    if let Some(values) = source.get(source_key).and_then(Value::as_array) {
+        let strings = values
+            .iter()
+            .filter_map(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .map(|value| Value::String(value.to_string()))
+            .collect::<Vec<_>>();
+        if !strings.is_empty() {
+            target.insert(target_key.to_string(), Value::Array(strings));
+        }
+    }
 }
 
 #[tauri::command]

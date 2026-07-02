@@ -20,7 +20,7 @@ export const releaseBundleTargets: { value: ReleaseBundleTarget; label: string }
 ];
 
 export const releaseSigningModes: { value: ReleaseSigningMode; label: string; description: string }[] = [
-  { value: "unsigned", label: "未签名", description: "本地测试和内部预览，不写入签名配置。" },
+  { value: "unsigned", label: "未签名", description: "本地测试和内部构建，不写入签名配置。" },
   { value: "windows-certificate", label: "Windows 证书", description: "使用证书 thumbprint 和时间戳服务签名 Windows 安装包。" },
   { value: "custom-command", label: "自定义命令", description: "使用自定义 signCommand，把 %1 作为待签名文件路径。" },
 ];
