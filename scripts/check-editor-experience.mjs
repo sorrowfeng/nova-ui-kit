@@ -1491,7 +1491,11 @@ mustContain(logicWorkspace, 'data-builder-logic-workspace-layout="code-primary"'
 mustContain(logicWorkspace, 'data-builder-logic-workspace-preset="vscode-code-primary"', "Logic workspace uses a VSCode-style code-primary preset");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-side-panels="right-sidebar"', "Logic workspace moves auxiliary panels to a right secondary sidebar");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-code-share="large-editor"', "Logic workspace reserves the dominant desktop region for code");
-mustContain(logicWorkspace, "grid-cols-[minmax(0,1fr)_minmax(18rem,20rem)]", "Logic workspace uses a code-dominant desktop grid with a bounded secondary sidebar");
+mustContain(logicWorkspace, "grid-cols-[minmax(0,1fr)_minmax(17.5rem,19rem)]", "Logic workspace uses a code-dominant desktop grid with a tighter secondary sidebar");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-sidebar-priority="resources-first"', "Logic workspace prioritizes resource and outline sidebar over auxiliary cards");
+mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar-priority="resources-first"', "Logic right sidebar allocates more room to resources than auxiliary inspector panels");
+mustContain(logicWorkspace, 'data-builder-logic-resource-dock-priority="primary-outline"', "Logic resource dock declares the primary outline role");
+mustContain(logicWorkspace, 'data-builder-logic-auxiliary-dock-priority="secondary-inspector"', "Logic auxiliary dock declares secondary inspector role");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-scroll-model="contained-panels"', "Logic workspace keeps scrolling inside contained panels");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-page-scroll="none"', "Logic workspace declares that the page itself does not scroll");
 mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar=""', "Logic workspace keeps resource and debug panels in a secondary sidebar");
@@ -1499,6 +1503,9 @@ mustContain(logicWorkspace, 'data-builder-logic-code-editor-primary=""', "Logic 
 mustContain(builder, 'data-builder-rust-editor-primary-toolbar=""', "Rust editor exposes a stable primary toolbar above the code area");
 mustContain(builder, 'data-builder-logic-main-panel-layout="editor-only"', "Logic main panel hides non-editor documentation blocks from the primary code surface");
 mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic resource sidebar defaults to a focused dock view instead of showing every resource group");
+mustContain(builder, 'data-builder-logic-resource-density="compact-outline"', "Logic resource panel uses compact outline density");
+mustContain(builder, 'data-builder-logic-search-density="single-row"', "Logic resource search no longer consumes a multi-row card");
+mustContain(builder, 'data-builder-rust-outline-density="compact-list"', "Logic Rust outline uses compact list density");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-density="low-chrome"', "Build workspace uses a low-chrome sidebar instead of nested cards");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-toolbar="low-chrome"', "Build workspace toolbar is a low-chrome strip");

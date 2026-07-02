@@ -37516,17 +37516,26 @@ export function BuilderShowcase() {
           </div>
         ) : mode === "logic" ? (
           <LogicWorkspace>
-            <aside className="subtle-scrollbar min-h-0 space-y-2 overflow-y-auto rounded-[18px] border border-outline-variant bg-surface-container p-2.5">
-              <div className="flex min-w-0 items-center justify-between gap-2">
-                <div className="min-w-0">
+            <aside
+              className="subtle-scrollbar min-h-0 space-y-1.5 overflow-y-auto rounded-[14px] border border-outline-variant bg-surface-container p-2"
+              data-builder-logic-resource-density="compact-outline"
+            >
+              <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 px-1">
+                <div className="flex min-w-0 items-center gap-2">
                   <p className="truncate text-xs font-semibold text-on-surface">逻辑资源</p>
-                  <p className="truncate text-[0.66rem] text-on-surface-variant">侧栏视图 · {logicResourceViewOptions.find((option) => option.value === logicResourceView)?.label ?? "连接"}</p>
+                  <Badge variant="outline" className="shrink-0 text-[0.6rem]">
+                    {logicResourceViewOptions.find((option) => option.value === logicResourceView)?.label ?? "连接"}
+                  </Badge>
                 </div>
                 <Badge variant="outline" className="shrink-0">
                   {filteredRustLogicOutline.length} 大纲
                 </Badge>
               </div>
-              <div className="rounded-[14px] border border-outline-variant bg-surface-container-low p-1.5" data-builder-logic-search="">
+              <div
+                className="rounded-xl border border-outline-variant bg-surface-container-low p-1"
+                data-builder-logic-search=""
+                data-builder-logic-search-density="single-row"
+              >
                 <div className="flex items-center gap-2 rounded-xl bg-surface-container-high px-2">
                   <Search aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
                   <Input
@@ -37547,34 +37556,35 @@ export function BuilderShowcase() {
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-1.5 flex flex-wrap gap-1 text-[0.62rem] text-on-surface-variant">
+                <div className="sr-only">
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredRustCommands.length}/{activeProject.rustCommands.length} 命令</span>
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredLogicSignalSlotRows.length}/{logicSignalSlotRows.length} 信号槽</span>
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredRustLogicOutline.length}/{rustLogicOutline.length} 大纲</span>
                 </div>
               </div>
               <div
-                className="rounded-[14px] border border-outline-variant bg-surface-container-low p-1.5 text-xs"
+                className="rounded-xl border border-outline-variant bg-surface-container-low p-1.5 text-xs"
                 data-builder-rust-outline=""
                 data-builder-rust-outline-sidebar=""
+                data-builder-rust-outline-density="compact-list"
               >
-                <div className="mb-2 flex min-w-0 items-center justify-between gap-2">
+                <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 px-1">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-on-surface">Rust 大纲</p>
-                    <p className="mt-0.5 truncate text-[0.66rem] text-on-surface-variant">侧栏跳转，不占用代码区</p>
+                    <p className="sr-only">侧栏跳转，不占用代码区</p>
                   </div>
                   <Badge variant={missingRustSlotCount > 0 ? "outline" : "secondary"} className="shrink-0">
                     {missingRustSlotCount > 0 ? `${missingRustSlotCount} 缺槽` : "就绪"}
                   </Badge>
                 </div>
-                <div className="subtle-scrollbar max-h-52 space-y-1 overflow-y-auto pr-1">
+                <div className="subtle-scrollbar max-h-44 space-y-1 overflow-y-auto pr-1">
                   {visibleRustLogicOutline.length > 0 ? (
                     visibleRustLogicOutline.slice(0, 18).map((entry) => (
                       <button
                         key={`sidebar-outline-${entry.id}`}
                         type="button"
                         className={cn(
-                          "focus-ring grid w-full min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-2 rounded-xl border px-2 py-1.5 text-left transition",
+                          "focus-ring grid w-full min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition",
                           entry.active
                             ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
                             : "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
@@ -37588,7 +37598,7 @@ export function BuilderShowcase() {
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate font-mono text-[0.72rem] text-on-surface">{entry.label}</span>
-                          <span className="mt-0.5 block truncate text-[0.64rem] text-on-surface-variant">
+                          <span className="block truncate text-[0.62rem] text-on-surface-variant">
                             {rustOutlineKindLabel(entry.kind)} · {entry.detail}
                           </span>
                         </span>
@@ -37601,7 +37611,7 @@ export function BuilderShowcase() {
                   )}
                 </div>
                 {missingRustSlotCount > 0 ? (
-                <Button
+                  <Button
                     size="sm"
                     variant="secondary"
                     className="mt-2 h-7 w-full text-[0.68rem]"
@@ -37613,7 +37623,7 @@ export function BuilderShowcase() {
                   </Button>
                 ) : null}
               </div>
-              <div className="subtle-scrollbar flex gap-1 overflow-x-auto rounded-[14px] border border-outline-variant bg-surface-container-low p-1" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
+              <div className="subtle-scrollbar flex gap-1 overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-low p-0.5" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
                 {logicResourceViewOptions.map((option) => (
                   <button
                     key={option.value}
@@ -37621,7 +37631,7 @@ export function BuilderShowcase() {
                     role="radio"
                     aria-checked={logicResourceView === option.value}
                     className={cn(
-                      "focus-ring h-7 shrink-0 rounded-xl px-2 text-[0.66rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
+                      "focus-ring h-7 shrink-0 rounded-lg px-2 text-[0.66rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
                       logicResourceView === option.value && "bg-secondary-container text-secondary-container-foreground shadow-m3-1",
                     )}
                     onClick={() => setLogicResourceView(option.value)}
