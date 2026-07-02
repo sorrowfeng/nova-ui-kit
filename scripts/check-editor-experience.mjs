@@ -1527,6 +1527,10 @@ mustContain(builder, 'data-builder-logic-resource-density="compact-outline"', "L
 mustContain(builder, 'data-builder-logic-search-density="single-row"', "Logic resource search no longer consumes a multi-row card");
 mustContain(builder, 'data-builder-rust-outline-density="compact-list"', "Logic Rust outline uses compact list density");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
+mustContain(buildWorkspace, 'data-builder-build-workspace-bottom-dock-clearance="reserved"', "Build workspace reserves clearance above the bottom output dock");
+mustContain(buildWorkspace, "px-2 pt-2 pb-11", "Build sidebar layout keeps build content above the bottom output dock");
+mustContain(buildWorkspace, "grid-rows-[minmax(0,1fr)]", "Build sidebar layout constrains panes to a single scrollable grid row");
+mustContain(buildWorkspace, "subtle-scrollbar h-full min-h-0", "Build sidebar scroll container owns overflow instead of letting content escape");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-density="low-chrome"', "Build workspace uses a low-chrome sidebar instead of nested cards");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-toolbar="low-chrome"', "Build workspace toolbar is a low-chrome strip");
 mustContain(builder, 'data-builder-build-output-sidebar-density="low-chrome"', "Build output sidebar avoids stacked card chrome");

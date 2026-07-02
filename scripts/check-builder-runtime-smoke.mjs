@@ -4346,14 +4346,24 @@ async function runShellCommandPlacementChecks(send, verified) {
       const sidebar = document.querySelector("[data-builder-build-sidebar]");
       const toolbar = document.querySelector("[data-builder-build-sidebar-toolbar]");
       const outputSidebar = document.querySelector("[data-builder-build-output-sidebar]");
+      const mainPane = document.querySelector("[data-builder-desktop-runtime-workbench]");
+      const outputDock = document.querySelector("[data-builder-output-dock]");
       const evidence = document.querySelector("[data-builder-build-output-evidence]");
       const artifactActions = document.querySelector("[data-builder-build-artifact-actions]");
       const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
       const outputRect = outputSidebar?.getBoundingClientRect();
+      const sidebarRect = sidebar?.getBoundingClientRect();
+      const mainRect = mainPane?.getBoundingClientRect();
+      const outputDockRect = outputDock?.getBoundingClientRect();
+      const outputClearance =
+        Boolean(outputDockRect) &&
+        (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
+        (mainRect?.bottom || 9999) <= outputDockRect.top;
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
           workspace?.getAttribute("data-builder-build-sidebar-density") === "low-chrome" &&
+          workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") === "reserved" &&
           Boolean(sidebar) &&
           toolbar?.getAttribute("data-builder-build-sidebar-toolbar") === "low-chrome" &&
           outputSidebar?.getAttribute("data-builder-build-output-sidebar-density") === "low-chrome" &&
@@ -4361,8 +4371,9 @@ async function runShellCommandPlacementChecks(send, verified) {
           artifactActions?.getAttribute("data-builder-build-artifact-actions") === "compact-grid" &&
           settingsShortcut?.getAttribute("data-builder-release-settings-shortcut-density") === "summary" &&
           Boolean(outputRect && outputRect.width <= 312) &&
+          outputClearance &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, toolbar=\${toolbar?.getAttribute("data-builder-build-sidebar-toolbar") || "missing"}, output=\${Math.round(outputRect?.width || 0)}px, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
