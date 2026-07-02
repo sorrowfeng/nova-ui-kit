@@ -66,23 +66,23 @@ export function OutputDock<T extends string>({
   const dockMaxHeight = outputDockViewportMaxHeight();
   const dockHeight = boundedOutputDockHeight(height ?? fallbackHeight);
   const dockShortViewport = dockMaxHeight < OUTPUT_DOCK_MIN_HEIGHT;
-  const dockHeightClass = minimized ? "h-[3.25rem]" : "max-h-[calc(100vh-5.5rem)]";
+  const dockHeightClass = minimized ? "h-9" : "max-h-[calc(100vh-5.5rem)]";
   const dockShellClass = "pointer-events-none overflow-visible rounded-none border border-transparent bg-transparent shadow-none backdrop-blur-0";
   const dockPanelChromeClass =
-    "pointer-events-auto relative overflow-hidden rounded-[26px] border border-outline-variant/90 bg-surface-container-lowest/98 shadow-m3-3 backdrop-blur-2xl";
+    "pointer-events-auto relative overflow-hidden rounded-t-xl border border-b-0 border-outline-variant/90 bg-surface-container-lowest/98 shadow-none backdrop-blur-xl";
   const dockMotionClass = minimized ? "transition-none" : "transition-[height]";
   const dockSurfaceStyle = {
     "--builder-output-dock-statusbar-offset": OUTPUT_DOCK_STATUS_BAR_OFFSET,
-    "--builder-output-dock-safe-bottom": "calc(var(--builder-output-dock-statusbar-offset) + max(0.5rem, env(safe-area-inset-bottom)))",
+    "--builder-output-dock-safe-bottom": "calc(var(--builder-output-dock-statusbar-offset) + env(safe-area-inset-bottom))",
     bottom: "var(--builder-output-dock-safe-bottom)",
     contain: "layout paint",
   } as CSSProperties;
   const dockStyle = minimized
     ? ({
         ...dockSurfaceStyle,
-        height: "3.25rem",
-        minHeight: "3.25rem",
-        maxHeight: "3.25rem",
+        height: "2.25rem",
+        minHeight: "2.25rem",
+        maxHeight: "2.25rem",
         backgroundColor: "transparent",
         borderColor: "transparent",
         boxShadow: "none",
@@ -109,21 +109,20 @@ export function OutputDock<T extends string>({
     ? "subtle-scrollbar min-h-0 min-w-0 overflow-auto overscroll-contain break-words rounded-[22px] border border-outline-variant/70 bg-surface-container-low p-2.5 [overflow-wrap:anywhere]"
     : "subtle-scrollbar max-h-[5.75rem] min-w-0 overflow-auto overscroll-contain break-words rounded-[20px] border border-outline-variant/70 bg-surface-container-low p-2 [overflow-wrap:anywhere]";
   const contentPanelClass =
-    "subtle-scrollbar h-full min-h-0 min-w-0 overflow-auto overscroll-contain break-words rounded-[24px] border border-outline-variant bg-surface-container p-3 shadow-m3-1 [overflow-wrap:anywhere]";
+    "subtle-scrollbar h-full min-h-0 min-w-0 overflow-auto overscroll-contain break-words rounded-lg border border-outline-variant bg-surface-container p-3 shadow-none [overflow-wrap:anywhere]";
   const dockPanelStyle = {
     backgroundColor: "hsl(var(--surface-container-lowest) / 0.98)",
     borderColor: "hsl(var(--outline-variant) / 0.9)",
-    boxShadow: "0 4px 8px 3px hsl(var(--shadow) / 0.08), 0 1px 3px hsl(var(--shadow) / 0.16)",
-    WebkitBackdropFilter: "blur(24px)",
-    backdropFilter: "blur(24px)",
+    boxShadow: "0 -1px 0 hsl(var(--outline-variant) / 0.5)",
+    WebkitBackdropFilter: "blur(18px)",
+    backdropFilter: "blur(18px)",
   } as CSSProperties;
-  const minimizedPillStyle = {
-    maxWidth: "min(54rem, calc(100vw - 2rem))",
+  const minimizedStripStyle = {
     backgroundColor: "hsl(var(--surface-container-lowest) / 0.98)",
     borderColor: "hsl(var(--outline-variant) / 0.9)",
-    boxShadow: "0 4px 8px 3px hsl(var(--shadow) / 0.08), 0 1px 3px hsl(var(--shadow) / 0.16)",
-    WebkitBackdropFilter: "blur(24px)",
-    backdropFilter: "blur(24px)",
+    boxShadow: "0 -1px 0 hsl(var(--outline-variant) / 0.45)",
+    WebkitBackdropFilter: "blur(18px)",
+    backdropFilter: "blur(18px)",
   } as CSSProperties;
   const handleTabChange = (tab: T) => {
     onTabChange(tab);
@@ -191,9 +190,9 @@ export function OutputDock<T extends string>({
   return (
     <section
       className={cn(
-        "isolate fixed bottom-2 left-2 right-2 z-40 shrink-0 md:left-[96px] md:right-3",
+        "isolate fixed bottom-0 left-0 right-0 z-40 shrink-0 md:left-[88px]",
         resizing && "select-none",
-        avoidDesignSideDocks && "xl:left-[348px] xl:right-[324px]",
+        avoidDesignSideDocks && "xl:left-[328px] xl:right-[304px]",
         dockShellClass,
         dockMotionClass,
         dockHeightClass,
@@ -209,9 +208,10 @@ export function OutputDock<T extends string>({
       data-builder-output-dock-short-viewport={dockShortViewport ? "true" : "false"}
       data-builder-output-dock-minimized={minimized ? "true" : "false"}
       data-builder-output-dock-resizing={resizing ? "true" : "false"}
-      data-builder-output-dock-shell="floating-rounded"
-      data-builder-output-dock-minimized-chrome={minimized ? "floating-pill" : "full-panel"}
+      data-builder-output-dock-shell="docked-strip"
+      data-builder-output-dock-minimized-chrome={minimized ? "docked-strip" : "full-panel"}
       data-builder-output-dock-no-reserved-band=""
+      data-builder-output-dock-low-chrome=""
       data-builder-output-dock-safe-area="bottom"
       data-builder-output-dock-statusbar-offset=""
       data-builder-output-dock-transparent-shell=""
@@ -222,18 +222,18 @@ export function OutputDock<T extends string>({
       {minimized ? (
         <div
           className={cn(
-            "pointer-events-auto mx-auto grid h-full max-w-[min(46rem,calc(100vw-2rem))] min-w-0 items-center gap-2 overflow-hidden rounded-[18px] border border-outline-variant/90 bg-surface-container-lowest/98 px-2 py-1.5 shadow-m3-3 backdrop-blur-2xl md:max-w-[min(54rem,calc(100vw-8rem))]",
+            "pointer-events-auto grid h-full w-full min-w-0 items-center gap-2 overflow-hidden rounded-none border-y border-outline-variant/80 bg-surface-container-lowest/98 px-2 shadow-none backdrop-blur-xl",
             minimizedSummary
               ? "grid-cols-[minmax(9rem,0.8fr)_minmax(0,1.2fr)_auto]"
               : "grid-cols-[minmax(0,1fr)_auto]",
           )}
-          style={minimizedPillStyle}
+          style={minimizedStripStyle}
           data-builder-output-dock-minimized-shell=""
         >
           <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
           {minimizedSummary ? (
             <div
-              className="subtle-scrollbar hidden min-w-0 items-center overflow-x-auto rounded-2xl border border-outline-variant/70 bg-surface-container px-2 py-1 text-xs md:flex"
+              className="subtle-scrollbar hidden min-w-0 items-center overflow-x-auto border-l border-outline-variant/70 px-2 py-1 text-xs text-on-surface-variant md:flex"
               data-builder-output-dock-minimized-summary=""
               data-builder-output-dock-minimized-peek=""
             >

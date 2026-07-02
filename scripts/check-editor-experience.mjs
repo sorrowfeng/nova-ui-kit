@@ -281,11 +281,12 @@ mustContain(builder, 'id: "canvas-rulers"', "Editor experience audit checks desi
 mustContain(builder, 'id: "canvas-ruler-toggle"', "Editor experience audit checks canvas ruler visibility toggle");
 
 mustContain(outputDock, 'data-builder-output-dock=""', "Output dock has a stable test marker");
-mustContain(outputDock, "fixed bottom-2 left-2 right-2", "Output dock floats above the workspace instead of reserving a white band");
-mustContain(outputDock, "isolate fixed bottom-2 left-2 right-2", "Output dock is isolated from workspace paint artifacts");
-mustContain(outputDock, "rounded-[26px]", "Output dock matches rounded Nova shell styling");
-mustContain(outputDock, 'data-builder-output-dock-shell="floating-rounded"', "Output dock declares a single rounded floating shell");
+mustContain(outputDock, "fixed bottom-0 left-0 right-0", "Output dock is a docked bottom strip instead of a floating workspace pill");
+mustContain(outputDock, "isolate fixed bottom-0 left-0 right-0", "Output dock is isolated from workspace paint artifacts while staying docked");
+mustContain(outputDock, "rounded-t-xl", "Output dock uses a docked top edge instead of a floating rounded shell");
+mustContain(outputDock, 'data-builder-output-dock-shell="docked-strip"', "Output dock declares a low-chrome docked strip shell");
 mustContain(outputDock, 'data-builder-output-dock-no-reserved-band=""', "Output dock does not ask the workspace to reserve a white band");
+mustContain(outputDock, 'data-builder-output-dock-low-chrome=""', "Output dock exposes its low-chrome Qt Creator style contract");
 mustContain(outputDock, 'data-builder-output-dock-safe-area="bottom"', "Output dock respects bottom safe-area insets");
 mustContain(outputDock, "--builder-output-dock-statusbar-offset", "Output dock reserves the visible status bar height");
 mustContain(outputDock, 'data-builder-output-dock-statusbar-offset=""', "Output dock exposes its status bar avoidance contract");
@@ -298,7 +299,7 @@ mustContain(outputDock, 'data-builder-output-dock-body=""', "Output dock body us
 mustContain(outputDock, 'data-builder-output-dock-header=""', "Output dock header is part of the rounded shell");
 mustContain(outputDock, "--builder-output-dock-safe-bottom", "Output dock exposes a bottom safe-area CSS variable");
 mustContain(outputDock, "env(safe-area-inset-bottom)", "Output dock reads the platform bottom safe-area inset");
-mustContain(outputDock, 'contain: "layout paint"', "Output dock contains layout and paint for the floating surface");
+mustContain(outputDock, 'contain: "layout paint"', "Output dock contains layout and paint for the docked surface");
 mustContain(outputDock, "--builder-output-dock-height", "Output dock uses a resize-driven height variable");
 mustContain(outputDock, "--builder-output-dock-min-height", "Output dock exposes a viewport-aware min height variable");
 mustContain(outputDock, "--builder-output-dock-max-height", "Output dock exposes a viewport-aware max height variable");
@@ -327,13 +328,13 @@ mustContain(outputDock, "[overflow-wrap:anywhere]", "Output dock can wrap long p
 mustContain(outputDock, "minimizedSummary", "Output dock supports a minimized status summary");
 mustContain(outputDock, "data-builder-output-dock-minimized-summary", "Output dock renders a minimized summary surface");
 mustContain(outputDock, "data-builder-output-dock-minimized-peek", "Output dock exposes a minimized peek marker");
-mustContain(outputDock, 'data-builder-output-dock-minimized-chrome={minimized ? "floating-pill" : "full-panel"}', "Output dock marks minimized chrome as a floating pill");
-mustContain(outputDock, 'height: "3.25rem"', "Minimized output dock locks its outer height instead of inheriting expanded height");
+mustContain(outputDock, 'data-builder-output-dock-minimized-chrome={minimized ? "docked-strip" : "full-panel"}', "Output dock marks minimized chrome as a docked strip");
+mustContain(outputDock, 'height: "2.25rem"', "Minimized output dock uses a compact strip height");
 mustContain(outputDock, 'backgroundColor: "transparent"', "Minimized output dock clears the outer background");
-mustContain(outputDock, "minimizedPillStyle", "Minimized output dock uses a dedicated centered pill style");
+mustContain(outputDock, "minimizedStripStyle", "Minimized output dock uses a dedicated dock strip style");
 mustContain(outputDock, 'const dockMotionClass = minimized ? "transition-none"', "Minimized output dock disables outer chrome transition");
 mustContain(outputDock, "pointer-events-none overflow-visible rounded-none border border-transparent bg-transparent shadow-none backdrop-blur-0", "Minimized output dock outer shell stays transparent and non-blocking");
-mustContain(outputDock, "pointer-events-auto mx-auto grid h-full", "Minimized output dock renders only an interactive centered pill");
+mustContain(outputDock, "pointer-events-auto grid h-full w-full", "Minimized output dock renders only an interactive full-width strip");
 mustContain(builder, "data-builder-output-dock-minimized-feedback", "Builder passes issue/task/output feedback into the minimized dock");
 mustContain(builder, "data-builder-workspace-no-output-reserved-band", "Builder marks the workspace as not reserving a bottom white band");
 mustContain(builder, "bottomDockLogText", "Builder derives a single full log text source for the output dock");
@@ -353,7 +354,7 @@ mustContain(builder, "data-builder-bottom-task-log-toolbar", "Bottom task detail
 mustContain(builder, "data-builder-bottom-task-log-search", "Bottom task detail exposes task log search");
 mustContain(builder, "data-builder-bottom-task-log-open-readable", "Bottom task detail can open the readable full log");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.outputDockLogSearchRuntime = true", "Browser smoke verifies output dock log search");
-mustContain("scripts/check-builder-runtime-smoke.mjs", "minimized output dock renders as a transparent shell with centered floating pill", "Browser smoke verifies the minimized output dock does not render a background band");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "minimized output dock renders as a low chrome dock strip", "Browser smoke verifies the minimized output dock does not render a floating pill");
 mustContain(builder, "data-builder-output-log-copy", "Output dock log panel can copy logs");
 mustContain(builder, "data-builder-output-log-expand", "Output dock log panel can expand to full height");
 mustContain(builder, "data-builder-output-log-full-content", "Output dock log panel exposes full wrapped log content");

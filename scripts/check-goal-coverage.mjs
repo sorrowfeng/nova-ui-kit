@@ -104,13 +104,13 @@ const requirements = [
   },
   {
     id: 3,
-    title: "圆角输出 Dock",
+    title: "低装饰贴底输出 Dock",
     evidence: [
       parity(3),
-      contains("scripts/check-builder-runtime-smoke.mjs", "verified.outputDockLayout = true", "browser smoke verifies the rounded floating output dock layout"),
+      contains("scripts/check-builder-runtime-smoke.mjs", "verified.outputDockLayout = true", "browser smoke verifies the low chrome docked output layout"),
       contains("scripts/check-builder-runtime-smoke.mjs", "verified.outputDockContentRuntime = true", "browser smoke verifies expanded output dock content sizing"),
-      outputDock('data-builder-output-dock-shell="floating-rounded"', "floating rounded output dock shell"),
-      outputDock("rounded-[26px]", "rounded dock styling"),
+      outputDock('data-builder-output-dock-shell="docked-strip"', "docked strip output dock shell"),
+      outputDock('data-builder-output-dock-low-chrome=""', "low chrome output dock styling"),
       outputDock('data-builder-output-dock-safe-area="bottom"', "output dock respects bottom safe-area"),
       outputDock('data-builder-output-dock-content-clip="scroll-panels"', "output dock clips content inside scroll panels"),
       outputDock("--builder-output-dock-height", "resizable dock height variable"),

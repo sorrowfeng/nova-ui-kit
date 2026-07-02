@@ -3666,8 +3666,9 @@ async function runOutputDockLayoutChecks(send, verified) {
       const bodyTransparent = bodyStyle.backgroundColor === "rgba(0, 0, 0, 0)" || bodyStyle.backgroundColor === "transparent";
       return {
         passed:
-          dock.getAttribute("data-builder-output-dock-shell") === "floating-rounded" &&
+          dock.getAttribute("data-builder-output-dock-shell") === "docked-strip" &&
           dock.hasAttribute("data-builder-output-dock-no-reserved-band") &&
+          dock.hasAttribute("data-builder-output-dock-low-chrome") &&
           dock.getAttribute("data-builder-output-dock-safe-area") === "bottom" &&
           dock.hasAttribute("data-builder-output-dock-statusbar-offset") &&
           dock.hasAttribute("data-builder-output-dock-transparent-shell") &&
@@ -3682,8 +3683,8 @@ async function runOutputDockLayoutChecks(send, verified) {
           !bodyTransparent &&
           style.position === "fixed" &&
           style.contain.includes("layout") &&
-          bodyRadius >= 20 &&
-          contentRadius >= 18 &&
+          bodyRadius <= 16 &&
+          contentRadius <= 16 &&
           rect.bottom <= window.innerHeight + 1 &&
           rect.left >= 0 &&
           rect.right <= window.innerWidth + 1 &&
@@ -3691,7 +3692,7 @@ async function runOutputDockLayoutChecks(send, verified) {
         detail: \`position=\${style.position}, contain=\${style.contain}, shellBg=\${style.backgroundColor}, bodyBg=\${bodyStyle.backgroundColor}, workspacePb=\${workspacePaddingBottom}, noShield=\${workspace?.hasAttribute("data-builder-workspace-no-output-background-shield")}, bottomGap=\${bottomGap}, statusClearance=\${statusBarClearance}, bodyRadius=\${bodyRadius}, contentRadius=\${contentRadius}, rect=\${Math.round(rect.left)},\${Math.round(rect.top)},\${Math.round(rect.right)},\${Math.round(rect.bottom)}\`
       };
     })()`,
-    "rounded floating output dock without workspace background shield",
+    "low chrome docked output strip without workspace background shield",
   );
   verified.outputDockLayout = true;
   await assertRuntimeCheck(
@@ -3846,34 +3847,33 @@ async function runOutputDockLayoutChecks(send, verified) {
     send,
     `(() => {
       const dock = document.querySelector("[data-builder-output-dock]");
-      const pill = document.querySelector("[data-builder-output-dock-minimized-shell]");
-      if (!dock || !pill) {
-        return { passed: false, detail: "minimized dock or pill missing" };
+      const strip = document.querySelector("[data-builder-output-dock-minimized-shell]");
+      if (!dock || !strip) {
+        return { passed: false, detail: "minimized dock or strip missing" };
       }
       const dockStyle = getComputedStyle(dock);
-      const pillStyle = getComputedStyle(pill);
+      const stripStyle = getComputedStyle(strip);
       const dockRect = dock.getBoundingClientRect();
-      const pillRect = pill.getBoundingClientRect();
+      const stripRect = strip.getBoundingClientRect();
       const transparentDockBg = dockStyle.backgroundColor === "rgba(0, 0, 0, 0)" || dockStyle.backgroundColor === "transparent";
-      const visiblePillBg = pillStyle.backgroundColor !== "rgba(0, 0, 0, 0)" && pillStyle.backgroundColor !== "transparent";
-      const centered = Math.abs((dockRect.left + dockRect.right) / 2 - (pillRect.left + pillRect.right) / 2) <= 2;
+      const visibleStripBg = stripStyle.backgroundColor !== "rgba(0, 0, 0, 0)" && stripStyle.backgroundColor !== "transparent";
+      const fillsDock = Math.abs(stripRect.left - dockRect.left) <= 1 && Math.abs(stripRect.right - dockRect.right) <= 1;
       return {
         passed:
-          dock.getAttribute("data-builder-output-dock-minimized-chrome") === "floating-pill" &&
+          dock.getAttribute("data-builder-output-dock-minimized-chrome") === "docked-strip" &&
+          dock.hasAttribute("data-builder-output-dock-low-chrome") &&
           dockStyle.pointerEvents === "none" &&
           transparentDockBg &&
           dockStyle.boxShadow === "none" &&
-          pillStyle.pointerEvents === "auto" &&
-          visiblePillBg &&
-          pillRect.width < dockRect.width - 32 &&
-          pillRect.height <= dockRect.height + 2 &&
-          pillRect.left > dockRect.left &&
-          pillRect.right < dockRect.right &&
-          centered,
-        detail: \`dockPointer=\${dockStyle.pointerEvents}, dockBg=\${dockStyle.backgroundColor}, dockShadow=\${dockStyle.boxShadow}, pillPointer=\${pillStyle.pointerEvents}, pillBg=\${pillStyle.backgroundColor}, dock=\${Math.round(dockRect.width)}x\${Math.round(dockRect.height)}, pill=\${Math.round(pillRect.width)}x\${Math.round(pillRect.height)}, centered=\${centered}\`
+          stripStyle.pointerEvents === "auto" &&
+          visibleStripBg &&
+          stripRect.width >= dockRect.width - 2 &&
+          stripRect.height <= 38 &&
+          fillsDock,
+        detail: \`dockPointer=\${dockStyle.pointerEvents}, dockBg=\${dockStyle.backgroundColor}, dockShadow=\${dockStyle.boxShadow}, stripPointer=\${stripStyle.pointerEvents}, stripBg=\${stripStyle.backgroundColor}, dock=\${Math.round(dockRect.width)}x\${Math.round(dockRect.height)}, strip=\${Math.round(stripRect.width)}x\${Math.round(stripRect.height)}, fills=\${fillsDock}\`
       };
     })()`,
-    "minimized output dock renders as a transparent shell with centered floating pill",
+    "minimized output dock renders as a low chrome dock strip",
   );
   await evaluate(send, `document.querySelector("[data-builder-restore-output-dock]")?.click(); true`);
   await waitFor(
