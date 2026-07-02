@@ -3891,12 +3891,14 @@ async function runShellCommandPlacementChecks(send, verified) {
       const shell = document.querySelector('[data-editor-shell="builder"]');
       const leftRun = document.querySelector('[data-builder-left-run-controls-layout="qt-creator-kit"]');
       const compactTopbar = document.querySelector('[data-builder-compact-topbar][data-builder-compact-topbar-policy="status-locator-only"]');
+      const documentStatus = document.querySelector('[data-builder-active-document-status="compact"]');
       const titlebarBuildMenu = document.querySelector('[data-titlebar-build-menu-secondary][data-titlebar-command-overflow="build-run-secondary"]');
       const showcaseTopbar = document.querySelector('[data-showcase-topbar], [data-topbar-scope="component-library"]');
       const runOwner = document.querySelector('[data-builder-run-command-owner="primary-left-rail"]');
       const ownership = document.querySelector('[data-builder-command-ownership*="left-rail-primary"]');
       const utilityStrip = document.querySelector('[data-builder-left-rail-utility-strip="qt-creator-minimal"]');
       const leftRect = leftRun?.getBoundingClientRect();
+      const documentStatusRect = documentStatus?.getBoundingClientRect();
       const titlebarRect = titlebarBuildMenu?.getBoundingClientRect();
       return {
         passed:
@@ -3905,11 +3907,15 @@ async function runShellCommandPlacementChecks(send, verified) {
           shell.hasAttribute("data-editor-omits-showcase-topbar") &&
           Boolean(leftRun && utilityStrip && leftRect && leftRect.width >= 48 && leftRect.width <= 96 && leftRect.height > 120) &&
           Boolean(compactTopbar) &&
+          Boolean(documentStatus && documentStatusRect && documentStatusRect.width > 0 && documentStatusRect.height > 0) &&
+          documentStatus?.getAttribute("data-builder-topbar-status-chip-count") === "1" &&
+          Boolean(documentStatus?.querySelector("[data-builder-active-file-save-state]")) &&
+          Boolean(documentStatus?.querySelector("[data-builder-project-source-dirty]")) &&
           Boolean(titlebarBuildMenu && titlebarRect && titlebarRect.width > 0 && titlebarRect.height > 0) &&
           Boolean(runOwner) &&
           Boolean(ownership) &&
           !showcaseTopbar,
-        detail: \`policy=\${shell?.getAttribute("data-editor-toolbar-policy") || "missing"}, left=\${leftRect ? Math.round(leftRect.width) + "x" + Math.round(leftRect.height) : "missing"}, utility=\${Boolean(utilityStrip)}, titlebar=\${titlebarRect ? Math.round(titlebarRect.width) + "x" + Math.round(titlebarRect.height) : "missing"}, showcaseTopbar=\${Boolean(showcaseTopbar)}\`
+        detail: \`policy=\${shell?.getAttribute("data-editor-toolbar-policy") || "missing"}, left=\${leftRect ? Math.round(leftRect.width) + "x" + Math.round(leftRect.height) : "missing"}, utility=\${Boolean(utilityStrip)}, docStatus=\${documentStatusRect ? Math.round(documentStatusRect.width) + "x" + Math.round(documentStatusRect.height) : "missing"}, titlebar=\${titlebarRect ? Math.round(titlebarRect.width) + "x" + Math.round(titlebarRect.height) : "missing"}, showcaseTopbar=\${Boolean(showcaseTopbar)}\`
       };
     })()`,
     "builder command placement",

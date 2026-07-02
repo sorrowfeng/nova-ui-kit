@@ -1079,6 +1079,8 @@ mustContain(builder, "data-builder-project-tree-node-dirty", "Project tree nodes
 mustContain(builder, "data-builder-project-file-save-state", "Project workspace detail exposes selected UI file save state");
 mustContain(builder, "data-builder-active-file-save-state", "Compact topbar exposes active UI file save state");
 mustContain(builder, "data-builder-project-source-dirty", "Compact topbar exposes project source dirty state");
+mustContain(builder, 'data-builder-active-document-status="compact"', "Compact topbar merges mode, file, and sync state into one document status chip");
+mustContain(builder, 'data-builder-topbar-status-chip-count="1"', "Compact topbar avoids separate mode/file/sync chips");
 mustContain(builder, 'id: "project-file-dirty-state"', "Editor experience audit checks project dirty state");
 mustContain(builder, 'id: "project-tree-context-menu"', "Editor experience audit checks project tree context menu support");
 mustContain(builder, "selectedProjectExplorerPathNodes", "Project tree derives breadcrumb nodes from the project hierarchy");

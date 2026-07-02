@@ -35083,27 +35083,37 @@ export function BuilderShowcase() {
           {projectLocatorControl}
 
           <div className="ml-auto flex shrink-0 items-center gap-1">
-            <Badge variant="secondary" className="hidden h-6 px-2 text-[0.64rem] md:inline-flex">{activeModeItem.label}</Badge>
-            <Badge
-              variant={activeFileDirty ? "outline" : "secondary"}
-              className="hidden h-6 max-w-36 truncate px-2 text-[0.64rem] xl:inline-flex"
-              data-builder-active-file-save-state={activeFileDirty ? "dirty" : "clean"}
-              title={`${activeFile.name} · ${activeFileDirty ? "未保存" : "已同步"}`}
-            >
-              {activeFile.name}
-            </Badge>
-            <Badge
-              variant={projectSourceDirty ? "outline" : "secondary"}
-              className="hidden h-6 px-2 text-[0.64rem] lg:inline-flex"
-              data-builder-project-source-dirty={projectSourceDirty ? "true" : "false"}
-              title={
+            <div
+              className={cn(
+                "hidden h-6 min-w-0 max-w-[16rem] items-center gap-1.5 rounded-lg border px-2 text-[0.64rem] font-medium md:flex",
+                projectSourceDirty || activeFileDirty
+                  ? "border-primary/40 bg-surface-container text-primary"
+                  : "border-outline-variant bg-surface-container-high text-on-surface-variant",
+              )}
+              data-builder-active-document-status="compact"
+              data-builder-topbar-status-chip-count="1"
+              title={`${activeModeItem.label} · ${activeFile.name} · ${
                 projectSourceDirty
                   ? `${dirtyUiFileCount} 个 UI 文件、Rust ${rustLogicDirty ? "未保存" : "已同步"}、项目设置 ${projectSettingsDirty ? "未保存" : "已同步"}`
-                  : "项目来源已同步"
-              }
+                  : activeFileDirty
+                    ? "当前文件未保存"
+                    : "项目来源已同步"
+              }`}
             >
-              {projectSourceDirty ? "未保存" : saved ? "已保存" : "已同步"}
-            </Badge>
+              <activeModeItem.icon aria-hidden className="size-3 shrink-0 text-primary" />
+              <span className="shrink-0">{activeModeItem.label}</span>
+              <span className="h-3 w-px shrink-0 bg-outline-variant" aria-hidden />
+              <span
+                className="min-w-0 truncate"
+                data-builder-active-file-save-state={activeFileDirty ? "dirty" : "clean"}
+              >
+                {activeFile.name}
+              </span>
+              <span className="h-3 w-px shrink-0 bg-outline-variant" aria-hidden />
+              <span className="shrink-0" data-builder-project-source-dirty={projectSourceDirty ? "true" : "false"}>
+                {projectSourceDirty ? "未保存" : saved ? "已保存" : "已同步"}
+              </span>
+            </div>
             <button
               type="button"
               className="focus-ring hidden h-6 min-w-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-2 text-[0.62rem] font-medium text-on-surface-variant transition hover:border-primary/40 hover:bg-surface-container-high hover:text-on-surface 2xl:inline-flex"
