@@ -1442,6 +1442,15 @@ mustContain(taskCenter, '"audit-editor-experience"', "Task center defines the ed
 mustContain(taskCenter, "编辑器体验审计", "Task center gives the editor experience audit a visible label");
 mustContain(builder, "runEditorExperienceAudit", "Builder can execute the editor experience audit");
 mustContain(builder, "data-builder-audit-editor-experience", "Build page exposes the editor experience audit button");
+mustContain(builder, "data-builder-build-quality-dock", "Build sidebar groups diagnostics and audit evidence into one compact quality dock");
+mustContain(builder, 'data-builder-build-quality-dock-density="collapsed-summary"', "Build quality dock defaults to a compact collapsed summary");
+mustContain(builder, 'data-builder-build-quality-dock-summary="single-row"', "Build quality dock summary stays one row");
+mustContain(builder, 'data-builder-build-quality-dock-details="deferred"', "Build quality dock defers diagnostics and audit details until expanded");
+mustContain(builder, "data-builder-build-diagnostics-panel", "Build diagnostics remain available inside the quality dock");
+mustContain(builder, "data-builder-build-assist-dock", "Build sidebar groups low-frequency assist actions into one compact dock");
+mustContain(builder, 'data-builder-build-assist-dock-density="collapsed-summary"', "Build assist dock defaults to a compact collapsed summary");
+mustContain(builder, 'data-builder-build-assist-dock-summary="single-row"', "Build assist dock summary stays one row");
+mustContain(builder, 'data-builder-build-assist-dock-details="deferred"', "Build assist dock defers secondary actions until expanded");
 mustContain(builder, "data-builder-experience-audit-panel", "Build page exposes a persistent editor experience audit panel");
 mustContain(builder, "data-builder-experience-audit-summary", "Experience audit panel summarizes pass, warning, and blocking counts");
 mustContain(builder, "data-builder-experience-audit-item", "Experience audit panel renders concrete quality checks");

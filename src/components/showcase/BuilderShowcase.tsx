@@ -43906,7 +43906,46 @@ export function BuilderShowcase() {
                 </section>
                 </div>
               </details>
-              <section className="rounded-[22px] bg-surface-container-low p-3">
+              <details
+                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                data-builder-build-quality-dock=""
+                data-builder-build-quality-dock-density="collapsed-summary"
+                data-builder-build-quality-dock-state="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  data-builder-build-quality-dock-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <div className="min-w-0">
+                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">诊断 / 体验审计</h3>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        {buildDiagnostics.length > 0
+                          ? `${buildDiagnostics.length} 个构建诊断`
+                          : `${editorExperienceAuditStats.score}% 审计评分 · ${editorExperienceAuditStats.warningCount} 提醒`}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant={buildDiagnostics.length > 0 ? "destructive" : "secondary"}>
+                      {buildDiagnostics.length} 诊断
+                    </Badge>
+                    <Badge
+                      variant={
+                        editorExperienceAuditStats.failCount > 0
+                          ? "destructive"
+                          : editorExperienceAuditStats.warningCount > 0
+                            ? "outline"
+                            : "secondary"
+                      }
+                    >
+                      {editorExperienceAuditStatusLabel}
+                    </Badge>
+                  </span>
+                </summary>
+                <div className="mt-2 space-y-2 border-t border-outline-variant pt-2" data-builder-build-quality-dock-details="deferred">
+              <section className="rounded-[18px] bg-surface-container-low p-2.5" data-builder-build-diagnostics-panel="">
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">诊断</h3>
                   <Badge variant={buildDiagnostics.length > 0 ? "destructive" : "secondary"}>
@@ -43961,7 +44000,7 @@ export function BuilderShowcase() {
                 )}
               </section>
               <section
-                className="rounded-[22px] bg-surface-container-low p-3"
+                className="rounded-[18px] bg-surface-container-low p-2.5"
                 data-builder-experience-audit-panel=""
                 data-builder-experience-audit-state={editorExperienceAuditState}
               >
@@ -44216,16 +44255,40 @@ export function BuilderShowcase() {
                   </div>
                 </div>
               </section>
-              <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-quick-checks="" data-builder-build-page-deemphasized-actions="">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建辅助</h3>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">左下 Run Kit 是构建、运行和停止的主入口；这里只保留生成计划、体验审计和少量检查入口。</p>
-                  </div>
-                  <Badge variant={checkingTarget ? "outline" : "secondary"}>{checkingTarget ?? selectedRailActionPreset?.badge ?? "就绪"}</Badge>
                 </div>
-                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]" data-builder-build-page-left-rail-handoff="" data-builder-build-page-run-owner="left-rail-primary">
-                  <div className="grid min-w-0 gap-2 rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs sm:grid-cols-3">
+              </details>
+              <details
+                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                data-builder-build-assist-dock=""
+                data-builder-build-assist-dock-density="collapsed-summary"
+                data-builder-build-assist-dock-state="collapsed-default"
+                data-builder-quick-checks=""
+                data-builder-build-page-deemphasized-actions=""
+              >
+                <summary
+                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  data-builder-build-assist-dock-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <div className="min-w-0">
+                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建辅助</h3>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        {selectedRailActionPreset?.title ?? "未选择 preset"} · {railRunTargetLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="shrink-0" variant={checkingTarget ? "outline" : "secondary"}>
+                    {checkingTarget ?? selectedRailActionPreset?.badge ?? "就绪"}
+                  </Badge>
+                </summary>
+                <div className="mt-2 border-t border-outline-variant pt-2" data-builder-build-assist-dock-details="deferred">
+                  <section className="rounded-[18px] bg-surface-container-low p-2.5">
+                    <p className="mb-2 text-xs leading-5 text-on-surface-variant">
+                      左下 Run Kit 是构建、运行和停止的主入口；这里保留生成计划、体验审计和少量检查入口。
+                    </p>
+                    <div className="grid gap-2" data-builder-build-page-left-rail-handoff="" data-builder-build-page-run-owner="left-rail-primary">
+                  <div className="grid min-w-0 gap-2 rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs">
                     <div
                       className="flex items-center justify-between gap-2 rounded-xl bg-primary-container/70 px-2 py-1.5 text-primary-container-foreground sm:col-span-3"
                       data-builder-build-page-primary-run-owner=""
@@ -44249,10 +44312,11 @@ export function BuilderShowcase() {
                       <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">左下角运行、构建、停止和打开输出</p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                  <div className="grid gap-2">
                   <Button
                     size="sm"
                     variant="outline"
+                    className="w-full justify-start"
                     data-builder-build-page-focus-left-rail=""
                     onClick={focusLeftRunControls}
                   >
@@ -44262,6 +44326,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="w-full justify-start"
                     data-builder-generate-file-plan=""
                     loading={previewingGeneratedFiles}
                     disabled={previewingGeneratedFiles || applyingGeneratedFiles || Boolean(checkingTarget) || building || bundling || validatingWindow}
@@ -44273,6 +44338,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="w-full justify-start"
                     data-builder-audit-editor-experience=""
                     loading={runningProjectTask?.actionId === "audit-editor-experience"}
                     disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
@@ -44283,7 +44349,7 @@ export function BuilderShowcase() {
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost" data-builder-build-page-more-checks="">
+                      <Button size="sm" variant="ghost" className="w-full justify-start" data-builder-build-page-more-checks="">
                         <Menu aria-hidden className="size-4" />
                         更多检查
                       </Button>
@@ -44325,8 +44391,10 @@ export function BuilderShowcase() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   </div>
+                    </div>
+                  </section>
                 </div>
-              </section>
+              </details>
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-task-center="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">

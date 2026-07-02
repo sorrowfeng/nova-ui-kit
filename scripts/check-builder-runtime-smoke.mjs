@@ -4573,6 +4573,22 @@ async function runShellCommandPlacementChecks(send, verified) {
       const buildTargetDock = document.querySelector("[data-builder-build-target-dock]");
       const buildTargetSummary = document.querySelector("[data-builder-build-target-dock-summary]");
       const buildTargetDetails = document.querySelector("[data-builder-build-target-dock-details]");
+      const qualityDock = document.querySelector("[data-builder-build-quality-dock]");
+      const qualitySummary = document.querySelector("[data-builder-build-quality-dock-summary]");
+      const qualityDetails = document.querySelector("[data-builder-build-quality-dock-details]");
+      const diagnosticsPanel = document.querySelector("[data-builder-build-diagnostics-panel]");
+      const experienceAudit = document.querySelector("[data-builder-experience-audit-panel]");
+      const auditSummary = document.querySelector("[data-builder-experience-audit-summary]");
+      const qtParity = document.querySelector("[data-builder-qt-creator-parity-panel]");
+      const auditDetail = document.querySelector("[data-builder-experience-audit-detail-panel]");
+      const assistDock = document.querySelector("[data-builder-build-assist-dock]");
+      const assistSummary = document.querySelector("[data-builder-build-assist-dock-summary]");
+      const assistDetails = document.querySelector("[data-builder-build-assist-dock-details]");
+      const assistHandoff = document.querySelector("[data-builder-build-page-left-rail-handoff]");
+      const assistPrimaryRunOwner = document.querySelector("[data-builder-build-page-primary-run-owner]");
+      const assistFocus = document.querySelector("[data-builder-build-page-focus-left-rail]");
+      const assistAudit = document.querySelector("[data-builder-audit-editor-experience]");
+      const assistMore = document.querySelector("[data-builder-build-page-more-checks]");
       const parityPanel = document.querySelector("[data-builder-runtime-parity-panel]");
       const paritySummary = document.querySelector("[data-builder-runtime-parity-summary]");
       const parityDetails = document.querySelector("[data-builder-runtime-parity-details]");
@@ -4595,6 +4611,8 @@ async function runShellCommandPlacementChecks(send, verified) {
       const parityRect = parityPanel?.getBoundingClientRect();
       const settingsRect = settingsShortcut?.getBoundingClientRect();
       const buildTargetRect = buildTargetDock?.getBoundingClientRect();
+      const qualityRect = qualityDock?.getBoundingClientRect();
+      const assistRect = assistDock?.getBoundingClientRect();
       const generatedStatusRect = generatedStatus?.getBoundingClientRect();
       const changeImpactRect = changeImpact?.getBoundingClientRect();
       const releaseReadinessRect = releaseReadiness?.getBoundingClientRect();
@@ -4616,6 +4634,30 @@ async function runShellCommandPlacementChecks(send, verified) {
         buildTargetSummary?.getAttribute("data-builder-build-target-dock-summary") === "single-row" &&
         buildTargetDetails?.getAttribute("data-builder-build-target-dock-details") === "deferred" &&
         Boolean(buildTargetRect && buildTargetRect.height <= 52);
+      const qualityDockCollapsedDefault =
+        qualityDock?.tagName === "DETAILS" &&
+        !qualityDock.hasAttribute("open") &&
+        qualityDock.getAttribute("data-builder-build-quality-dock-density") === "collapsed-summary" &&
+        qualitySummary?.getAttribute("data-builder-build-quality-dock-summary") === "single-row" &&
+        qualityDetails?.getAttribute("data-builder-build-quality-dock-details") === "deferred" &&
+        Boolean(diagnosticsPanel) &&
+        Boolean(experienceAudit) &&
+        Boolean(auditSummary) &&
+        Boolean(qtParity) &&
+        Boolean(auditDetail) &&
+        Boolean(qualityRect && qualityRect.height <= 58);
+      const assistDockCollapsedDefault =
+        assistDock?.tagName === "DETAILS" &&
+        !assistDock.hasAttribute("open") &&
+        assistDock.getAttribute("data-builder-build-assist-dock-density") === "collapsed-summary" &&
+        assistSummary?.getAttribute("data-builder-build-assist-dock-summary") === "single-row" &&
+        assistDetails?.getAttribute("data-builder-build-assist-dock-details") === "deferred" &&
+        Boolean(assistHandoff) &&
+        Boolean(assistPrimaryRunOwner) &&
+        Boolean(assistFocus) &&
+        Boolean(assistAudit) &&
+        Boolean(assistMore) &&
+        Boolean(assistRect && assistRect.height <= 58);
       const parityCollapsedDefault =
         parityPanel?.tagName === "DETAILS" &&
         !parityPanel.hasAttribute("open") &&
@@ -4655,6 +4697,8 @@ async function runShellCommandPlacementChecks(send, verified) {
           artifactActions?.getAttribute("data-builder-build-artifact-actions") === "compact-grid" &&
           settingsCollapsedDefault &&
           buildTargetCollapsedDefault &&
+          qualityDockCollapsedDefault &&
+          assistDockCollapsedDefault &&
           Boolean(outputRect && outputRect.width <= 312) &&
           outputClearance &&
           parityCollapsedDefault &&
@@ -4662,7 +4706,7 @@ async function runShellCommandPlacementChecks(send, verified) {
           changeImpactCollapsedDefault &&
           releaseReadinessCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -4799,6 +4843,88 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-build-target-dock]")?.hasAttribute("open") === false`,
     "collapsed build target readiness shortcut",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-quality-dock-summary]")`, "build quality dock summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-quality-dock]")?.hasAttribute("open") === true`,
+    "expanded build quality dock",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const dock = document.querySelector("[data-builder-build-quality-dock]");
+      const details = document.querySelector("[data-builder-build-quality-dock-details]");
+      const diagnostics = document.querySelector("[data-builder-build-diagnostics-panel]");
+      const audit = document.querySelector("[data-builder-experience-audit-panel]");
+      const auditSummary = document.querySelector("[data-builder-experience-audit-summary]");
+      const parity = document.querySelector("[data-builder-qt-creator-parity-panel]");
+      const auditDetail = document.querySelector("[data-builder-experience-audit-detail-panel]");
+      const filterOptions = Array.from(document.querySelectorAll("[data-builder-experience-audit-filter-option]"));
+      const auditItems = Array.from(document.querySelectorAll("[data-builder-experience-audit-item]"));
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          dock?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-build-quality-dock-details") === "deferred" &&
+          Boolean(diagnostics) &&
+          Boolean(audit) &&
+          Boolean(auditSummary) &&
+          Boolean(parity) &&
+          Boolean(auditDetail) &&
+          filterOptions.length >= 4 &&
+          auditItems.length >= 10 &&
+          Boolean(detailsRect && detailsRect.height > 220),
+        detail: \`open=\${dock?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, diagnostics=\${Boolean(diagnostics)}, audit=\${Boolean(audit)}, parity=\${Boolean(parity)}, filters=\${filterOptions.length}, items=\${auditItems.length}\`
+      };
+    })()`,
+    "build quality dock expands to diagnostics and audit evidence",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-quality-dock-summary]")`, "collapse build quality dock summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-quality-dock]")?.hasAttribute("open") === false`,
+    "collapsed build quality dock",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-assist-dock-summary]")`, "build assist dock summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-assist-dock]")?.hasAttribute("open") === true`,
+    "expanded build assist dock",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const dock = document.querySelector("[data-builder-build-assist-dock]");
+      const details = document.querySelector("[data-builder-build-assist-dock-details]");
+      const handoff = document.querySelector("[data-builder-build-page-left-rail-handoff]");
+      const primaryRunOwner = document.querySelector("[data-builder-build-page-primary-run-owner]");
+      const focusRunKit = document.querySelector("[data-builder-build-page-focus-left-rail]");
+      const generatePlan = document.querySelector("[data-builder-generate-file-plan]");
+      const audit = document.querySelector("[data-builder-audit-editor-experience]");
+      const moreChecks = document.querySelector("[data-builder-build-page-more-checks]");
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          dock?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-build-assist-dock-details") === "deferred" &&
+          handoff?.getAttribute("data-builder-build-page-run-owner") === "left-rail-primary" &&
+          Boolean(primaryRunOwner) &&
+          Boolean(focusRunKit) &&
+          Boolean(generatePlan) &&
+          Boolean(audit) &&
+          Boolean(moreChecks) &&
+          Boolean(detailsRect && detailsRect.height > 150),
+        detail: \`open=\${dock?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, handoff=\${handoff?.getAttribute("data-builder-build-page-run-owner") || "missing"}, primary=\${Boolean(primaryRunOwner)}, focus=\${Boolean(focusRunKit)}, generate=\${Boolean(generatePlan)}, audit=\${Boolean(audit)}, more=\${Boolean(moreChecks)}\`
+      };
+    })()`,
+    "build assist dock expands to secondary build helpers",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-assist-dock-summary]")`, "collapse build assist dock summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-assist-dock]")?.hasAttribute("open") === false`,
+    "collapsed build assist dock",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(
