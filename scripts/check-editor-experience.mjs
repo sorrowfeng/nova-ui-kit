@@ -1417,6 +1417,7 @@ mustContain(builder, "data-builder-desktop-runtime-build", "Desktop runtime work
 mustContain(builder, 'id: "desktop-runtime-workbench"', "Editor experience audit checks desktop runtime workbench");
 mustContain(builder, "data-builder-runtime-parity-panel", "Build page exposes runtime window parity checks");
 mustContain(builder, 'data-builder-runtime-parity-grid="off"', "Runtime parity panel confirms generated runtime grid is off");
+mustContain(builder, 'data-builder-runtime-parity-list="compact-output"', "Runtime parity panel uses a compact output-style checklist instead of a card wall");
 mustContain(builder, "data-builder-runtime-parity-shell", "Runtime parity panel exposes page/release shell sync state");
 mustContain(builder, "data-builder-runtime-parity-titlebar", "Runtime parity panel exposes release titlebar style");
 mustContain(builder, "data-builder-runtime-parity-window-kind", "Runtime parity panel exposes release window kind");

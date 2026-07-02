@@ -44868,15 +44868,16 @@ export function BuilderShowcase() {
                 </div>
 
                 <div
-                  className="mt-3 rounded-2xl border border-outline-variant bg-surface-container p-3"
+                  className="mt-3 rounded-2xl border border-outline-variant bg-surface-container px-3 py-2.5"
                   data-builder-runtime-parity-panel=""
                   data-builder-runtime-parity-grid="off"
+                  data-builder-runtime-parity-list="compact-output"
                   data-builder-runtime-parity-shell={releaseWindowShellMatchesPage ? "matched" : "needs-sync"}
                   data-builder-runtime-parity-titlebar={activeProject.releaseConfig.titlebarStyle}
                   data-builder-runtime-parity-window-kind={activeProject.releaseConfig.windowKind}
                   data-builder-runtime-parity-validation={latestValidationRun?.status ?? "missing"}
                 >
-                  <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行端窗口一致性</h3>
@@ -44884,7 +44885,7 @@ export function BuilderShowcase() {
                           {releaseWindowShellMatchesPage ? "页面与发布一致" : "等待同步"}
                         </Badge>
                       </div>
-                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
+                      <p className="mt-1 line-clamp-1 text-xs leading-5 text-on-surface-variant">
                         对照编辑器页面、发布配置和生成 runtime，避免 exe 出现标题栏、拖拽区域或编辑网格残留的偏差。
                       </p>
                     </div>
@@ -44912,32 +44913,38 @@ export function BuilderShowcase() {
                       </Button>
                     </div>
                   </div>
-                  <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                  <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-3">
                     {runtimeWindowParityItems.map((item) => {
                       const ItemIcon = item.icon;
                       return (
                         <article
                           key={item.id}
-                          className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs"
+                          className="min-w-0 rounded-xl border border-outline-variant bg-surface-container-high/70 px-2.5 py-2 text-xs"
                           data-builder-runtime-parity-item={item.id}
                           data-builder-runtime-parity-state={item.severity}
                         >
-                          <div className="mb-2 flex min-w-0 items-center justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-2">
                             <span
                               className={cn(
-                                "flex size-7 shrink-0 items-center justify-center rounded-xl",
+                                "flex size-6 shrink-0 items-center justify-center rounded-lg",
                                 item.severity === "pass" ? "bg-primary-container text-primary-container-foreground" : "bg-tertiary-container text-tertiary-container-foreground",
                               )}
                             >
-                              <ItemIcon aria-hidden className="size-3.5" />
+                              <ItemIcon aria-hidden className="size-3" />
                             </span>
-                            <Badge className="shrink-0" variant={item.severity === "pass" ? "secondary" : "outline"}>
-                              {item.severity === "pass" ? "通过" : "复核"}
-                            </Badge>
+                            <div className="grid min-w-0 flex-1 items-center gap-1 sm:grid-cols-[5rem_minmax(0,1fr)]">
+                              <p className="truncate text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
+                              <p className="truncate font-medium text-on-surface">{item.value}</p>
+                            </div>
+                            <span
+                              className={cn(
+                                "size-2 shrink-0 rounded-full",
+                                item.severity === "pass" ? "bg-primary" : "bg-tertiary",
+                              )}
+                              aria-label={item.severity === "pass" ? "通过" : "需要复核"}
+                            />
                           </div>
-                          <p className="truncate text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
-                          <p className="mt-1 truncate font-medium text-on-surface">{item.value}</p>
-                          <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{item.detail}</p>
+                          <p className="mt-1 line-clamp-1 pl-8 leading-4 text-on-surface-variant">{item.detail}</p>
                         </article>
                       );
                     })}
