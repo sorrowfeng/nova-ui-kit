@@ -1414,11 +1414,14 @@ mustContain(builder, "data-builder-desktop-runtime-primary", "Desktop runtime wo
 mustContain(builder, "data-builder-desktop-runtime-state", "Desktop runtime workbench exposes the current runtime state");
 mustContain(builder, "data-builder-desktop-runtime-summary", "Desktop runtime workbench summarizes exe, validation, session, and queue status");
 mustContain(builder, 'data-builder-desktop-runtime-summary-density="single-row-output"', "Desktop runtime summary uses a compact single-row output density");
+mustContain(builder, 'data-builder-desktop-runtime-summary-layout="inline-property-strip"', "Desktop runtime summary renders as an inline property strip instead of a card wall");
 mustContain(builder, 'data-builder-desktop-runtime-card-density="compact-cell"', "Desktop runtime status items render as compact cells instead of large cards");
 mustContain(builder, "data-builder-desktop-runtime-console", "Desktop runtime workbench exposes the runtime console panel");
+mustContain(builder, 'data-builder-desktop-runtime-console-density="low-profile"', "Desktop runtime console uses a low-profile output pane density");
 mustContain(builder, "data-builder-desktop-runtime-log-preview", "Desktop runtime workbench previews captured stdout and stderr");
 mustContain(builder, "data-builder-desktop-runtime-validate", "Desktop runtime workbench can enqueue generated-window validation");
 mustContain(builder, "data-builder-desktop-runtime-build", "Desktop runtime workbench can enqueue exe builds");
+mustContain(builder, 'data-builder-desktop-runtime-actions-density="toolbar"', "Desktop runtime actions use a compact toolbar instead of a button grid");
 mustContain(builder, 'id: "desktop-runtime-workbench"', "Editor experience audit checks desktop runtime workbench");
 mustContain(builder, "data-builder-runtime-parity-panel", "Build page exposes runtime window parity checks");
 mustContain(builder, 'data-builder-runtime-parity-grid="off"', "Runtime parity panel confirms generated runtime grid is off");
