@@ -45846,26 +45846,43 @@ export function BuilderShowcase() {
                   </div>
                 )}
               </div>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-release-readiness="">
-                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <h2 className="text-sm font-medium">发布就绪度</h2>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                      汇总构建、验证、签名、运行、smoke 和回滚证据，判断这个项目离可发布版本还有多远。
-                    </p>
-                  </div>
-                  <Badge
-                    variant={
-                      releaseReadinessSummary.status === "error"
-                        ? "destructive"
-                        : releaseReadinessSummary.status === "warning"
-                          ? "outline"
-                          : "secondary"
-                    }
-                  >
-                    {releaseReadinessSummary.status === "error" ? "阻塞" : buildReadinessSeverityLabel(releaseReadinessSummary.status)}
-                  </Badge>
-                </div>
+              <details
+                className="group rounded-lg border border-outline-variant bg-surface-container-low/80 text-xs"
+                data-builder-release-readiness=""
+                data-builder-release-readiness-density="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 transition hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-release-readiness-summary="single-row"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container text-primary">
+                      <ListChecks aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="flex min-w-0 items-center gap-1.5" data-builder-release-readiness-summary-detail="compact-inline">
+                      <span className="shrink-0 font-semibold text-on-surface">发布就绪度</span>
+                      <Badge
+                        variant={
+                          releaseReadinessSummary.status === "error"
+                            ? "destructive"
+                            : releaseReadinessSummary.status === "warning"
+                              ? "outline"
+                              : "secondary"
+                        }
+                      >
+                        {releaseReadinessSummary.status === "error" ? "阻塞" : buildReadinessSeverityLabel(releaseReadinessSummary.status)}
+                      </Badge>
+                      <span className="min-w-0 truncate text-[0.68rem] text-on-surface-variant">
+                        {releaseReadinessSummary.score}% · {releaseReadinessSummary.blockers} 阻塞 · {releaseReadinessSummary.warnings} 警告 · {releaseReadinessActionItems.length || "无"} 待处理
+                      </span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline">{releaseReadinessSummary.items.length} 项</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="border-t border-outline-variant p-2.5" data-builder-release-readiness-details="deferred">
                 <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
                   <div className="rounded-2xl bg-surface-container p-4">
                     <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布评分</p>
@@ -45939,7 +45956,8 @@ export function BuilderShowcase() {
                     </p>
                   )}
                 </div>
-              </div>
+                </div>
+              </details>
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-visual-audit="">
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>

@@ -4489,6 +4489,10 @@ async function runShellCommandPlacementChecks(send, verified) {
       const changeImpact = document.querySelector("[data-builder-change-impact]");
       const changeImpactSummary = document.querySelector("[data-builder-change-impact-summary]");
       const changeImpactDetails = document.querySelector("[data-builder-change-impact-details]");
+      const releaseReadiness = document.querySelector("[data-builder-release-readiness]");
+      const releaseReadinessSummary = document.querySelector("[data-builder-release-readiness-summary]");
+      const releaseReadinessDetails = document.querySelector("[data-builder-release-readiness-details]");
+      const releaseReadinessInline = document.querySelector("[data-builder-release-readiness-summary-detail]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4498,6 +4502,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       const buildTargetRect = buildTargetDock?.getBoundingClientRect();
       const generatedStatusRect = generatedStatus?.getBoundingClientRect();
       const changeImpactRect = changeImpact?.getBoundingClientRect();
+      const releaseReadinessRect = releaseReadiness?.getBoundingClientRect();
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4535,6 +4540,14 @@ async function runShellCommandPlacementChecks(send, verified) {
         changeImpactSummary?.getAttribute("data-builder-change-impact-summary") === "single-row" &&
         changeImpactDetails?.getAttribute("data-builder-change-impact-details") === "deferred" &&
         Boolean(changeImpactRect && changeImpactRect.height <= 48);
+      const releaseReadinessCollapsedDefault =
+        releaseReadiness?.tagName === "DETAILS" &&
+        !releaseReadiness.hasAttribute("open") &&
+        releaseReadiness.getAttribute("data-builder-release-readiness-density") === "collapsed-default" &&
+        releaseReadinessSummary?.getAttribute("data-builder-release-readiness-summary") === "single-row" &&
+        releaseReadinessDetails?.getAttribute("data-builder-release-readiness-details") === "deferred" &&
+        releaseReadinessInline?.getAttribute("data-builder-release-readiness-summary-detail") === "compact-inline" &&
+        Boolean(releaseReadinessRect && releaseReadinessRect.height <= 52);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4552,8 +4565,9 @@ async function runShellCommandPlacementChecks(send, verified) {
           parityCollapsedDefault &&
           generatedPlanCompact &&
           changeImpactCollapsedDefault &&
+          releaseReadinessCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -4590,6 +4604,38 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-change-impact]")?.hasAttribute("open") === false`,
     "collapsed build change impact details",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-readiness-summary]")`, "build release readiness summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-readiness]")?.hasAttribute("open") === true`,
+    "expanded build release readiness details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const releaseReadiness = document.querySelector("[data-builder-release-readiness]");
+      const details = document.querySelector("[data-builder-release-readiness-details]");
+      const actions = Array.from(document.querySelectorAll("[data-builder-release-action]"));
+      const items = Array.from(details?.querySelectorAll("article") || []);
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          releaseReadiness?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-release-readiness-details") === "deferred" &&
+          items.length >= 3 &&
+          actions.length >= 1 &&
+          Boolean(detailsRect && detailsRect.height > 180),
+        detail: \`open=\${releaseReadiness?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, items=\${items.length}, actions=\${actions.length}\`
+      };
+    })()`,
+    "build release readiness expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-readiness-summary]")`, "collapse build release readiness summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-readiness]")?.hasAttribute("open") === false`,
+    "collapsed build release readiness details",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "build release settings summary");
   await waitFor(
