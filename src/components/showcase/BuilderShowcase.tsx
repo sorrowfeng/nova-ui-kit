@@ -44909,9 +44909,10 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div
-                  className="mt-2 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2"
+                <details
+                  className="group mt-2 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-1.5"
                   data-builder-runtime-parity-panel=""
+                  data-builder-runtime-parity-density="collapsed-default"
                   data-builder-runtime-parity-grid="off"
                   data-builder-runtime-parity-list="compact-output"
                   data-builder-runtime-parity-shell={releaseWindowShellMatchesPage ? "matched" : "needs-sync"}
@@ -44919,79 +44920,95 @@ export function BuilderShowcase() {
                   data-builder-runtime-parity-window-kind={activeProject.releaseConfig.windowKind}
                   data-builder-runtime-parity-validation={latestValidationRun?.status ?? "missing"}
                 >
-                  <div className="mb-1.5 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行端窗口一致性</h3>
-                        <Badge variant={releaseWindowShellMatchesPage ? "secondary" : "outline"}>
-                          {releaseWindowShellMatchesPage ? "页面与发布一致" : "等待同步"}
-                        </Badge>
+                  <summary
+                    className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-xs [&::-webkit-details-marker]:hidden"
+                    data-builder-runtime-parity-summary="single-row"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                      <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行端窗口一致性</h3>
+                          <Badge variant={releaseWindowShellMatchesPage ? "secondary" : "outline"}>
+                            {releaseWindowShellMatchesPage ? "页面与发布一致" : "等待同步"}
+                          </Badge>
+                        </div>
+                        <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                          发布窗口、标题栏、验证和运行网格的低频详情，展开后处理。
+                        </p>
                       </div>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                    </div>
+                    <Badge variant="outline" className="shrink-0">
+                      {runtimeWindowParityItems.length} 项
+                    </Badge>
+                  </summary>
+                  <div className="mt-2 border-t border-outline-variant pt-2" data-builder-runtime-parity-details="deferred">
+                    <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                      <p className="min-w-0 truncate text-[0.68rem] leading-4 text-on-surface-variant">
                         对照编辑器页面、发布配置和生成 runtime，避免 exe 出现标题栏、拖拽区域或编辑网格残留的偏差。
                       </p>
-                    </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                      <Button
-                        size="sm"
-                        variant={releaseWindowShellMatchesPage ? "ghost" : "secondary"}
-                        data-builder-runtime-parity-sync=""
-                        disabled={releaseWindowShellMatchesPage}
-                        onClick={syncReleaseWindowFromActivePage}
-                      >
-                        <Save aria-hidden className="size-4" />
-                        同步窗口
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-builder-runtime-parity-validate=""
-                        loading={validatingWindow || runningProjectTask?.actionId === "validate-window"}
-                        disabled={building || bundling || validatingWindow}
-                        onClick={() => enqueueProjectTask("validate-window")}
-                      >
-                        <CheckCircle2 aria-hidden className="size-4" />
-                        验证窗口
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid overflow-hidden rounded-lg border border-outline-variant md:grid-cols-2 xl:grid-cols-3 xl:divide-x xl:divide-outline-variant">
-                    {runtimeWindowParityItems.map((item) => {
-                      const ItemIcon = item.icon;
-                      return (
-                        <article
-                          key={item.id}
-                          className="min-w-0 bg-surface-container-high/40 px-2.5 py-1.5 text-xs"
-                          data-builder-runtime-parity-item={item.id}
-                          data-builder-runtime-parity-state={item.severity}
+                      <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={releaseWindowShellMatchesPage ? "ghost" : "secondary"}
+                          data-builder-runtime-parity-sync=""
+                          disabled={releaseWindowShellMatchesPage}
+                          onClick={syncReleaseWindowFromActivePage}
                         >
-                          <div className="flex min-w-0 items-center gap-2">
-                            <span
-                              className={cn(
-                                "flex size-5 shrink-0 items-center justify-center rounded-md",
-                                item.severity === "pass" ? "bg-primary-container text-primary-container-foreground" : "bg-tertiary-container text-tertiary-container-foreground",
-                              )}
-                            >
-                              <ItemIcon aria-hidden className="size-3" />
-                            </span>
-                            <div className="grid min-w-0 flex-1 items-center gap-1 sm:grid-cols-[5rem_minmax(0,1fr)]">
-                              <p className="truncate text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
-                              <p className="truncate font-medium text-on-surface">{item.value}</p>
+                          <Save aria-hidden className="size-4" />
+                          同步窗口
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          data-builder-runtime-parity-validate=""
+                          loading={validatingWindow || runningProjectTask?.actionId === "validate-window"}
+                          disabled={building || bundling || validatingWindow}
+                          onClick={() => enqueueProjectTask("validate-window")}
+                        >
+                          <CheckCircle2 aria-hidden className="size-4" />
+                          验证窗口
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid overflow-hidden rounded-lg border border-outline-variant md:grid-cols-2 xl:grid-cols-3 xl:divide-x xl:divide-outline-variant">
+                      {runtimeWindowParityItems.map((item) => {
+                        const ItemIcon = item.icon;
+                        return (
+                          <article
+                            key={item.id}
+                            className="min-w-0 bg-surface-container-high/40 px-2.5 py-1.5 text-xs"
+                            data-builder-runtime-parity-item={item.id}
+                            data-builder-runtime-parity-state={item.severity}
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              <span
+                                className={cn(
+                                  "flex size-5 shrink-0 items-center justify-center rounded-md",
+                                  item.severity === "pass" ? "bg-primary-container text-primary-container-foreground" : "bg-tertiary-container text-tertiary-container-foreground",
+                                )}
+                              >
+                                <ItemIcon aria-hidden className="size-3" />
+                              </span>
+                              <div className="grid min-w-0 flex-1 items-center gap-1 sm:grid-cols-[5rem_minmax(0,1fr)]">
+                                <p className="truncate text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
+                                <p className="truncate font-medium text-on-surface">{item.value}</p>
+                              </div>
+                              <span
+                                className={cn(
+                                  "size-2 shrink-0 rounded-full",
+                                  item.severity === "pass" ? "bg-primary" : "bg-tertiary",
+                                )}
+                                aria-label={item.severity === "pass" ? "通过" : "需要复核"}
+                              />
                             </div>
-                            <span
-                              className={cn(
-                                "size-2 shrink-0 rounded-full",
-                                item.severity === "pass" ? "bg-primary" : "bg-tertiary",
-                              )}
-                              aria-label={item.severity === "pass" ? "通过" : "需要复核"}
-                            />
-                          </div>
-                          <p className="mt-0.5 truncate pl-7 leading-4 text-on-surface-variant">{item.detail}</p>
-                        </article>
-                      );
-                    })}
+                            <p className="mt-0.5 truncate pl-7 leading-4 text-on-surface-variant">{item.detail}</p>
+                          </article>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                </details>
 
                 <div className="mt-2 flex min-w-0 flex-wrap items-center justify-end gap-1.5" data-builder-desktop-runtime-actions="" data-builder-desktop-runtime-actions-density="toolbar">
                   <Button

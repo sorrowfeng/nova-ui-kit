@@ -1424,6 +1424,9 @@ mustContain(builder, "data-builder-desktop-runtime-build", "Desktop runtime work
 mustContain(builder, 'data-builder-desktop-runtime-actions-density="toolbar"', "Desktop runtime actions use a compact toolbar instead of a button grid");
 mustContain(builder, 'id: "desktop-runtime-workbench"', "Editor experience audit checks desktop runtime workbench");
 mustContain(builder, "data-builder-runtime-parity-panel", "Build page exposes runtime window parity checks");
+mustContain(builder, 'data-builder-runtime-parity-density="collapsed-default"', "Runtime parity panel defaults to a compact collapsed row");
+mustContain(builder, 'data-builder-runtime-parity-summary="single-row"', "Runtime parity summary stays as a single IDE row");
+mustContain(builder, 'data-builder-runtime-parity-details="deferred"', "Runtime parity details are deferred until expanded");
 mustContain(builder, 'data-builder-runtime-parity-grid="off"', "Runtime parity panel confirms generated runtime grid is off");
 mustContain(builder, 'data-builder-runtime-parity-list="compact-output"', "Runtime parity panel uses a compact output-style checklist instead of a card wall");
 mustContain(builder, "data-builder-runtime-parity-shell", "Runtime parity panel exposes page/release shell sync state");
@@ -1432,6 +1435,7 @@ mustContain(builder, "data-builder-runtime-parity-window-kind", "Runtime parity 
 mustContain(builder, "data-builder-runtime-parity-validation", "Runtime parity panel exposes generated-window validation state");
 mustContain(builder, "data-builder-runtime-parity-sync", "Runtime parity panel can sync the active page shell to release");
 mustContain(builder, "data-builder-runtime-parity-validate", "Runtime parity panel can enqueue generated-window validation");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.buildRuntimeParityDetailsRuntime = true", "Browser smoke verifies runtime parity details expand on demand");
 mustContain(builder, "runtimeWindowParityItems", "Runtime parity panel is backed by concrete live parity items");
 mustContain(builder, 'id: "runtime-window-parity"', "Editor experience audit checks runtime window parity");
 mustContain(taskCenter, '"audit-editor-experience"', "Task center defines the editor experience audit action");

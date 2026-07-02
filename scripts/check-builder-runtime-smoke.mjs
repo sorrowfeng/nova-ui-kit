@@ -4404,14 +4404,27 @@ async function runShellCommandPlacementChecks(send, verified) {
       const evidence = document.querySelector("[data-builder-build-output-evidence]");
       const artifactActions = document.querySelector("[data-builder-build-artifact-actions]");
       const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
+      const parityPanel = document.querySelector("[data-builder-runtime-parity-panel]");
+      const paritySummary = document.querySelector("[data-builder-runtime-parity-summary]");
+      const parityDetails = document.querySelector("[data-builder-runtime-parity-details]");
+      const parityItems = Array.from(document.querySelectorAll("[data-builder-runtime-parity-item]"));
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
       const outputDockRect = outputDock?.getBoundingClientRect();
+      const parityRect = parityPanel?.getBoundingClientRect();
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
         (mainRect?.bottom || 9999) <= outputDockRect.top;
+      const parityCollapsedDefault =
+        parityPanel?.tagName === "DETAILS" &&
+        !parityPanel.hasAttribute("open") &&
+        parityPanel.getAttribute("data-builder-runtime-parity-density") === "collapsed-default" &&
+        paritySummary?.getAttribute("data-builder-runtime-parity-summary") === "single-row" &&
+        parityDetails?.getAttribute("data-builder-runtime-parity-details") === "deferred" &&
+        parityItems.length >= 4 &&
+        Boolean(parityRect && parityRect.height <= 62);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4425,13 +4438,53 @@ async function runShellCommandPlacementChecks(send, verified) {
           settingsShortcut?.getAttribute("data-builder-release-settings-shortcut-density") === "summary" &&
           Boolean(outputRect && outputRect.width <= 312) &&
           outputClearance &&
+          parityCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
   );
   verified.buildOutputSidebarLowChromeRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-runtime-parity-panel]")?.hasAttribute("open") === true`,
+    "expanded runtime parity details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const parityPanel = document.querySelector("[data-builder-runtime-parity-panel]");
+      const parityDetails = document.querySelector("[data-builder-runtime-parity-details]");
+      const parityItems = Array.from(document.querySelectorAll("[data-builder-runtime-parity-item]"));
+      const sync = document.querySelector("[data-builder-runtime-parity-sync]");
+      const validate = document.querySelector("[data-builder-runtime-parity-validate]");
+      const detailRect = parityDetails?.getBoundingClientRect();
+      const visibleItems = parityItems.filter((item) => {
+        const rect = item.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+      return {
+        passed:
+          parityPanel?.hasAttribute("open") === true &&
+          parityDetails?.getAttribute("data-builder-runtime-parity-details") === "deferred" &&
+          visibleItems.length >= 4 &&
+          Boolean(sync) &&
+          Boolean(validate) &&
+          Boolean(detailRect && detailRect.height > 80),
+        detail: \`open=\${parityPanel?.hasAttribute("open")}, visibleItems=\${visibleItems.length}, detailHeight=\${Math.round(detailRect?.height || 0)}, sync=\${Boolean(sync)}, validate=\${Boolean(validate)}\`
+      };
+    })()`,
+    "build runtime parity details expand on demand",
+  );
+  verified.buildRuntimeParityDetailsRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "collapse build runtime parity summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-runtime-parity-panel]")?.hasAttribute("open") === false`,
+    "collapsed runtime parity details",
+  );
 
   await evaluate(
     send,
