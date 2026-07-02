@@ -3163,29 +3163,47 @@ async function runLogicRustChecks(send, verified) {
       const secondary = document.querySelector("[data-builder-logic-secondary-sidebar]");
       const resourceDock = document.querySelector("[data-builder-logic-resource-dock]");
       const auxiliaryDock = document.querySelector("[data-builder-logic-auxiliary-dock]");
+      const auxiliaryDetails = document.querySelector("[data-builder-logic-auxiliary-details]");
+      const auxiliarySummary = document.querySelector("[data-builder-logic-auxiliary-summary]");
+      const auxiliaryContent = document.querySelector("[data-builder-logic-auxiliary-content]");
+      const outputDock = document.querySelector("[data-builder-output-dock]");
       const resourcePanel = document.querySelector("[data-builder-logic-resource-density]");
       const search = document.querySelector("[data-builder-logic-search]");
       const outline = document.querySelector("[data-builder-rust-outline-sidebar]");
       const resourceHeight = resourceDock?.getBoundingClientRect().height || 0;
-      const auxiliaryHeight = auxiliaryDock?.getBoundingClientRect().height || 0;
+      const auxiliaryRect = auxiliaryDock?.getBoundingClientRect();
+      const outputRect = outputDock?.getBoundingClientRect();
+      const auxiliaryHeight = auxiliaryRect?.height || 0;
+      const outputClearance = outputRect ? (auxiliaryRect?.bottom || 9999) <= outputRect.top : false;
       const searchHeight = search?.getBoundingClientRect().height || 999;
+      const auxiliaryClosed = auxiliaryDetails?.tagName === "DETAILS" && auxiliaryDetails.open === false;
       return {
         passed:
           workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority") === "resources-first" &&
+          workspace?.getAttribute("data-builder-logic-workspace-bottom-dock-clearance") === "reserved" &&
           secondary?.getAttribute("data-builder-logic-secondary-sidebar-priority") === "resources-first" &&
           resourceDock?.getAttribute("data-builder-logic-resource-dock-priority") === "primary-outline" &&
           auxiliaryDock?.getAttribute("data-builder-logic-auxiliary-dock-priority") === "secondary-inspector" &&
+          auxiliaryDetails?.getAttribute("data-builder-logic-auxiliary-details-density") === "collapsed-default" &&
+          auxiliarySummary?.getAttribute("data-builder-logic-auxiliary-summary-density") === "single-line" &&
+          auxiliaryContent?.getAttribute("data-builder-logic-auxiliary-content-density") === "deferred-scroll" &&
           resourcePanel?.getAttribute("data-builder-logic-resource-density") === "compact-outline" &&
           search?.getAttribute("data-builder-logic-search-density") === "single-row" &&
           outline?.getAttribute("data-builder-rust-outline-density") === "compact-list" &&
           resourceHeight > auxiliaryHeight &&
+          auxiliaryHeight <= 72 &&
+          auxiliaryClosed &&
+          outputClearance &&
           searchHeight <= 52,
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, closed=\${auxiliaryClosed}, outputClearance=\${outputClearance}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}\`
       };
     })()`,
     "logic resources-first sidebar density",
   );
   verified.logicResourcePriorityRuntime = true;
+
+  await clickElementCenter(send, `document.querySelector("[data-builder-logic-auxiliary-summary]")`, "open logic auxiliary inspector");
+  await waitFor(send, `document.querySelector("[data-builder-logic-auxiliary-details]")?.open === true`, "logic auxiliary inspector expanded");
 
   await assertRuntimeCheck(
     send,

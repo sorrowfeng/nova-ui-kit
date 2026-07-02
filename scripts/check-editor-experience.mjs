@@ -1503,12 +1503,18 @@ mustContain(logicWorkspace, 'data-builder-logic-workspace-preset="vscode-code-pr
 mustContain(logicWorkspace, 'data-builder-logic-workspace-side-panels="right-sidebar"', "Logic workspace moves auxiliary panels to a right secondary sidebar");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-code-share="large-editor"', "Logic workspace reserves the dominant desktop region for code");
 mustContain(logicWorkspace, "grid-cols-[minmax(0,1fr)_minmax(17.5rem,19rem)]", "Logic workspace uses a code-dominant desktop grid with a tighter secondary sidebar");
+mustContain(logicWorkspace, "grid-rows-[minmax(0,1fr)_auto]", "Logic secondary sidebar gives resources the flexible area and keeps auxiliary tools compact");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-sidebar-priority="resources-first"', "Logic workspace prioritizes resource and outline sidebar over auxiliary cards");
 mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar-priority="resources-first"', "Logic right sidebar allocates more room to resources than auxiliary inspector panels");
 mustContain(logicWorkspace, 'data-builder-logic-resource-dock-priority="primary-outline"', "Logic resource dock declares the primary outline role");
 mustContain(logicWorkspace, 'data-builder-logic-auxiliary-dock-priority="secondary-inspector"', "Logic auxiliary dock declares secondary inspector role");
+mustContain(logicWorkspace, 'data-builder-logic-auxiliary-details-density="collapsed-default"', "Logic auxiliary inspector defaults to a collapsed details row");
+mustContain(logicWorkspace, 'data-builder-logic-auxiliary-summary-density="single-line"', "Logic auxiliary inspector summary stays as a single-line IDE control");
+mustContain(logicWorkspace, 'data-builder-logic-auxiliary-content-density="deferred-scroll"', "Logic auxiliary inspector content scrolls only after the user expands it");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-scroll-model="contained-panels"', "Logic workspace keeps scrolling inside contained panels");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-page-scroll="none"', "Logic workspace declares that the page itself does not scroll");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-bottom-dock-clearance="reserved"', "Logic workspace reserves clearance above the bottom output dock");
+mustContain(logicWorkspace, "px-2 pt-2 pb-11", "Logic workspace padding keeps editor and auxiliary controls above the bottom dock");
 mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar=""', "Logic workspace keeps resource and debug panels in a secondary sidebar");
 mustContain(logicWorkspace, 'data-builder-logic-code-editor-primary=""', "Logic workspace gives the code editor the primary region");
 mustContain(builder, 'data-builder-rust-editor-primary-toolbar=""', "Rust editor exposes a stable primary toolbar above the code area");
