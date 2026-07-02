@@ -1717,6 +1717,7 @@ mustContain(builder, "insertComponentPaletteKitPrimary", "Component palette kits
 mustContain(builder, "insertComponentPaletteKitScaffold", "Component palette kits can batch-insert related controls as a canvas scaffold");
 mustContain(builder, 'data-builder-component-palette-layout="qt-compact-list"', "Component palette uses a compact Qt Creator-style list layout");
 mustContain(builder, 'data-builder-component-category-strip="compact-grid"', "Component palette category filter avoids clipped horizontal pills");
+mustContain(builder, 'data-builder-component-quick-insert-priority="first"', "Component palette shows insertable controls before secondary kit and coverage content");
 mustContain(builder, 'data-builder-component-kits-layout="compact-list"', "Component palette kit launcher avoids large marketing-style cards");
 mustContain(builder, 'data-builder-palette-row-layout="compact"', "Component palette rows use compact IDE-style density");
 mustContain(builder, "data-builder-component-kits", "Component palette exposes reusable component kits");

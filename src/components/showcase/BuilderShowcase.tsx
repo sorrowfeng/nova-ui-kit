@@ -47573,6 +47573,37 @@ export function BuilderShowcase() {
                   })}
                 </div>
 
+                {showComponentPaletteQuickInsert ? (
+                  <section
+                    className="rounded-xl border border-outline-variant bg-surface-container-low p-1.5"
+                    data-builder-component-quick-insert-priority="first"
+                  >
+                    <div className="mb-1 flex items-center justify-between gap-2 px-1">
+                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
+                        常用控件
+                      </span>
+                      <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteQuickInsertDefinitions.length} 个</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1">
+                      {componentPaletteQuickInsertDefinitions.map((definition) => {
+                        const Icon = definition.icon;
+                        return (
+                          <button
+                            key={definition.type}
+                            type="button"
+                            data-builder-component-quick-insert={definition.type}
+                            onClick={() => addComponent(definition.type)}
+                            className="focus-ring m3-state-layer flex h-8 min-w-0 items-center gap-2 rounded-lg bg-surface-container px-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
+                          >
+                            <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
+                            <span className="truncate">{definition.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ) : null}
+
                 {showComponentPaletteKits ? (
                   <section
                     className="space-y-1 rounded-xl border border-outline-variant bg-surface-container-low p-1.5"
@@ -47800,34 +47831,6 @@ export function BuilderShowcase() {
                           );
                         })}
                       </div>
-                    </div>
-                  </section>
-                ) : null}
-
-                {showComponentPaletteQuickInsert ? (
-                  <section className="rounded-[18px] border border-outline-variant bg-surface-container-low p-2">
-                    <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-                        Quick insert
-                      </span>
-                      <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{palette.length} controls</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {componentPaletteQuickInsertDefinitions.map((definition) => {
-                        const Icon = definition.icon;
-                        return (
-                          <button
-                            key={definition.type}
-                            type="button"
-                            data-builder-component-quick-insert={definition.type}
-                            onClick={() => addComponent(definition.type)}
-                            className="focus-ring m3-state-layer flex min-w-0 items-center gap-2 rounded-2xl bg-surface-container px-2.5 py-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
-                          >
-                            <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                            <span className="truncate">{definition.title}</span>
-                          </button>
-                        );
-                      })}
                     </div>
                   </section>
                 ) : null}

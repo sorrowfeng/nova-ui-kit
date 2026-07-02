@@ -2701,10 +2701,13 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const paletteLayout = document.querySelector("[data-builder-component-palette-layout]");
       const categoryStrip = document.querySelector("[data-builder-component-category-strip]");
       const kitLayout = document.querySelector("[data-builder-component-kits]");
+      const quickInsertPriority = document.querySelector('[data-builder-component-quick-insert-priority="first"]');
       const compactRows = Array.from(document.querySelectorAll('[data-builder-palette-row-layout="compact"]'));
       const md3ShellGroup = document.querySelector('[data-builder-component-coverage-group="md3-application-shell"]');
       const md3ShellBadge = document.querySelector('[data-builder-component-coverage-missing="md3-application-shell"]');
       const completeGroups = missingBadges.filter((badge) => /完整/.test(badge.textContent || ""));
+      const quickInsertPriorityRect = quickInsertPriority?.getBoundingClientRect();
+      const kitLayoutRect = kitLayout?.getBoundingClientRect();
       const parsed = countLabel.match(/^(\\d+)\\/(\\d+)$/);
       const complete = parsed ? Number(parsed[1]) : 0;
       const total = parsed ? Number(parsed[2]) : 0;
@@ -2718,6 +2721,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           Boolean(md3ShellGroup) &&
           /完整/.test(md3ShellBadge?.textContent || "") &&
           quickInsert.length >= 6 &&
+          Boolean(quickInsertPriority && quickInsertPriorityRect && kitLayoutRect && quickInsertPriorityRect.top < kitLayoutRect.top) &&
           categories.length >= 4 &&
           paletteLayout?.getAttribute("data-builder-component-palette-layout") === "qt-compact-list" &&
           categoryStrip?.getAttribute("data-builder-component-category-strip") === "compact-grid" &&
@@ -2731,7 +2735,7 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           Boolean(collections) &&
           Boolean(favorites) &&
           Boolean(recents),
-        detail: \`count=\${countLabel}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, quickInsert=\${quickInsert.length}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
+        detail: \`count=\${countLabel}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, quickInsert=\${quickInsert.length}, quickFirst=\${Boolean(quickInsertPriority)}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
       };
     })()`,
     "MD3 and Qt desktop component palette coverage",
