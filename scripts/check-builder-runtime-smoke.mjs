@@ -685,6 +685,7 @@ async function runDesignInteractionChecks(send, verified) {
       const viewport = document.querySelector("[data-builder-canvas-viewport]");
       const canvas = document.querySelector("[data-builder-canvas]");
       const actionbar = document.querySelector("[data-builder-selection-action-bar]");
+      const controls = document.querySelector("[data-builder-canvas-controls]");
       const canvasHud = document.querySelector("[data-builder-selection-mode-hud]");
       const statusBarSelection = document.querySelector("[data-builder-selection-status-bar]");
       const modeStrip = actionbar?.querySelector("[data-builder-selection-mode-strip]");
@@ -694,12 +695,14 @@ async function runDesignInteractionChecks(send, verified) {
       const capabilities = Array.from(actionbar?.querySelectorAll("[data-builder-selection-capability]") || []);
       const capabilityIds = capabilities.map((node) => node.getAttribute("data-builder-selection-capability") || "");
       const actionbarRect = actionbar?.getBoundingClientRect();
+      const controlsRect = controls?.getBoundingClientRect();
       const viewportRect = viewport?.getBoundingClientRect();
       const canvasRect = canvas?.getBoundingClientRect();
       window.__novaSmokeCanvasLayoutBaseline = actionbarRect && viewportRect && canvasRect
         ? {
             actionbarTop: actionbarRect.top,
             actionbarHeight: actionbarRect.height,
+            controlsHeight: controlsRect?.height || 0,
             viewportTop: viewportRect.top,
             viewportHeight: viewportRect.height,
             canvasTop: canvasRect.top,
@@ -713,8 +716,12 @@ async function runDesignInteractionChecks(send, verified) {
           statusBarSelection?.getAttribute("data-builder-selection-status-tone") === "idle" &&
           statusBarSelection?.getAttribute("data-builder-selection-status-count") === "0" &&
           actionbar?.getAttribute("data-builder-selection-visible") === "persistent" &&
+          actionbar?.getAttribute("data-builder-selection-actionbar-density") === "compact" &&
           actionbar?.getAttribute("data-builder-selection-placement") === "canvas-top-external" &&
           actionbar?.getAttribute("data-builder-selection-track") === "external-canvas-chrome" &&
+          controls?.getAttribute("data-builder-canvas-controls-density") === "compact" &&
+          Number(actionbarRect?.height || 999) <= 48 &&
+          Number(controlsRect?.height || 999) <= 48 &&
           viewport?.getAttribute("data-builder-canvas-selection-scroll-padding") === "content-local" &&
           Boolean(actionbar.querySelector("[data-builder-selection-actionbar-sticky-summary]")) &&
           Boolean(actionbar.querySelector("[data-builder-selection-actionbar-viewport]")) &&
@@ -724,7 +731,7 @@ async function runDesignInteractionChecks(send, verified) {
           capabilityStrip?.getAttribute("data-builder-selection-capability-state") === "idle" &&
           ["layout", "text", "logic", "runtime"].every((id) => capabilityIds.includes(id)) &&
           capabilities.every((node) => node.hasAttribute("data-builder-selection-capability-enabled")),
-        detail: \`visible=\${actionbar?.getAttribute("data-builder-selection-visible") || "missing"}, placement=\${actionbar?.getAttribute("data-builder-selection-placement") || "missing"}, track=\${actionbar?.getAttribute("data-builder-selection-track") || "missing"}, status=\${statusBarSelection?.getAttribute("data-builder-selection-status-tone") || "missing"}, canvasHud=\${canvasHud ? "present" : "none"}, strip=\${modeStrip?.getAttribute("data-builder-selection-mode-strip-state") || "missing"}, affordances=\${affordanceIds.join("/")}, capabilities=\${capabilityIds.join("/")}\`
+        detail: \`visible=\${actionbar?.getAttribute("data-builder-selection-visible") || "missing"}, density=\${actionbar?.getAttribute("data-builder-selection-actionbar-density") || "missing"}, controlsDensity=\${controls?.getAttribute("data-builder-canvas-controls-density") || "missing"}, actionbarHeight=\${actionbarRect?.height || "missing"}, controlsHeight=\${controlsRect?.height || "missing"}, placement=\${actionbar?.getAttribute("data-builder-selection-placement") || "missing"}, track=\${actionbar?.getAttribute("data-builder-selection-track") || "missing"}, status=\${statusBarSelection?.getAttribute("data-builder-selection-status-tone") || "missing"}, canvasHud=\${canvasHud ? "present" : "none"}, strip=\${modeStrip?.getAttribute("data-builder-selection-mode-strip-state") || "missing"}, affordances=\${affordanceIds.join("/")}, capabilities=\${capabilityIds.join("/")}\`
       };
     })()`,
     "persistent selection actionbar layout contract",

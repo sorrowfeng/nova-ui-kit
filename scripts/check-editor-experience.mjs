@@ -124,7 +124,7 @@ mustContain(topbar, "commandHintsVisible", "Topbar responds to command hint pref
 
 mustContain(builder, 'data-builder-selection-visible="persistent"', "Canvas selection actionbar is always present");
 mustContain(builder, 'data-builder-selection-placement="canvas-top-external"', "Selection actionbar is outside the canvas content plane");
-mustContain(builder, '"pointer-events-auto relative z-10 mx-3 mt-2 grid h-[5.5rem] shrink-0', "Selection actionbar occupies a compact stable external chrome track");
+mustContain(builder, '"pointer-events-auto relative z-10 mx-3 mt-1 flex h-10 shrink-0', "Selection actionbar occupies a compact stable external chrome track");
 mustContain(builder, "selectionActionBarReservedTrack", "Selection actionbar records toolbar state without changing placement");
 mustContain(builder, 'data-builder-selection-track="external-canvas-chrome"', "Selection actionbar exposes its external chrome track");
 mustContain(builder, 'const canvasViewportSelectionScrollPaddingClass = "scroll-pt-8"', "Canvas viewport uses local scroll padding after chrome leaves the content plane");
@@ -132,6 +132,9 @@ mustContain(builder, 'data-builder-canvas-selection-scroll-padding="content-loca
 mustContain(builder, "canvasOuterChromeHeight", "Canvas stage reserves space for editor chrome outside app content");
 mustContain(builder, "data-builder-canvas-content-plane", "Canvas separates app content from editor chrome");
 mustContain(builder, 'data-builder-canvas-window-shell-placement="outside-content"', "Window shell preview is outside the canvas content plane");
+mustContain(builder, "data-builder-canvas-controls-density", "Canvas controls expose compact default density");
+mustContain(builder, 'data-builder-canvas-toolbar-metrics="compact"', "Canvas toolbar combines size, zoom, and selection metrics into one compact readout");
+mustContain(builder, 'data-builder-selection-actionbar-density="compact"', "Selection actionbar uses compact IDE-style density");
 mustNotContain(builder, "absolute -top-7 left-0 h-6", "Horizontal ruler stays inside the canvas content plane");
 mustNotContain(builder, "absolute -left-9 top-0 w-8", "Vertical ruler stays inside the canvas content plane");
 mustNotContain(builder, 'const selectionActionBarTopClass = "top-[8.75rem]"', "Selection actionbar no longer overlays the canvas viewport");
