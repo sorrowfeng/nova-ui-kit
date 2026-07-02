@@ -31763,6 +31763,10 @@ export function BuilderShowcase() {
   const canvasShellPreviewStyle: CSSProperties = {
     width: canvasScaledWidth,
   };
+  const canvasStageViewportStyle: CSSProperties = {
+    width: `max(100%, ${canvasScaledWidth}px)`,
+    minHeight: "100%",
+  };
 
   const canvasStyle: CSSProperties = {
     width: page.width,
@@ -48880,6 +48884,12 @@ export function BuilderShowcase() {
                 onScroll={handleCanvasViewportScroll}
                 onWheel={handleCanvasViewportWheel}
               >
+                <div
+                  className="flex justify-center"
+                  style={canvasStageViewportStyle}
+                  data-builder-canvas-stage-viewport=""
+                  data-builder-canvas-stage-alignment="centered-when-room"
+                >
                 <div className="relative" style={canvasStageStyle}>
                   {mode === "design" ? (
                     <div
@@ -49388,6 +49398,7 @@ export function BuilderShowcase() {
                     {topLevelItems.map((item) => renderCanvasNode(item))}
                   </div>
                   </div>
+                </div>
                 </div>
               </div>
             </main>
