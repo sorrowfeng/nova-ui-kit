@@ -1538,6 +1538,13 @@ mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic reso
 mustContain(builder, 'data-builder-logic-resource-density="compact-outline"', "Logic resource panel uses compact outline density");
 mustContain(builder, 'data-builder-logic-search-density="single-row"', "Logic resource search no longer consumes a multi-row card");
 mustContain(builder, 'data-builder-rust-outline-density="compact-list"', "Logic Rust outline uses compact list density");
+mustContain(builder, 'data-builder-logic-resource-section-density="collapsed-in-all"', "Logic resource sections collapse by default in the all-resources view");
+mustContain(builder, 'data-builder-logic-resource-section-summary="connections"', "Logic connections resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-summary="commands"', "Logic commands resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-summary="modules"', "Logic modules resource section exposes a compact summary row");
+mustContain(builder, 'data-builder-logic-resource-section-content="connections"', "Logic connections details are deferred behind the summary");
+mustContain(builder, 'data-builder-logic-resource-section-content="commands"', "Logic commands details are deferred behind the summary");
+mustContain(builder, 'data-builder-logic-resource-section-content="modules"', "Logic modules details are deferred behind the summary");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
 mustContain(buildWorkspace, 'data-builder-build-workspace-bottom-dock-clearance="reserved"', "Build workspace reserves clearance above the bottom output dock");
 mustContain(buildWorkspace, "px-2 pt-2 pb-11", "Build sidebar layout keeps build content above the bottom output dock");

@@ -37718,11 +37718,32 @@ export function BuilderShowcase() {
                   </button>
                 ))}
               </div>
-              <div
-                className={cn("space-y-2", !logicResourceVisible("connections") && "hidden")}
+              <details
+                key={`logic-resource-connections-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("connections") && "hidden")}
                 data-builder-logic-resource-section="connections"
+                data-builder-logic-resource-section-density="collapsed-in-all"
               >
-                <PanelTitle icon={CornerDownRight} title="信号/槽连接" description="按控件事件查看绑定、定位槽函数和运行当前连接。" />
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="connections"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <CornerDownRight aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">信号/槽连接</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">绑定、槽函数和运行入口</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredLogicConnectionRows.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="connections">
                 <div className="grid grid-cols-4 gap-1 rounded-2xl border border-outline-variant bg-surface-container-low p-1" role="radiogroup" aria-label="连接绑定状态过滤" data-builder-logic-connection-filter="">
                   {logicConnectionFilterOptions.map((option) => (
                     <button
@@ -37825,11 +37846,33 @@ export function BuilderShowcase() {
                   </div>
                 ) : null}
               </div>
-              <div
-                className={cn("space-y-2", !logicResourceVisible("commands") && "hidden")}
+              </details>
+              <details
+                key={`logic-resource-commands-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("commands") && "hidden")}
                 data-builder-logic-resource-section="commands"
+                data-builder-logic-resource-section-density="collapsed-in-all"
               >
-                <PanelTitle icon={Braces} title="命令注册表" description="管理会写入 Tauri invoke handler 的项目级 Rust commands。" />
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="commands"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <Braces aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">命令注册表</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">Tauri invoke handler</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredRustCommands.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="commands">
                 {filteredRustCommands.map((command) => (
                   <button
                     key={command.id}
@@ -37852,13 +37895,38 @@ export function BuilderShowcase() {
                     没有匹配的 Rust 命令。
                   </div>
                 ) : null}
-              </div>
-              <Button className={cn("w-full", !logicResourceVisible("commands") && "hidden")} variant="secondary" data-builder-new-command="" onClick={createRustCommandInProject}>
-                <Plus aria-hidden className="size-4" />
-                新建命令
-              </Button>
-              <div className={cn("border-t border-outline-variant pt-4", !logicResourceVisible("modules") && "hidden")} data-builder-logic-resource-section="modules">
-                <PanelTitle icon={FileJson} title="Rust 模块" description="拆分可复用后端逻辑，生成到 src-tauri/src/*.rs。" />
+                <Button className="w-full" variant="secondary" data-builder-new-command="" onClick={createRustCommandInProject}>
+                  <Plus aria-hidden className="size-4" />
+                  新建命令
+                </Button>
+                </div>
+              </details>
+              <details
+                key={`logic-resource-modules-${logicResourceView}`}
+                open={logicResourceView !== "all"}
+                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("modules") && "hidden")}
+                data-builder-logic-resource-section="modules"
+                data-builder-logic-resource-section-density="collapsed-in-all"
+              >
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-logic-resource-section-summary="modules"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                      <FileJson aria-hidden className="size-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-on-surface">Rust 模块</span>
+                      <span className="block truncate text-[0.64rem] text-on-surface-variant">生成到 src-tauri/src/*.rs</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredRustModules.length}</Badge>
+                    <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="border-t border-outline-variant p-2" data-builder-logic-resource-section-content="modules">
                 <div className="space-y-2">
                   {filteredRustModules.map((module) => (
                     <button
@@ -37887,7 +37955,8 @@ export function BuilderShowcase() {
                   <Plus aria-hidden className="size-4" />
                   新建模块
                 </Button>
-              </div>
+                </div>
+              </details>
               <div className={cn("border-t border-outline-variant pt-4", !logicResourceVisible("dependencies") && "hidden")} data-builder-logic-resource-section="dependencies">
                 <PanelTitle icon={Box} title="Cargo 依赖" description="管理会追加到生成 app Cargo.toml 的 crate。" />
                 <div className="space-y-2">

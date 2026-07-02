@@ -3239,6 +3239,43 @@ async function runLogicRustChecks(send, verified) {
     })()`,
     "logic resources-first sidebar density",
   );
+  await clickElementCenter(
+    send,
+    `Array.from(document.querySelectorAll("[data-builder-logic-resource-view] button")).find((button) => button.textContent?.trim() === "全部")`,
+    "logic all resource view",
+  );
+  await waitFor(
+    send,
+    `Array.from(document.querySelectorAll("[data-builder-logic-resource-section]")).filter((section) => section.offsetParent !== null).length >= 3`,
+    "logic all resource sections visible",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const sections = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section="\${id}"]\`));
+      const summaries = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section-summary="\${id}"]\`));
+      const contents = ["connections", "commands", "modules"].map((id) => document.querySelector(\`[data-builder-logic-resource-section-content="\${id}"]\`));
+      const visibleSections = sections.filter((section) => section && section.offsetParent !== null);
+      const closedSections = sections.filter((section) => section?.tagName === "DETAILS" && section.open === false);
+      const compactSections = sections.filter((section) => (section?.getBoundingClientRect().height || 999) <= 56);
+      return {
+        passed:
+          visibleSections.length === 3 &&
+          closedSections.length === 3 &&
+          compactSections.length === 3 &&
+          summaries.every(Boolean) &&
+          contents.every(Boolean) &&
+          sections.every((section) => section?.getAttribute("data-builder-logic-resource-section-density") === "collapsed-in-all"),
+        detail: \`visible=\${visibleSections.length}, closed=\${closedSections.length}, compact=\${compactSections.length}, summaries=\${summaries.filter(Boolean).length}\`
+      };
+    })()`,
+    "logic all resource sections collapse by default",
+  );
+  await clickElementCenter(
+    send,
+    `Array.from(document.querySelectorAll("[data-builder-logic-resource-view] button")).find((button) => button.textContent?.trim() === "连接")`,
+    "logic focused connection resource view",
+  );
   verified.logicResourcePriorityRuntime = true;
 
   await clickElementCenter(send, `document.querySelector("[data-builder-logic-auxiliary-summary]")`, "open logic auxiliary inspector");
