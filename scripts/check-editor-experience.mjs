@@ -1410,6 +1410,8 @@ mustContain(builder, "data-builder-desktop-runtime-workbench", "Build page expos
 mustContain(builder, "data-builder-desktop-runtime-primary", "Desktop runtime workbench can build, run, or stop the target exe");
 mustContain(builder, "data-builder-desktop-runtime-state", "Desktop runtime workbench exposes the current runtime state");
 mustContain(builder, "data-builder-desktop-runtime-summary", "Desktop runtime workbench summarizes exe, validation, session, and queue status");
+mustContain(builder, 'data-builder-desktop-runtime-summary-density="single-row-output"', "Desktop runtime summary uses a compact single-row output density");
+mustContain(builder, 'data-builder-desktop-runtime-card-density="compact-cell"', "Desktop runtime status items render as compact cells instead of large cards");
 mustContain(builder, "data-builder-desktop-runtime-console", "Desktop runtime workbench exposes the runtime console panel");
 mustContain(builder, "data-builder-desktop-runtime-log-preview", "Desktop runtime workbench previews captured stdout and stderr");
 mustContain(builder, "data-builder-desktop-runtime-validate", "Desktop runtime workbench can enqueue generated-window validation");

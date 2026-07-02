@@ -44720,19 +44720,19 @@ export function BuilderShowcase() {
             </aside>
             <section className="space-y-4">
               <div
-                className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4"
+                className="rounded-[24px] border border-outline-variant bg-surface-container-low p-3"
                 data-builder-desktop-runtime-workbench=""
                 data-builder-desktop-runtime-state={desktopRuntimeState}
               >
-                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-secondary-container text-secondary-container-foreground">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-secondary-container-foreground">
                         <Monitor aria-hidden className="size-4" />
                       </span>
                       <div className="min-w-0">
                         <h2 className="text-sm font-medium">桌面运行</h2>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
+                        <p className="mt-1 line-clamp-1 text-xs leading-5 text-on-surface-variant">
                           Build 页以真实 Tauri exe 为运行目标；生成、验证、启动和 Runtime Console 证据集中在这里。
                         </p>
                       </div>
@@ -44766,8 +44766,12 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-                  <div className="grid min-w-0 gap-2 md:grid-cols-2" data-builder-desktop-runtime-summary="">
+                <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
+                  <div
+                    className="grid min-w-0 auto-rows-min items-start gap-1.5 md:grid-cols-2 xl:grid-cols-4"
+                    data-builder-desktop-runtime-summary=""
+                    data-builder-desktop-runtime-summary-density="single-row-output"
+                  >
                     {[
                       {
                         label: "输出 exe",
@@ -44802,17 +44806,18 @@ export function BuilderShowcase() {
                       return (
                         <article
                           key={item.label}
-                          className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs"
+                          className="min-w-0 self-start rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2 text-xs"
                           data-builder-desktop-runtime-card={item.label}
+                          data-builder-desktop-runtime-card-density="compact-cell"
                         >
-                          <div className="flex min-w-0 items-start gap-2">
-                            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
-                              <ItemIcon aria-hidden className="size-4" />
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                              <ItemIcon aria-hidden className="size-3.5" />
                             </span>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
-                              <p className="mt-1 truncate font-medium text-on-surface">{item.value}</p>
-                              <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">{item.detail}</p>
+                              <p className="truncate font-medium text-on-surface">{item.value}</p>
+                              <p className="truncate font-mono text-[0.66rem] text-on-surface-variant">{item.detail}</p>
                             </div>
                           </div>
                         </article>
@@ -44820,8 +44825,8 @@ export function BuilderShowcase() {
                     })}
                   </div>
 
-                  <div className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-desktop-runtime-console="">
-                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 rounded-2xl border border-outline-variant bg-surface-container p-2.5" data-builder-desktop-runtime-console="">
+                    <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Runtime Console</h3>
                         <p className="mt-1 truncate text-xs text-on-surface-variant">
@@ -44859,7 +44864,7 @@ export function BuilderShowcase() {
                       </div>
                     </div>
                     <pre
-                      className="max-h-40 min-h-24 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-4 text-on-surface-variant"
+                      className="max-h-28 min-h-20 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-2.5 font-mono text-[0.68rem] leading-4 text-on-surface-variant"
                       data-builder-desktop-runtime-log-preview=""
                     >
                       {latestRunSessionEntry?.runtimeLogPreview || activeWorkflowRuntimeSession?.summary || "运行桌面端 exe 后会在这里显示 stdout、stderr 和运行状态摘要。"}
