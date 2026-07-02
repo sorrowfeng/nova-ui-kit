@@ -4395,24 +4395,36 @@ async function runShellCommandPlacementChecks(send, verified) {
     `(() => {
       const rail = document.querySelector("[data-builder-workflow-rail]");
       const path = document.querySelector("[data-builder-workflow-path]");
+      const trigger = document.querySelector("[data-builder-workflow-path-trigger]");
+      const summary = document.querySelector("[data-builder-workflow-summary]");
       const feedbackStrip = document.querySelector("[data-builder-feedback-strip]");
       const actions = document.querySelector("[data-builder-workflow-feedback-actions]");
       const actionButtons = actions ? Array.from(actions.querySelectorAll("button")) : [];
       const railRect = rail?.getBoundingClientRect();
-      const pathRect = path?.getBoundingClientRect();
+      const triggerRect = trigger?.getBoundingClientRect();
       return {
         passed:
-          rail?.getAttribute("data-builder-workflow-rail-density") === "single-row" &&
+          rail?.getAttribute("data-builder-workflow-rail-density") === "condensed-single-row" &&
           rail?.getAttribute("data-builder-feedback-strip-default") === "hidden" &&
-          Boolean(path && pathRect && pathRect.height <= 32) &&
+          summary?.getAttribute("data-builder-workflow-summary") === "condensed" &&
+          !path &&
+          Boolean(trigger && triggerRect && triggerRect.width <= 96 && triggerRect.height <= 32) &&
           Boolean(actions && actionButtons.length >= 4) &&
           !feedbackStrip &&
           Boolean(railRect && railRect.height <= 56),
-        detail: \`density=\${rail?.getAttribute("data-builder-workflow-rail-density") || "missing"}, rail=\${Math.round(railRect?.height || 0)}px, path=\${Math.round(pathRect?.height || 0)}px, actions=\${actionButtons.length}, feedback=\${Boolean(feedbackStrip)}\`
+        detail: \`density=\${rail?.getAttribute("data-builder-workflow-rail-density") || "missing"}, rail=\${Math.round(railRect?.height || 0)}px, trigger=\${Math.round(triggerRect?.width || 0)}x\${Math.round(triggerRect?.height || 0)}, pathMounted=\${Boolean(path)}, actions=\${actionButtons.length}, feedback=\${Boolean(feedbackStrip)}\`
       };
     })()`,
-    "build workflow rail defaults to a compact single row",
+    "build workflow rail defaults to a condensed single row",
   );
+  await clickElementCenter(send, `document.querySelector("[data-builder-workflow-path-trigger]")`, "build workflow menu trigger");
+  await waitFor(
+    send,
+    `document.querySelectorAll("[data-builder-workflow-menu-step]").length >= 5 &&
+      document.querySelector("[data-builder-workflow-path]")?.getAttribute("data-builder-workflow-path-default") === "collapsed"`,
+    "build workflow menu steps",
+  );
+  await closeTransientOverlays(send);
   verified.workflowRailCompactRuntime = true;
   await assertRuntimeCheck(
     send,

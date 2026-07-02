@@ -1492,11 +1492,16 @@ mustContain(builder, 'data-builder-compact-topbar-policy="status-locator-only"',
 mustContain(builder, 'id: "topbar-command-deduplication"', "Editor experience audit checks duplicated topbar command removal");
 mustContain(builder, 'id: "compact-locator"', "Editor experience audit checks compact locator behavior");
 mustContain(builder, 'id: "output-dock-minimized-peek"', "Editor experience audit checks minimized output dock peek feedback");
-mustContain(builder, 'data-builder-workflow-rail-density="single-row"', "Build workflow rail defaults to one compact IDE status row");
+mustContain(builder, 'data-builder-workflow-rail-density="condensed-single-row"', "Build workflow rail defaults to one condensed IDE status row");
 mustContain(builder, 'data-builder-feedback-strip-default="hidden"', "Build feedback strip is not a default second row above the workspace");
 mustContain(builder, "const feedbackStripVisible = feedbackPanelOpen", "Build feedback strip only appears when explicitly expanded");
 mustContain(builder, 'data-builder-workflow-feedback-actions="inline-icons"', "Build workflow rail keeps issue/task/output/log access as inline icons");
 mustContain(builder, 'data-builder-feedback-strip-mode="expanded-only"', "Build feedback strip declares expanded-only behavior");
+mustContain(builder, 'data-builder-workflow-summary="condensed"', "Build workflow rail summarizes the current flow instead of showing every step");
+mustContain(builder, 'data-builder-workflow-path-trigger=""', "Build workflow rail opens the full step list from a menu");
+mustContain(builder, 'data-builder-workflow-path="deferred-menu"', "Build workflow steps are deferred into a menu by default");
+mustContain(builder, 'data-builder-workflow-path-default="collapsed"', "Build workflow step menu is collapsed by default");
+mustContain(builder, "data-builder-workflow-menu-step", "Build workflow menu still exposes each runnable step");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.workflowRailCompactRuntime = true", "Browser smoke verifies the compact build workflow rail");
 mustContain(designWorkspace, 'data-builder-readable-workbench="qt-creator"', "Design workspace declares the Qt Creator readable layout contract");
 mustContain(designWorkspace, "data-builder-workspace-layout=\"balanced-left-dock\"", "Design workspace balances the component dock width with canvas priority");

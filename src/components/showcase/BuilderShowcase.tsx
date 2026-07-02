@@ -35370,14 +35370,14 @@ export function BuilderShowcase() {
           className="border-b border-outline-variant bg-surface-container-lowest px-2 py-1"
           data-builder-workflow-rail=""
           data-builder-workflow-rail-layout="compact-status"
-          data-builder-workflow-rail-density="single-row"
+          data-builder-workflow-rail-density="condensed-single-row"
           data-builder-feedback-strip-default="hidden"
         >
           <div className="mx-auto flex w-full max-w-full flex-col gap-1">
             <div className="flex h-9 min-w-0 max-w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container px-2 text-xs">
               <button
                 type="button"
-                className="focus-ring flex min-w-0 flex-[0.7] items-center gap-2 rounded-lg px-1.5 py-1 text-left transition hover:bg-surface-container-high"
+                className="focus-ring flex min-w-0 flex-[1.15] items-center gap-2 rounded-lg px-1.5 py-1 text-left transition hover:bg-surface-container-high"
                 onClick={() => openRelevantTaskDock()}
                 title={`${workflowRailStateLabel} · ${workflowRailDetail}`}
               >
@@ -35403,43 +35403,78 @@ export function BuilderShowcase() {
                   <span className="mt-0.5 block truncate text-[0.62rem] text-on-surface-variant">{workflowProgressLabel} · {workflowProgressValue}%</span>
                 </span>
               </button>
-              <div className="flex min-w-0 flex-[1.7] items-center gap-1 overflow-x-auto py-0.5" data-builder-workflow-path="">
-                {editorWorkflowStepStates.map(({ step, task, status }, index) => {
-                  const StepIcon = step.icon;
-                  const suggested = suggestedWorkflowStepId === step.id;
-                  return (
-                    <button
-                      key={step.id}
-                      type="button"
-                      data-builder-workflow-step={step.id}
-                      aria-current={suggested ? "step" : undefined}
-                      aria-label={`${step.title}: ${workflowStepStatusLabel(status)}`}
-                      className={cn(
-                        "focus-ring group inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-1.5 text-left text-[0.62rem] transition",
-                        workflowStepStatusClassName(status, suggested),
-                      )}
-                      onClick={() => runEditorWorkflowStep(step)}
-                      title={`${index + 1}. ${step.title} · ${workflowStepStatusLabel(status)}`}
-                    >
-                      <span className="font-mono text-[0.58rem] text-on-surface-variant">{index + 1}</span>
-                      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80 text-current">
-                        <StepIcon aria-hidden className="size-3" />
-                      </span>
-                      <span className="max-w-16 truncate font-medium text-on-surface">{step.title}</span>
-                      <Badge
-                        variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"}
-                        className="hidden h-5 shrink-0 px-1.5 py-0 text-[0.56rem] 2xl:inline-flex"
-                      >
-                        {suggested && status === "idle" ? "下一步" : workflowStepStatusLabel(status)}
-                      </Badge>
-                    </button>
-                  );
-                })}
+              <div
+                className="hidden min-w-0 flex-[1.4] items-center gap-2 lg:flex"
+                data-builder-workflow-summary="condensed"
+              >
+                <span className="shrink-0 rounded-full bg-surface-container-high px-2 py-1 text-[0.62rem] font-medium text-on-surface-variant">
+                  流程
+                </span>
+                <span className="min-w-0 truncate text-[0.66rem] text-on-surface-variant">
+                  {workflowRailDetail}
+                </span>
               </div>
               <div className="hidden w-28 shrink-0 items-center gap-2 lg:flex">
                 <Progress className="h-1.5" value={workflowProgressValue} />
                 <span className="w-7 shrink-0 text-right font-mono text-[0.58rem] text-on-surface-variant">{workflowProgressValue}%</span>
               </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 shrink-0 px-2 text-xs"
+                    data-builder-workflow-path-trigger=""
+                    aria-label="打开构建流程步骤"
+                    title="打开构建流程步骤"
+                  >
+                    <Menu aria-hidden className="size-4" />
+                    <span className="hidden sm:inline">流程</span>
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.56rem]">
+                      {workflowStepCount}
+                    </Badge>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-72"
+                  data-builder-workflow-path="deferred-menu"
+                  data-builder-workflow-path-default="collapsed"
+                >
+                  <DropdownMenuLabel>构建流程</DropdownMenuLabel>
+                  {editorWorkflowStepStates.map(({ step, status }, index) => {
+                    const StepIcon = step.icon;
+                    const suggested = suggestedWorkflowStepId === step.id;
+                    return (
+                      <DropdownMenuItem
+                        key={step.id}
+                        data-builder-workflow-step={step.id}
+                        data-builder-workflow-menu-step={step.id}
+                        data-builder-workflow-menu-step-status={status}
+                        aria-current={suggested ? "step" : undefined}
+                        onSelect={() => runEditorWorkflowStep(step)}
+                        className="items-start gap-2"
+                      >
+                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                          <StepIcon aria-hidden className="size-3.5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="truncate font-medium">{index + 1}. {step.title}</span>
+                            <Badge
+                              variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"}
+                              className="h-5 shrink-0 px-1.5 py-0 text-[0.56rem]"
+                            >
+                              {suggested && status === "idle" ? "下一步" : workflowStepStatusLabel(status)}
+                            </Badge>
+                          </span>
+                          <span className="mt-0.5 block truncate text-[0.66rem] text-on-surface-variant">{step.detail}</span>
+                        </span>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <div className="flex shrink-0 items-center gap-1" data-builder-workflow-feedback-actions="inline-icons">
                 <Button
                   size="icon-sm"
