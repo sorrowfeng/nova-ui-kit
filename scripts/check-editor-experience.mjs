@@ -1494,6 +1494,12 @@ mustContain(builder, 'data-builder-rust-editor-primary-toolbar=""', "Rust editor
 mustContain(builder, 'data-builder-logic-main-panel-layout="editor-only"', "Logic main panel hides non-editor documentation blocks from the primary code surface");
 mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic resource sidebar defaults to a focused dock view instead of showing every resource group");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
+mustContain(buildWorkspace, 'data-builder-build-sidebar-density="low-chrome"', "Build workspace uses a low-chrome sidebar instead of nested cards");
+mustContain(buildWorkspace, 'data-builder-build-sidebar-toolbar="low-chrome"', "Build workspace toolbar is a low-chrome strip");
+mustContain(builder, 'data-builder-build-output-sidebar-density="low-chrome"', "Build output sidebar avoids stacked card chrome");
+mustContain(builder, 'data-builder-build-output-evidence="collapsed-default"', "Build evidence starts as compact output-pane metadata");
+mustContain(builder, 'data-builder-build-artifact-actions="compact-grid"', "Build artifact actions use compact IDE controls");
+mustContain(builder, 'data-builder-release-settings-shortcut-density="summary"', "Build page release settings stay as a compact Project Dock shortcut");
 mustContain(builder, 'data-builder-project-workspace-layout="split-ide"', "Project workspace uses a split IDE layout instead of a long flat page");
 mustContain(builder, 'data-builder-project-secondary-details', "Project secondary overview is collapsed behind details");
 mustContain(designWorkspace, "xl:grid-cols-[56px_minmax(0,1fr)_56px]", "Design workspace supports compact rail columns for both side docks");

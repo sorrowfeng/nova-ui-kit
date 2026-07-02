@@ -42637,11 +42637,19 @@ export function BuilderShowcase() {
               </div>
             }
           >
-            <aside className="space-y-3 rounded-[24px] border border-outline-variant bg-surface-container p-3">
-              <PanelTitle icon={Download} title="构建输出" description="输出、任务与证据。" />
-              <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3 text-xs">
-                <details className="group rounded-2xl border border-outline-variant bg-surface-container px-3 py-2" data-builder-build-output-details="">
-                  <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-1 py-1 text-xs font-medium text-on-surface transition hover:bg-surface-container-high">
+            <aside
+              className="space-y-2 rounded-lg border border-outline-variant bg-surface-container-low px-2 py-2"
+              data-builder-build-output-sidebar=""
+              data-builder-build-output-sidebar-density="low-chrome"
+            >
+              <PanelTitle icon={Download} title="构建输出" description="输出路径、产物入口和运行证据。" />
+              <div className="space-y-2 text-xs" data-builder-build-output-evidence="collapsed-default">
+                <details
+                  className="group rounded-md border border-outline-variant bg-surface-container px-2 py-1.5"
+                  data-builder-build-output-details=""
+                  data-builder-build-output-details-state="collapsed-default"
+                >
+                  <summary className="focus-ring flex h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs font-medium text-on-surface transition hover:bg-surface-container-high">
                     <span className="truncate">输出路径</span>
                     <span className="flex shrink-0 items-center gap-1.5 text-[0.66rem] text-on-surface-variant">
                       <span>{activeProject.outputExePath ? "exe 已生成" : "等待构建"}</span>
@@ -42667,10 +42675,11 @@ export function BuilderShowcase() {
                     <PathRow label="安装包 manifest" value={activeBundleManifestPath || "完整打包后生成"} />
                   </div>
                 </details>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-1.5" data-builder-build-artifact-actions="compact-grid">
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-open-output-exe=""
                     disabled={!activeProject.outputExePath}
                     onClick={() => void openLocalArtifact(activeProject.outputExePath ?? "")}
@@ -42681,6 +42690,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-launch-output-exe=""
                     loading={launchingExeId === "active-output"}
                     disabled={!activeProject.outputExePath || Boolean(launchingExeId)}
@@ -42692,6 +42702,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-open-output-bundle=""
                     disabled={!activeBundlePath}
                     onClick={() => void openLocalArtifact(activeBundlePath)}
@@ -42702,6 +42713,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-open-output-dir=""
                     disabled={!activeBuildOutputDir}
                     onClick={() => void openLocalArtifact(activeBuildOutputDir)}
@@ -42712,6 +42724,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-open-bundle-dir=""
                     disabled={!activeBundleDir}
                     onClick={() => void openLocalArtifact(activeBundleDir)}
@@ -42722,6 +42735,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="h-7 px-1.5 text-[0.68rem]"
                     data-builder-open-bundle-manifest=""
                     disabled={!activeBundleManifestPath}
                     onClick={() => void openLocalArtifact(activeBundleManifestPath)}
@@ -42731,7 +42745,7 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
                 {latestRunSessionEntry ? (
-                  <div className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-3" data-builder-run-session-panel="">
+                  <div className="rounded-md border border-outline-variant bg-surface-container px-2 py-2" data-builder-run-session-panel="">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-xs font-medium">运行会话</p>
@@ -42751,7 +42765,7 @@ export function BuilderShowcase() {
                         {latestRunSessionEntry.runtimeLogPath}
                       </p>
                     ) : null}
-                    <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="mt-2 grid grid-cols-4 gap-1.5">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -42796,23 +42810,27 @@ export function BuilderShowcase() {
                         打开
                       </Button>
                     </div>
-                    <pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap rounded-xl bg-surface-container-high p-3 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
+                    <pre className="mt-2 max-h-28 overflow-auto whitespace-pre-wrap rounded-md bg-surface-container-high p-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
                       {latestRunSessionEntry.runtimeLogPreview || "启动生成的 exe 后会显示运行时控制台。"}
                     </pre>
                   </div>
                 ) : null}
               </div>
-              <section className="space-y-3 rounded-[22px] border border-outline-variant bg-surface-container-low p-3" data-builder-release-settings-shortcut="">
+              <section
+                className="space-y-2 rounded-md border border-outline-variant/70 bg-surface-container px-2 py-2"
+                data-builder-release-settings-shortcut=""
+                data-builder-release-settings-shortcut-density="summary"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置</h3>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                      Release config 已移动到 Project Dock；Build 页只保留运行、构建、输出和证据。
+                    <p className="mt-1 text-xs leading-4 text-on-surface-variant">
+                      Release config 在 Project Dock 管理；这里仅保留当前构建摘要。
                     </p>
                   </div>
                   <Badge variant="outline">{normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
                 </div>
-                <div className="rounded-2xl bg-surface-container-high p-3 text-xs">
+                <div className="rounded-md bg-surface-container-low px-2 py-2 text-xs">
                   <PathRow label="应用" value={activeProject.releaseConfig.appName} />
                   <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
                   <PathRow
@@ -42826,7 +42844,7 @@ export function BuilderShowcase() {
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-full"
+                  className="h-8 w-full"
                   data-builder-open-project-release-settings=""
                   onClick={() => {
                     setMode("project");

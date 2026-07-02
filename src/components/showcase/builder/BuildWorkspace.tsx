@@ -15,13 +15,14 @@ export function BuildWorkspace({
 
     return (
       <div
-        className="grid h-full min-h-0 grid-cols-1 gap-3 overflow-hidden bg-surface-container-low p-3 xl:grid-cols-[300px_minmax(0,1fr)] 2xl:grid-cols-[320px_minmax(0,1fr)]"
+        className="grid h-full min-h-0 grid-cols-1 gap-2 overflow-hidden bg-surface-container-low p-2 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)]"
         data-builder-build-workspace=""
         data-builder-build-workspace-layout="compact-ide"
         data-builder-build-toolbar-placement="sidebar"
+        data-builder-build-sidebar-density="low-chrome"
       >
-        <div className="subtle-scrollbar min-h-0 space-y-3 overflow-y-auto pr-1">
-          <div className="rounded-[22px] border border-outline-variant bg-surface-container-lowest px-3 py-2 shadow-m3-1">
+        <div className="subtle-scrollbar min-h-0 space-y-2 overflow-y-auto pr-1" data-builder-build-sidebar="">
+          <div className="border-b border-outline-variant/70 px-1 pb-2" data-builder-build-sidebar-toolbar="low-chrome">
             {toolbar}
           </div>
           {sidebar}

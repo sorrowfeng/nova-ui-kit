@@ -4246,6 +4246,35 @@ async function runShellCommandPlacementChecks(send, verified) {
     "left rail build configuration route",
   );
   verified.leftRunBuildConfigRouteRuntime = true;
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const workspace = document.querySelector("[data-builder-build-workspace]");
+      const sidebar = document.querySelector("[data-builder-build-sidebar]");
+      const toolbar = document.querySelector("[data-builder-build-sidebar-toolbar]");
+      const outputSidebar = document.querySelector("[data-builder-build-output-sidebar]");
+      const evidence = document.querySelector("[data-builder-build-output-evidence]");
+      const artifactActions = document.querySelector("[data-builder-build-artifact-actions]");
+      const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
+      const outputRect = outputSidebar?.getBoundingClientRect();
+      const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
+      return {
+        passed:
+          workspace?.getAttribute("data-builder-build-sidebar-density") === "low-chrome" &&
+          Boolean(sidebar) &&
+          toolbar?.getAttribute("data-builder-build-sidebar-toolbar") === "low-chrome" &&
+          outputSidebar?.getAttribute("data-builder-build-output-sidebar-density") === "low-chrome" &&
+          evidence?.getAttribute("data-builder-build-output-evidence") === "collapsed-default" &&
+          artifactActions?.getAttribute("data-builder-build-artifact-actions") === "compact-grid" &&
+          settingsShortcut?.getAttribute("data-builder-release-settings-shortcut-density") === "summary" &&
+          Boolean(outputRect && outputRect.width <= 312) &&
+          Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, toolbar=\${toolbar?.getAttribute("data-builder-build-sidebar-toolbar") || "missing"}, output=\${Math.round(outputRect?.width || 0)}px, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+      };
+    })()`,
+    "build output sidebar uses low chrome compact IDE layout",
+  );
+  verified.buildOutputSidebarLowChromeRuntime = true;
 
   await evaluate(
     send,
