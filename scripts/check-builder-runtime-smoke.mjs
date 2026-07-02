@@ -4430,15 +4430,25 @@ async function runShellCommandPlacementChecks(send, verified) {
       const paritySummary = document.querySelector("[data-builder-runtime-parity-summary]");
       const parityDetails = document.querySelector("[data-builder-runtime-parity-details]");
       const parityItems = Array.from(document.querySelectorAll("[data-builder-runtime-parity-item]"));
+      const settingsSummary = document.querySelector("[data-builder-release-settings-shortcut-summary]");
+      const settingsDetails = document.querySelector("[data-builder-release-settings-shortcut-details]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
       const outputDockRect = outputDock?.getBoundingClientRect();
       const parityRect = parityPanel?.getBoundingClientRect();
+      const settingsRect = settingsShortcut?.getBoundingClientRect();
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
         (mainRect?.bottom || 9999) <= outputDockRect.top;
+      const settingsCollapsedDefault =
+        settingsShortcut?.tagName === "DETAILS" &&
+        !settingsShortcut.hasAttribute("open") &&
+        settingsShortcut.getAttribute("data-builder-release-settings-shortcut-density") === "collapsed-summary" &&
+        settingsSummary?.getAttribute("data-builder-release-settings-shortcut-summary") === "single-row" &&
+        settingsDetails?.getAttribute("data-builder-release-settings-shortcut-details") === "deferred" &&
+        Boolean(settingsRect && settingsRect.height <= 52);
       const parityCollapsedDefault =
         parityPanel?.tagName === "DETAILS" &&
         !parityPanel.hasAttribute("open") &&
@@ -4457,17 +4467,49 @@ async function runShellCommandPlacementChecks(send, verified) {
           outputSidebar?.getAttribute("data-builder-build-output-sidebar-density") === "low-chrome" &&
           evidence?.getAttribute("data-builder-build-output-evidence") === "collapsed-default" &&
           artifactActions?.getAttribute("data-builder-build-artifact-actions") === "compact-grid" &&
-          settingsShortcut?.getAttribute("data-builder-release-settings-shortcut-density") === "summary" &&
+          settingsCollapsedDefault &&
           Boolean(outputRect && outputRect.width <= 312) &&
           outputClearance &&
           parityCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
   );
   verified.buildOutputSidebarLowChromeRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "build release settings summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-settings-shortcut]")?.hasAttribute("open") === true`,
+    "expanded build release settings shortcut",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
+      const details = document.querySelector("[data-builder-release-settings-shortcut-details]");
+      const fields = document.querySelector("[data-builder-release-settings-shortcut-fields]");
+      const openProjectSettings = document.querySelector("[data-builder-open-project-release-settings]");
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          settingsShortcut?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-release-settings-shortcut-details") === "deferred" &&
+          fields?.getAttribute("data-builder-release-settings-shortcut-fields") === "compact-property-list" &&
+          Boolean(openProjectSettings) &&
+          Boolean(detailsRect && detailsRect.height > 70),
+        detail: \`open=\${settingsShortcut?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, fields=\${fields?.getAttribute("data-builder-release-settings-shortcut-fields") || "missing"}, button=\${Boolean(openProjectSettings)}\`
+      };
+    })()`,
+    "build release settings shortcut expands to Project Dock controls",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "collapse build release settings summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-settings-shortcut]")?.hasAttribute("open") === false`,
+    "collapsed build release settings shortcut",
+  );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(
     send,

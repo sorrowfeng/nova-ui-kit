@@ -42913,45 +42913,54 @@ export function BuilderShowcase() {
                   </div>
                 ) : null}
               </div>
-              <section
-                className="space-y-2 rounded-md border border-outline-variant/70 bg-surface-container px-2 py-2"
+              <details
+                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
                 data-builder-release-settings-shortcut=""
-                data-builder-release-settings-shortcut-density="summary"
+                data-builder-release-settings-shortcut-density="collapsed-summary"
+                data-builder-release-settings-shortcut-state="collapsed-default"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置</h3>
-                    <p className="mt-1 text-xs leading-4 text-on-surface-variant">
-                      Release config 在 Project Dock 管理；这里仅保留当前构建摘要。
-                    </p>
-                  </div>
-                  <Badge variant="outline">{normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
-                </div>
-                <div className="rounded-md bg-surface-container-low px-2 py-2 text-xs">
-                  <PathRow label="应用" value={activeProject.releaseConfig.appName} />
-                  <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
-                  <PathRow
-                    label="窗口"
-                    value={`${releaseWindowKinds.find((kind) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
-                      releaseTitlebarStyles.find((style) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
-                    }`}
-                  />
-                  <PathRow label="目标" value={activeProject.releaseConfig.bundleTargets} />
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 w-full"
-                  data-builder-open-project-release-settings=""
-                  onClick={() => {
-                    setMode("project");
-                    setLeftDockTab("project");
-                  }}
+                <summary
+                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  data-builder-release-settings-shortcut-summary="single-row"
                 >
-                  <Settings2 aria-hidden className="size-4" />
-                  打开项目设置
-                </Button>
-              </section>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <div className="min-w-0">
+                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置</h3>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">Release config 由 Project Dock 管理，展开查看当前目标。</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="shrink-0">
+                    {normalizeReleaseVersion(activeProject.releaseConfig.version)}
+                  </Badge>
+                </summary>
+                <div className="mt-2 border-t border-outline-variant pt-2" data-builder-release-settings-shortcut-details="deferred">
+                  <div className="rounded-md bg-surface-container-low px-2 py-1.5 text-xs" data-builder-release-settings-shortcut-fields="compact-property-list">
+                    <PathRow label="应用" value={activeProject.releaseConfig.appName} />
+                    <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
+                    <PathRow
+                      label="窗口"
+                      value={`${releaseWindowKinds.find((kind) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
+                        releaseTitlebarStyles.find((style) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
+                      }`}
+                    />
+                    <PathRow label="目标" value={activeProject.releaseConfig.bundleTargets} />
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="mt-2 h-8 w-full"
+                    data-builder-open-project-release-settings=""
+                    onClick={() => {
+                      setMode("project");
+                      setLeftDockTab("project");
+                    }}
+                  >
+                    <Settings2 aria-hidden className="size-4" />
+                    打开项目设置
+                  </Button>
+                </div>
+              </details>
               <section className="hidden" data-builder-release-config="">
                 <div className="flex items-start justify-between gap-3">
                   <div>
