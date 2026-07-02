@@ -2036,6 +2036,31 @@ async function runProjectWorkspaceChecks(send, verified) {
   await assertRuntimeCheck(
     send,
     `(() => {
+      const workspace = document.querySelector("[data-builder-project-workspace]");
+      const scrollViewport = document.querySelector("[data-builder-project-workspace-scroll]");
+      const outputDock = document.querySelector("[data-builder-output-dock]");
+      const workspaceStyle = workspace ? window.getComputedStyle(workspace) : null;
+      const scrollRect = scrollViewport?.getBoundingClientRect();
+      const outputDockRect = outputDock?.getBoundingClientRect();
+      const paddingBottom = Number.parseFloat(workspaceStyle?.paddingBottom || "0");
+      return {
+        passed:
+          Boolean(workspace) &&
+          workspace?.getAttribute("data-builder-project-workspace-bottom-dock-clearance") === "reserved" &&
+          scrollViewport?.getAttribute("data-builder-project-workspace-scroll") === "contained" &&
+          paddingBottom >= 40 &&
+          Boolean(outputDockRect && outputDockRect.height > 0) &&
+          Boolean(scrollRect && scrollRect.bottom <= outputDockRect.top + 2),
+        detail: \`clearance=\${workspace?.getAttribute("data-builder-project-workspace-bottom-dock-clearance") || "missing"}, scroll=\${scrollViewport?.getAttribute("data-builder-project-workspace-scroll") || "missing"}, paddingBottom=\${paddingBottom}, scrollBottom=\${Math.round(scrollRect?.bottom || 0)}, outputTop=\${Math.round(outputDockRect?.top || 0)}, outputHeight=\${Math.round(outputDockRect?.height || 0)}\`
+      };
+    })()`,
+    "project workspace reserves scroll clearance above the bottom output dock",
+  );
+  verified.projectWorkspaceBottomDockClearanceRuntime = true;
+
+  await assertRuntimeCheck(
+    send,
+    `(() => {
       const tree = document.querySelector("[data-builder-project-workspace-tree]");
       const nodes = Array.from(document.querySelectorAll("[data-builder-project-workspace-node]"));
       const topology = document.querySelector("[data-builder-project-topology]");

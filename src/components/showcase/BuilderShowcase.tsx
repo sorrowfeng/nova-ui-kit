@@ -35681,7 +35681,12 @@ export function BuilderShowcase() {
           data-builder-workspace-no-output-background-shield=""
         >
         {mode === "project" ? (
-          <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto p-4" data-builder-project-workspace="">
+          <div
+            className="h-full min-h-0 overflow-hidden px-4 pt-4 pb-11"
+            data-builder-project-workspace=""
+            data-builder-project-workspace-bottom-dock-clearance="reserved"
+          >
+            <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto" data-builder-project-workspace-scroll="contained">
             <div className="mx-auto flex max-w-[1480px] flex-col gap-3">
               <section
                 className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-2.5"
@@ -37542,6 +37547,7 @@ export function BuilderShowcase() {
                 </div>
               </section>
             </div>
+          </div>
           </div>
         ) : mode === "logic" ? (
           <LogicWorkspace>
