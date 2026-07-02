@@ -35682,14 +35682,15 @@ export function BuilderShowcase() {
         >
         {mode === "project" ? (
           <div
-            className="h-full min-h-0 overflow-hidden px-4 pt-4 pb-11"
+            className="h-full min-h-0 overflow-hidden px-2 pt-2 pb-11"
             data-builder-project-workspace=""
             data-builder-project-workspace-bottom-dock-clearance="reserved"
+            data-builder-project-workspace-chrome="low-chrome-docks"
           >
             <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto" data-builder-project-workspace-scroll="contained">
-            <div className="mx-auto flex max-w-[1480px] flex-col gap-3">
+            <div className="mx-auto flex max-w-[1480px] flex-col gap-2">
               <section
-                className="rounded-2xl border border-outline-variant bg-surface-container px-3 py-2.5"
+                className="rounded-xl border border-outline-variant bg-surface-container-low/70 px-2.5 py-2"
                 data-builder-project-workspace-header=""
                 data-builder-project-workspace-header-density="compact-ide"
               >
@@ -36349,10 +36350,14 @@ export function BuilderShowcase() {
               </details>
 
               <section
-                className="grid min-h-[560px] gap-4 xl:grid-cols-[minmax(24rem,0.82fr)_minmax(0,1.18fr)]"
+                className="grid min-h-[560px] gap-2 xl:grid-cols-[minmax(22rem,0.74fr)_minmax(0,1.26fr)]"
                 data-builder-project-workspace-layout="split-ide"
+                data-builder-project-workspace-panel-chrome="low"
               >
-                <div className="flex min-h-0 flex-col overflow-hidden rounded-[24px] border border-outline-variant bg-surface-container p-4 shadow-m3-1">
+                <div
+                  className="flex min-h-0 flex-col overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container-low p-2 shadow-none"
+                  data-builder-project-tree-panel-density="low-chrome-dock"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="text-sm font-semibold text-on-surface">工程文件树</h3>
@@ -36381,7 +36386,7 @@ export function BuilderShowcase() {
                     </div>
                   </div>
                   <div
-                    className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.66rem]"
+                    className="mt-2 flex min-w-0 flex-wrap items-center gap-1 rounded-lg border border-outline-variant/80 bg-surface-container px-2 py-1 text-[0.64rem]"
                     data-builder-project-workspace-summary-strip=""
                     data-builder-project-storage-boundaries=""
                     data-builder-project-workspace-summary-density="single-row"
@@ -36410,7 +36415,7 @@ export function BuilderShowcase() {
                     ))}
                   </div>
                   <div
-                    className="mt-2 grid min-w-0 gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.66rem] sm:grid-cols-[minmax(8rem,1fr)_auto]"
+                    className="mt-2 grid min-w-0 gap-1 rounded-lg border border-outline-variant/80 bg-surface-container px-1.5 py-1 text-[0.64rem] sm:grid-cols-[minmax(8rem,1fr)_auto]"
                     data-builder-project-tree-toolbar=""
                     data-builder-project-tree-toolbar-density="single-row-filter-search"
                   >
@@ -36425,7 +36430,7 @@ export function BuilderShowcase() {
                         inputSize="sm"
                         aria-label="搜索工程文件树"
                         placeholder="搜索文件、路径、类型..."
-                        className="h-8 rounded-xl border-transparent bg-surface-container-high pl-8 pr-8 text-xs shadow-none"
+                        className="h-7 rounded-lg border-transparent bg-surface-container-high pl-8 pr-8 text-[0.68rem] shadow-none"
                         data-builder-project-workspace-search-input=""
                         onChange={(event) => setProjectExplorerQuery(event.target.value)}
                         onKeyDown={(event) => {
@@ -36466,7 +36471,7 @@ export function BuilderShowcase() {
                             data-builder-project-filter-option={option.id}
                             title={option.description}
                             className={cn(
-                              "focus-ring inline-flex h-8 flex-none items-center gap-1 rounded-lg border px-1.5 text-[0.64rem] transition",
+                              "focus-ring inline-flex h-7 flex-none items-center gap-1 rounded-md border px-1.5 text-[0.64rem] transition",
                               active
                                 ? "border-primary bg-primary/10 text-on-surface"
                                 : "border-transparent bg-transparent text-on-surface-variant hover:border-outline-variant hover:bg-surface-container-high hover:text-on-surface",
@@ -36574,7 +36579,7 @@ export function BuilderShowcase() {
                         return (
                           <div
                             key={`group-${row.id}`}
-                            className="sticky top-0 z-[1] flex items-center justify-between gap-2 rounded-xl border border-outline-variant/70 bg-surface-container/95 px-2.5 py-1 text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant backdrop-blur"
+                            className="sticky top-0 z-[1] flex items-center justify-between gap-2 rounded-md bg-surface-container-lowest/95 px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant backdrop-blur"
                             data-builder-project-workspace-group={row.id}
                           >
                             <span className="truncate">{row.label}</span>
@@ -36601,9 +36606,9 @@ export function BuilderShowcase() {
                           data-builder-project-context-node={node.id}
                           data-builder-project-tree-node-dirty={node.dirty ? "true" : "false"}
                           className={cn(
-                            "grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-2xl py-1.5 pr-2 text-xs transition focus-within:ring-2 focus-within:ring-ring/40",
+                            "grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded-lg py-1 pr-1.5 text-xs transition focus-within:ring-2 focus-within:ring-ring/40",
                             selected
-                              ? "bg-secondary-container text-secondary-container-foreground shadow-m3-1"
+                              ? "bg-secondary-container text-secondary-container-foreground"
                               : node.muted
                                 ? "text-on-surface-variant hover:bg-surface-container-high"
                                 : "hover:bg-surface-container-high",
@@ -36630,7 +36635,7 @@ export function BuilderShowcase() {
                             className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-xl py-1 pr-1 text-left"
                             onClick={() => handleProjectExplorerNode(node)}
                           >
-                            <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest", selected ? "text-secondary-container-foreground" : "text-primary")}>
+                            <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-highest", selected ? "text-secondary-container-foreground" : "text-primary")}>
                               <NodeIcon aria-hidden className="size-4" />
                             </span>
                             <span className="min-w-0">
@@ -36652,7 +36657,7 @@ export function BuilderShowcase() {
                           <Button
                             size="icon-sm"
                             variant={selected ? "secondary" : "ghost"}
-                            className="size-8 rounded-xl"
+                            className="size-7 rounded-lg"
                             aria-label={`查看 ${node.label} 的项目详情`}
                             data-builder-project-workspace-node-select={node.id}
                             onClick={() => setSelectedProjectExplorerNodeId(node.id)}
@@ -36670,9 +36675,12 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[24px] border border-outline-variant bg-surface-container-low p-3 shadow-m3-1">
+                <div
+                  className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[14px] border border-outline-variant bg-surface-container-low p-2 shadow-none"
+                  data-builder-project-detail-panel-density="low-chrome-dock"
+                >
                   {selectedProjectExplorerNode ? (
-                    <section className="rounded-[22px] border border-outline-variant bg-surface-container p-3" data-builder-project-workspace-detail="">
+                    <section className="rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2" data-builder-project-workspace-detail="">
                       <div className="flex min-w-0 items-start gap-3">
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
                           <SelectedProjectExplorerIcon aria-hidden className="size-4" />

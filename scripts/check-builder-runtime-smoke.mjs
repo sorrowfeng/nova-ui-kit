@@ -2038,20 +2038,34 @@ async function runProjectWorkspaceChecks(send, verified) {
     `(() => {
       const workspace = document.querySelector("[data-builder-project-workspace]");
       const scrollViewport = document.querySelector("[data-builder-project-workspace-scroll]");
+      const split = document.querySelector("[data-builder-project-workspace-layout]");
+      const treePanel = document.querySelector("[data-builder-project-tree-panel-density]");
+      const detailPanel = document.querySelector("[data-builder-project-detail-panel-density]");
       const outputDock = document.querySelector("[data-builder-output-dock]");
       const workspaceStyle = workspace ? window.getComputedStyle(workspace) : null;
+      const treeStyle = treePanel ? window.getComputedStyle(treePanel) : null;
+      const detailStyle = detailPanel ? window.getComputedStyle(detailPanel) : null;
       const scrollRect = scrollViewport?.getBoundingClientRect();
       const outputDockRect = outputDock?.getBoundingClientRect();
       const paddingBottom = Number.parseFloat(workspaceStyle?.paddingBottom || "0");
+      const transparentShadow = (value) => value === "none" || value.includes("rgba(0, 0, 0, 0)");
+      const lowChromePanels =
+        workspace?.getAttribute("data-builder-project-workspace-chrome") === "low-chrome-docks" &&
+        split?.getAttribute("data-builder-project-workspace-panel-chrome") === "low" &&
+        treePanel?.getAttribute("data-builder-project-tree-panel-density") === "low-chrome-dock" &&
+        detailPanel?.getAttribute("data-builder-project-detail-panel-density") === "low-chrome-dock" &&
+        transparentShadow(treeStyle?.boxShadow || "") &&
+        transparentShadow(detailStyle?.boxShadow || "");
       return {
         passed:
           Boolean(workspace) &&
           workspace?.getAttribute("data-builder-project-workspace-bottom-dock-clearance") === "reserved" &&
           scrollViewport?.getAttribute("data-builder-project-workspace-scroll") === "contained" &&
+          lowChromePanels &&
           paddingBottom >= 40 &&
           Boolean(outputDockRect && outputDockRect.height > 0) &&
           Boolean(scrollRect && scrollRect.bottom <= outputDockRect.top + 2),
-        detail: \`clearance=\${workspace?.getAttribute("data-builder-project-workspace-bottom-dock-clearance") || "missing"}, scroll=\${scrollViewport?.getAttribute("data-builder-project-workspace-scroll") || "missing"}, paddingBottom=\${paddingBottom}, scrollBottom=\${Math.round(scrollRect?.bottom || 0)}, outputTop=\${Math.round(outputDockRect?.top || 0)}, outputHeight=\${Math.round(outputDockRect?.height || 0)}\`
+        detail: \`clearance=\${workspace?.getAttribute("data-builder-project-workspace-bottom-dock-clearance") || "missing"}, chrome=\${workspace?.getAttribute("data-builder-project-workspace-chrome") || "missing"}, panels=\${treePanel?.getAttribute("data-builder-project-tree-panel-density") || "missing"}/\${detailPanel?.getAttribute("data-builder-project-detail-panel-density") || "missing"}, treeShadow=\${treeStyle?.boxShadow || "missing"}, detailShadow=\${detailStyle?.boxShadow || "missing"}, scroll=\${scrollViewport?.getAttribute("data-builder-project-workspace-scroll") || "missing"}, paddingBottom=\${paddingBottom}, scrollBottom=\${Math.round(scrollRect?.bottom || 0)}, outputTop=\${Math.round(outputDockRect?.top || 0)}, outputHeight=\${Math.round(outputDockRect?.height || 0)}\`
       };
     })()`,
     "project workspace reserves scroll clearance above the bottom output dock",

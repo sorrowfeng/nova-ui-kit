@@ -1545,8 +1545,12 @@ mustContain(builder, 'data-builder-build-artifact-actions="compact-grid"', "Buil
 mustContain(builder, 'data-builder-release-settings-shortcut-density="summary"', "Build page release settings stay as a compact Project Dock shortcut");
 mustContain(builder, 'data-builder-project-workspace-layout="split-ide"', "Project workspace uses a split IDE layout instead of a long flat page");
 mustContain(builder, 'data-builder-project-workspace-bottom-dock-clearance="reserved"', "Project workspace reserves scroll clearance above the bottom output dock");
-mustContain(builder, "overflow-hidden px-4 pt-4 pb-11", "Project workspace shell keeps the scroll viewport above the bottom output dock");
+mustContain(builder, 'data-builder-project-workspace-chrome="low-chrome-docks"', "Project workspace declares low-chrome dock styling instead of card-heavy panels");
+mustContain(builder, "overflow-hidden px-2 pt-2 pb-11", "Project workspace shell keeps a tight IDE gutter above the bottom output dock");
 mustContain(builder, 'data-builder-project-workspace-scroll="contained"', "Project workspace uses a contained inner scroll viewport");
+mustContain(builder, 'data-builder-project-workspace-panel-chrome="low"', "Project split workspace uses low-chrome panel containers");
+mustContain(builder, 'data-builder-project-tree-panel-density="low-chrome-dock"', "Project file tree renders as a low-chrome dock panel");
+mustContain(builder, 'data-builder-project-detail-panel-density="low-chrome-dock"', "Project selected-node details render as a low-chrome dock panel");
 mustContain(builder, 'data-builder-project-secondary-details', "Project secondary overview is collapsed behind details");
 mustContain(builder, 'data-builder-project-secondary-details-density="compact-toggle-strip"', "Project secondary overview uses a compact toggle strip instead of a card bar");
 mustContain(builder, 'data-builder-project-secondary-summary-density="single-row"', "Project secondary overview summary remains a single-row control");
