@@ -35726,27 +35726,29 @@ export function BuilderShowcase() {
             <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto" data-builder-project-workspace-scroll="contained">
             <div className="mx-auto flex max-w-[1480px] flex-col gap-2">
               <section
-                className="rounded-xl border border-outline-variant bg-surface-container-low/70 px-2.5 py-2"
+                className="rounded-lg border border-outline-variant bg-surface-container-low/70 px-2 py-1"
                 data-builder-project-workspace-header=""
-                data-builder-project-workspace-header-density="compact-ide"
+                data-builder-project-workspace-header-density="single-row-dock"
               >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-secondary-container-foreground">
-                        <FolderOpen aria-hidden className="size-4" />
+                <div className="flex min-h-8 items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-secondary-container text-secondary-container-foreground">
+                        <FolderOpen aria-hidden className="size-3.5" />
                       </span>
-                      <div className="min-w-0">
-                        <h2 className="truncate text-sm font-semibold text-on-surface">{activeProject.name || "Nova 项目"}</h2>
-                        <p className="truncate text-[0.68rem] text-on-surface-variant">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <h2 className="shrink-0 truncate text-xs font-semibold text-on-surface">{activeProject.name || "Nova 项目"}</h2>
+                        <span className="hidden text-[0.64rem] text-on-surface-variant md:inline">·</span>
+                        <p className="hidden min-w-0 truncate text-[0.64rem] text-on-surface-variant md:block">
                           {activeProject.rootPath || "保存后会写入 Documents/Nova UI Projects"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[0.68rem]">
+                    <div
+                      className="hidden min-w-0 items-center gap-1.5 text-[0.64rem] lg:flex"
+                      data-builder-project-workspace-header-meta="single-inline"
+                    >
                       <Badge variant={activeProject.rootPath ? "secondary" : "outline"}>{activeProject.rootPath ? "已落盘" : "未保存"}</Badge>
-                      <Badge variant="outline">{projectExplorerModel.summary}</Badge>
-                      <Badge variant="outline">Release {normalizeReleaseVersion(activeProject.releaseConfig.version)}</Badge>
                       <Badge
                         variant={projectSourceDirty ? "outline" : "secondary"}
                         data-builder-project-save-state-summary=""
@@ -35754,34 +35756,54 @@ export function BuilderShowcase() {
                       >
                         {projectSourceDirty ? `未保存 ${dirtyUiFileCount + (rustLogicDirty ? 1 : 0) + (projectSettingsDirty ? 1 : 0)}` : "来源已同步"}
                       </Badge>
-                      <Badge variant={missingRustSlotCount > 0 ? "outline" : "secondary"}>
-                        {missingRustSlotCount > 0 ? `${missingRustSlotCount} 槽待生成` : "Rust 已同步"}
-                      </Badge>
+                      <Badge variant="outline" className="max-w-[18rem] truncate">{projectExplorerModel.summary}</Badge>
                     </div>
                   </div>
-                  <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5" data-builder-project-workspace-header-actions="compact-toolbar">
-                    <Button size="sm" variant="secondary" data-builder-project-workspace-save="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy || runningProjectTask?.actionId === "save-project"}>
-                      <Save aria-hidden className="size-4" />
+                  <div className="flex min-w-0 shrink-0 items-center justify-end gap-1" data-builder-project-workspace-header-actions="single-row-toolbar">
+                    <Button size="sm" variant="secondary" className="h-7 px-2.5 text-[0.68rem]" data-builder-project-workspace-save="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy || runningProjectTask?.actionId === "save-project"}>
+                      <Save aria-hidden className="size-3.5" />
                       保存同步
                     </Button>
-                    <Button size="sm" variant="ghost" data-builder-project-workspace-open="" disabled={!isTauriRuntime()} onClick={() => void chooseProjectDirectory()}>
-                      <FolderOpen aria-hidden className="size-4" />
-                      打开目录
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-project-workspace-root=""
-                      disabled={!activeProject.rootPath || !isTauriRuntime()}
-                      onClick={() => void openLocalArtifact(activeProject.rootPath ?? "")}
-                    >
-                      <FolderOpen aria-hidden className="size-4" />
-                      资源管理器
-                    </Button>
-                    <Button size="sm" variant="ghost" data-builder-project-workspace-checkpoint="" disabled={!isTauriRuntime()} onClick={() => void createDiskCheckpoint()}>
-                      <Save aria-hidden className="size-4" />
-                      检查点
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          className="size-7"
+                          aria-label="打开项目操作菜单"
+                          data-builder-project-workspace-header-overflow-trigger=""
+                        >
+                          <Menu aria-hidden className="size-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64" data-builder-project-workspace-header-overflow-menu="">
+                        <DropdownMenuLabel>项目操作</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem data-builder-project-workspace-open="" disabled={!isTauriRuntime()} onSelect={() => void chooseProjectDirectory()}>
+                          <FolderOpen aria-hidden className="mr-2 size-4" />
+                          打开目录
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          data-builder-project-workspace-root=""
+                          disabled={!activeProject.rootPath || !isTauriRuntime()}
+                          onSelect={() => void openLocalArtifact(activeProject.rootPath ?? "")}
+                        >
+                          <FolderOpen aria-hidden className="mr-2 size-4" />
+                          资源管理器
+                        </DropdownMenuItem>
+                        <DropdownMenuItem data-builder-project-workspace-checkpoint="" disabled={!isTauriRuntime()} onSelect={() => void createDiskCheckpoint()}>
+                          <Save aria-hidden className="mr-2 size-4" />
+                          创建检查点
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>
+                          Release {normalizeReleaseVersion(activeProject.releaseConfig.version)}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          {missingRustSlotCount > 0 ? `${missingRustSlotCount} 个 Rust 槽待生成` : "Rust 已同步"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </section>

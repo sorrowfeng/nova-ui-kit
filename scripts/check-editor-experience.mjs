@@ -1587,8 +1587,11 @@ mustContain(builder, 'data-builder-project-detail-panel-density="low-chrome-dock
 mustContain(builder, 'data-builder-project-secondary-details', "Project secondary overview is collapsed behind details");
 mustContain(builder, 'data-builder-project-secondary-details-density="compact-toggle-strip"', "Project secondary overview uses a compact toggle strip instead of a card bar");
 mustContain(builder, 'data-builder-project-secondary-summary-density="single-row"', "Project secondary overview summary remains a single-row control");
-mustContain(builder, 'data-builder-project-workspace-header-density="compact-ide"', "Project workspace header uses compact IDE chrome instead of a hero card");
-mustContain(builder, 'data-builder-project-workspace-header-actions="compact-toolbar"', "Project workspace header actions stay in a compact toolbar");
+mustContain(builder, 'data-builder-project-workspace-header-density="single-row-dock"', "Project workspace header uses a single-row IDE dock instead of a hero card");
+mustContain(builder, 'data-builder-project-workspace-header-meta="single-inline"', "Project workspace header metadata stays inline");
+mustContain(builder, 'data-builder-project-workspace-header-actions="single-row-toolbar"', "Project workspace header actions stay in one toolbar row");
+mustContain(builder, 'data-builder-project-workspace-header-overflow-trigger', "Project workspace header moves low-frequency actions into an overflow menu");
+mustContain(builder, 'data-builder-project-workspace-header-overflow-menu', "Project workspace header exposes deferred low-frequency project actions");
 mustContain(builder, 'data-builder-project-workspace-summary-density="single-row"', "Project file tree summary uses a single-row strip instead of stacked statistic cards");
 mustContain(builder, 'data-builder-project-tree-toolbar-density="single-row-filter-search"', "Project file tree filters and search share one compact IDE toolbar");
 mustContain(builder, 'data-builder-project-workspace-filter-density="toolbar-segmented"', "Project file tree filters use compact segmented toolbar controls");

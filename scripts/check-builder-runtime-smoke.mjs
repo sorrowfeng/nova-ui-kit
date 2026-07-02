@@ -2075,6 +2075,49 @@ async function runProjectWorkspaceChecks(send, verified) {
   await assertRuntimeCheck(
     send,
     `(() => {
+      const header = document.querySelector("[data-builder-project-workspace-header]");
+      const meta = document.querySelector("[data-builder-project-workspace-header-meta]");
+      const actions = document.querySelector("[data-builder-project-workspace-header-actions]");
+      const save = document.querySelector("[data-builder-project-workspace-save]");
+      const overflow = document.querySelector("[data-builder-project-workspace-header-overflow-trigger]");
+      const headerRect = header?.getBoundingClientRect();
+      const actionStyle = actions ? getComputedStyle(actions) : null;
+      return {
+        passed:
+          header?.getAttribute("data-builder-project-workspace-header-density") === "single-row-dock" &&
+          meta?.getAttribute("data-builder-project-workspace-header-meta") === "single-inline" &&
+          actions?.getAttribute("data-builder-project-workspace-header-actions") === "single-row-toolbar" &&
+          Boolean(save) &&
+          Boolean(overflow) &&
+          Boolean(headerRect && headerRect.height <= 46) &&
+          actionStyle?.flexWrap === "nowrap",
+        detail: \`density=\${header?.getAttribute("data-builder-project-workspace-header-density") || "missing"}, height=\${Math.round(headerRect?.height || 0)}, save=\${Boolean(save)}, overflow=\${Boolean(overflow)}, wrap=\${actionStyle?.flexWrap || "missing"}\`
+      };
+    })()`,
+    "project workspace header stays as a single-row dock",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-workspace-header-overflow-trigger]")`, "project workspace header overflow menu");
+  await waitFor(send, `Boolean(document.querySelector("[data-builder-project-workspace-header-overflow-menu]"))`, "project workspace header overflow menu visible");
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const menu = document.querySelector("[data-builder-project-workspace-header-overflow-menu]");
+      const open = document.querySelector("[data-builder-project-workspace-open]");
+      const root = document.querySelector("[data-builder-project-workspace-root]");
+      const checkpoint = document.querySelector("[data-builder-project-workspace-checkpoint]");
+      const rect = menu?.getBoundingClientRect();
+      return {
+        passed: Boolean(menu) && Boolean(open) && Boolean(root) && Boolean(checkpoint) && Boolean(rect && rect.width >= 220),
+        detail: \`menu=\${Boolean(menu)}, width=\${Math.round(rect?.width || 0)}, open=\${Boolean(open)}, root=\${Boolean(root)}, checkpoint=\${Boolean(checkpoint)}\`
+      };
+    })()`,
+    "project workspace header overflow keeps low-frequency actions",
+  );
+  await closeTransientOverlays(send);
+
+  await assertRuntimeCheck(
+    send,
+    `(() => {
       const tree = document.querySelector("[data-builder-project-workspace-tree]");
       const nodes = Array.from(document.querySelectorAll("[data-builder-project-workspace-node]"));
       const topology = document.querySelector("[data-builder-project-topology]");
