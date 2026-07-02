@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  [data-builder-logic-main-panel-layout="editor-only"] > :not([data-builder-rust-editor-primary-toolbar]):not([data-builder-rust-editor]):not([data-builder-rust-editor-status]) {
+    display: none;
+  }
+}
+
 @layer base {
   :root {
     --background: 300 100% 99%;

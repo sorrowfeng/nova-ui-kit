@@ -16171,10 +16171,8 @@ export function BuilderShowcase() {
   const activeBottomDockHeight = bottomDockExpanded ? bottomDockExpandedHeight : bottomDockHeight;
   const outputDockWorkspaceHeight = bottomDockMinimized ? "minimized" : `${activeBottomDockHeight}px`;
   const outputDockWorkspaceState = bottomDockMinimized ? "minimized" : bottomDockExpanded ? "expanded" : "standard";
-  const outputDockWorkspacePadding = bottomDockMinimized
-    ? "pb-[6.25rem]"
-    : "pb-[calc(var(--builder-output-dock-current-height)+3.5rem)]";
-  const outputDockWorkspaceAvoidancePadding = bottomDockMinimized ? "6.25rem" : `calc(${activeBottomDockHeight}px + 3.5rem)`;
+  const outputDockWorkspacePadding = "pb-0";
+  const outputDockWorkspaceAvoidancePadding = "0px";
   const outputDockWorkspaceStyle = {
     "--builder-output-dock-current-height": bottomDockMinimized ? "3.25rem" : `${activeBottomDockHeight}px`,
   } as CSSProperties;
@@ -17754,7 +17752,7 @@ export function BuilderShowcase() {
     mappedToSource: boolean;
   } | null>(null);
   const [logicSearchQuery, setLogicSearchQuery] = useState("");
-  const [logicResourceView, setLogicResourceView] = useState<LogicResourceViewId>("all");
+  const [logicResourceView, setLogicResourceView] = useState<LogicResourceViewId>("connections");
   const [logicConnectionFilter, setLogicConnectionFilter] = useState<LogicConnectionFilterId>("all");
   const [rustDebuggerPanel, setRustDebuggerPanel] = useState<RustDebuggerPanelId>("problems");
   const [disabledRustDebuggerBreakpointIds, setDisabledRustDebuggerBreakpointIds] = useState<string[]>([]);
@@ -25886,6 +25884,21 @@ export function BuilderShowcase() {
     showProjectJumpFeedback("success", "Rust 源码已格式化", "已清理尾随空白、压缩多余空行，并按括号层级重新缩进。");
   };
 
+  const toggleRustEditorWordWrap = () => {
+    setRustEditorWordWrap((current) => {
+      const next = !current;
+      if (next) {
+        setRustEditorScrollLeft(0);
+        window.requestAnimationFrame(() => {
+          if (rustLogicRef.current) {
+            rustLogicRef.current.scrollLeft = 0;
+          }
+        });
+      }
+      return next;
+    });
+  };
+
   const applyRustAutoNewline = (editor: HTMLTextAreaElement) => {
     const source = editor.value;
     const start = editor.selectionStart ?? 0;
@@ -28202,15 +28215,16 @@ export function BuilderShowcase() {
       },
       {
         id: "output-dock-safe-scroll-dom",
-        title: "输出 Dock 底部安全避让 DOM",
+        title: "输出 Dock 无背景遮罩 DOM",
         passed:
           Boolean(outputDockWorkspace) &&
-          outputDockWorkspacePaddingBottom >= 96 &&
+          outputDockWorkspacePaddingBottom <= 24 &&
+          query("[data-builder-workspace-no-output-background-shield]") &&
           query("[data-builder-output-dock-no-reserved-band]") &&
           query("[data-builder-output-dock-statusbar-offset]") &&
           query("[data-builder-output-dock-no-background-shield]"),
         detail: outputDockWorkspace
-          ? `工作区 padding-bottom=${outputDockWorkspacePaddingBottom}px，Dock 使用固定浮层并为状态栏与底部内容留出安全滚动空间。`
+          ? `工作区 padding-bottom=${outputDockWorkspacePaddingBottom}px，Dock 外层透明，不再用背景遮罩或整块底部占位影响原内容。`
           : "没有找到输出 Dock 工作区标记。",
       },
       {
@@ -32700,9 +32714,9 @@ export function BuilderShowcase() {
       },
       {
         id: "output-dock-policy",
-        title: "输出 Dock 底部避让",
-        severity: outputDockWorkspacePadding.includes("pb-[") ? "pass" : "fail",
-        detail: `底部 Dock 状态 ${outputDockWorkspaceState}，工作区避让 padding=${outputDockWorkspaceAvoidancePadding}，避免覆盖状态栏和 Build 页底部内容。`,
+        title: "输出 Dock 无背景遮罩",
+        severity: outputDockWorkspacePadding === "pb-0" && outputDockWorkspaceAvoidancePadding === "0px" ? "pass" : "fail",
+        detail: `底部 Dock 状态 ${outputDockWorkspaceState}，工作区 padding=${outputDockWorkspaceAvoidancePadding}，最小化和展开都不再撑出可见背景遮罩。`,
       },
       {
         id: "output-dock-resizable",
@@ -35606,6 +35620,7 @@ export function BuilderShowcase() {
           data-builder-workspace-output-height={outputDockWorkspaceHeight}
           data-builder-workspace-output-padding={outputDockWorkspaceAvoidancePadding}
           data-builder-workspace-no-output-reserved-band=""
+          data-builder-workspace-no-output-background-shield=""
         >
         {mode === "project" ? (
           <div className="subtle-scrollbar h-full min-h-0 overflow-y-auto p-4" data-builder-project-workspace="">
@@ -37447,9 +37462,17 @@ export function BuilderShowcase() {
           </div>
         ) : mode === "logic" ? (
           <LogicWorkspace>
-            <aside className="subtle-scrollbar min-h-0 space-y-4 overflow-y-auto rounded-[24px] border border-outline-variant bg-surface-container p-4">
-              <PanelTitle icon={Braces} title="逻辑资源" description="像桌面 IDE 一样按资源类型聚焦命令、模块、依赖、集成和状态。" />
-              <div className="rounded-[18px] border border-outline-variant bg-surface-container-low p-2" data-builder-logic-search="">
+            <aside className="subtle-scrollbar min-h-0 space-y-2 overflow-y-auto rounded-[18px] border border-outline-variant bg-surface-container p-2.5">
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-on-surface">逻辑资源</p>
+                  <p className="truncate text-[0.66rem] text-on-surface-variant">侧栏视图 · {logicResourceViewOptions.find((option) => option.value === logicResourceView)?.label ?? "连接"}</p>
+                </div>
+                <Badge variant="outline" className="shrink-0">
+                  {filteredRustLogicOutline.length} 大纲
+                </Badge>
+              </div>
+              <div className="rounded-[14px] border border-outline-variant bg-surface-container-low p-1.5" data-builder-logic-search="">
                 <div className="flex items-center gap-2 rounded-xl bg-surface-container-high px-2">
                   <Search aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
                   <Input
@@ -37457,7 +37480,7 @@ export function BuilderShowcase() {
                     value={logicSearchQuery}
                     onChange={(event) => setLogicSearchQuery(event.target.value)}
                     placeholder="搜索命令、槽函数、状态、模块..."
-                    className="h-9 min-w-0 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:border-transparent"
+                    className="h-8 min-w-0 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:border-transparent"
                     spellCheck={false}
                   />
                   {logicSearchQuery ? (
@@ -37470,13 +37493,73 @@ export function BuilderShowcase() {
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-2 flex flex-wrap gap-1.5 text-[0.66rem] text-on-surface-variant">
+                <div className="mt-1.5 flex flex-wrap gap-1 text-[0.62rem] text-on-surface-variant">
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredRustCommands.length}/{activeProject.rustCommands.length} 命令</span>
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredLogicSignalSlotRows.length}/{logicSignalSlotRows.length} 信号槽</span>
                   <span className="rounded-full bg-surface-container-high px-2 py-1">{filteredRustLogicOutline.length}/{rustLogicOutline.length} 大纲</span>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-1 rounded-[18px] border border-outline-variant bg-surface-container-low p-1" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
+              <div
+                className="rounded-[14px] border border-outline-variant bg-surface-container-low p-1.5 text-xs"
+                data-builder-rust-outline=""
+                data-builder-rust-outline-sidebar=""
+              >
+                <div className="mb-2 flex min-w-0 items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-on-surface">Rust 大纲</p>
+                    <p className="mt-0.5 truncate text-[0.66rem] text-on-surface-variant">侧栏跳转，不占用代码区</p>
+                  </div>
+                  <Badge variant={missingRustSlotCount > 0 ? "outline" : "secondary"} className="shrink-0">
+                    {missingRustSlotCount > 0 ? `${missingRustSlotCount} 缺槽` : "就绪"}
+                  </Badge>
+                </div>
+                <div className="subtle-scrollbar max-h-52 space-y-1 overflow-y-auto pr-1">
+                  {visibleRustLogicOutline.length > 0 ? (
+                    visibleRustLogicOutline.slice(0, 18).map((entry) => (
+                      <button
+                        key={`sidebar-outline-${entry.id}`}
+                        type="button"
+                        className={cn(
+                          "focus-ring grid w-full min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-2 rounded-xl border px-2 py-1.5 text-left transition",
+                          entry.active
+                            ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
+                            : "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                        )}
+                        data-builder-rust-outline-entry={entry.kind}
+                        data-builder-rust-outline-entry-kind={rustOutlineKindLabel(entry.kind)}
+                        onClick={() => openRustLogicOutlineEntry(entry)}
+                      >
+                        <span className="flex size-7 items-center justify-center rounded-xl bg-surface-container-lowest font-mono text-[0.66rem] text-primary">
+                          {entry.line ?? "--"}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-mono text-[0.72rem] text-on-surface">{entry.label}</span>
+                          <span className="mt-0.5 block truncate text-[0.64rem] text-on-surface-variant">
+                            {rustOutlineKindLabel(entry.kind)} · {entry.detail}
+                          </span>
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-high px-3 py-3 leading-5 text-on-surface-variant">
+                      {logicSearchNeedle ? "没有匹配当前搜索的大纲项。" : "创建命令或插入草稿后会生成可跳转大纲。"}
+                    </div>
+                  )}
+                </div>
+                {missingRustSlotCount > 0 ? (
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    className="mt-2 h-7 w-full text-[0.68rem]"
+                    data-builder-rust-create-missing-slots=""
+                    onClick={appendMissingRustSlots}
+                  >
+                    <Wand2 aria-hidden className="size-4" />
+                    补齐缺失槽
+                  </Button>
+                ) : null}
+              </div>
+              <div className="subtle-scrollbar flex gap-1 overflow-x-auto rounded-[14px] border border-outline-variant bg-surface-container-low p-1" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
                 {logicResourceViewOptions.map((option) => (
                   <button
                     key={option.value}
@@ -37484,7 +37567,7 @@ export function BuilderShowcase() {
                     role="radio"
                     aria-checked={logicResourceView === option.value}
                     className={cn(
-                      "focus-ring h-8 rounded-xl px-2 text-[0.68rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
+                      "focus-ring h-7 shrink-0 rounded-xl px-2 text-[0.66rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
                       logicResourceView === option.value && "bg-secondary-container text-secondary-container-foreground shadow-m3-1",
                     )}
                     onClick={() => setLogicResourceView(option.value)}
@@ -37765,8 +37848,10 @@ export function BuilderShowcase() {
               </div>
             </aside>
             <section
-              className="subtle-scrollbar flex min-h-0 flex-col overflow-y-auto rounded-[24px] border border-outline-variant bg-surface-container-low p-3 [&>*]:order-3"
+              className="flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-outline-variant bg-surface-container-low p-2"
               data-builder-logic-main-panel="code-primary"
+              data-builder-logic-main-panel-scroll="none"
+              data-builder-logic-main-panel-layout="editor-only"
             >
               <div className="order-1 mb-3 flex items-center justify-between gap-3">
                 <div>
@@ -37780,6 +37865,212 @@ export function BuilderShowcase() {
                   <Badge variant="outline">{activeProject.rustModules.filter((module) => module.enabled).length} 模块</Badge>
                   <Badge variant="outline">{activeProject.cargoDependencies.filter((dependency) => dependency.enabled).length} 依赖</Badge>
                   <Badge variant="outline">{activeProject.backendIntegrations.filter((integration) => integration.enabled).length} 集成</Badge>
+                </div>
+              </div>
+              <div
+                className="order-first z-30 mb-2 flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-1.5 rounded-[18px] border border-outline-variant bg-surface-container-high/95 px-2 py-1 text-xs shadow-m3-1 backdrop-blur"
+                data-builder-rust-editor-primary-toolbar=""
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
+                    <Braces aria-hidden className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate font-medium text-on-surface">logic.rs</span>
+                      <Badge variant={rustSyntaxHighlightVisible ? "secondary" : "outline"} className="shrink-0">
+                        {rustSyntaxHighlightVisible ? "高亮" : "纯文本"}
+                      </Badge>
+                      <Badge variant={rustEditorWordWrap ? "secondary" : "outline"} className="shrink-0">
+                        {rustEditorWordWrap ? "折行" : "不折行"}
+                      </Badge>
+                    </div>
+                    <p className="hidden">
+                      主代码区固定在顶部，格式化、折行和高亮操作不随辅助面板滚动丢失。
+                    </p>
+                  </div>
+                </div>
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-format=""
+                    aria-label="格式化 Rust 源码"
+                    onClick={formatRustLogicSource}
+                  >
+                    <Braces aria-hidden className="size-4" />
+                    格式化
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={activeRustFindMatch ? "secondary" : "ghost"}
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-replace-current=""
+                    aria-label="替换当前 Rust 查找结果"
+                    disabled={!activeRustFindMatch}
+                    onClick={replaceActiveRustFindMatch}
+                  >
+                    <TextCursorInput aria-hidden className="size-4" />
+                    替换当前
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={rustCurrentIdentifier ? "secondary" : "ghost"}
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-rename-symbol-action=""
+                    aria-label="重命名当前 Rust 符号"
+                    disabled={!rustCurrentIdentifier}
+                    onClick={rustRenameQuery.trim() ? renameRustSymbolAtCursor : prepareRustSymbolRename}
+                  >
+                    <TextCursorInput aria-hidden className="size-4" />
+                    重命名
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={rustEditorWordWrap ? "secondary" : "ghost"}
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-word-wrap=""
+                    aria-label="切换 Rust 编辑器折行"
+                    aria-pressed={rustEditorWordWrap}
+                    onClick={toggleRustEditorWordWrap}
+                  >
+                    <ScrollText aria-hidden className="size-4" />
+                    折行
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={rustSyntaxHighlightVisible ? "secondary" : "ghost"}
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-syntax-toggle=""
+                    aria-label="切换 Rust 语法高亮"
+                    aria-pressed={rustSyntaxHighlightVisible}
+                    onClick={() => setRustSyntaxHighlightVisible((visible) => !visible)}
+                  >
+                    <Braces aria-hidden className="size-4" />
+                    高亮
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-7 px-2 text-[0.68rem]"
+                    aria-label="聚焦 Rust 源码顶部"
+                    onClick={() => focusRustLine(1, "Rust 主工具条 · logic.rs")}
+                  >
+                    <CornerDownRight aria-hidden className="size-4" />
+                    源码
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-[0.68rem]"
+                    data-builder-rust-editor-goto-line-action=""
+                    aria-label="跳转到 Rust 行列"
+                    onClick={goToRustLine}
+                  >
+                    <Navigation aria-hidden className="size-4" />
+                    跳转
+                  </Button>
+                </div>
+                <div className="grid w-full min-w-0 gap-1.5 lg:grid-cols-[minmax(10rem,1fr)_minmax(9rem,0.8fr)_minmax(8rem,0.65fr)_minmax(7rem,auto)]">
+                  <div
+                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    data-builder-rust-editor-find=""
+                    data-builder-rust-editor-find-count={rustFindMatches.length}
+                  >
+                    <Search aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                    <Input
+                      ref={rustFindInputRef}
+                      aria-label="查找 Rust 源码"
+                      value={rustFindQuery}
+                      onChange={(event) => {
+                        setRustFindQuery(event.target.value);
+                        setRustFindActiveIndex(0);
+                      }}
+                      onKeyDown={handleRustFindInputKeyDown}
+                      placeholder="查找"
+                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      spellCheck={false}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-1.5 text-[0.66rem]"
+                      data-builder-rust-editor-find-prev=""
+                      disabled={rustFindMatches.length === 0}
+                      onClick={() => moveRustFindMatch(-1)}
+                    >
+                      <MoveUp aria-hidden className="size-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-1.5 text-[0.66rem]"
+                      data-builder-rust-editor-find-next=""
+                      disabled={rustFindMatches.length === 0}
+                      onClick={() => moveRustFindMatch(1)}
+                    >
+                      <MoveDown aria-hidden className="size-3.5" />
+                    </Button>
+                    {activeRustFindMatch ? (
+                      <span className="hidden shrink-0 rounded-full bg-surface-container-low px-1.5 py-0.5 font-mono text-[0.6rem] text-primary xl:inline-flex" data-builder-rust-editor-find-active="">
+                        {clamp(rustFindActiveIndex, 0, Math.max(0, rustFindMatches.length - 1)) + 1}/{rustFindMatches.length}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2">
+                    <TextCursorInput aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                    <Input
+                      aria-label="替换 Rust 源码"
+                      value={rustReplaceQuery}
+                      onChange={(event) => setRustReplaceQuery(event.target.value)}
+                      onKeyDown={handleRustReplaceInputKeyDown}
+                      placeholder="替换"
+                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      data-builder-rust-editor-replace=""
+                      spellCheck={false}
+                    />
+                  </div>
+                  <div
+                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    data-builder-rust-editor-rename-symbol=""
+                    data-builder-rust-editor-rename-count={rustCurrentIdentifierOccurrences.length}
+                  >
+                    <TextCursorInput aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                    <Input
+                      ref={rustRenameInputRef}
+                      aria-label="重命名 Rust 当前符号"
+                      value={rustRenameQuery}
+                      onChange={(event) => setRustRenameQuery(event.target.value)}
+                      onFocus={() => {
+                        if (!rustRenameQuery && rustCurrentIdentifier) {
+                          setRustRenameQuery(rustCurrentIdentifier.name);
+                          window.requestAnimationFrame(() => rustRenameInputRef.current?.select());
+                        }
+                      }}
+                      onKeyDown={handleRustRenameInputKeyDown}
+                      placeholder={rustCurrentIdentifier ? rustCurrentIdentifier.name : "符号"}
+                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      data-builder-rust-editor-rename-input=""
+                      spellCheck={false}
+                    />
+                  </div>
+                  <div
+                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    data-builder-rust-editor-goto-line=""
+                  >
+                    <Navigation aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                    <Input
+                      ref={rustGoToLineInputRef}
+                      aria-label="跳转 Rust 行列"
+                      value={rustGoToLineQuery}
+                      onChange={(event) => setRustGoToLineQuery(event.target.value)}
+                      onKeyDown={handleRustGoToLineInputKeyDown}
+                      placeholder="行:列"
+                      className="h-7 w-16 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      spellCheck={false}
+                    />
+                  </div>
                 </div>
               </div>
               <section className="mb-4 grid gap-3 2xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
@@ -38992,7 +39283,6 @@ export function BuilderShowcase() {
                 <div className="flex min-w-0 items-center gap-2 rounded-xl bg-surface-container-highest px-2">
                   <Search aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
                   <Input
-                    ref={rustFindInputRef}
                     aria-label="查找 Rust 源码"
                     value={rustFindQuery}
                     onChange={(event) => {
@@ -39202,7 +39492,6 @@ export function BuilderShowcase() {
                   >
                     <TextCursorInput aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <Input
-                      ref={rustRenameInputRef}
                       aria-label="重命名 Rust 当前符号"
                       value={rustRenameQuery}
                       onChange={(event) => setRustRenameQuery(event.target.value)}
@@ -39235,7 +39524,6 @@ export function BuilderShowcase() {
                   >
                     <Navigation aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <Input
-                      ref={rustGoToLineInputRef}
                       aria-label="跳转 Rust 行列"
                       value={rustGoToLineQuery}
                       onChange={(event) => setRustGoToLineQuery(event.target.value)}
@@ -39378,20 +39666,7 @@ export function BuilderShowcase() {
                     className="h-8 px-2 text-xs"
                     data-builder-rust-editor-word-wrap=""
                     aria-pressed={rustEditorWordWrap}
-                    onClick={() => {
-                      setRustEditorWordWrap((current) => {
-                        const next = !current;
-                        if (next) {
-                          setRustEditorScrollLeft(0);
-                          window.requestAnimationFrame(() => {
-                            if (rustLogicRef.current) {
-                              rustLogicRef.current.scrollLeft = 0;
-                            }
-                          });
-                        }
-                        return next;
-                      });
-                    }}
+                    onClick={toggleRustEditorWordWrap}
                   >
                     <ScrollText aria-hidden className="size-4" />
                     折行
@@ -40164,13 +40439,14 @@ export function BuilderShowcase() {
                 </div>
               </section>
               <div
-                className="order-2 mb-3 grid min-h-[640px] overflow-hidden rounded-xl border border-outline-variant bg-surface-container-highest shadow-inner"
+                className="order-first z-0 mb-2 grid min-h-0 flex-1 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-highest shadow-inner"
                 data-builder-rust-editor=""
                 data-builder-rust-code-primary=""
+                data-builder-rust-editor-scroll-policy="self-contained"
                 data-builder-rust-editor-word-wrap-state={rustEditorWordWrap ? "on" : "off"}
                 data-builder-rust-editor-syntax-state={rustSyntaxHighlightVisible ? "highlighted" : "plain"}
               >
-                <div className="grid min-h-[620px] grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]">
+                <div className="grid h-full min-h-0 grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]">
                   <div className="relative overflow-hidden border-r border-outline-variant bg-surface-container-high" data-builder-rust-diagnostic-gutter="">
                     <div className="py-3 transition-transform duration-75" style={{ transform: `translateY(-${rustEditorScrollTop}px)` }}>
                       {rustEditorLines.map((_, index) => {
@@ -40308,7 +40584,7 @@ export function BuilderShowcase() {
                         setRustEditorScrollLeft(rustEditorWordWrap ? 0 : event.currentTarget.scrollLeft);
                       }}
                       className={cn(
-                        "relative z-10 h-[620px] min-h-[620px] resize-none overflow-auto rounded-none border-0 bg-transparent px-4 py-3 font-mono text-xs leading-5 caret-on-surface shadow-none selection:bg-primary/20 hover:bg-transparent focus-visible:border-transparent",
+                        "relative z-10 h-full min-h-0 resize-none overflow-auto rounded-none border-0 bg-transparent px-4 py-3 font-mono text-xs leading-5 caret-on-surface shadow-none selection:bg-primary/20 hover:bg-transparent focus-visible:border-transparent",
                         rustSyntaxHighlightVisible ? "text-transparent" : "text-on-surface",
                         rustEditorWordWrap ? "whitespace-pre-wrap break-words overflow-x-hidden" : "whitespace-pre",
                       )}
@@ -40465,10 +40741,10 @@ export function BuilderShowcase() {
                 </div>
               </div>
               <div
-                className="mt-2 grid gap-2 rounded-[18px] border border-outline-variant bg-surface-container-high px-3 py-2 text-[0.68rem] text-on-surface-variant md:grid-cols-[minmax(0,1fr)_auto]"
+                className="order-first flex h-9 shrink-0 items-center gap-2 overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.68rem] text-on-surface-variant"
                 data-builder-rust-editor-status=""
               >
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <div className="subtle-scrollbar flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto">
                   <span className="rounded-full bg-surface-container-highest px-2 py-1 font-mono">
                     Ln {rustEditorSelection.line}, Col {rustEditorSelection.column}
                   </span>
@@ -40518,7 +40794,7 @@ export function BuilderShowcase() {
                     替换：{rustReplaceQuery ? "已填写" : "空"}
                   </span>
                 </div>
-                <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 md:justify-end">
+                <div className="hidden min-w-0 items-center justify-start gap-2 md:justify-end">
                   <Badge variant={buildDiagnostics.length > 0 ? "outline" : "secondary"}>{buildDiagnostics.length} 诊断</Badge>
                   <Badge variant={missingRustSlotCount > 0 ? "outline" : "secondary"}>{missingRustSlotCount} 槽待生成</Badge>
                   <Badge variant={activeRustCompletion ? "secondary" : "outline"}>

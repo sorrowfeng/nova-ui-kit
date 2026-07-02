@@ -3660,7 +3660,8 @@ async function runOutputDockLayoutChecks(send, verified) {
           body.getAttribute("data-builder-output-dock-panel") === "surface" &&
           dock.getAttribute("data-builder-output-dock-content-clip") === "scroll-panels" &&
           Boolean(workspace) &&
-          workspacePaddingBottom >= rect.height + 32 &&
+          workspace.hasAttribute("data-builder-workspace-no-output-background-shield") &&
+          workspacePaddingBottom <= 24 &&
           statusBarClearance >= 0 &&
           shellTransparent &&
           !bodyTransparent &&
@@ -3672,10 +3673,10 @@ async function runOutputDockLayoutChecks(send, verified) {
           rect.left >= 0 &&
           rect.right <= window.innerWidth + 1 &&
           Boolean(summary || dock.getAttribute("data-builder-output-dock-layout") === "minimized"),
-        detail: \`position=\${style.position}, contain=\${style.contain}, shellBg=\${style.backgroundColor}, bodyBg=\${bodyStyle.backgroundColor}, workspacePb=\${workspacePaddingBottom}, bottomGap=\${bottomGap}, statusClearance=\${statusBarClearance}, bodyRadius=\${bodyRadius}, contentRadius=\${contentRadius}, rect=\${Math.round(rect.left)},\${Math.round(rect.top)},\${Math.round(rect.right)},\${Math.round(rect.bottom)}\`
+        detail: \`position=\${style.position}, contain=\${style.contain}, shellBg=\${style.backgroundColor}, bodyBg=\${bodyStyle.backgroundColor}, workspacePb=\${workspacePaddingBottom}, noShield=\${workspace?.hasAttribute("data-builder-workspace-no-output-background-shield")}, bottomGap=\${bottomGap}, statusClearance=\${statusBarClearance}, bodyRadius=\${bodyRadius}, contentRadius=\${contentRadius}, rect=\${Math.round(rect.left)},\${Math.round(rect.top)},\${Math.round(rect.right)},\${Math.round(rect.bottom)}\`
       };
     })()`,
-    "rounded floating output dock",
+    "rounded floating output dock without workspace background shield",
   );
   verified.outputDockLayout = true;
   await assertRuntimeCheck(
@@ -3762,7 +3763,8 @@ async function runOutputDockLayoutChecks(send, verified) {
           dock.hasAttribute("data-builder-output-dock-no-background-shield") &&
           dock.getAttribute("data-builder-output-dock-content-clip") === "scroll-panels" &&
           Boolean(workspace) &&
-          workspacePaddingBottom >= dockRect.height + 32 &&
+          workspace.hasAttribute("data-builder-workspace-no-output-background-shield") &&
+          workspacePaddingBottom <= 24 &&
           bottomGap >= 32 &&
           bottomGap <= 64 &&
           statusBarClearance >= 0 &&
@@ -3772,7 +3774,7 @@ async function runOutputDockLayoutChecks(send, verified) {
           summaryPanelOk &&
           internalRectsContained &&
           clippedControls.length === 0,
-        detail: \`layout=\${dock.getAttribute("data-builder-output-dock-layout")}, tabs=\${tabs.length}/\${activeTabs.length}, bottomGap=\${bottomGap}, statusClearance=\${statusBarClearance}, workspacePb=\${workspacePaddingBottom}, content=\${Math.round(contentRect.width)}x\${Math.round(contentRect.height)}, summary=\${Math.round(summaryRect.width)}x\${Math.round(summaryRect.height)}, clipped=\${clippedControls.join("|") || "none"}\`
+        detail: \`layout=\${dock.getAttribute("data-builder-output-dock-layout")}, tabs=\${tabs.length}/\${activeTabs.length}, bottomGap=\${bottomGap}, statusClearance=\${statusBarClearance}, workspacePb=\${workspacePaddingBottom}, noShield=\${workspace?.hasAttribute("data-builder-workspace-no-output-background-shield")}, content=\${Math.round(contentRect.width)}x\${Math.round(contentRect.height)}, summary=\${Math.round(summaryRect.width)}x\${Math.round(summaryRect.height)}, clipped=\${clippedControls.join("|") || "none"}\`
       };
     })()`,
     "expanded output dock content and controls stay inside viewport",

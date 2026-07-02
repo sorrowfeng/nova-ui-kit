@@ -494,6 +494,8 @@ mustContain(builder, "activeBottomDockHeight", "Builder routes output dock heigh
 mustContain(builder, "data-builder-workspace-output-height", "Workspace exposes current output dock height");
 mustContain(builder, "outputDockWorkspaceAvoidancePadding", "Workspace derives bottom padding from the floating output dock");
 mustContain(builder, "data-builder-workspace-output-padding", "Workspace exposes output dock avoidance padding");
+mustContain(builder, 'data-builder-workspace-no-output-background-shield=""', "Workspace declares that the output dock no longer paints a background shield");
+mustContain(builder, 'const outputDockWorkspacePadding = "pb-0";', "Workspace removes the visible output dock padding band in minimized and expanded states");
 mustContain(builder, "data-builder-build-toolbar-status-actions", "Build toolbar keeps artifact badges and actions in a bounded action strip");
 mustContain(builder, 'id: "output-dock-resizable"', "Editor experience audit checks output dock resizing");
 mustContain(builder, 'id: "output-dock-viewport-fit"', "Editor experience audit checks output dock viewport fitting");
@@ -718,6 +720,8 @@ mustContain(builder, "data-builder-rust-bracket-match-state", "Rust editor statu
 mustContain(builder, 'id: "rust-editor-bracket-match"', "Rust quick fixes expose jump-to-matching-bracket");
 mustContain(builder, 'Ctrl+M 跳转括号', "Rust editor status documents jump-to-matching-bracket shortcut");
 mustContain(builder, "data-builder-rust-editor", "Rust editor has a stable editor surface");
+mustContain(builder, "order-first z-0 mb-2 grid min-h-0 flex-1 overflow-hidden", "Rust editor fills the primary logic page region");
+mustContain(builder, 'data-builder-rust-editor-scroll-policy="self-contained"', "Rust editor uses its own scroll surface instead of moving with the whole logic page");
 mustContain(builder, "data-builder-rust-completions", "Rust editor exposes completion UI");
 mustContain(builder, 'kind: "symbol"', "Rust editor completion includes symbols parsed from the current source");
 mustContain(builder, "rustCompletionSymbolEntries", "Rust editor extracts source symbols for completion candidates");
@@ -1471,8 +1475,16 @@ mustContain(designWorkspace, 'data-builder-readable-workbench="qt-creator"', "De
 mustContain(designWorkspace, "data-builder-workspace-layout=\"wide-left-dock\"", "Design workspace gives the collapsible left dock enough desktop width");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-layout="code-primary"', "Logic workspace declares the Rust code-primary layout contract");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-preset="vscode-code-primary"', "Logic workspace uses a VSCode-style code-primary preset");
-mustContain(logicWorkspace, 'data-builder-logic-workspace-side-panels="left-and-bottom"', "Logic workspace moves auxiliary panels out of the main editor column");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-side-panels="right-sidebar"', "Logic workspace moves auxiliary panels to a right secondary sidebar");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-code-share="large-editor"', "Logic workspace reserves the dominant desktop region for code");
+mustContain(logicWorkspace, "grid-cols-[minmax(0,1fr)_minmax(18rem,20rem)]", "Logic workspace uses a code-dominant desktop grid with a bounded secondary sidebar");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-scroll-model="contained-panels"', "Logic workspace keeps scrolling inside contained panels");
+mustContain(logicWorkspace, 'data-builder-logic-workspace-page-scroll="none"', "Logic workspace declares that the page itself does not scroll");
+mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar=""', "Logic workspace keeps resource and debug panels in a secondary sidebar");
 mustContain(logicWorkspace, 'data-builder-logic-code-editor-primary=""', "Logic workspace gives the code editor the primary region");
+mustContain(builder, 'data-builder-rust-editor-primary-toolbar=""', "Rust editor exposes a stable primary toolbar above the code area");
+mustContain(builder, 'data-builder-logic-main-panel-layout="editor-only"', "Logic main panel hides non-editor documentation blocks from the primary code surface");
+mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic resource sidebar defaults to a focused dock view instead of showing every resource group");
 mustContain(buildWorkspace, 'data-builder-build-workspace-layout="compact-ide"', "Build workspace declares the compact IDE layout contract");
 mustContain(builder, 'data-builder-project-workspace-layout="split-ide"', "Project workspace uses a split IDE layout instead of a long flat page");
 mustContain(builder, 'data-builder-project-secondary-details', "Project secondary overview is collapsed behind details");
