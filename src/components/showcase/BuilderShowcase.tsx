@@ -37943,20 +37943,21 @@ export function BuilderShowcase() {
                 </div>
               </div>
               <div
-                className="order-first z-30 mb-2 flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-1.5 rounded-[18px] border border-outline-variant bg-surface-container-high/95 px-2 py-1 text-xs shadow-m3-1 backdrop-blur"
+                className="order-first z-30 mb-1.5 flex min-w-0 shrink-0 flex-wrap items-center gap-1.5 rounded-[14px] border border-outline-variant bg-surface-container-high/95 px-1.5 py-1 text-xs backdrop-blur"
                 data-builder-rust-editor-primary-toolbar=""
+                data-builder-rust-editor-primary-toolbar-density="single-row"
               >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
-                    <Braces aria-hidden className="size-4" />
+                <div className="flex min-w-0 shrink-0 items-center gap-1.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                    <Braces aria-hidden className="size-3.5" />
                   </span>
                   <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-2">
+                    <div className="flex min-w-0 items-center gap-1.5">
                       <span className="truncate font-medium text-on-surface">logic.rs</span>
-                      <Badge variant={rustSyntaxHighlightVisible ? "secondary" : "outline"} className="shrink-0">
+                      <Badge variant={rustSyntaxHighlightVisible ? "secondary" : "outline"} className="h-5 shrink-0 px-1.5 text-[0.62rem]">
                         {rustSyntaxHighlightVisible ? "高亮" : "纯文本"}
                       </Badge>
-                      <Badge variant={rustEditorWordWrap ? "secondary" : "outline"} className="shrink-0">
+                      <Badge variant={rustEditorWordWrap ? "secondary" : "outline"} className="h-5 shrink-0 px-1.5 text-[0.62rem]">
                         {rustEditorWordWrap ? "折行" : "不折行"}
                       </Badge>
                     </div>
@@ -37965,91 +37966,91 @@ export function BuilderShowcase() {
                     </p>
                   </div>
                 </div>
-                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <div className="flex shrink-0 items-center gap-1" data-builder-rust-editor-command-strip="" data-builder-rust-editor-command-strip-density="icon-only">
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-format=""
                     aria-label="格式化 Rust 源码"
+                    title="格式化 Rust 源码"
                     onClick={formatRustLogicSource}
                   >
-                    <Braces aria-hidden className="size-4" />
-                    格式化
+                    <Braces aria-hidden className="size-3.5" />
+                    <span className="sr-only">格式化</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant={activeRustFindMatch ? "secondary" : "ghost"}
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-replace-current=""
                     aria-label="替换当前 Rust 查找结果"
+                    title="替换当前 Rust 查找结果"
                     disabled={!activeRustFindMatch}
                     onClick={replaceActiveRustFindMatch}
                   >
-                    <TextCursorInput aria-hidden className="size-4" />
-                    替换当前
+                    <TextCursorInput aria-hidden className="size-3.5" />
+                    <span className="sr-only">替换当前</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant={rustCurrentIdentifier ? "secondary" : "ghost"}
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-rename-symbol-action=""
                     aria-label="重命名当前 Rust 符号"
+                    title="重命名当前 Rust 符号"
                     disabled={!rustCurrentIdentifier}
                     onClick={rustRenameQuery.trim() ? renameRustSymbolAtCursor : prepareRustSymbolRename}
                   >
-                    <TextCursorInput aria-hidden className="size-4" />
-                    重命名
+                    <TextCursorInput aria-hidden className="size-3.5" />
+                    <span className="sr-only">重命名</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant={rustEditorWordWrap ? "secondary" : "ghost"}
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-word-wrap=""
                     aria-label="切换 Rust 编辑器折行"
+                    title="切换 Rust 编辑器折行"
                     aria-pressed={rustEditorWordWrap}
                     onClick={toggleRustEditorWordWrap}
                   >
-                    <ScrollText aria-hidden className="size-4" />
-                    折行
+                    <ScrollText aria-hidden className="size-3.5" />
+                    <span className="sr-only">折行</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant={rustSyntaxHighlightVisible ? "secondary" : "ghost"}
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-syntax-toggle=""
                     aria-label="切换 Rust 语法高亮"
+                    title="切换 Rust 语法高亮"
                     aria-pressed={rustSyntaxHighlightVisible}
                     onClick={() => setRustSyntaxHighlightVisible((visible) => !visible)}
                   >
-                    <Braces aria-hidden className="size-4" />
-                    高亮
+                    <Braces aria-hidden className="size-3.5" />
+                    <span className="sr-only">高亮</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="secondary"
-                    className="h-7 px-2 text-[0.68rem]"
                     aria-label="聚焦 Rust 源码顶部"
+                    title="聚焦 Rust 源码顶部"
                     onClick={() => focusRustLine(1, "Rust 主工具条 · logic.rs")}
                   >
-                    <CornerDownRight aria-hidden className="size-4" />
-                    源码
+                    <CornerDownRight aria-hidden className="size-3.5" />
+                    <span className="sr-only">源码</span>
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-7 px-2 text-[0.68rem]"
                     data-builder-rust-editor-goto-line-action=""
                     aria-label="跳转到 Rust 行列"
+                    title="跳转到 Rust 行列"
                     onClick={goToRustLine}
                   >
-                    <Navigation aria-hidden className="size-4" />
-                    跳转
+                    <Navigation aria-hidden className="size-3.5" />
+                    <span className="sr-only">跳转</span>
                   </Button>
                 </div>
-                <div className="grid w-full min-w-0 gap-1.5 lg:grid-cols-[minmax(10rem,1fr)_minmax(9rem,0.8fr)_minmax(8rem,0.65fr)_minmax(7rem,auto)]">
+                <div className="grid min-w-0 flex-1 basis-[30rem] gap-1 lg:grid-cols-[minmax(8rem,1.05fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_minmax(5rem,0.55fr)] xl:basis-auto" data-builder-rust-editor-search-lane="" data-builder-rust-editor-search-lane-density="inline">
                   <div
-                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
                     data-builder-rust-editor-find=""
                     data-builder-rust-editor-find-count={rustFindMatches.length}
                   >
@@ -38070,7 +38071,7 @@ export function BuilderShowcase() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-1.5 text-[0.66rem]"
+                      className="h-7 px-1 text-[0.66rem]"
                       data-builder-rust-editor-find-prev=""
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(-1)}
@@ -38080,7 +38081,7 @@ export function BuilderShowcase() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-1.5 text-[0.66rem]"
+                      className="h-7 px-1 text-[0.66rem]"
                       data-builder-rust-editor-find-next=""
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(1)}
@@ -38093,7 +38094,7 @@ export function BuilderShowcase() {
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2">
+                  <div className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5">
                     <TextCursorInput aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <Input
                       aria-label="替换 Rust 源码"
@@ -38107,7 +38108,7 @@ export function BuilderShowcase() {
                     />
                   </div>
                   <div
-                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
                     data-builder-rust-editor-rename-symbol=""
                     data-builder-rust-editor-rename-count={rustCurrentIdentifierOccurrences.length}
                   >
@@ -38131,7 +38132,7 @@ export function BuilderShowcase() {
                     />
                   </div>
                   <div
-                    className="flex min-w-0 items-center gap-1.5 rounded-xl bg-surface-container-highest px-2"
+                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
                     data-builder-rust-editor-goto-line=""
                   >
                     <Navigation aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
