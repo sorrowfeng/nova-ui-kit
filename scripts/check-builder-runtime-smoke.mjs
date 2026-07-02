@@ -4249,6 +4249,30 @@ async function runShellCommandPlacementChecks(send, verified) {
   await assertRuntimeCheck(
     send,
     `(() => {
+      const rail = document.querySelector("[data-builder-workflow-rail]");
+      const path = document.querySelector("[data-builder-workflow-path]");
+      const feedbackStrip = document.querySelector("[data-builder-feedback-strip]");
+      const actions = document.querySelector("[data-builder-workflow-feedback-actions]");
+      const actionButtons = actions ? Array.from(actions.querySelectorAll("button")) : [];
+      const railRect = rail?.getBoundingClientRect();
+      const pathRect = path?.getBoundingClientRect();
+      return {
+        passed:
+          rail?.getAttribute("data-builder-workflow-rail-density") === "single-row" &&
+          rail?.getAttribute("data-builder-feedback-strip-default") === "hidden" &&
+          Boolean(path && pathRect && pathRect.height <= 32) &&
+          Boolean(actions && actionButtons.length >= 4) &&
+          !feedbackStrip &&
+          Boolean(railRect && railRect.height <= 56),
+        detail: \`density=\${rail?.getAttribute("data-builder-workflow-rail-density") || "missing"}, rail=\${Math.round(railRect?.height || 0)}px, path=\${Math.round(pathRect?.height || 0)}px, actions=\${actionButtons.length}, feedback=\${Boolean(feedbackStrip)}\`
+      };
+    })()`,
+    "build workflow rail defaults to a compact single row",
+  );
+  verified.workflowRailCompactRuntime = true;
+  await assertRuntimeCheck(
+    send,
+    `(() => {
       const workspace = document.querySelector("[data-builder-build-workspace]");
       const sidebar = document.querySelector("[data-builder-build-sidebar]");
       const toolbar = document.querySelector("[data-builder-build-sidebar-toolbar]");

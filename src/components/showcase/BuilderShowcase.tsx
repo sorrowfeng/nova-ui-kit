@@ -32277,7 +32277,7 @@ export function BuilderShowcase() {
         : feedbackSummaryTone === "queued"
           ? "排队中"
           : "就绪";
-  const feedbackStripVisible = mode !== "design" || feedbackPanelOpen;
+  const feedbackStripVisible = feedbackPanelOpen;
   const railTaskStateLabel = runningProjectTask
     ? "运行中"
     : queuedProjectTaskCount > 0
@@ -35359,9 +35359,15 @@ export function BuilderShowcase() {
         </div>
 
         {mode === "build" ? (
-        <div className="border-b border-outline-variant bg-surface-container-lowest px-2 py-1" data-builder-workflow-rail="" data-builder-workflow-rail-layout="compact-status">
-          <div className="mx-auto flex w-full max-w-full flex-col gap-1.5">
-            <div className="flex min-w-0 max-w-full items-center gap-2 rounded-xl border border-outline-variant bg-surface-container px-2 py-1 text-xs shadow-m3-1">
+        <div
+          className="border-b border-outline-variant bg-surface-container-lowest px-2 py-1"
+          data-builder-workflow-rail=""
+          data-builder-workflow-rail-layout="compact-status"
+          data-builder-workflow-rail-density="single-row"
+          data-builder-feedback-strip-default="hidden"
+        >
+          <div className="mx-auto flex w-full max-w-full flex-col gap-1">
+            <div className="flex h-9 min-w-0 max-w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container px-2 text-xs">
               <button
                 type="button"
                 className="focus-ring flex min-w-0 flex-[0.7] items-center gap-2 rounded-lg px-1.5 py-1 text-left transition hover:bg-surface-container-high"
@@ -35402,14 +35408,14 @@ export function BuilderShowcase() {
                       aria-current={suggested ? "step" : undefined}
                       aria-label={`${step.title}: ${workflowStepStatusLabel(status)}`}
                       className={cn(
-                        "focus-ring group inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-1.5 text-left text-[0.64rem] transition",
+                        "focus-ring group inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-1.5 text-left text-[0.62rem] transition",
                         workflowStepStatusClassName(status, suggested),
                       )}
                       onClick={() => runEditorWorkflowStep(step)}
                       title={`${index + 1}. ${step.title} · ${workflowStepStatusLabel(status)}`}
                     >
                       <span className="font-mono text-[0.58rem] text-on-surface-variant">{index + 1}</span>
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80 text-current shadow-m3-1">
+                      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest/80 text-current">
                         <StepIcon aria-hidden className="size-3" />
                       </span>
                       <span className="max-w-16 truncate font-medium text-on-surface">{step.title}</span>
@@ -35427,16 +35433,49 @@ export function BuilderShowcase() {
                 <Progress className="h-1.5" value={workflowProgressValue} />
                 <span className="w-7 shrink-0 text-right font-mono text-[0.58rem] text-on-surface-variant">{workflowProgressValue}%</span>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1" data-builder-workflow-feedback-actions="inline-icons">
                 <Button
                   size="icon-sm"
-                  variant="ghost"
+                  variant={bottomDockTab === "issues" ? "secondary" : "ghost"}
+                  className="size-7 rounded-lg"
+                  data-builder-workflow-open-issues=""
+                  aria-label={`打开问题，当前 ${feedbackIssueCount} 个`}
+                  title="问题"
+                  onClick={() => openFeedbackPanel("issues")}
+                >
+                  <AlertTriangle aria-hidden className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant={bottomDockTab === "tasks" ? "secondary" : "ghost"}
                   className="size-7 rounded-lg"
                   aria-label="打开工作流任务队列"
                   title="打开任务队列"
                   onClick={() => openRelevantTaskDock()}
                 >
                   <ClipboardCopy aria-hidden className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant={bottomDockTab === "output" ? "secondary" : "ghost"}
+                  className="size-7 rounded-lg"
+                  data-builder-workflow-open-output=""
+                  aria-label="打开输出"
+                  title="输出"
+                  onClick={() => openFeedbackPanel("output")}
+                >
+                  <Download aria-hidden className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant={bottomDockTab === "logs" ? "secondary" : "ghost"}
+                  className="size-7 rounded-lg"
+                  data-builder-workflow-open-logs=""
+                  aria-label="打开日志"
+                  title="日志"
+                  onClick={() => openFeedbackPanel("logs")}
+                >
+                  <FileJson aria-hidden className="size-4" />
                 </Button>
               </div>
             </div>
@@ -35522,6 +35561,7 @@ export function BuilderShowcase() {
                 <div
                   className="flex min-w-0 flex-wrap items-center gap-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container px-3 py-2 text-xs shadow-m3-1"
                   data-builder-feedback-strip=""
+                  data-builder-feedback-strip-mode="expanded-only"
                 >
                   <Badge
                     variant={

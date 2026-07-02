@@ -1479,6 +1479,12 @@ mustContain(builder, 'data-builder-compact-topbar-policy="status-locator-only"',
 mustContain(builder, 'id: "topbar-command-deduplication"', "Editor experience audit checks duplicated topbar command removal");
 mustContain(builder, 'id: "compact-locator"', "Editor experience audit checks compact locator behavior");
 mustContain(builder, 'id: "output-dock-minimized-peek"', "Editor experience audit checks minimized output dock peek feedback");
+mustContain(builder, 'data-builder-workflow-rail-density="single-row"', "Build workflow rail defaults to one compact IDE status row");
+mustContain(builder, 'data-builder-feedback-strip-default="hidden"', "Build feedback strip is not a default second row above the workspace");
+mustContain(builder, "const feedbackStripVisible = feedbackPanelOpen", "Build feedback strip only appears when explicitly expanded");
+mustContain(builder, 'data-builder-workflow-feedback-actions="inline-icons"', "Build workflow rail keeps issue/task/output/log access as inline icons");
+mustContain(builder, 'data-builder-feedback-strip-mode="expanded-only"', "Build feedback strip declares expanded-only behavior");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.workflowRailCompactRuntime = true", "Browser smoke verifies the compact build workflow rail");
 mustContain(designWorkspace, 'data-builder-readable-workbench="qt-creator"', "Design workspace declares the Qt Creator readable layout contract");
 mustContain(designWorkspace, "data-builder-workspace-layout=\"wide-left-dock\"", "Design workspace gives the collapsible left dock enough desktop width");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-layout="code-primary"', "Logic workspace declares the Rust code-primary layout contract");
