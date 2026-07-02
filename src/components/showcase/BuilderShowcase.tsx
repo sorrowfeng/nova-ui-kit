@@ -47848,7 +47848,8 @@ export function BuilderShowcase() {
                           data-builder-palette-type={definition.type}
                           data-builder-palette-category={category}
                           data-builder-palette-row-layout="compact"
-                          className="group grid w-full grid-cols-[minmax(0,1fr)_2rem] overflow-hidden rounded-lg border border-transparent bg-transparent transition-colors hover:bg-surface-container-high"
+                          data-builder-palette-row-density="single-line"
+                          className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high"
                         >
                           <button
                             type="button"
@@ -47860,18 +47861,17 @@ export function BuilderShowcase() {
                               }
                               addComponent(definition.type);
                             }}
-                            className="focus-ring m3-state-layer grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 py-1.5 text-left"
-                            title={definition.description}
+                            className="focus-ring m3-state-layer grid h-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 text-left"
+                            title={`${definition.description} · ${componentPaletteCategoryLabel(category)}`}
+                            aria-label={`添加 ${definition.title}，${componentPaletteCategoryLabel(category)}`}
                           >
-                            <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                            <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
                               <Icon aria-hidden className="size-3.5" />
                             </span>
                             <span className="min-w-0">
-                              <span className="flex min-w-0 items-center gap-2">
-                                <span className="truncate text-xs font-semibold">{definition.title}</span>
-                                <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 text-[0.6rem] font-medium text-on-surface-variant">
-                                  {componentPaletteCategoryLabel(category)}
-                                </span>
+                              <span className="truncate text-xs font-semibold leading-4">{definition.title}</span>
+                              <span className="sr-only" data-builder-palette-category-label="metadata">
+                                {componentPaletteCategoryLabel(category)}
                               </span>
                             </span>
                           </button>
@@ -47883,7 +47883,7 @@ export function BuilderShowcase() {
                             title={componentPaletteFavoriteTypes.includes(definition.type) ? "取消收藏" : "收藏到常用控件"}
                             onClick={() => toggleComponentPaletteFavorite(definition.type)}
                             className={cn(
-                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant transition hover:bg-surface-container-highest hover:text-primary",
+                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 transition hover:bg-surface-container-highest hover:text-primary focus-visible:text-primary",
                               componentPaletteFavoriteTypes.includes(definition.type) && "text-primary",
                             )}
                           >

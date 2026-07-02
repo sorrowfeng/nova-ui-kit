@@ -1726,6 +1726,8 @@ mustContain(builder, 'data-builder-component-kits-density="single-line"', "Compo
 mustContain(builder, 'data-builder-component-collections-mode="summary-strip"', "Component palette secondary collections default to a compact summary strip");
 mustContain(builder, "data-builder-component-collections-detail-list", "Component palette favorites and recents remain available without occupying the toolbox first screen");
 mustContain(builder, 'data-builder-palette-row-layout="compact"', "Component palette rows use compact IDE-style density");
+mustContain(builder, 'data-builder-palette-row-density="single-line"', "Component palette rows stay single-line without per-row metadata badges");
+mustContain(builder, 'data-builder-palette-category-label="metadata"', "Component palette category labels stay searchable and accessible without visible row chrome");
 mustContain(builder, "data-builder-component-kits", "Component palette exposes reusable component kits");
 mustContain(builder, "data-builder-component-kit", "Component palette renders kit rows");
 mustContain(builder, "data-builder-component-kit-type", "Component palette kits show included controls");
