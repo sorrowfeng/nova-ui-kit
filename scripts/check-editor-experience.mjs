@@ -1332,6 +1332,7 @@ mustContain(tauriLib, 'read["editorState"]["selectedBuilderIssueId"]', "Rust tes
 mustContain(tauriLib, "read_editor_project_merges_hidden_editor_state_metadata", "Rust tests guard opening projects with hidden .nova editor state");
 
 mustContain(builder, 'data-builder-left-run-controls-layout="qt-creator-kit"', "Left rail uses Qt Creator style run/build controls");
+mustContain(builder, 'data-builder-left-run-visible-actions="primary-run-build-more"', "Left rail keeps visible build/run actions to a low-noise Qt Creator style set");
 mustContain(builder, "data-builder-rail-run-target", "Left rail summarizes current run target");
 mustContain(builder, "data-builder-rail-primary-workflow", "Left rail exposes primary workflow action");
 mustContain(builder, "data-builder-rail-sync-window", "Left rail provides release shell sync action");

@@ -34483,10 +34483,11 @@ export function BuilderShowcase() {
             <div
               ref={leftRunControlsRef}
               tabIndex={-1}
-              className="mt-auto space-y-1 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-1 shadow-m3-1"
+              className="mt-auto flex flex-col gap-0.5 border-t border-outline-variant/70 bg-surface-container-lowest/45 px-2 py-1.5"
               aria-label="构建与运行快捷操作"
               data-builder-left-run-controls=""
               data-builder-left-run-controls-layout="qt-creator-kit"
+              data-builder-left-run-visible-actions="primary-run-build-more"
               data-builder-left-rail-utility-strip="qt-creator-minimal"
               data-builder-run-command-owner="primary-left-rail"
               data-builder-command-ownership="left-rail-primary titlebar-menu-secondary build-page-config-only"
@@ -34503,7 +34504,7 @@ export function BuilderShowcase() {
                 data-builder-rail-kit=""
                 aria-label={`打开构建配置：${railConfigurationLabel}`}
                 title={`Kit: ${railKitLabel} · ${railConfigurationLabel}`}
-                className="focus-ring flex h-9 w-full items-center justify-center rounded-xl border border-outline-variant bg-surface-container text-primary transition hover:bg-surface-container-high"
+                className="focus-ring flex h-8 w-full items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-high hover:text-primary"
                 onClick={() => setMode("build")}
               >
                 <Settings2 aria-hidden className="size-4" />
@@ -34747,7 +34748,7 @@ export function BuilderShowcase() {
                 aria-label={workflowRuntimeActive ? "停止正在运行的目标 exe" : workflowPrimaryActionLabel}
                 title={`${workflowRailDetail} · Ctrl+Shift+R`}
                 className={cn(
-                  "focus-ring flex h-9 w-full items-center justify-center rounded-xl text-[0.62rem] font-semibold shadow-m3-1 transition hover:shadow-m3-2 disabled:opacity-45",
+                  "focus-ring flex h-8 w-full items-center justify-center rounded-lg text-[0.62rem] font-semibold transition disabled:opacity-45",
                   workflowRuntimeActive
                     ? "bg-destructive/10 text-destructive hover:bg-destructive/15"
                     : workflowComplete
@@ -34774,14 +34775,14 @@ export function BuilderShowcase() {
               <div className="sr-only">
                 <Progress className="h-1" value={workflowProgressValue} />
               </div>
-              <div className="grid grid-cols-2 gap-1" data-builder-rail-quick-actions="" data-builder-left-rail-buttons="qt-creator-minimal">
+              <div className="flex flex-col gap-1" data-builder-rail-quick-actions="" data-builder-left-rail-buttons="qt-creator-minimal">
                 <button
                   type="button"
                   data-builder-rail-save=""
                   aria-label={saved ? "项目已保存" : "保存项目"}
                   title={saved ? "项目已保存" : "保存项目"}
                   className={cn(
-                    "focus-ring flex h-9 items-center justify-center rounded-xl text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface disabled:opacity-45",
+                    "sr-only focus-ring h-9 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface disabled:opacity-45",
                     diskBusy && "bg-primary/10 text-primary",
                   )}
                   onClick={() => enqueueProjectTask("save-project")}
@@ -34796,7 +34797,7 @@ export function BuilderShowcase() {
                   aria-label={runningProjectTask ? `任务运行中：${runningProjectTask.title}` : "运行全部检查 Ctrl+Alt+B"}
                   title={runningProjectTask ? `任务运行中：${runningProjectTask.title}` : "运行全部检查 Ctrl+Alt+B"}
                   className={cn(
-                    "focus-ring flex h-9 items-center justify-center rounded-xl text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
+                    "sr-only focus-ring h-9 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
                     runningProjectTask && "bg-primary/10 text-primary",
                   )}
                   onClick={() => enqueueProjectTask("quick-check-all")}
@@ -34809,7 +34810,7 @@ export function BuilderShowcase() {
                   data-builder-rail-build-shortcut="Ctrl+Shift+B"
                   aria-label={building ? "正在构建 exe" : bundling ? "正在打包安装包" : "构建 exe Ctrl+Shift+B"}
                   title={building ? "正在构建 exe" : bundling ? "正在打包安装包" : "构建 exe Ctrl+Shift+B"}
-                  className="focus-ring flex h-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-m3-1 transition hover:shadow-m3-2 disabled:opacity-45"
+                  className="focus-ring flex h-8 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:brightness-95 disabled:opacity-45"
                   onClick={() => enqueueProjectTask("build-exe")}
                   disabled={building || bundling}
                 >
@@ -34817,7 +34818,7 @@ export function BuilderShowcase() {
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" data-builder-rail-more="" aria-label="更多运行与构建操作" title="更多运行与构建操作" className="h-9 rounded-xl">
+                    <Button variant="ghost" size="icon-sm" data-builder-rail-more="" aria-label="更多运行与构建操作" title="更多运行与构建操作" className="h-8 w-full rounded-lg">
                       <Menu aria-hidden className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>

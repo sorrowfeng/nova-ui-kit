@@ -4079,6 +4079,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       return {
         passed:
           Boolean(leftRun) &&
+          leftRun?.getAttribute("data-builder-left-run-visible-actions") === "primary-run-build-more" &&
           Boolean(utilityStrip) &&
           Boolean(compactButtons) &&
           style?.display !== "none" &&
@@ -4099,7 +4100,7 @@ async function runShellCommandPlacementChecks(send, verified) {
           Boolean(buildButton) &&
           Boolean(checkButton) &&
           Boolean(runShortcut),
-        detail: \`display=\${style?.display || "missing"}, visibility=\${style?.visibility || "missing"}, compact=\${Boolean(compactButtons)}, stepCount=\${stepCount}, planTotal=\${planTotal}, planProgress=\${planProgress}, next=\${planNextStep}, renderedSteps=\${steps.length}\`
+        detail: \`display=\${style?.display || "missing"}, visibility=\${style?.visibility || "missing"}, visibleActions=\${leftRun?.getAttribute("data-builder-left-run-visible-actions") || "missing"}, compact=\${Boolean(compactButtons)}, stepCount=\${stepCount}, planTotal=\${planTotal}, planProgress=\${planProgress}, next=\${planNextStep}, renderedSteps=\${steps.length}\`
       };
     })()`,
     "left rail run kit surface",
