@@ -4097,12 +4097,20 @@ async function runShellCommandPlacementChecks(send, verified) {
       const leftToggle = document.querySelector("[data-builder-toggle-left-dock]");
       const rightToggle = document.querySelector("[data-builder-toggle-right-dock]");
       const outputToggle = document.querySelector("[data-builder-toggle-output-dock-compact]");
+      const leftDock = document.querySelector('[data-builder-readable-dock="left"]');
+      const viewport = document.querySelector("[data-builder-canvas-viewport]");
+      const leftRect = leftDock?.getBoundingClientRect();
+      const viewportRect = viewport?.getBoundingClientRect();
       return {
         passed:
-          workspace?.getAttribute("data-builder-workspace-layout") === "wide-left-dock" &&
+          workspace?.getAttribute("data-builder-workspace-layout") === "balanced-left-dock" &&
+          workspace?.getAttribute("data-builder-left-dock-width") === "balanced-320" &&
           canvas?.getAttribute("data-builder-canvas-priority") === "true" &&
+          leftDock?.getAttribute("data-builder-side-dock-density") === "balanced-compact" &&
+          Boolean(leftRect && leftRect.width >= 296 && leftRect.width <= 328) &&
+          Boolean(viewportRect && viewportRect.width >= 1000) &&
           Boolean(controls && leftToggle && rightToggle && outputToggle),
-        detail: \`layout=\${workspace?.getAttribute("data-builder-workspace-layout") || "missing"}, controls=\${Boolean(controls)}, left=\${Boolean(leftToggle)}, right=\${Boolean(rightToggle)}, output=\${Boolean(outputToggle)}\`
+        detail: \`layout=\${workspace?.getAttribute("data-builder-workspace-layout") || "missing"}, leftWidth=\${leftRect ? Math.round(leftRect.width) : "missing"}, viewportWidth=\${viewportRect ? Math.round(viewportRect.width) : "missing"}, density=\${leftDock?.getAttribute("data-builder-side-dock-density") || "missing"}, controls=\${Boolean(controls)}, left=\${Boolean(leftToggle)}, right=\${Boolean(rightToggle)}, output=\${Boolean(outputToggle)}\`
       };
     })()`,
     "Qt Creator readable workbench layout controls",

@@ -1499,7 +1499,8 @@ mustContain(builder, 'data-builder-workflow-feedback-actions="inline-icons"', "B
 mustContain(builder, 'data-builder-feedback-strip-mode="expanded-only"', "Build feedback strip declares expanded-only behavior");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.workflowRailCompactRuntime = true", "Browser smoke verifies the compact build workflow rail");
 mustContain(designWorkspace, 'data-builder-readable-workbench="qt-creator"', "Design workspace declares the Qt Creator readable layout contract");
-mustContain(designWorkspace, "data-builder-workspace-layout=\"wide-left-dock\"", "Design workspace gives the collapsible left dock enough desktop width");
+mustContain(designWorkspace, "data-builder-workspace-layout=\"balanced-left-dock\"", "Design workspace balances the component dock width with canvas priority");
+mustContain(designWorkspace, 'data-builder-left-dock-width="balanced-320"', "Design workspace caps the expanded component dock to a compact desktop width");
 mustContain(designWorkspace, 'data-builder-design-workspace-bottom-dock-clearance="reserved"', "Design workspace reserves clearance above the bottom output dock");
 mustContain(designWorkspace, "overflow-hidden bg-surface-container-low pb-11", "Design workspace keeps canvas and side docks above the bottom output dock");
 mustContain(builder, 'data-builder-canvas-stage-alignment="centered-when-room"', "Design canvas stage centers in the available viewport when it fits");
@@ -1562,7 +1563,10 @@ mustContain(builder, 'data-builder-project-workspace-filter-density="toolbar-seg
 mustContain(builder, 'data-builder-project-node-action-strip-density="compact-toolbar"', "Project selected-node actions use a toolbar instead of a large button matrix");
 mustContain(builder, 'data-builder-project-tree-selected-context-density="single-row"', "Project selected-node context uses a single-row strip");
 mustContain(designWorkspace, "xl:grid-cols-[56px_minmax(0,1fr)_56px]", "Design workspace supports compact rail columns for both side docks");
+mustContain(designWorkspace, "2xl:grid-cols-[320px_minmax(0,1fr)_56px]", "Design workspace keeps the expanded left dock compact on wide desktop");
 mustContain(projectDock, 'data-builder-readable-dock="left"', "Project dock exposes a readable left dock marker");
+mustContain(projectDock, 'data-builder-side-dock-density="balanced-compact"', "Project dock uses compact side-dock chrome in design mode");
+mustContain(projectDock, 'data-builder-side-dock-content-density="compact"', "Project dock content uses reduced padding");
 mustContain(projectDock, "data-builder-left-dock-collapse", "Project dock can collapse into a compact rail");
 mustContain(projectDock, "data-builder-left-dock-expand", "Project dock can expand from the compact rail");
 mustContain(inspectorDock, 'data-builder-readable-dock="right"', "Inspector dock exposes a readable right dock marker");

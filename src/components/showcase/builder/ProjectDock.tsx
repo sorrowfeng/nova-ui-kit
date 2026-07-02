@@ -84,10 +84,11 @@ export function ProjectDock<T extends string>({
       className="subtle-scrollbar h-full min-h-0 overflow-y-auto border-b border-outline-variant bg-surface-container xl:border-b-0 xl:border-r"
       data-builder-readable-dock="left"
       data-builder-side-dock="project"
+      data-builder-side-dock-density="balanced-compact"
       data-builder-side-dock-active-tab={activeTab}
       data-builder-side-dock-collapsed="false"
     >
-      <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-2 backdrop-blur">
+      <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-1.5 backdrop-blur">
         <div className="flex min-w-0 items-center gap-1.5">
           <div className="min-w-0 flex-1">
             <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
@@ -107,7 +108,9 @@ export function ProjectDock<T extends string>({
           ) : null}
         </div>
       </div>
-      <div className="p-3">{children}</div>
+      <div className="p-2" data-builder-side-dock-content-density="compact">
+        {children}
+      </div>
     </aside>
   );
 }
@@ -136,10 +139,10 @@ export function DockTabList<T extends string>({
             data-builder-dock-tab-active={active ? "true" : "false"}
             data-builder-dock-tab-layout={layout}
             className={cn(
-              "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-[0.68rem] font-medium transition",
-              layout === "inline" && "min-h-8 shrink-0 basis-auto px-2.5",
+              "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.68rem] font-medium transition",
+              layout === "inline" && "min-h-7 shrink-0 basis-auto px-2",
               active
-                ? "bg-secondary-container text-secondary-container-foreground shadow-m3-1"
+                ? "bg-secondary-container text-secondary-container-foreground"
                 : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
             )}
             onClick={() => onTabChange(tab.value)}
