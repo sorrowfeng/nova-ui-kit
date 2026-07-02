@@ -47513,32 +47513,32 @@ export function BuilderShowcase() {
               {leftDockTab === "components" ? (
                 <>
               <div
-                className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2"
-                data-builder-component-palette-header="compact"
+                className="mb-1 flex h-7 items-center justify-between gap-2 border-b border-outline-variant/70 px-1.5 pb-1"
+                data-builder-component-palette-header="toolbar"
               >
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
                     <Layers aria-hidden className="size-3.5" />
                   </span>
-                  <div className="min-w-0">
-                    <h2 className="truncate text-xs font-semibold text-on-surface">控件工具箱</h2>
-                    <p className="truncate text-[0.66rem] text-on-surface-variant">拖放或单击添加</p>
+                  <div className="flex min-w-0 items-baseline gap-1.5">
+                    <h2 className="truncate text-xs font-semibold text-on-surface">控件</h2>
+                    <p className="truncate text-[0.62rem] text-on-surface-variant">拖放/单击</p>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-md border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">
+                <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
                   {visibleComponentPalette.length}
                 </span>
               </div>
-              <div className="space-y-2" data-builder-component-palette-layout="qt-compact-list">
+              <div className="space-y-1.5" data-builder-component-palette-layout="qt-compact-list">
                 <div className="relative">
-                  <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
+                  <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
                   <Input
                     inputSize="sm"
                     data-builder-component-search=""
                     aria-label="搜索控件工具箱"
                     placeholder="搜索控件..."
                     value={componentPaletteQuery}
-                    className="h-8 rounded-xl pl-9 text-xs"
+                    className="h-7 rounded-lg pl-8 text-xs"
                     onChange={(event) => {
                       setComponentPaletteQuery(event.target.value);
                       setActiveComponentPaletteKitId("");
@@ -47562,7 +47562,7 @@ export function BuilderShowcase() {
                           setActiveComponentPaletteKitId("");
                         }}
                         className={cn(
-                          "focus-ring flex h-7 min-w-0 items-center justify-center rounded-lg border px-1 text-[0.66rem] font-medium transition",
+                          "focus-ring flex h-6 min-w-0 items-center justify-center rounded-md border px-1 text-[0.64rem] font-medium transition",
                           active
                             ? "border-outline bg-surface-container-highest text-on-surface"
                             : "border-transparent bg-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
@@ -47576,10 +47576,10 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteQuickInsert ? (
                   <section
-                    className="rounded-xl border border-outline-variant bg-surface-container-low p-1.5"
+                    className="rounded-lg border border-outline-variant bg-surface-container-low p-1"
                     data-builder-component-quick-insert-priority="first"
                   >
-                    <div className="mb-1 flex items-center justify-between gap-2 px-1">
+                    <div className="mb-0.5 flex items-center justify-between gap-2 px-1">
                       <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
                         常用控件
                       </span>
@@ -47594,7 +47594,7 @@ export function BuilderShowcase() {
                             type="button"
                             data-builder-component-quick-insert={definition.type}
                             onClick={() => addComponent(definition.type)}
-                            className="focus-ring m3-state-layer flex h-8 min-w-0 items-center gap-2 rounded-lg bg-surface-container px-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
+                            className="focus-ring m3-state-layer flex h-7 min-w-0 items-center gap-1.5 rounded-md bg-surface-container px-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
                           >
                             <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
                             <span className="truncate">{definition.title}</span>

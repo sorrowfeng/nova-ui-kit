@@ -1717,6 +1717,7 @@ mustContain(builder, "activeComponentPaletteKitId", "Component palette can tempo
 mustContain(builder, "focusComponentPaletteKit", "Component palette kits can focus matching controls");
 mustContain(builder, "insertComponentPaletteKitPrimary", "Component palette kits can insert a primary control");
 mustContain(builder, "insertComponentPaletteKitScaffold", "Component palette kits can batch-insert related controls as a canvas scaffold");
+mustContain(builder, 'data-builder-component-palette-header="toolbar"', "Component palette header uses low toolbar chrome instead of a card");
 mustContain(builder, 'data-builder-component-palette-layout="qt-compact-list"', "Component palette uses a compact Qt Creator-style list layout");
 mustContain(builder, 'data-builder-component-category-strip="compact-grid"', "Component palette category filter avoids clipped horizontal pills");
 mustContain(builder, 'data-builder-component-quick-insert-priority="first"', "Component palette shows insertable controls before secondary kit and coverage content");
