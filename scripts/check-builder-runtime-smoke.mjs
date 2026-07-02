@@ -4484,6 +4484,11 @@ async function runShellCommandPlacementChecks(send, verified) {
       const parityItems = Array.from(document.querySelectorAll("[data-builder-runtime-parity-item]"));
       const settingsSummary = document.querySelector("[data-builder-release-settings-shortcut-summary]");
       const settingsDetails = document.querySelector("[data-builder-release-settings-shortcut-details]");
+      const generatedPlan = document.querySelector("[data-builder-generated-file-plan]");
+      const generatedStatus = document.querySelector("[data-builder-generated-plan-status]");
+      const changeImpact = document.querySelector("[data-builder-change-impact]");
+      const changeImpactSummary = document.querySelector("[data-builder-change-impact-summary]");
+      const changeImpactDetails = document.querySelector("[data-builder-change-impact-details]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4491,6 +4496,8 @@ async function runShellCommandPlacementChecks(send, verified) {
       const parityRect = parityPanel?.getBoundingClientRect();
       const settingsRect = settingsShortcut?.getBoundingClientRect();
       const buildTargetRect = buildTargetDock?.getBoundingClientRect();
+      const generatedStatusRect = generatedStatus?.getBoundingClientRect();
+      const changeImpactRect = changeImpact?.getBoundingClientRect();
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4517,6 +4524,17 @@ async function runShellCommandPlacementChecks(send, verified) {
         parityDetails?.getAttribute("data-builder-runtime-parity-details") === "deferred" &&
         parityItems.length >= 4 &&
         Boolean(parityRect && parityRect.height <= 62);
+      const generatedPlanCompact =
+        generatedPlan?.getAttribute("data-builder-generated-file-plan-density") === "compact-output-pane" &&
+        generatedStatus?.getAttribute("data-builder-generated-plan-status-density") === "single-row" &&
+        Boolean(generatedStatusRect && generatedStatusRect.height <= 48);
+      const changeImpactCollapsedDefault =
+        changeImpact?.tagName === "DETAILS" &&
+        !changeImpact.hasAttribute("open") &&
+        changeImpact.getAttribute("data-builder-change-impact-density") === "collapsed-default" &&
+        changeImpactSummary?.getAttribute("data-builder-change-impact-summary") === "single-row" &&
+        changeImpactDetails?.getAttribute("data-builder-change-impact-details") === "deferred" &&
+        Boolean(changeImpactRect && changeImpactRect.height <= 48);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4532,13 +4550,47 @@ async function runShellCommandPlacementChecks(send, verified) {
           Boolean(outputRect && outputRect.width <= 312) &&
           outputClearance &&
           parityCollapsedDefault &&
+          generatedPlanCompact &&
+          changeImpactCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
   );
   verified.buildOutputSidebarLowChromeRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-change-impact-summary]")`, "build change impact summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-change-impact]")?.hasAttribute("open") === true`,
+    "expanded build change impact details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const changeImpact = document.querySelector("[data-builder-change-impact]");
+      const details = document.querySelector("[data-builder-change-impact-details]");
+      const plan = document.querySelector("[data-builder-change-impact-plan]");
+      const dependencyGraph = document.querySelector("[data-builder-dependency-graph]");
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          changeImpact?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-change-impact-details") === "deferred" &&
+          Boolean(plan) &&
+          Boolean(dependencyGraph) &&
+          Boolean(detailsRect && detailsRect.height > 160),
+        detail: \`open=\${changeImpact?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, plan=\${Boolean(plan)}, dependencyGraph=\${Boolean(dependencyGraph)}\`
+      };
+    })()`,
+    "build change impact expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-change-impact-summary]")`, "collapse build change impact summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-change-impact]")?.hasAttribute("open") === false`,
+    "collapsed build change impact details",
+  );
   await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "build release settings summary");
   await waitFor(
     send,

@@ -47,6 +47,7 @@ import {
   FileJson,
   FileImage,
   FolderOpen,
+  GitBranch,
   Grid3x3,
   Hand,
   Heading1,
@@ -45217,81 +45218,79 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
               </div>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-generated-file-plan="">
-                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <h2 className="text-sm font-medium">生成文件计划</h2>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                      构建前计算 Nova 将写入的 manifest、UI、Rust module、Cargo 和 Tauri app 文件，并标记新增或更新。
-                    </p>
+              <div
+                className="rounded-lg border border-outline-variant bg-surface-container-low/80 p-2.5"
+                data-builder-generated-file-plan=""
+                data-builder-generated-file-plan-density="compact-output-pane"
+              >
+                <div
+                  className="mb-2 flex min-w-0 flex-col gap-2 rounded-md border border-outline-variant bg-surface-container px-2 py-1.5 text-xs lg:flex-row lg:items-center lg:justify-between"
+                  data-builder-generated-plan-status=""
+                  data-builder-generated-plan-status-density="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-lg border",
+                        projectChangeImpact.status === "dirty"
+                          ? "border-primary/30 bg-primary/10 text-primary"
+                          : projectChangeImpact.status === "clean"
+                            ? "border-primary/20 bg-surface-container-high text-primary"
+                            : "border-outline-variant bg-surface-container-high text-on-surface-variant",
+                      )}
+                    >
+                      {projectChangeImpact.status === "clean" ? (
+                        <CheckCircle2 aria-hidden className="size-4" />
+                      ) : projectChangeImpact.status === "dirty" ? (
+                        <Download aria-hidden className="size-4" />
+                      ) : (
+                        <FileJson aria-hidden className="size-4" />
+                      )}
+                    </span>
+                    <div className="flex min-w-0 items-center gap-1.5" data-builder-generated-plan-status-detail="compact-inline">
+                      <h2 className="shrink-0 text-xs font-semibold text-on-surface">生成文件计划</h2>
+                      <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
+                        {projectChangeImpactStatusLabel(projectChangeImpact.status)}
+                      </Badge>
+                      {generatedFilePreview ? <Badge variant="outline">{projectChangeImpact.totalCount} 文件</Badge> : null}
+                      <span className="min-w-0 truncate text-[0.68rem] text-on-surface-variant">
+                        {generatedPlanStatusTitle} · {generatedPlanStatusDetail}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Badge variant="outline">引导流程</Badge>
+                  <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      className="h-7 px-2 text-[0.68rem]"
+                      data-builder-generated-plan-primary=""
+                      loading={previewingGeneratedFiles || applyingGeneratedFiles}
+                      disabled={generatedPlanBusy}
+                      onClick={() => enqueueProjectTask(generatedPlanPrimaryAction)}
+                    >
+                      {projectChangeImpact.status === "dirty" ? <Download aria-hidden className="size-3.5" /> : <Play aria-hidden className="size-3.5" />}
+                      {generatedPlanPrimaryLabel}
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
+                      className="h-7 px-2 text-[0.68rem]"
+                      data-builder-generated-plan-tasks=""
+                      onClick={() => openRelevantTaskDock()}
+                    >
+                      <ClipboardCopy aria-hidden className="size-3.5" />
+                      任务
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-[0.68rem]"
                       data-builder-generated-plan-advanced-toggle=""
                       aria-expanded={showGeneratedPlanAdvanced}
                       onClick={() => setShowGeneratedPlanAdvanced((current) => !current)}
                     >
-                      <Settings2 aria-hidden className="size-4" />
+                      <Settings2 aria-hidden className="size-3.5" />
                       高级
                     </Button>
-                  </div>
-                </div>
-                <div className="mb-4 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-generated-plan-status="">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <span
-                        className={cn(
-                          "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl border shadow-m3-1",
-                          projectChangeImpact.status === "dirty"
-                            ? "border-primary/30 bg-primary/10 text-primary"
-                            : projectChangeImpact.status === "clean"
-                              ? "border-primary/20 bg-surface-container-high text-primary"
-                              : "border-outline-variant bg-surface-container-high text-on-surface-variant",
-                        )}
-                      >
-                        {projectChangeImpact.status === "clean" ? (
-                          <CheckCircle2 aria-hidden className="size-4" />
-                        ) : projectChangeImpact.status === "dirty" ? (
-                          <Download aria-hidden className="size-4" />
-                        ) : (
-                          <FileJson aria-hidden className="size-4" />
-                        )}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-on-surface">{generatedPlanStatusTitle}</p>
-                          <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
-                            {projectChangeImpactStatusLabel(projectChangeImpact.status)}
-                          </Badge>
-                          {generatedFilePreview ? <Badge variant="outline">{projectChangeImpact.totalCount} 文件</Badge> : null}
-                        </div>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{generatedPlanStatusDetail}</p>
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        data-builder-generated-plan-primary=""
-                        loading={previewingGeneratedFiles || applyingGeneratedFiles}
-                        disabled={generatedPlanBusy}
-                        onClick={() => enqueueProjectTask(generatedPlanPrimaryAction)}
-                      >
-                        {projectChangeImpact.status === "dirty" ? <Download aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
-                        {generatedPlanPrimaryLabel}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        data-builder-generated-plan-tasks=""
-                        onClick={() => openRelevantTaskDock()}
-                      >
-                        <ClipboardCopy aria-hidden className="size-4" />
-                        任务
-                      </Button>
-                    </div>
                   </div>
                 </div>
                 {showGeneratedPlanAdvanced ? (
@@ -45376,8 +45375,34 @@ export function BuilderShowcase() {
                     </div>
                   </div>
                 ) : null}
-                <div className="mb-4 rounded-2xl border border-outline-variant bg-surface-container p-3" data-builder-change-impact="">
-                  <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <details
+                  className="group mb-2 rounded-md border border-outline-variant bg-surface-container text-xs"
+                  data-builder-change-impact=""
+                  data-builder-change-impact-density="collapsed-default"
+                >
+                  <summary
+                    className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                    data-builder-change-impact-summary="single-row"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                        <GitBranch aria-hidden className="size-3.5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-on-surface">增量影响</span>
+                        <span className="block truncate text-[0.64rem] text-on-surface-variant">{projectChangeImpact.summary}</span>
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <Badge variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}>
+                        {projectChangeImpactStatusLabel(projectChangeImpact.status)}
+                      </Badge>
+                      <Badge variant="outline">{projectChangeImpact.scopes.length} 范围</Badge>
+                      <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    </span>
+                  </summary>
+                  <div className="border-t border-outline-variant p-2.5" data-builder-change-impact-details="deferred">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">增量影响</h3>
@@ -45695,6 +45720,7 @@ export function BuilderShowcase() {
                     ))}
                   </div>
                 </div>
+                </details>
                 {generatedFilePreview ? (
                   <div className="space-y-3">
                     <div className="grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-6">
