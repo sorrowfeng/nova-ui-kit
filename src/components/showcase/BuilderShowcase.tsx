@@ -47501,8 +47501,24 @@ export function BuilderShowcase() {
 
               {leftDockTab === "components" ? (
                 <>
-              <PanelTitle icon={Layers} title="控件工具箱" description="拖到画布任意位置，也可以单击快速添加。" />
-              <div className="space-y-3">
+              <div
+                className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2"
+                data-builder-component-palette-header="compact"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <Layers aria-hidden className="size-3.5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="truncate text-xs font-semibold text-on-surface">控件工具箱</h2>
+                    <p className="truncate text-[0.66rem] text-on-surface-variant">拖放或单击添加</p>
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-md border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">
+                  {visibleComponentPalette.length}
+                </span>
+              </div>
+              <div className="space-y-2" data-builder-component-palette-layout="qt-compact-list">
                 <div className="relative">
                   <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
                   <Input
@@ -47511,7 +47527,7 @@ export function BuilderShowcase() {
                     aria-label="搜索控件工具箱"
                     placeholder="搜索控件..."
                     value={componentPaletteQuery}
-                    className="h-9 rounded-2xl pl-9 text-xs"
+                    className="h-8 rounded-xl pl-9 text-xs"
                     onChange={(event) => {
                       setComponentPaletteQuery(event.target.value);
                       setActiveComponentPaletteKitId("");
@@ -47519,7 +47535,7 @@ export function BuilderShowcase() {
                   />
                 </div>
 
-                <div className="flex flex-wrap gap-1.5" aria-label="控件分类">
+                <div className="grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
                   {componentPaletteCategoryOptions.map((category) => {
                     const active = category.id === componentPaletteCategory;
                     return (
@@ -47528,27 +47544,20 @@ export function BuilderShowcase() {
                         type="button"
                         data-builder-component-category={category.id}
                         aria-pressed={active}
-                        title={category.description}
+                        aria-label={`${category.label}，${componentPaletteCounts[category.id]} 个控件`}
+                        title={`${category.description} · ${componentPaletteCounts[category.id]} 个控件`}
                         onClick={() => {
                           setComponentPaletteCategory(category.id);
                           setActiveComponentPaletteKitId("");
                         }}
                         className={cn(
-                          "focus-ring flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[0.68rem] font-medium transition",
+                          "focus-ring flex h-7 min-w-0 items-center justify-center rounded-lg border px-1 text-[0.66rem] font-medium transition",
                           active
-                            ? "border-primary bg-primary text-primary-foreground shadow-m3-1"
-                            : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                            ? "border-outline bg-surface-container-highest text-on-surface"
+                            : "border-transparent bg-transparent text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
                         )}
                       >
-                        <span>{category.label}</span>
-                        <span
-                          className={cn(
-                            "min-w-4 rounded-full px-1 text-center text-[0.62rem]",
-                            active ? "bg-primary-foreground/20" : "bg-surface-container-highest",
-                          )}
-                        >
-                          {componentPaletteCounts[category.id]}
-                        </span>
+                        <span className="min-w-0 truncate">{category.label}</span>
                       </button>
                     );
                   })}
@@ -47556,28 +47565,27 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteKits ? (
                   <section
-                    className="space-y-2 rounded-[18px] border border-outline-variant bg-surface-container-low p-2"
+                    className="space-y-1 rounded-xl border border-outline-variant bg-surface-container-low p-1.5"
                     data-builder-component-kits=""
+                    data-builder-component-kits-layout="compact-list"
                     data-builder-component-active-kit={activeComponentPaletteKit?.id ?? "none"}
                   >
-                    <div className="flex items-center justify-between gap-2 px-1">
-                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-                        控件套件
-                      </span>
+                    <div className="flex items-center justify-between gap-2 px-1 pb-0.5">
+                      <span className="truncate text-[0.66rem] font-semibold uppercase text-on-surface-variant">套件</span>
                       {activeComponentPaletteKit ? (
                         <button
                           type="button"
                           data-builder-component-kit-clear=""
                           onClick={clearComponentPaletteKit}
-                          className="focus-ring rounded-full px-2 py-1 text-[0.66rem] font-medium text-primary transition hover:bg-primary/10"
+                          className="focus-ring rounded-md px-1.5 py-0.5 text-[0.66rem] font-medium text-primary transition hover:bg-primary/10"
                         >
                           显示全部
                         </button>
                       ) : (
-                        <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteKitRows.length} kits</span>
+                        <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteKitRows.length}</span>
                       )}
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-0.5">
                       {componentPaletteKitRows.map((row) => {
                         const active = activeComponentPaletteKit?.id === row.id;
                         const primaryDefinition = getDefinition(row.primaryType);
@@ -47589,8 +47597,8 @@ export function BuilderShowcase() {
                             data-builder-component-kit-active={active ? "true" : "false"}
                             data-builder-component-kit-available-count={row.availableCount}
                             className={cn(
-                              "grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] overflow-hidden rounded-2xl border bg-surface-container transition-colors",
-                              active ? "border-primary bg-primary-container/60" : "border-transparent hover:border-outline-variant hover:bg-surface-container-high",
+                              "grid min-w-0 grid-cols-[minmax(0,1fr)_2rem_2rem] overflow-hidden rounded-lg border transition-colors",
+                              active ? "border-outline bg-surface-container-highest" : "border-transparent bg-transparent hover:bg-surface-container-high",
                             )}
                           >
                             <button
@@ -47598,23 +47606,24 @@ export function BuilderShowcase() {
                               data-builder-component-kit-focus={row.id}
                               aria-pressed={active}
                               onClick={() => focusComponentPaletteKit(row.id)}
-                              className="focus-ring grid min-w-0 gap-1.5 px-2.5 py-2 text-left"
+                              className="focus-ring grid min-w-0 gap-0.5 px-2 py-1.5 text-left"
                             >
                               <span className="flex min-w-0 items-center justify-between gap-2">
-                                <span className="truncate text-xs font-semibold text-on-surface">{row.title}</span>
-                                <span className="shrink-0 rounded-full bg-surface-container-highest px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
+                                <span className="truncate text-xs font-semibold text-on-surface" title={row.description}>
+                                  {row.title}
+                                </span>
+                                <span className="shrink-0 rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
                                   {row.availableCount}/{row.totalCount}
                                 </span>
                               </span>
-                              <span className="line-clamp-2 text-[0.66rem] leading-4 text-on-surface-variant">{row.description}</span>
-                              <span className="flex min-w-0 flex-wrap gap-1">
+                              <span className="flex min-w-0 gap-1 overflow-hidden text-[0.62rem] leading-4 text-on-surface-variant">
                                 {row.sampleTypes.map((type) => {
                                   const definition = getDefinition(type);
                                   return (
                                     <span
                                       key={`${row.id}-${type}`}
                                       data-builder-component-kit-type={type}
-                                      className="max-w-full truncate rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 py-0.5 text-[0.58rem] font-medium text-on-surface-variant"
+                                      className="max-w-[4.6rem] shrink-0 truncate"
                                     >
                                       {definition.title}
                                     </span>
@@ -47629,7 +47638,7 @@ export function BuilderShowcase() {
                               aria-label={`插入 ${row.title} 骨架`}
                               title={`插入 ${row.title} 骨架`}
                               onClick={() => insertComponentPaletteKitScaffold(row.id)}
-                              className="focus-ring flex w-10 shrink-0 flex-col items-center justify-center gap-1 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
+                              className="focus-ring flex shrink-0 flex-col items-center justify-center gap-0.5 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
                             >
                               <Layers aria-hidden className="size-3.5" />
                               <span className="font-mono text-[0.56rem]">{row.availableCount}</span>
@@ -47640,7 +47649,7 @@ export function BuilderShowcase() {
                               aria-label={`插入 ${row.title} 的 ${primaryDefinition.title}`}
                               title={`插入 ${primaryDefinition.title}`}
                               onClick={() => insertComponentPaletteKitPrimary(row.id)}
-                              className="focus-ring flex w-10 shrink-0 flex-col items-center justify-center gap-1 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
+                              className="focus-ring flex shrink-0 flex-col items-center justify-center gap-0.5 border-l border-outline-variant text-primary transition hover:bg-surface-container-highest"
                             >
                               <PrimaryIcon aria-hidden className="size-3.5" />
                               <Plus aria-hidden className="size-3" />
@@ -47823,7 +47832,8 @@ export function BuilderShowcase() {
                           key={definition.type}
                           data-builder-palette-type={definition.type}
                           data-builder-palette-category={category}
-                          className="group grid w-full grid-cols-[minmax(0,1fr)_auto] overflow-hidden rounded-[18px] border border-transparent bg-surface-container-low transition-colors hover:border-outline-variant hover:bg-surface-container-high"
+                          data-builder-palette-row-layout="compact"
+                          className="group grid w-full grid-cols-[minmax(0,1fr)_2rem] overflow-hidden rounded-lg border border-transparent bg-transparent transition-colors hover:bg-surface-container-high"
                         >
                           <button
                             type="button"
@@ -47835,19 +47845,19 @@ export function BuilderShowcase() {
                               }
                               addComponent(definition.type);
                             }}
-                            className="focus-ring m3-state-layer grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2.5 py-2.5 text-left"
+                            className="focus-ring m3-state-layer grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 py-1.5 text-left"
+                            title={definition.description}
                           >
-                            <span className="flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                              <Icon aria-hidden className="size-4" />
+                            <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                              <Icon aria-hidden className="size-3.5" />
                             </span>
                             <span className="min-w-0">
                               <span className="flex min-w-0 items-center gap-2">
                                 <span className="truncate text-xs font-semibold">{definition.title}</span>
-                                <span className="shrink-0 rounded-full bg-surface-container-highest px-1.5 py-0.5 text-[0.6rem] font-medium text-on-surface-variant">
+                                <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 text-[0.6rem] font-medium text-on-surface-variant">
                                   {componentPaletteCategoryLabel(category)}
                                 </span>
                               </span>
-                              <span className="mt-0.5 block truncate text-[0.68rem] leading-4 text-on-surface-variant">{definition.description}</span>
                             </span>
                           </button>
                           <button
@@ -47858,7 +47868,7 @@ export function BuilderShowcase() {
                             title={componentPaletteFavoriteTypes.includes(definition.type) ? "取消收藏" : "收藏到常用控件"}
                             onClick={() => toggleComponentPaletteFavorite(definition.type)}
                             className={cn(
-                              "focus-ring flex size-10 shrink-0 items-center justify-center self-stretch text-on-surface-variant transition hover:bg-surface-container-highest hover:text-primary",
+                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant transition hover:bg-surface-container-highest hover:text-primary",
                               componentPaletteFavoriteTypes.includes(definition.type) && "text-primary",
                             )}
                           >
