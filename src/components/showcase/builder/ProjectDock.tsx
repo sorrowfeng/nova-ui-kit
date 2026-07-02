@@ -16,6 +16,7 @@ export function ProjectDock<T extends string>({
   onTabChange,
   collapsed = false,
   onCollapsedChange,
+  tabLayout = "grid",
   children,
 }: {
   tabs: BuilderDockTab<T>[];
@@ -23,6 +24,7 @@ export function ProjectDock<T extends string>({
   onTabChange: (tab: T) => void;
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  tabLayout?: "grid" | "inline";
   children: ReactNode;
 }) {
   if (collapsed) {
@@ -88,10 +90,13 @@ export function ProjectDock<T extends string>({
       data-builder-side-dock-active-tab={activeTab}
       data-builder-side-dock-collapsed="false"
     >
-      <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-1.5 backdrop-blur">
+      <div
+        className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-1.5 backdrop-blur"
+        data-builder-side-dock-tab-density={tabLayout === "inline" ? "single-row" : "grid"}
+      >
         <div className="flex min-w-0 items-center gap-1.5">
           <div className="min-w-0 flex-1">
-            <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
+            <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} layout={tabLayout} />
           </div>
           {onCollapsedChange ? (
             <button
@@ -127,7 +132,10 @@ export function DockTabList<T extends string>({
   layout?: "grid" | "inline";
 }) {
   return (
-    <div className={cn(layout === "inline" ? "subtle-scrollbar flex min-w-0 gap-1 overflow-x-auto" : "grid grid-cols-2 gap-1")}>
+    <div
+      className={cn(layout === "inline" ? "subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto" : "grid grid-cols-2 gap-1")}
+      data-builder-dock-tab-list={layout}
+    >
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const active = activeTab === tab.value;
@@ -139,8 +147,8 @@ export function DockTabList<T extends string>({
             data-builder-dock-tab-active={active ? "true" : "false"}
             data-builder-dock-tab-layout={layout}
             className={cn(
-              "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[0.68rem] font-medium transition",
-              layout === "inline" && "min-h-7 shrink-0 basis-auto px-2",
+              "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-lg text-[0.68rem] font-medium transition",
+              layout === "inline" ? "h-7 shrink-0 basis-auto px-2" : "px-2 py-1.5",
               active
                 ? "bg-secondary-container text-secondary-container-foreground"
                 : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",

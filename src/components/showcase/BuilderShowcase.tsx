@@ -32049,9 +32049,24 @@ export function BuilderShowcase() {
   const activeModeItem = modeBarItems.find((item) => item.mode === mode) ?? modeBarItems[0];
   const leftDockTabs: BuilderDockTab<BuilderLeftDockTab>[] = [
     { value: "project", label: "项目", icon: FolderOpen },
-    { value: "navigator", label: "导航", icon: FileJson, badge: <Badge variant="outline">{activeProject.files.length}</Badge> },
-    { value: "components", label: "组件", icon: Layers, badge: <Badge variant="outline">{palette.length}</Badge> },
-    { value: "assets", label: "资源", icon: FileImage, badge: <Badge variant="outline">{activeProject.assets.length}</Badge> },
+    {
+      value: "navigator",
+      label: "导航",
+      icon: FileJson,
+      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{activeProject.files.length}</Badge>,
+    },
+    {
+      value: "components",
+      label: "组件",
+      icon: Layers,
+      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{palette.length}</Badge>,
+    },
+    {
+      value: "assets",
+      label: "资源",
+      icon: FileImage,
+      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{activeProject.assets.length}</Badge>,
+    },
   ];
   const rightDockTabs: BuilderDockTab<BuilderRightDockTab>[] = [
     { value: "properties", label: "属性", icon: Settings2 },
@@ -46736,6 +46751,7 @@ export function BuilderShowcase() {
               onTabChange={setLeftDockTab}
               collapsed={leftDockCollapsed}
               onCollapsedChange={setLeftDockCollapsed}
+              tabLayout="inline"
             >
               {leftDockTab === "project" ? (
                 <>
@@ -48280,6 +48296,7 @@ export function BuilderShowcase() {
                     visibleComponentPalette.map((definition) => {
                       const Icon = definition.icon;
                       const category = componentPaletteCategoryForType(definition.type);
+                      const favorite = componentPaletteFavoriteTypes.includes(definition.type);
                       return (
                         <div
                           key={definition.type}
@@ -48287,7 +48304,7 @@ export function BuilderShowcase() {
                           data-builder-palette-category={category}
                           data-builder-palette-row-layout="compact"
                           data-builder-palette-row-density="single-line"
-                          className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high"
+                          className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high"
                         >
                           <button
                             type="button"
@@ -48316,16 +48333,17 @@ export function BuilderShowcase() {
                           <button
                             type="button"
                             data-builder-component-favorite-toggle={definition.type}
-                            aria-pressed={componentPaletteFavoriteTypes.includes(definition.type)}
-                            aria-label={`${componentPaletteFavoriteTypes.includes(definition.type) ? "取消收藏" : "收藏"} ${definition.title}`}
-                            title={componentPaletteFavoriteTypes.includes(definition.type) ? "取消收藏" : "收藏到常用控件"}
+                            data-builder-component-favorite-visibility={favorite ? "pinned" : "hover-reveal"}
+                            aria-pressed={favorite}
+                            aria-label={`${favorite ? "取消收藏" : "收藏"} ${definition.title}`}
+                            title={favorite ? "取消收藏" : "收藏到常用控件"}
                             onClick={() => toggleComponentPaletteFavorite(definition.type)}
                             className={cn(
-                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 transition hover:bg-surface-container-highest hover:text-primary focus-visible:text-primary",
-                              componentPaletteFavoriteTypes.includes(definition.type) && "text-primary",
+                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 opacity-0 transition hover:bg-surface-container-highest hover:text-primary hover:opacity-100 focus-visible:text-primary focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100",
+                              favorite && "text-primary opacity-100",
                             )}
                           >
-                            <Star aria-hidden className={cn("size-3.5", componentPaletteFavoriteTypes.includes(definition.type) && "fill-current")} />
+                            <Star aria-hidden className={cn("size-3.5", favorite && "fill-current")} />
                           </button>
                         </div>
                       );

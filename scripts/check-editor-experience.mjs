@@ -1602,6 +1602,9 @@ mustContain(designWorkspace, "2xl:grid-cols-[320px_minmax(0,1fr)_56px]", "Design
 mustContain(projectDock, 'data-builder-readable-dock="left"', "Project dock exposes a readable left dock marker");
 mustContain(projectDock, 'data-builder-side-dock-density="balanced-compact"', "Project dock uses compact side-dock chrome in design mode");
 mustContain(projectDock, 'data-builder-side-dock-content-density="compact"', "Project dock content uses reduced padding");
+mustContain(projectDock, "tabLayout = \"grid\"", "Project dock keeps grid tabs as the default for non-design consumers");
+mustContain(projectDock, "data-builder-side-dock-tab-density", "Project dock exposes tab density for runtime layout checks");
+mustContain(projectDock, "data-builder-dock-tab-list={layout}", "Project dock exposes the dock tab list layout");
 mustContain(projectDock, "data-builder-left-dock-collapse", "Project dock can collapse into a compact rail");
 mustContain(projectDock, "data-builder-left-dock-expand", "Project dock can expand from the compact rail");
 mustContain(inspectorDock, 'data-builder-readable-dock="right"', "Inspector dock exposes a readable right dock marker");
@@ -1610,6 +1613,7 @@ mustContain(inspectorDock, "data-builder-right-dock-expand", "Inspector dock can
 mustContain(builder, "rightDockCollapsed, setRightDockCollapsed", "Builder keeps the inspector collapsed by default for a quieter canvas");
 mustContain(builder, 'useState<BuilderLeftDockTab>("components")', "Design workspace defaults the left dock to the component palette instead of project management");
 mustContain(builder, 'nextMode === "design" && leftDockTab === "project"', "Design mode reopens the component palette after leaving project management");
+mustContain(builder, 'tabLayout="inline"', "Design mode uses a single-row left dock tab strip instead of a two-row switcher");
 mustContain(projectDock, "data-builder-side-dock-active-tab", "Project dock exposes the active left dock tab for runtime design-mode checks");
 mustContain(builder, "data-builder-workbench-layout-controls", "Canvas toolbar exposes layout controls for project, inspector, and output docks");
 mustContain(builder, "data-builder-toggle-left-dock", "Canvas toolbar can toggle the project dock");
@@ -1849,6 +1853,9 @@ mustContain(builder, "data-builder-component-collections", "Component palette ex
 mustContain(builder, "data-builder-component-favorites", "Component palette exposes favorite controls");
 mustContain(builder, "data-builder-component-recents", "Component palette exposes recently used controls");
 mustContain(builder, "data-builder-component-favorite-toggle", "Component palette rows expose favorite toggles");
+mustContain(builder, "data-builder-component-favorite-visibility", "Component palette favorite toggles expose pinned versus hover-reveal visibility");
+mustContain(builder, "group-hover:opacity-100", "Component palette keeps inactive favorite stars quiet until hover");
+mustContain(builder, "group-focus-within:opacity-100", "Component palette reveals favorite stars for keyboard focus");
 mustContain(projectDock, "data-builder-dock-tab", "Dock tabs expose stable runtime selectors");
 mustContain(projectDock, "data-builder-dock-tab-active", "Dock tabs expose active tab state for runtime checks");
 mustContain(builder, 'id: "component-palette-kits"', "Editor experience audit checks component palette kits");
