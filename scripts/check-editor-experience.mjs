@@ -1135,7 +1135,12 @@ mustContain(builder, "projectExplorerDossierSourceOfTruth", "Project node dossie
 mustContain(builder, "projectExplorerDossierTasks", "Project node dossier maps domains to recommended project tasks");
 mustContain(builder, "data-builder-project-node-dossier", "Project workspace renders the selected-node dossier");
 mustContain(builder, 'data-builder-project-workspace-detail-density="thin-inspector-stack"', "Project selected-node detail uses a thin inspector stack");
+mustContain(builder, 'data-builder-project-detail-panel-chrome="flat-inspector"', "Project detail panel avoids nested card chrome");
+mustContain(builder, 'data-builder-project-workspace-detail-chrome="single-layer-inspector"', "Project selected-node detail uses one inspector layer");
+mustContain(builder, 'data-builder-project-node-action-strip-chrome="toolbar-row"', "Project node action strip is rendered as an inspector toolbar row");
+mustContain(builder, 'data-builder-project-tree-selected-context-chrome="property-row"', "Project selected-node context renders as a flat property row");
 mustContain(builder, 'data-builder-project-node-dossier-density="thin-inspector-strip"', "Project node dossier uses a thin inspector strip");
+mustContain(builder, 'data-builder-project-node-dossier-chrome="flat-property-row"', "Project node dossier avoids standalone card chrome");
 mustContain(builder, "data-builder-project-node-dossier-source-of-truth", "Project node dossier shows source-of-truth files");
 mustContain(builder, "data-builder-project-node-dossier-save-target", "Project node dossier shows the save target");
 mustContain(builder, "data-builder-project-node-dossier-artifact-state", "Project node dossier shows artifact or sync state");

@@ -2455,8 +2455,11 @@ async function runProjectWorkspaceChecks(send, verified) {
     send,
     `(() => {
       const detail = document.querySelector("[data-builder-project-workspace-detail]");
+      const detailPanel = document.querySelector("[data-builder-project-detail-panel-density]");
       const breadcrumb = document.querySelector("[data-builder-project-tree-breadcrumb]");
       const fullPath = document.querySelector("[data-builder-project-tree-selected-full-path]");
+      const actionStrip = document.querySelector("[data-builder-project-node-action-strip]");
+      const selectedContext = document.querySelector("[data-builder-project-tree-selected-context]");
       const dossier = document.querySelector("[data-builder-project-node-dossier]");
       const taskStrip = document.querySelector("[data-builder-project-node-dossier-tasks]");
       const tasks = Array.from(document.querySelectorAll("[data-builder-project-node-dossier-task]"));
@@ -2467,11 +2470,17 @@ async function runProjectWorkspaceChecks(send, verified) {
       const dossierRect = dossier?.getBoundingClientRect();
       return {
         passed:
+          detailPanel?.getAttribute("data-builder-project-detail-panel-chrome") === "flat-inspector" &&
           detail?.getAttribute("data-builder-project-workspace-detail-density") === "thin-inspector-stack" &&
+          detail?.getAttribute("data-builder-project-workspace-detail-chrome") === "single-layer-inspector" &&
           breadcrumb?.getAttribute("data-builder-project-tree-breadcrumb-density") === "inline-row" &&
+          breadcrumb?.getAttribute("data-builder-project-tree-breadcrumb-chrome") === "flat-row" &&
+          actionStrip?.getAttribute("data-builder-project-node-action-strip-chrome") === "toolbar-row" &&
+          selectedContext?.getAttribute("data-builder-project-tree-selected-context-chrome") === "property-row" &&
           fullPath?.getAttribute("data-builder-project-tree-selected-full-path") === "deferred" &&
           Boolean(dossier) &&
           dossier?.getAttribute("data-builder-project-node-dossier-density") === "thin-inspector-strip" &&
+          dossier?.getAttribute("data-builder-project-node-dossier-chrome") === "flat-property-row" &&
           taskStrip?.getAttribute("data-builder-project-node-dossier-task-strip") === "icon-strip" &&
           tasks.length > 0 &&
           tasks.every((task) => Boolean(task.getAttribute("aria-label"))) &&
@@ -2480,7 +2489,7 @@ async function runProjectWorkspaceChecks(send, verified) {
           scopes?.getAttribute("data-builder-project-workspace-scopes-density") === "ide-scope-strip" &&
           scopeRows.length >= 4 &&
           scopeActions.length >= 4,
-        detail: \`detail=\${detail?.getAttribute("data-builder-project-workspace-detail-density") || "missing"}, dossier=\${dossier?.getAttribute("data-builder-project-node-dossier-density") || "missing"}/\${Math.round(dossierRect?.height || 0)}px, taskStrip=\${taskStrip?.getAttribute("data-builder-project-node-dossier-task-strip") || "missing"}/\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${scopes?.getAttribute("data-builder-project-workspace-scopes-density") || "missing"}, rows=\${scopeRows.length}, actions=\${scopeActions.length}\`
+        detail: \`panelChrome=\${detailPanel?.getAttribute("data-builder-project-detail-panel-chrome") || "missing"}, detail=\${detail?.getAttribute("data-builder-project-workspace-detail-density") || "missing"}/\${detail?.getAttribute("data-builder-project-workspace-detail-chrome") || "missing"}, dossier=\${dossier?.getAttribute("data-builder-project-node-dossier-density") || "missing"}/\${dossier?.getAttribute("data-builder-project-node-dossier-chrome") || "missing"}/\${Math.round(dossierRect?.height || 0)}px, taskStrip=\${taskStrip?.getAttribute("data-builder-project-node-dossier-task-strip") || "missing"}/\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${scopes?.getAttribute("data-builder-project-workspace-scopes-density") || "missing"}, rows=\${scopeRows.length}, actions=\${scopeActions.length}\`
       };
     })()`,
     "project node dossier and project workspace panels",

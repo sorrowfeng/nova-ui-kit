@@ -36804,16 +36804,18 @@ export function BuilderShowcase() {
                 </div>
 
                 <div
-                  className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[14px] border border-outline-variant bg-surface-container-low p-2 shadow-none"
+                  className="subtle-scrollbar min-h-0 overflow-y-auto rounded-[14px] border border-outline-variant bg-surface-container-low p-1 shadow-none"
                   data-builder-project-detail-panel-density="low-chrome-dock"
+                  data-builder-project-detail-panel-chrome="flat-inspector"
                 >
                   {selectedProjectExplorerNode ? (
                     <section
-                      className="rounded-lg border border-outline-variant bg-surface-container px-2 py-1.5"
+                      className="overflow-hidden rounded-md border border-outline-variant bg-surface-container-low/70"
                       data-builder-project-workspace-detail=""
                       data-builder-project-workspace-detail-density="thin-inspector-stack"
+                      data-builder-project-workspace-detail-chrome="single-layer-inspector"
                     >
-                      <div className="flex min-w-0 items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2 px-2 py-1.5">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-container-highest text-primary">
                           <SelectedProjectExplorerIcon aria-hidden className="size-4" />
                         </span>
@@ -36827,10 +36829,11 @@ export function BuilderShowcase() {
                         </div>
                       </div>
                       <nav
-                        className="mt-1.5 flex min-h-7 min-w-0 flex-wrap items-center gap-1 rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-1 text-[0.68rem]"
+                        className="flex min-h-7 min-w-0 flex-wrap items-center gap-1 border-t border-outline-variant px-2 py-1 text-[0.68rem]"
                         aria-label="当前项目节点路径"
                         data-builder-project-tree-breadcrumb=""
                         data-builder-project-tree-breadcrumb-density="inline-row"
+                        data-builder-project-tree-breadcrumb-chrome="flat-row"
                       >
                         {selectedProjectExplorerPathNodes.map((node, index) => {
                           const current = node.id === selectedProjectExplorerNode.id;
@@ -36859,9 +36862,10 @@ export function BuilderShowcase() {
                         {selectedProjectExplorerDisplayPath}
                       </p>
                       <section
-                        className="mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1"
+                        className="border-t border-outline-variant px-2 py-1"
                         data-builder-project-node-action-strip=""
                         data-builder-project-node-action-strip-density="primary-row-with-deferred-secondary"
+                        data-builder-project-node-action-strip-chrome="toolbar-row"
                         data-builder-project-node-action-strip-node={selectedProjectExplorerNode.id}
                         data-builder-project-node-action-strip-kind={selectedProjectExplorerDossier?.groupId ?? projectExplorerNodeGroupId(selectedProjectExplorerNode)}
                         data-builder-project-node-action-strip-file={selectedProjectExplorerFile?.id ?? "none"}
@@ -36986,9 +36990,10 @@ export function BuilderShowcase() {
                         </div>
                       </section>
                       <div
-                        className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-1 text-[0.68rem]"
+                        className="grid min-w-0 gap-x-2 gap-y-1 border-t border-outline-variant px-2 py-1 text-[0.68rem] lg:grid-cols-[auto_auto_minmax(0,1fr)]"
                         data-builder-project-tree-selected-context=""
                         data-builder-project-tree-selected-context-density="single-row"
+                        data-builder-project-tree-selected-context-chrome="property-row"
                       >
                         <button
                           type="button"
@@ -37025,9 +37030,10 @@ export function BuilderShowcase() {
                       </div>
                       {selectedProjectExplorerDossier ? (
                         <div
-                          className="mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1 text-xs"
+                          className="border-t border-outline-variant px-2 py-1 text-xs"
                           data-builder-project-node-dossier=""
                           data-builder-project-node-dossier-density="thin-inspector-strip"
+                          data-builder-project-node-dossier-chrome="flat-property-row"
                           data-builder-project-node-dossier-domain={selectedProjectExplorerDossier.groupId}
                         >
                           <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] xl:items-center">
@@ -37079,10 +37085,11 @@ export function BuilderShowcase() {
                       ) : null}
                       {selectedProjectExplorerImpactItems.length > 0 ? (
                         <details
-                          className="group mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1 text-xs"
+                          className="group border-t border-outline-variant px-2 py-1 text-xs"
                           data-builder-project-node-impact=""
                           data-builder-project-node-impact-count={selectedProjectExplorerImpactItems.length}
                           data-builder-project-node-impact-density="collapsed-summary"
+                          data-builder-project-node-impact-chrome="flat-disclosure-row"
                           data-builder-project-node-impact-state="collapsed-default"
                         >
                           <summary
@@ -37189,9 +37196,10 @@ export function BuilderShowcase() {
                         </div>
                       ) : null}
                       <details
-                        className="group mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
+                        className="group border-t border-outline-variant px-2 py-1.5"
                         data-builder-project-tree-quick-actions=""
                         data-builder-project-tree-quick-actions-density="collapsed-summary"
+                        data-builder-project-tree-quick-actions-chrome="flat-disclosure-row"
                       >
                         <summary
                           className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1 text-xs text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface [&::-webkit-details-marker]:hidden"
