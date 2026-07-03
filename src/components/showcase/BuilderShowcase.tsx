@@ -17926,6 +17926,24 @@ export function BuilderShowcase() {
       }),
     [activeComponentPaletteKitTypeSet, componentPaletteCategory, componentPaletteQuery],
   );
+  const visibleComponentPaletteGroups = useMemo(() => {
+    const hasFocusedFilter = componentPaletteQuery.trim().length > 0 || Boolean(activeComponentPaletteKitTypeSet);
+    return componentPaletteCategoryOptions
+      .filter((category): category is Extract<(typeof componentPaletteCategoryOptions)[number], { id: Exclude<ComponentPaletteCategoryId, "all"> }> => category.id !== "all")
+      .map((category) => {
+        const definitions = visibleComponentPalette.filter((definition) => componentPaletteCategoryForType(definition.type) === category.id);
+        const defaultOpen =
+          componentPaletteCategory === category.id ||
+          (componentPaletteCategory === "all" && (hasFocusedFilter ? definitions.length > 0 : category.id === "layout"));
+        return {
+          ...category,
+          definitions,
+          defaultOpen,
+        };
+      })
+      .filter((group) => group.definitions.length > 0);
+  }, [activeComponentPaletteKitTypeSet, componentPaletteCategory, componentPaletteQuery, visibleComponentPalette]);
+  const visibleComponentPaletteDefaultOpenGroupCount = visibleComponentPaletteGroups.filter((group) => group.defaultOpen).length;
   const canvasContextInsertSearchResults = useMemo(() => {
     if (!canvasContextInsertQuery.trim()) {
       return [];
@@ -48631,63 +48649,91 @@ export function BuilderShowcase() {
                   </section>
                 ) : null}
 
-                <div className="order-3 space-y-1.5" data-builder-component-list-priority="first">
-                  {visibleComponentPalette.length > 0 ? (
-                    visibleComponentPalette.map((definition) => {
-                      const Icon = definition.icon;
-                      const category = componentPaletteCategoryForType(definition.type);
-                      const favorite = componentPaletteFavoriteTypes.includes(definition.type);
-                      return (
-                        <div
-                          key={definition.type}
-                          data-builder-palette-type={definition.type}
-                          data-builder-palette-category={category}
-                          data-builder-palette-row-layout="compact"
-                          data-builder-palette-row-density="single-line"
-                          className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high"
+                <div
+                  className="order-3 space-y-1"
+                  data-builder-component-list-priority="first"
+                  data-builder-component-list-mode="category-disclosure"
+                  data-builder-component-list-open-groups={visibleComponentPaletteDefaultOpenGroupCount}
+                >
+                  {visibleComponentPaletteGroups.length > 0 ? (
+                    visibleComponentPaletteGroups.map((group) => (
+                      <details
+                        key={group.id}
+                        className="group/palette rounded-lg border border-outline-variant/80 bg-surface-container-low p-1"
+                        open={group.defaultOpen}
+                        data-builder-component-group={group.id}
+                        data-builder-component-group-layout="category-disclosure"
+                        data-builder-component-group-default-open={group.defaultOpen ? "true" : "false"}
+                      >
+                        <summary
+                          className="focus-ring flex h-7 cursor-pointer list-none items-center gap-2 rounded-md px-1.5 text-xs transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                          data-builder-component-group-summary={group.id}
                         >
-                          <button
-                            type="button"
-                            draggable={false}
-                            onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
-                            onClick={() => {
-                              if (suppressPaletteClickRef.current) {
-                                return;
-                              }
-                              addComponent(definition.type);
-                            }}
-                            className="focus-ring m3-state-layer grid h-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 text-left"
-                            title={`${definition.description} · ${componentPaletteCategoryLabel(category)}`}
-                            aria-label={`添加 ${definition.title}，${componentPaletteCategoryLabel(category)}`}
-                          >
-                            <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
-                              <Icon aria-hidden className="size-3.5" />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="truncate text-xs font-semibold leading-4">{definition.title}</span>
-                              <span className="sr-only" data-builder-palette-category-label="metadata">
-                                {componentPaletteCategoryLabel(category)}
-                              </span>
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            data-builder-component-favorite-toggle={definition.type}
-                            data-builder-component-favorite-visibility={favorite ? "pinned" : "hover-reveal"}
-                            aria-pressed={favorite}
-                            aria-label={`${favorite ? "取消收藏" : "收藏"} ${definition.title}`}
-                            title={favorite ? "取消收藏" : "收藏到常用控件"}
-                            onClick={() => toggleComponentPaletteFavorite(definition.type)}
-                            className={cn(
-                              "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 opacity-0 transition hover:bg-surface-container-highest hover:text-primary hover:opacity-100 focus-visible:text-primary focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100",
-                              favorite && "text-primary opacity-100",
-                            )}
-                          >
-                            <Star aria-hidden className={cn("size-3.5", favorite && "fill-current")} />
-                          </button>
+                          <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open/palette:rotate-90" />
+                          <span className="min-w-0 flex-1 truncate font-semibold text-on-surface">{group.label}</span>
+                          <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
+                            {group.definitions.length}
+                          </span>
+                        </summary>
+                        <div className="subtle-scrollbar mt-1 max-h-[260px] space-y-0.5 overflow-y-auto border-t border-outline-variant/70 pt-1" data-builder-component-group-details={group.id}>
+                          {group.definitions.map((definition) => {
+                            const Icon = definition.icon;
+                            const category = componentPaletteCategoryForType(definition.type);
+                            const favorite = componentPaletteFavoriteTypes.includes(definition.type);
+                            return (
+                              <div
+                                key={definition.type}
+                                data-builder-palette-type={definition.type}
+                                data-builder-palette-category={category}
+                                data-builder-palette-row-layout="compact"
+                                data-builder-palette-row-density="single-line"
+                                className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high"
+                              >
+                                <button
+                                  type="button"
+                                  draggable={false}
+                                  onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
+                                  onClick={() => {
+                                    if (suppressPaletteClickRef.current) {
+                                      return;
+                                    }
+                                    addComponent(definition.type);
+                                  }}
+                                  className="focus-ring m3-state-layer grid h-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 text-left"
+                                  title={`${definition.description} · ${componentPaletteCategoryLabel(category)}`}
+                                  aria-label={`添加 ${definition.title}，${componentPaletteCategoryLabel(category)}`}
+                                >
+                                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                                    <Icon aria-hidden className="size-3.5" />
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="truncate text-xs font-semibold leading-4">{definition.title}</span>
+                                    <span className="sr-only" data-builder-palette-category-label="metadata">
+                                      {componentPaletteCategoryLabel(category)}
+                                    </span>
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-builder-component-favorite-toggle={definition.type}
+                                  data-builder-component-favorite-visibility={favorite ? "pinned" : "hover-reveal"}
+                                  aria-pressed={favorite}
+                                  aria-label={`${favorite ? "取消收藏" : "收藏"} ${definition.title}`}
+                                  title={favorite ? "取消收藏" : "收藏到常用控件"}
+                                  onClick={() => toggleComponentPaletteFavorite(definition.type)}
+                                  className={cn(
+                                    "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 opacity-0 transition hover:bg-surface-container-highest hover:text-primary hover:opacity-100 focus-visible:text-primary focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100",
+                                    favorite && "text-primary opacity-100",
+                                  )}
+                                >
+                                  <Star aria-hidden className={cn("size-3.5", favorite && "fill-current")} />
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })
+                      </details>
+                    ))
                   ) : (
                     <div className="rounded-[18px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center">
                       <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />

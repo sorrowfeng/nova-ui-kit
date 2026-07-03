@@ -1896,6 +1896,12 @@ mustContain(builder, 'data-builder-component-palette-layout="qt-compact-list"', 
 mustContain(builder, 'data-builder-component-palette-priority="component-list-first"', "Component palette prioritizes the Widget Box control list before auxiliary tools");
 mustContain(builder, 'data-builder-component-category-strip="compact-grid"', "Component palette category filter avoids clipped horizontal pills");
 mustContain(builder, 'data-builder-component-list-priority="first"', "Component palette renders the draggable control list immediately after search and categories");
+mustContain(builder, 'data-builder-component-list-mode="category-disclosure"', "Component palette groups the long widget list into category disclosures");
+mustContain(builder, 'data-builder-component-group-layout="category-disclosure"', "Component palette category groups use collapsible Widget Box rows");
+mustContain(builder, "data-builder-component-group-summary", "Component palette category groups expose compact summaries");
+mustContain(builder, "data-builder-component-group-details", "Component palette category groups defer component rows until expanded");
+mustContain(builder, "visibleComponentPaletteGroups", "Component palette derives grouped visible rows instead of a single long flat list");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.componentPaletteCategoryDisclosureRuntime = true", "Browser smoke verifies component palette category disclosures");
 mustContain(builder, 'data-builder-component-quick-insert-priority="secondary-tools"', "Component palette keeps quick insert as secondary tooling instead of occupying the first widget-box viewport");
 mustContain(builder, 'data-builder-component-kits-layout="compact-list"', "Component palette kit launcher avoids large marketing-style cards");
 mustContain(builder, 'data-builder-component-kits-density="single-line"', "Component palette kit rows stay single-line like an IDE widget box");
