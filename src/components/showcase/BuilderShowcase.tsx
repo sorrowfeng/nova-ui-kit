@@ -45398,25 +45398,30 @@ export function BuilderShowcase() {
             </aside>
             <section className="space-y-4">
               <div
-                className="rounded-[20px] border border-outline-variant bg-surface-container-low/80 p-2.5"
+                className="rounded-lg border border-outline-variant bg-surface-container-low/80 p-2"
                 data-builder-desktop-runtime-workbench=""
+                data-builder-desktop-runtime-workbench-density="thin-output-stack"
                 data-builder-desktop-runtime-state={desktopRuntimeState}
               >
-                <div className="mb-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                <div
+                  className="mb-1.5 flex min-h-8 flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between"
+                  data-builder-desktop-runtime-header=""
+                  data-builder-desktop-runtime-header-density="single-row"
+                >
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-secondary-container-foreground">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-secondary-container text-secondary-container-foreground">
                         <Monitor aria-hidden className="size-3.5" />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">桌面运行</h2>
-                        <p className="truncate text-xs text-on-surface">
+                        <h2 className="truncate text-sm font-semibold leading-5 text-on-surface">桌面运行</h2>
+                        <p className="sr-only">
                           Tauri exe 目标、窗口验证与运行控制台
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                     <Badge variant={desktopRuntimeBadgeVariant} data-builder-desktop-runtime-status="">
                       {desktopRuntimeStatusLabel}
                     </Badge>
@@ -45424,6 +45429,7 @@ export function BuilderShowcase() {
                       size="sm"
                       variant={workflowRuntimeActive ? "destructive" : "secondary"}
                       data-builder-desktop-runtime-primary=""
+                      data-builder-desktop-runtime-primary-density="inline-run"
                       loading={desktopRuntimePrimaryLoading}
                       disabled={desktopRuntimePrimaryDisabled}
                       onClick={() => {
@@ -45441,12 +45447,64 @@ export function BuilderShowcase() {
                       {workflowRuntimeActive ? <Square aria-hidden className="size-4" /> : activeProject.outputExePath ? <Play aria-hidden className="size-4" /> : <Download aria-hidden className="size-4" />}
                       {desktopRuntimePrimaryLabel}
                     </Button>
+                    <div
+                      className="flex shrink-0 items-center gap-0.5 rounded-md border border-outline-variant bg-surface-container px-1 py-0.5"
+                      data-builder-desktop-runtime-actions=""
+                      data-builder-desktop-runtime-actions-density="header-icon-strip"
+                    >
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        data-builder-desktop-runtime-build=""
+                        aria-label="构建 exe"
+                        title="构建 exe"
+                        loading={building || runningProjectTask?.actionId === "build-exe"}
+                        disabled={building || bundling}
+                        onClick={() => enqueueProjectTask("build-exe")}
+                      >
+                        <Download aria-hidden className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        data-builder-desktop-runtime-validate=""
+                        aria-label="验证窗口"
+                        title="验证窗口"
+                        loading={validatingWindow || runningProjectTask?.actionId === "validate-window"}
+                        disabled={building || bundling || validatingWindow}
+                        onClick={() => enqueueProjectTask("validate-window")}
+                      >
+                        <CheckCircle2 aria-hidden className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        data-builder-desktop-runtime-generated-plan=""
+                        aria-label="生成文件计划"
+                        title="生成文件计划"
+                        loading={previewingGeneratedFiles || applyingGeneratedFiles}
+                        disabled={generatedPlanBusy}
+                        onClick={() => enqueueProjectTask("generate-file-plan")}
+                      >
+                        <FileJson aria-hidden className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        data-builder-desktop-runtime-output=""
+                        aria-label="打开输出 Dock"
+                        title="打开输出 Dock"
+                        onClick={() => openBottomDock("output", false)}
+                      >
+                        <Terminal aria-hidden className="size-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
+                <div className="grid items-start gap-1.5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.52fr)]">
                   <div
-                    className="grid min-w-0 overflow-hidden rounded-xl border border-outline-variant bg-surface-container text-xs md:grid-cols-2 xl:grid-cols-4 xl:divide-x xl:divide-outline-variant"
+                    className="grid min-w-0 overflow-hidden rounded-md border border-outline-variant bg-surface-container text-xs md:grid-cols-4 md:divide-x md:divide-outline-variant"
                     data-builder-desktop-runtime-summary=""
                     data-builder-desktop-runtime-summary-density="single-row-output"
                     data-builder-desktop-runtime-summary-layout="inline-property-strip"
@@ -45485,18 +45543,20 @@ export function BuilderShowcase() {
                       return (
                         <article
                           key={item.label}
-                          className="min-w-0 self-start px-2.5 py-1.5"
+                          className="min-w-0 self-start px-2 py-1"
+                          title={`${item.label}: ${item.value} · ${item.detail}`}
                           data-builder-desktop-runtime-card={item.label}
                           data-builder-desktop-runtime-card-density="compact-cell"
+                          data-builder-desktop-runtime-card-detail="deferred"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-highest text-primary">
+                            <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-surface-container-highest text-primary">
                               <ItemIcon aria-hidden className="size-3" />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{item.label}</p>
+                              <p className="truncate text-[0.6rem] font-medium text-on-surface-variant">{item.label}</p>
                               <p className="truncate text-[0.72rem] font-medium leading-4 text-on-surface">{item.value}</p>
-                              <p className="truncate font-mono text-[0.62rem] leading-3 text-on-surface-variant">{item.detail}</p>
+                              <p className="sr-only">{item.detail}</p>
                             </div>
                           </div>
                         </article>
@@ -45505,19 +45565,19 @@ export function BuilderShowcase() {
                   </div>
 
                   <details
-                    className="group min-w-0 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-1.5 text-xs"
+                    className="group min-w-0 rounded-md border border-outline-variant bg-surface-container px-2 py-1 text-xs"
                     data-builder-desktop-runtime-console=""
                     data-builder-desktop-runtime-console-density="collapsed-summary"
                     data-builder-desktop-runtime-console-state="collapsed-default"
                   >
                     <summary
-                      className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 [&::-webkit-details-marker]:hidden"
+                      className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 [&::-webkit-details-marker]:hidden"
                       data-builder-desktop-runtime-console-summary="single-row"
                     >
                       <div className="flex min-w-0 items-center gap-2">
                         <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                         <div className="min-w-0">
-                          <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行控制台</h3>
+                          <h3 className="truncate text-xs font-medium text-on-surface">运行控制台</h3>
                           <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
                             {desktopRuntimeLogPath || "运行桌面端后写入 .nova/runtime"}
                           </p>
@@ -45568,7 +45628,7 @@ export function BuilderShowcase() {
                 </div>
 
                 <details
-                  className="group mt-2 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-1.5"
+                  className="group mt-1.5 rounded-md border border-outline-variant bg-surface-container px-2 py-1"
                   data-builder-runtime-parity-panel=""
                   data-builder-runtime-parity-density="collapsed-default"
                   data-builder-runtime-parity-grid="off"
@@ -45579,19 +45639,19 @@ export function BuilderShowcase() {
                   data-builder-runtime-parity-validation={latestValidationRun?.status ?? "missing"}
                 >
                   <summary
-                    className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-xs [&::-webkit-details-marker]:hidden"
+                    className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
                     data-builder-runtime-parity-summary="single-row"
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-2">
-                          <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行端窗口一致性</h3>
+                          <h3 className="truncate text-xs font-medium text-on-surface">运行端窗口一致性</h3>
                           <Badge variant={releaseWindowShellMatchesPage ? "secondary" : "outline"}>
                             {releaseWindowShellMatchesPage ? "页面与发布一致" : "等待同步"}
                           </Badge>
                         </div>
-                        <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        <p className="sr-only">
                           发布窗口、标题栏、验证和运行网格的低频详情，展开后处理。
                         </p>
                       </div>
@@ -45667,51 +45727,6 @@ export function BuilderShowcase() {
                     </div>
                   </div>
                 </details>
-
-                <div className="mt-2 flex min-w-0 flex-wrap items-center justify-end gap-1.5" data-builder-desktop-runtime-actions="" data-builder-desktop-runtime-actions-density="toolbar">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    data-builder-desktop-runtime-build=""
-                    loading={building || runningProjectTask?.actionId === "build-exe"}
-                    disabled={building || bundling}
-                    onClick={() => enqueueProjectTask("build-exe")}
-                  >
-                    <Download aria-hidden className="size-4" />
-                    构建 exe
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    data-builder-desktop-runtime-validate=""
-                    loading={validatingWindow || runningProjectTask?.actionId === "validate-window"}
-                    disabled={building || bundling || validatingWindow}
-                    onClick={() => enqueueProjectTask("validate-window")}
-                  >
-                    <CheckCircle2 aria-hidden className="size-4" />
-                    验证窗口
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    data-builder-desktop-runtime-generated-plan=""
-                    loading={previewingGeneratedFiles || applyingGeneratedFiles}
-                    disabled={generatedPlanBusy}
-                    onClick={() => enqueueProjectTask("generate-file-plan")}
-                  >
-                    <FileJson aria-hidden className="size-4" />
-                    生成计划
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    data-builder-desktop-runtime-output=""
-                    onClick={() => openBottomDock("output", false)}
-                  >
-                    <Terminal aria-hidden className="size-4" />
-                    输出 Dock
-                  </Button>
-                </div>
               </div>
               <details
                 className="group rounded-lg border border-outline-variant bg-surface-container-low/80 p-2.5 text-xs"

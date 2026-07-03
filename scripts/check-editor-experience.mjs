@@ -1437,12 +1437,16 @@ mustContain(windowTitlebar, "data-titlebar-build-menu-secondary", "Titlebar buil
 mustContain(windowTitlebar, 'data-titlebar-command-overflow="build-run-secondary"', "Titlebar declares build/run actions as overflow, not the primary run surface");
 mustContain(builder, "data-builder-build-page-more-checks", "Build page groups secondary checks behind a compact menu");
 mustContain(builder, "data-builder-desktop-runtime-workbench", "Build page exposes a desktop-runtime-first workbench");
+mustContain(builder, 'data-builder-desktop-runtime-workbench-density="thin-output-stack"', "Desktop runtime workbench uses a thin IDE output-stack density");
+mustContain(builder, 'data-builder-desktop-runtime-header-density="single-row"', "Desktop runtime header is a single compact row");
 mustContain(builder, "data-builder-desktop-runtime-primary", "Desktop runtime workbench can build, run, or stop the target exe");
+mustContain(builder, 'data-builder-desktop-runtime-primary-density="inline-run"', "Desktop runtime primary run button stays inline with the header");
 mustContain(builder, "data-builder-desktop-runtime-state", "Desktop runtime workbench exposes the current runtime state");
 mustContain(builder, "data-builder-desktop-runtime-summary", "Desktop runtime workbench summarizes exe, validation, session, and queue status");
 mustContain(builder, 'data-builder-desktop-runtime-summary-density="single-row-output"', "Desktop runtime summary uses a compact single-row output density");
 mustContain(builder, 'data-builder-desktop-runtime-summary-layout="inline-property-strip"', "Desktop runtime summary renders as an inline property strip instead of a card wall");
 mustContain(builder, 'data-builder-desktop-runtime-card-density="compact-cell"', "Desktop runtime status items render as compact cells instead of large cards");
+mustContain(builder, 'data-builder-desktop-runtime-card-detail="deferred"', "Desktop runtime status details are deferred from the visible cell");
 mustContain(builder, "data-builder-desktop-runtime-console", "Desktop runtime workbench exposes the runtime console panel");
 mustContain(builder, 'data-builder-desktop-runtime-console-density="collapsed-summary"', "Desktop runtime console defaults to a collapsed summary instead of a permanent output pane");
 mustContain(builder, 'data-builder-desktop-runtime-console-state="collapsed-default"', "Desktop runtime console declares its default collapsed state");
@@ -1451,7 +1455,7 @@ mustContain(builder, 'data-builder-desktop-runtime-console-details="deferred"', 
 mustContain(builder, "data-builder-desktop-runtime-log-preview", "Desktop runtime workbench previews captured stdout and stderr");
 mustContain(builder, "data-builder-desktop-runtime-validate", "Desktop runtime workbench can enqueue generated-window validation");
 mustContain(builder, "data-builder-desktop-runtime-build", "Desktop runtime workbench can enqueue exe builds");
-mustContain(builder, 'data-builder-desktop-runtime-actions-density="toolbar"', "Desktop runtime actions use a compact toolbar instead of a button grid");
+mustContain(builder, 'data-builder-desktop-runtime-actions-density="header-icon-strip"', "Desktop runtime secondary actions live in a header icon strip instead of a separate button row");
 mustContain(builder, 'id: "desktop-runtime-workbench"', "Editor experience audit checks desktop runtime workbench");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.desktopRuntimeConsoleCollapsedRuntime = true", "Browser smoke verifies the desktop runtime console expands on demand");
 mustContain(builder, "data-builder-runtime-parity-panel", "Build page exposes runtime window parity checks");
