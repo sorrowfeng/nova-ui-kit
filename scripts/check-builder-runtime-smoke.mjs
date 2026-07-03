@@ -2229,7 +2229,10 @@ async function runProjectWorkspaceChecks(send, verified) {
       const folderHealthRows = Array.from(document.querySelectorAll("[data-builder-project-folder-health-row]"));
       const folderHealthIds = folderHealthRows.map((row) => row.getAttribute("data-builder-project-folder-health-row") || "");
       const folderHealthStates = folderHealthRows.map((row) => row.getAttribute("data-builder-project-folder-health-state") || "");
-      const folderHealthPaths = Array.from(document.querySelectorAll("[data-builder-project-folder-health-path]")).map((row) => row.textContent?.trim() || "");
+      const folderHealthList = document.querySelector("[data-builder-project-folder-health-list]");
+      const folderHealthRowRects = folderHealthRows.map((row) => row.getBoundingClientRect());
+      const folderHealthPaths = Array.from(document.querySelectorAll("[data-builder-project-folder-health-path]"));
+      const folderHealthPathLabels = folderHealthPaths.map((row) => row.textContent?.trim() || "");
       const folderHealthOpen = Array.from(document.querySelectorAll("[data-builder-project-folder-health-open]"));
       const actionCount = Number(actionCenter?.getAttribute("data-builder-project-action-center-count") || 0);
       const actionRows = Array.from(document.querySelectorAll("[data-builder-project-action-center-row]"));
@@ -2257,12 +2260,19 @@ async function runProjectWorkspaceChecks(send, verified) {
           sourceOverviewOpenButtons.length === sourceOverviewRows.length &&
           sourceOverviewOpenButtons.every((button) => Boolean(button.getAttribute("aria-label"))) &&
           sourceOverviewMaxRowHeight <= 52 &&
+          folderHealth?.getAttribute("data-builder-project-folder-health-density") === "compact-table" &&
+          folderHealthList?.getAttribute("data-builder-project-folder-health-list-density") === "compact-rows" &&
           folderHealthCount >= 4 &&
           folderHealthRows.length === folderHealthCount &&
+          folderHealthRows.every((row) => row.getAttribute("data-builder-project-folder-health-row-density") === "compact-row") &&
+          folderHealthRowRects.every((rect) => rect.height <= 56) &&
           ["root", "source", "generated", "metadata"].every((id) => folderHealthIds.includes(id)) &&
           folderHealthStates.every((state) => ["ready", "warning", "pending"].includes(state)) &&
-          folderHealthPaths.some((path) => path.includes(".nova")) &&
+          folderHealthPaths.length === folderHealthRows.length &&
+          folderHealthPaths.every((path) => path.getAttribute("data-builder-project-folder-health-path-density") === "single-line") &&
+          folderHealthPathLabels.some((path) => path.includes(".nova")) &&
           folderHealthOpen.length >= 4 &&
+          folderHealthOpen.every((button) => Boolean(button.getAttribute("aria-label"))) &&
           actionCount >= 5 &&
           actionRows.length === actionCount &&
           ["sync", "logic", "run", "build"].every((kind) => actionKinds.includes(kind)) &&
@@ -2273,7 +2283,7 @@ async function runProjectWorkspaceChecks(send, verified) {
           Boolean(workingSetOpen) &&
           Boolean(workingSetReveal) &&
           ownershipCount > 0,
-        detail: \`nodes=\${nodes.length}, topology=\${topologyCount}, source=\${sourceCount}, sourceRows=\${compactSourceOverviewRows.length}/\${sourceOverviewRows.length}, sourceMaxRow=\${Math.round(sourceOverviewMaxRowHeight)}, folderHealth=\${folderHealthCount}/\${folderHealthIds.join("/")}, actionCenter=\${actionCount}/\${actionKinds.join("/")}, runKit=\${actionRunKit}, workingSet=\${workingSetCount}, ownership=\${ownershipCount}\`
+        detail: \`nodes=\${nodes.length}, topology=\${topologyCount}, source=\${sourceCount}, sourceRows=\${compactSourceOverviewRows.length}/\${sourceOverviewRows.length}, sourceMaxRow=\${Math.round(sourceOverviewMaxRowHeight)}, folderHealth=\${folderHealth?.getAttribute("data-builder-project-folder-health-density") || "missing"}/\${folderHealthCount}/\${folderHealthIds.join("/")}/maxRow:\${Math.round(Math.max(0, ...folderHealthRowRects.map((rect) => rect.height)))}, actionCenter=\${actionCount}/\${actionKinds.join("/")}, runKit=\${actionRunKit}, workingSet=\${workingSetCount}, ownership=\${ownershipCount}\`
       };
     })()`,
     "project workspace tree, topology, source overview, folder health, action center, working set, and ownership matrix",

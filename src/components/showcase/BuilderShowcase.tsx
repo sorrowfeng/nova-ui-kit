@@ -36107,83 +36107,89 @@ export function BuilderShowcase() {
               </section>
 
               <section
-                className="rounded-[24px] border border-outline-variant bg-surface-container p-4 shadow-m3-1"
+                className="rounded-[18px] border border-outline-variant bg-surface-container p-3 shadow-m3-1"
                 data-builder-project-folder-health=""
+                data-builder-project-folder-health-density="compact-table"
                 data-builder-project-folder-health-count={projectFolderHealthItems.length}
                 data-builder-project-folder-health-root={activeProject.rootPath ? "connected" : "missing"}
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                        <FolderOpen aria-hidden className="size-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold text-on-surface">项目文件夹健康</h3>
-                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                          把本地项目根、源码归属、生成输出和隐藏 .nova 状态拆成四个边界，明确哪些内容由保存写入、哪些由构建生成。
-                        </p>
-                      </div>
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                      <FolderOpen aria-hidden className="size-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="truncate text-sm font-semibold text-on-surface">项目文件夹健康</h3>
+                      <p className="truncate text-xs text-on-surface-variant">根目录、源码、生成输出和 .nova 本地状态</p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-folder-health-summary="">
+                  <div className="flex shrink-0 flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-folder-health-summary="inline-status">
                     <Badge variant={activeProject.rootPath ? "secondary" : "outline"} data-builder-project-folder-health-root-state="">
-                      {activeProject.rootPath ? "本地文件夹已连接" : "等待保存到文件夹"}
+                      {activeProject.rootPath ? "已连接" : "待保存"}
                     </Badge>
                     <Badge variant={projectSourceDirty ? "destructive" : "secondary"}>
-                      {projectSourceDirty ? "来源待同步" : "来源同步"}
+                      {projectSourceDirty ? "待同步" : "已同步"}
                     </Badge>
-                    <Badge variant="outline">{projectSaveManifestItems.length} 保存项</Badge>
+                    <Badge variant="outline">{projectSaveManifestItems.length} 项</Badge>
                   </div>
                 </div>
-                <div className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-4" data-builder-project-folder-health-list="">
+                <div
+                  className="mt-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low"
+                  data-builder-project-folder-health-list=""
+                  data-builder-project-folder-health-list-density="compact-rows"
+                >
+                  <div className="grid grid-cols-[minmax(8rem,0.9fr)_minmax(0,1.4fr)_minmax(7rem,0.9fr)_auto] gap-2 border-b border-outline-variant bg-surface-container-high px-2.5 py-1.5 text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant max-lg:hidden">
+                    <span>边界</span>
+                    <span>状态</span>
+                    <span>路径</span>
+                    <span className="text-right">打开</span>
+                  </div>
                   {projectFolderHealthItems.map((item) => {
                     const ItemIcon = item.icon;
                     return (
                       <article
                         key={item.id}
                         className={cn(
-                          "grid min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-2 rounded-[20px] border px-3 py-3 text-xs",
-                          item.state === "ready"
-                            ? "border-outline-variant bg-surface-container-low"
-                            : item.state === "warning"
-                              ? "border-destructive/25 bg-destructive/10"
-                              : "border-outline-variant bg-surface-container-high",
+                          "grid min-h-11 min-w-0 items-center gap-2 border-b border-outline-variant/70 px-2.5 py-1.5 text-xs last:border-b-0 lg:grid-cols-[minmax(8rem,0.9fr)_minmax(0,1.4fr)_minmax(7rem,0.9fr)_auto]",
+                          item.state === "warning"
+                            ? "bg-destructive/8"
+                            : item.state === "pending"
+                              ? "bg-surface-container"
+                              : "bg-surface-container-low",
                         )}
                         data-builder-project-folder-health-row={item.id}
+                        data-builder-project-folder-health-row-density="compact-row"
                         data-builder-project-folder-health-state={item.state}
                         data-builder-project-folder-health-route-group={item.routeGroupId ?? "none"}
                       >
-                        <div className="flex min-w-0 items-start gap-2">
-                          <span className="flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                            <ItemIcon aria-hidden className="size-4" />
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                            <ItemIcon aria-hidden className="size-3.5" />
                           </span>
-                          <div className="min-w-0">
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                              <h4 className="truncate font-semibold text-on-surface">{item.title}</h4>
-                              <Badge
-                                variant={item.state === "ready" ? "secondary" : item.state === "warning" ? "destructive" : "outline"}
-                                className="shrink-0 text-[0.58rem]"
-                                data-builder-project-folder-health-metric={item.id}
-                              >
-                                {item.metric}
-                              </Badge>
-                            </div>
-                            <p className="mt-1 line-clamp-3 leading-5 text-on-surface-variant">{item.detail}</p>
-                          </div>
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium text-on-surface">{item.title}</span>
+                            <span className="block truncate text-[0.66rem] leading-3 text-on-surface-variant">{item.metric}</span>
+                          </span>
                         </div>
-                        <p className="min-w-0 break-all rounded-2xl bg-surface-container px-3 py-2 font-mono text-[0.66rem] leading-4 text-on-surface-variant" data-builder-project-folder-health-path="">
+                        <p className="min-w-0 truncate text-on-surface-variant">{item.detail}</p>
+                        <p
+                          className="min-w-0 truncate rounded-md bg-surface-container px-2 py-1 font-mono text-[0.66rem] text-on-surface-variant"
+                          data-builder-project-folder-health-path=""
+                          data-builder-project-folder-health-path-density="single-line"
+                          title={item.path}
+                        >
                           {item.path}
                         </p>
                         <Button
-                          size="sm"
+                          size="icon-sm"
                           variant={item.state === "warning" ? "secondary" : "ghost"}
-                          className="justify-center"
+                          className="size-7 justify-self-end rounded-md"
+                          aria-label={`${item.actionLabel} ${item.title}`}
+                          title={item.actionLabel}
                           data-builder-project-folder-health-open={item.id}
                           onClick={() => openProjectFolderHealthItem(item)}
                         >
-                          <ArrowRight aria-hidden className="size-4" />
-                          {item.actionLabel}
+                          <ArrowRight aria-hidden className="size-3.5" />
                         </Button>
                       </article>
                     );

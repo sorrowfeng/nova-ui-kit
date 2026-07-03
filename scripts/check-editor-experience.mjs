@@ -1304,9 +1304,13 @@ mustContain(builder, 'id: "project-save-plan"', "Editor experience audit checks 
 mustContain(builder, "type ProjectFolderHealthItem", "Project mode models project folder health boundaries");
 mustContain(builder, "projectFolderHealthItems", "Project mode derives project folder health from source, generated, and metadata routes");
 mustContain(builder, "data-builder-project-folder-health", "Project mode renders a project folder health panel");
+mustContain(builder, 'data-builder-project-folder-health-density="compact-table"', "Project folder health renders as a compact IDE table");
+mustContain(builder, 'data-builder-project-folder-health-list-density="compact-rows"', "Project folder health boundaries use compact rows instead of cards");
+mustContain(builder, 'data-builder-project-folder-health-row-density="compact-row"', "Project folder health row density stays compact");
 mustContain(builder, "data-builder-project-folder-health-row", "Project folder health panel renders boundary rows");
 mustContain(builder, "data-builder-project-folder-health-state", "Project folder health rows expose boundary state");
 mustContain(builder, "data-builder-project-folder-health-path", "Project folder health rows expose actual filesystem targets");
+mustContain(builder, 'data-builder-project-folder-health-path-density="single-line"', "Project folder health paths stay on a single line");
 mustContain(builder, "data-builder-project-folder-health-open", "Project folder health rows can route to the matching project surface");
 mustContain(builder, 'id: "project-folder-health"', "Editor experience audit checks project folder health");
 mustContain(builder, "data-builder-project-file-routing", "Project mode exposes an IDE-style file routing panel");
