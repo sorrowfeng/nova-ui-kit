@@ -1647,9 +1647,12 @@ mustContain(builder, 'data-builder-project-workspace-header-meta="single-inline"
 mustContain(builder, 'data-builder-project-workspace-header-actions="single-row-toolbar"', "Project workspace header actions stay in one toolbar row");
 mustContain(builder, 'data-builder-project-workspace-header-overflow-trigger', "Project workspace header moves low-frequency actions into an overflow menu");
 mustContain(builder, 'data-builder-project-workspace-header-overflow-menu', "Project workspace header exposes deferred low-frequency project actions");
-mustContain(builder, 'data-builder-project-workspace-summary-density="single-row"', "Project file tree summary uses a single-row strip instead of stacked statistic cards");
+mustContain(builder, 'data-builder-project-tree-header-density="compact-title-toolbar"', "Project file tree header uses a compact IDE title toolbar");
+mustContain(builder, 'data-builder-project-tree-header-actions="compact"', "Project file tree expand and collapse actions stay in the compact header");
+mustContain(builder, 'data-builder-project-workspace-summary-density="inline-counts"', "Project file tree summary counts stay inline instead of taking a separate row");
 mustContain(builder, 'data-builder-project-tree-toolbar-density="single-row-filter-search"', "Project file tree filters and search share one compact IDE toolbar");
 mustContain(builder, 'data-builder-project-workspace-filter-density="toolbar-segmented"', "Project file tree filters use compact segmented toolbar controls");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.projectTreeCompactHeaderRuntime = true", "Browser smoke verifies the compact project tree header");
 mustContain(builder, 'data-builder-project-node-action-strip-density="primary-row-with-deferred-secondary"', "Project selected-node actions expose only the primary row by default");
 mustContain(builder, 'data-builder-project-tree-selected-context-density="single-row"', "Project selected-node context uses a single-row strip");
 mustContain(designWorkspace, "xl:grid-cols-[56px_minmax(0,1fr)_56px]", "Design workspace supports compact rail columns for both side docks");

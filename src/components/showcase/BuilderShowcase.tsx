@@ -36432,13 +36432,30 @@ export function BuilderShowcase() {
                   className="flex min-h-0 flex-col overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container-low p-2 shadow-none"
                   data-builder-project-tree-panel-density="low-chrome-dock"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-on-surface">工程文件树</h3>
-                      <p className="mt-1 text-xs leading-5 text-on-surface-variant">UI、Rust、资源、生成 app 和 .nova 本地元数据在这里统一管理。</p>
+                  <div
+                    className="flex min-h-8 items-center justify-between gap-2 rounded-lg px-1"
+                    data-builder-project-tree-header=""
+                    data-builder-project-tree-header-density="compact-title-toolbar"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h3 className="truncate text-sm font-semibold text-on-surface">工程文件树</h3>
+                      <div
+                        className="hidden min-w-0 items-center gap-1 text-[0.62rem] text-on-surface-variant sm:flex"
+                        data-builder-project-workspace-summary-strip=""
+                        data-builder-project-storage-boundaries=""
+                        data-builder-project-workspace-summary-density="inline-counts"
+                      >
+                        <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">
+                          {visibleProjectExplorerNodes.length} 节点
+                        </Badge>
+                        <span className="font-mono">{activeProject.files.length} UI</span>
+                        <span aria-hidden className="h-3 w-px bg-outline-variant" />
+                        <span className="font-mono">{activeProject.rustCommands.length + activeProject.rustModules.length} Rust</span>
+                        <span aria-hidden className="h-3 w-px bg-outline-variant" />
+                        <span className="font-mono">{diskCheckpoints.length + 2} .nova</span>
+                      </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline">{visibleProjectExplorerNodes.length} 节点</Badge>
+                    <div className="flex shrink-0 items-center gap-1" data-builder-project-tree-header-actions="compact">
                       <button
                         type="button"
                         className="focus-ring rounded-lg px-2 py-1 text-[0.64rem] text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
@@ -36460,36 +36477,7 @@ export function BuilderShowcase() {
                     </div>
                   </div>
                   <div
-                    className="mt-2 flex min-w-0 flex-wrap items-center gap-1 rounded-lg border border-outline-variant/80 bg-surface-container px-2 py-1 text-[0.64rem]"
-                    data-builder-project-workspace-summary-strip=""
-                    data-builder-project-storage-boundaries=""
-                    data-builder-project-workspace-summary-density="single-row"
-                  >
-                    {[
-                      ["UI", activeProject.files.length],
-                      ["控件", projectExplorerModel.controlCount],
-                      ["Rust", activeProject.rustCommands.length + activeProject.rustModules.length],
-                      [".nova", diskCheckpoints.length + 2],
-                    ].map(([label, value]) => (
-                      <span key={label} className="inline-flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-on-surface-variant">
-                        <span className="font-mono text-on-surface">{value}</span>
-                        <span className="truncate">{label}</span>
-                      </span>
-                    ))}
-                    <span className="hidden h-4 w-px bg-outline-variant sm:inline-block" aria-hidden />
-                    {[
-                      ["源码", `${activeProject.files.length} UI / ${activeProject.rustCommands.length} 命令`],
-                      ["生成", activeProject.outputExePath ? "exe 已生成" : "等待构建"],
-                      ["元数据", `${diskCheckpoints.length} 检查点`],
-                    ].map(([label, value]) => (
-                      <span key={label} className="inline-flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-0.5">
-                        <span className="text-on-surface-variant">{label}</span>
-                        <span className="truncate font-mono text-[0.62rem] text-on-surface">{value}</span>
-                      </span>
-                    ))}
-                  </div>
-                  <div
-                    className="mt-2 grid min-w-0 gap-1 rounded-lg border border-outline-variant/80 bg-surface-container px-1.5 py-1 text-[0.64rem] sm:grid-cols-[minmax(8rem,1fr)_auto]"
+                    className="mt-1.5 grid min-w-0 gap-1 rounded-lg border border-outline-variant/80 bg-surface-container px-1.5 py-1 text-[0.64rem] sm:grid-cols-[minmax(8rem,1fr)_auto]"
                     data-builder-project-tree-toolbar=""
                     data-builder-project-tree-toolbar-density="single-row-filter-search"
                   >
