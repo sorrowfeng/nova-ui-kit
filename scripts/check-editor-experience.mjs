@@ -136,6 +136,8 @@ mustContain(builder, 'data-builder-canvas-window-shell-placement="outside-conten
 mustContain(builder, "data-builder-canvas-controls-density", "Canvas controls expose compact default density");
 mustContain(builder, 'data-builder-canvas-toolbar-metrics="compact"', "Canvas toolbar combines size, zoom, and selection metrics into one compact readout");
 mustContain(builder, 'data-builder-selection-actionbar-density="compact"', "Selection actionbar uses compact IDE-style density");
+mustContain(builder, 'data-builder-empty-state-density="compact-strip"', "Empty design canvas starter renders as a compact strip instead of a centered card");
+mustContain(builder, 'aria-label={`插入${definition.title}`}', "Empty design canvas starter icon buttons stay accessible after compaction");
 mustNotContain(builder, "absolute -top-7 left-0 h-6", "Horizontal ruler stays inside the canvas content plane");
 mustNotContain(builder, "absolute -left-9 top-0 w-8", "Vertical ruler stays inside the canvas content plane");
 mustNotContain(builder, 'const selectionActionBarTopClass = "top-[8.75rem]"', "Selection actionbar no longer overlays the canvas viewport");

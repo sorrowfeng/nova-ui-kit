@@ -49979,57 +49979,65 @@ export function BuilderShowcase() {
                     onDrop={handleCanvasDrop}
                   >
                     {items.length === 0 ? (
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div
+                        className={cn(
+                          "pointer-events-none absolute inset-x-4 z-[3] flex justify-center",
+                          page.showRulers ? "top-28" : "top-4",
+                        )}
+                      >
                         <div
-                          className="pointer-events-auto w-[min(420px,calc(100%-48px))] rounded-[24px] border border-dashed border-outline-variant bg-surface-container-lowest/95 px-5 py-4 text-center shadow-m3-2 backdrop-blur"
+                          data-builder-design-empty-state=""
+                          data-builder-empty-state-density="compact-strip"
+                          className="pointer-events-auto flex max-w-[min(540px,calc(100%-16px))] flex-wrap items-center justify-center gap-1.5 rounded-full border border-dashed border-outline-variant bg-surface-container-lowest/95 px-2 py-1.5 text-left shadow-m3-1 backdrop-blur"
                           style={{
                             transform: `scale(${Math.min(2.4, 1 / Math.max(page.zoom, 0.42))})`,
-                            transformOrigin: "center",
+                            transformOrigin: "top center",
                           }}
                           onClick={(event) => event.stopPropagation()}
                           onPointerDown={(event) => event.stopPropagation()}
                         >
-                          <MousePointer2 aria-hidden className="mx-auto mb-3 size-5 text-primary" />
-                          <p className="text-sm font-semibold">开始这个 UI 文件</p>
-                          <p className="mx-auto mt-1 max-w-[320px] text-xs leading-5 text-on-surface-variant">
-                            先插入一个控件，或打开控件库使用完整工具箱。
-                          </p>
-                          <div className="mt-4 grid grid-cols-3 gap-2">
-                            {emptyCanvasQuickStarts.map((type) => {
-                              const definition = getDefinition(type);
-                              const Icon = definition.icon;
-                              return (
-                                <Button
-                                  key={type}
-                                  type="button"
-                                  size="sm"
-                                  variant="secondary"
-                                  className="min-w-0 px-2"
-                                  data-builder-empty-insert={type}
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    insertComponentFromShortcut(type, { centered: true });
-                                  }}
-                                >
-                                  <Icon aria-hidden className="size-4" />
-                                  <span className="truncate">{definition.title}</span>
-                                </Button>
-                              );
-                            })}
+                          <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-xs font-medium text-on-surface">
+                            <MousePointer2 aria-hidden className="size-3.5 text-primary" />
+                            <span className="whitespace-nowrap">空画布</span>
                           </div>
+                          <span className="hidden max-w-[170px] truncate text-[0.68rem] text-on-surface-variant sm:inline">
+                            插入控件开始设计
+                          </span>
+                          {emptyCanvasQuickStarts.map((type) => {
+                            const definition = getDefinition(type);
+                            const Icon = definition.icon;
+                            return (
+                              <Button
+                                key={type}
+                                type="button"
+                                size="icon"
+                                variant="secondary"
+                                className="size-7 shrink-0 rounded-full"
+                                aria-label={`插入${definition.title}`}
+                                title={`插入${definition.title}`}
+                                data-builder-empty-insert={type}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  insertComponentFromShortcut(type, { centered: true });
+                                }}
+                              >
+                                <Icon aria-hidden className="size-3.5" />
+                              </Button>
+                            );
+                          })}
                           <Button
                             type="button"
                             size="sm"
                             variant="ghost"
-                            className="mt-2 w-full"
+                            className="h-7 min-w-0 rounded-full px-2.5 text-[0.68rem]"
                             data-builder-empty-open-components=""
                             onClick={(event) => {
                               event.stopPropagation();
                               setLeftDockTab("components");
                             }}
                           >
-                            <Layers aria-hidden className="size-4" />
-                            打开控件
+                            <Layers aria-hidden className="size-3.5" />
+                            <span className="truncate">控件库</span>
                           </Button>
                         </div>
                       </div>

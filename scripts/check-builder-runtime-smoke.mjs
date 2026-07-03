@@ -601,6 +601,34 @@ async function runDesignInteractionChecks(send, verified) {
     `document.querySelector("[data-builder-readable-workbench]")?.getAttribute("data-builder-right-dock-collapsed") === "false"`,
     "right inspector dock expanded for design interaction checks",
   );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const visibleNodes = Array.from(document.querySelectorAll("[data-builder-node-id]")).filter((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.width > 24 && rect.height > 18 && rect.right > 0 && rect.bottom > 0;
+      });
+      if (visibleNodes.length > 0) {
+        return { passed: true, detail: "canvas already contains nodes" };
+      }
+      const strip = document.querySelector('[data-builder-empty-state-density="compact-strip"]');
+      const actions = Array.from(document.querySelectorAll("[data-builder-empty-insert], [data-builder-empty-open-components]"));
+      const rect = strip?.getBoundingClientRect();
+      const canvas = document.querySelector("[data-builder-canvas]")?.getBoundingClientRect();
+      const passed = Boolean(strip && rect && canvas && actions.length >= 4 && rect.height <= 92 && rect.width <= canvas.width * 0.82);
+      return {
+        passed,
+        detail: JSON.stringify({
+          actions: actions.length,
+          stripHeight: rect ? Math.round(rect.height) : 0,
+          stripWidth: rect ? Math.round(rect.width) : 0,
+          canvasWidth: canvas ? Math.round(canvas.width) : 0,
+        })
+      };
+    })()`,
+    "empty design canvas starter compact strip",
+  );
+  verified.canvasEmptyStarterCompactRuntime = true;
   await evaluate(
     send,
     `(() => {
