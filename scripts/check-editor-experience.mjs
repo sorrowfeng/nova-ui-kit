@@ -1587,8 +1587,11 @@ mustContain(buildWorkspace, "subtle-scrollbar h-full min-h-0", "Build sidebar sc
 mustContain(buildWorkspace, 'data-builder-build-sidebar-density="low-chrome"', "Build workspace uses a low-chrome sidebar instead of nested cards");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-toolbar="low-chrome"', "Build workspace toolbar is a low-chrome strip");
 mustContain(builder, 'data-builder-build-output-sidebar-density="low-chrome"', "Build output sidebar avoids stacked card chrome");
+mustContain(builder, 'data-builder-build-output-header-density="single-row"', "Build output sidebar title and status stay in one compact row");
 mustContain(builder, 'data-builder-build-output-evidence="collapsed-default"', "Build evidence starts as compact output-pane metadata");
-mustContain(builder, 'data-builder-build-artifact-actions="compact-grid"', "Build artifact actions use compact IDE controls");
+mustContain(builder, 'data-builder-build-artifact-actions="icon-strip"', "Build artifact actions use a single-row IDE tool strip");
+mustContain(builder, 'data-builder-build-artifact-actions-density="single-row-icons"', "Build artifact actions keep icon-only density");
+mustContain(builder, 'aria-label="打开 exe"', "Build artifact icon buttons remain accessible");
 mustContain(builder, 'data-builder-release-settings-shortcut-density="collapsed-summary"', "Build page release settings stay as a collapsed Project Dock shortcut");
 mustContain(builder, 'data-builder-release-settings-shortcut-summary="single-row"', "Build page release settings shortcut defaults to a single-row summary");
 mustContain(builder, 'data-builder-release-settings-shortcut-details="deferred"', "Build page release settings details are deferred until expanded");

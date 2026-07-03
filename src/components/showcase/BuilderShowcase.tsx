@@ -43051,12 +43051,31 @@ export function BuilderShowcase() {
             }
           >
             <aside
-              className="space-y-2 rounded-lg border border-outline-variant bg-surface-container-low px-2 py-2"
+              className="space-y-1.5 rounded-lg border border-outline-variant bg-surface-container-low px-1.5 py-1.5"
               data-builder-build-output-sidebar=""
               data-builder-build-output-sidebar-density="low-chrome"
             >
-              <PanelTitle icon={Download} title="构建输出" description="输出路径、产物入口和运行证据。" />
-              <div className="space-y-2 text-xs" data-builder-build-output-evidence="collapsed-default">
+              <div
+                className="flex h-8 min-w-0 items-center justify-between gap-2 rounded-md px-1.5 text-xs"
+                data-builder-build-output-header=""
+                data-builder-build-output-header-density="single-row"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <Download aria-hidden className="size-3.5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-xs font-semibold text-on-surface">构建输出</h3>
+                    <p className="truncate text-[0.64rem] leading-3 text-on-surface-variant">
+                      {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "等待 exe"}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant={activeProject.outputExePath ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.64rem]">
+                  {activeProject.outputExePath ? "就绪" : "待构建"}
+                </Badge>
+              </div>
+              <div className="space-y-1.5 text-xs" data-builder-build-output-evidence="collapsed-default">
                 <details
                   className="group rounded-md border border-outline-variant bg-surface-container px-2 py-1.5"
                   data-builder-build-output-details=""
@@ -43088,73 +43107,83 @@ export function BuilderShowcase() {
                     <PathRow label="安装包 manifest" value={activeBundleManifestPath || "完整打包后生成"} />
                   </div>
                 </details>
-                <div className="grid grid-cols-3 gap-1.5" data-builder-build-artifact-actions="compact-grid">
+                <div
+                  className="subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-outline-variant/70 bg-surface-container px-1 py-1"
+                  data-builder-build-artifact-actions="icon-strip"
+                  data-builder-build-artifact-actions-density="single-row-icons"
+                >
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="secondary"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-open-output-exe=""
+                    aria-label="打开 exe"
+                    title="打开 exe"
                     disabled={!activeProject.outputExePath}
                     onClick={() => void openLocalArtifact(activeProject.outputExePath ?? "")}
                   >
-                    <Download aria-hidden className="size-4" />
-                    打开 exe
+                    <Download aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="secondary"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-launch-output-exe=""
+                    aria-label="启动 exe"
+                    title="启动 exe"
                     loading={launchingExeId === "active-output"}
                     disabled={!activeProject.outputExePath || Boolean(launchingExeId)}
                     onClick={() => void launchActiveOutputExecutable()}
                   >
-                    <Play aria-hidden className="size-4" />
-                    启动 exe
+                    <Play aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="secondary"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-open-output-bundle=""
+                    aria-label="打开安装包"
+                    title="打开安装包"
                     disabled={!activeBundlePath}
                     onClick={() => void openLocalArtifact(activeBundlePath)}
                   >
-                    <Box aria-hidden className="size-4" />
-                    打开包
+                    <Box aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-open-output-dir=""
+                    aria-label="打开 exe 目录"
+                    title="打开 exe 目录"
                     disabled={!activeBuildOutputDir}
                     onClick={() => void openLocalArtifact(activeBuildOutputDir)}
                   >
-                    <FolderOpen aria-hidden className="size-4" />
-                    exe 目录
+                    <FolderOpen aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-open-bundle-dir=""
+                    aria-label="打开安装包目录"
+                    title="打开安装包目录"
                     disabled={!activeBundleDir}
                     onClick={() => void openLocalArtifact(activeBundleDir)}
                   >
-                    <FolderOpen aria-hidden className="size-4" />
-                    包目录
+                    <FolderOpen aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-7 px-1.5 text-[0.68rem]"
+                    className="size-7 shrink-0"
                     data-builder-open-bundle-manifest=""
+                    aria-label="打开安装包 Manifest"
+                    title="打开安装包 Manifest"
                     disabled={!activeBundleManifestPath}
                     onClick={() => void openLocalArtifact(activeBundleManifestPath)}
                   >
-                    <FileJson aria-hidden className="size-4" />
-                    Manifest
+                    <FileJson aria-hidden className="size-3.5" />
                   </Button>
                 </div>
                 {latestRunSessionEntry ? (
