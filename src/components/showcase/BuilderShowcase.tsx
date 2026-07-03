@@ -16552,7 +16552,7 @@ export function BuilderShowcase() {
         id: "generated",
         title: "生成目标与运行证据",
         detail: "由保存、检查、运行和打包任务生成，可重新产出，不再作为单独 UI 导出入口。",
-        countLabel: activeProject.outputExePath ? "exe ready" : "build pending",
+        countLabel: activeProject.outputExePath ? "exe 就绪" : "待构建",
         icon: Download,
         routes: [
           {
@@ -16800,7 +16800,7 @@ export function BuilderShowcase() {
         title: "生成 app",
         detail: "由项目源码重新生成的 Tauri/Vite 桌面目标，不再走孤立导出面板。",
         path: projectPath("app"),
-        metric: activeProject.outputExePath ? "exe ready" : "待构建",
+        metric: activeProject.outputExePath ? "exe 就绪" : "待构建",
         scope: "generated",
         icon: Download,
         filter: "build",
@@ -30387,7 +30387,7 @@ export function BuilderShowcase() {
                 runCheckedAt: result.started_at,
                 runSummary: result.summary,
                 runtimeLogPath: result.log_path,
-                runtimeLogPreview: `Nova Runtime Console\n${result.summary}\nLog: ${result.log_path}`,
+                runtimeLogPreview: `Nova 运行控制台\n${result.summary}\n日志：${result.log_path}`,
                 runtimeLogUpdatedAt: result.started_at,
                 runtimeLogTruncated: false,
                 stoppedAt: undefined,
@@ -30439,7 +30439,7 @@ export function BuilderShowcase() {
                 runCheckedAt: result.started_at,
                 runSummary: result.summary,
                 runtimeLogPath: result.log_path,
-                runtimeLogPreview: `Nova Runtime Console\n${result.summary}\nLog: ${result.log_path}`,
+                runtimeLogPreview: `Nova 运行控制台\n${result.summary}\n日志：${result.log_path}`,
                 runtimeLogUpdatedAt: result.started_at,
                 runtimeLogTruncated: false,
                 stoppedAt: undefined,
@@ -30647,7 +30647,7 @@ export function BuilderShowcase() {
         path: entry.runtimeLogPath,
       });
       if (!result) {
-        setBuildError("读取 Runtime Console 需要在 Tauri 桌面 app 中运行。");
+        setBuildError("读取运行控制台需要在 Tauri 桌面 app 中运行。");
         return;
       }
       updateActiveProject((project) => ({
@@ -32321,10 +32321,10 @@ export function BuilderShowcase() {
   const railArtifactStateLabel = workflowRuntimeActive
     ? `pid ${activeWorkflowRuntimeSession?.pid}`
     : activeProject.outputExePath
-      ? "exe ready"
+      ? "exe 就绪"
       : activeBundlePath
-        ? "bundle ready"
-        : "no artifact";
+        ? "安装包就绪"
+        : "无产物";
   const railNextStepLabel = workflowRuntimeActive
     ? "停止运行目标"
     : workflowComplete
@@ -33321,7 +33321,7 @@ export function BuilderShowcase() {
         severity: workflowRuntimeActive || activeProject.outputExePath || latestValidationRun ? "pass" : "warning",
         detail: latestValidationRun
           ? `${desktopRuntimeStatusLabel}；最近窗口验证 ${latestValidationRun.status} · ${latestValidationRun.score}%。`
-          : `${desktopRuntimeStatusLabel}；Build 页首屏提供构建、运行、停止、验证和 Runtime Console 入口。`,
+          : `${desktopRuntimeStatusLabel}；Build 页首屏提供构建、运行、停止、验证和运行控制台入口。`,
       },
       {
         id: "component-palette-kits",
@@ -34748,7 +34748,7 @@ export function BuilderShowcase() {
                 >
                   <FileJson aria-hidden className="size-3 shrink-0 text-primary" />
                   <span className="min-w-0">
-                    <span className="block truncate text-[0.56rem] text-on-surface-variant">Artifact</span>
+                    <span className="block truncate text-[0.56rem] text-on-surface-variant">产物</span>
                     <span className="block truncate text-[0.62rem] font-medium text-on-surface">{railArtifactStateLabel}</span>
                   </span>
                 </button>
@@ -35965,7 +35965,7 @@ export function BuilderShowcase() {
                     <Badge variant="outline">{projectSourceOverviewRows.filter((row) => row.scope === "metadata").length} .nova</Badge>
                     <Badge variant="secondary">{projectSourceOverviewRows.filter((row) => row.status === "dirty").length} 未保存</Badge>
                     <Badge variant={activeProject.outputExePath ? "accent" : "outline"}>
-                      {activeProject.outputExePath ? "exe ready" : "build pending"}
+                      {activeProject.outputExePath ? "exe 就绪" : "待构建"}
                     </Badge>
                   </div>
                 </div>
@@ -45232,7 +45232,7 @@ export function BuilderShowcase() {
                       <div className="min-w-0">
                         <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-on-surface-variant">桌面运行</h2>
                         <p className="truncate text-xs text-on-surface">
-                          Tauri exe 目标、窗口验证与 Runtime Console
+                          Tauri exe 目标、窗口验证与运行控制台
                         </p>
                       </div>
                     </div>
@@ -45286,7 +45286,7 @@ export function BuilderShowcase() {
                           : latestRunSessionEntry
                             ? latestRunSessionEntry.runStatus ?? "已启动"
                             : "未运行",
-                        detail: desktopRuntimeLogPath || "Runtime Console 等待生成",
+                        detail: desktopRuntimeLogPath || "运行控制台等待生成",
                         icon: Terminal,
                       },
                       {
@@ -45328,7 +45328,7 @@ export function BuilderShowcase() {
                   <div className="min-w-0 rounded-xl border border-outline-variant bg-surface-container p-2" data-builder-desktop-runtime-console="" data-builder-desktop-runtime-console-density="low-profile">
                     <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Runtime Console</h3>
+                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行控制台</h3>
                         <p className="truncate text-[0.68rem] text-on-surface-variant">
                           {desktopRuntimeLogPath || "运行桌面端后写入 .nova/runtime"}
                         </p>

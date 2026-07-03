@@ -1619,6 +1619,13 @@ mustContain(builder, 'data-builder-build-history-density="collapsed-default"', "
 mustContain(builder, 'data-builder-build-history-summary="single-row"', "Build artifact history summary stays in one compact row");
 mustContain(builder, 'data-builder-build-history-details="deferred"', "Build artifact history details are deferred until expanded");
 mustContain(builder, 'data-builder-build-history-summary-detail="compact-inline"', "Build artifact history count and kind stay inline");
+mustContain(builder, 'countLabel: activeProject.outputExePath ? "exe 就绪" : "待构建"', "Project generated target status is localized for the Chinese desktop UI");
+mustContain(builder, "Tauri exe 目标、窗口验证与运行控制台", "Build desktop runtime copy uses the localized console label");
+mustContain(builder, 'detail: desktopRuntimeLogPath || "运行控制台等待生成"', "Build runtime console waiting state is localized");
+mustContain(builder, '<span className="block truncate text-[0.56rem] text-on-surface-variant">产物</span>', "Left Run Kit artifact label is localized");
+mustNotContain(builder, "exe ready", "Builder UI no longer exposes English exe-ready status text");
+mustNotContain(builder, "build pending", "Builder UI no longer exposes English build-pending status text");
+mustNotContain(builder, "Runtime Console", "Builder UI no longer exposes English Runtime Console labels");
 mustContain(builder, 'data-builder-project-workspace-layout="split-ide"', "Project workspace uses a split IDE layout instead of a long flat page");
 mustContain(builder, 'data-builder-project-workspace-bottom-dock-clearance="reserved"', "Project workspace reserves scroll clearance above the bottom output dock");
 mustContain(builder, 'data-builder-project-workspace-chrome="low-chrome-docks"', "Project workspace declares low-chrome dock styling instead of card-heavy panels");
