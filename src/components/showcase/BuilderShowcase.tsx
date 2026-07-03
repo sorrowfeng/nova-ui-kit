@@ -37163,12 +37163,36 @@ export function BuilderShowcase() {
                     </section>
                   ) : null}
 
-                  <section
-                    className="mt-4 rounded-[22px] border border-outline-variant bg-surface-container p-4"
+                  <details
+                    className="group mt-2 rounded-xl border border-outline-variant bg-surface-container px-2 py-1.5"
                     data-builder-project-open-files=""
                     data-builder-project-open-files-active-tab={activeEditorTabId}
                     data-builder-project-open-files-dirty-count={dirtyOpenEditorTabCount}
+                    data-builder-project-open-files-density="collapsed-summary"
+                    data-builder-project-open-files-state="collapsed-default"
                   >
+                    <summary
+                      className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1 text-xs [&::-webkit-details-marker]:hidden"
+                      data-builder-project-open-files-summary="single-row"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                        <FileText aria-hidden className="size-4 shrink-0 text-primary" />
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium text-on-surface">打开文件</span>
+                          <span className="block truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                            {activeEditorTab ? `${activeEditorTab.label} · ${activeEditorTab.relativePath}` : "尚无打开文件"}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <Badge variant="outline">{openEditorTabCountLabel}</Badge>
+                        <Badge variant={dirtyOpenEditorTabCount > 0 ? "outline" : "secondary"}>
+                          {dirtyOpenEditorTabCount > 0 ? `${dirtyOpenEditorTabCount} 未保存` : "已同步"}
+                        </Badge>
+                      </span>
+                    </summary>
+                    <div className="mt-2 border-t border-outline-variant pt-2" data-builder-project-open-files-details="deferred">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -37209,7 +37233,7 @@ export function BuilderShowcase() {
                         </Button>
                       </div>
                     </div>
-                    <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low">
+                    <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low" data-builder-project-open-files-list="">
                       {openEditorTabs.map((tab) => {
                         const TabIcon = tab.icon;
                         const active = tab.id === activeEditorTabId;
@@ -37302,7 +37326,8 @@ export function BuilderShowcase() {
                         {activeEditorTab ? `当前：${activeEditorTab.label} · ${activeEditorTab.relativePath}` : "尚无打开文件"}
                       </span>
                     </div>
-                  </section>
+                    </div>
+                  </details>
 
                   <section className="mt-4 grid gap-3 md:grid-cols-2" data-builder-project-workspace-scopes="">
                     {[

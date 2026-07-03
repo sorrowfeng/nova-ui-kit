@@ -1226,6 +1226,10 @@ mustContain(builder, "data-builder-editor-tabs-new-file", "Hidden editor tab mod
 mustContain(builder, 'id: "editor-tab-file-actions"', "Editor experience audit checks editor tab file actions");
 mustContain(builder, 'id: "editor-tab-reorder"', "Editor experience audit checks editor tab drag reorder");
 mustContain(builder, "data-builder-project-open-files", "Project workspace exposes an open files manager");
+mustContain(builder, 'data-builder-project-open-files-density="collapsed-summary"', "Project open files manager defaults to a compact collapsed row");
+mustContain(builder, 'data-builder-project-open-files-summary="single-row"', "Project open files summary stays one row");
+mustContain(builder, 'data-builder-project-open-files-details="deferred"', "Project open files details stay deferred until expanded");
+mustContain(builder, "data-builder-project-open-files-list", "Project open files manager keeps the file list inside deferred details");
 mustContain(builder, "data-builder-project-open-file-open", "Project open files manager can activate tabs");
 mustContain(builder, "data-builder-project-open-file-reveal", "Project open files manager can reveal tabs in the project tree");
 mustContain(builder, "data-builder-project-open-file-copy-relative-path", "Project open files manager can copy project-relative paths");

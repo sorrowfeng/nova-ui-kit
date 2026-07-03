@@ -2580,11 +2580,15 @@ async function runProjectWorkspaceChecks(send, verified) {
     `(() => {
       const tabStrip = document.querySelector("[data-builder-editor-tabs]");
       const projectOpenFiles = document.querySelector("[data-builder-project-open-files]");
+      const projectOpenFilesSummary = document.querySelector("[data-builder-project-open-files-summary]");
+      const projectOpenFilesDetails = document.querySelector("[data-builder-project-open-files-details]");
+      const projectOpenFilesList = document.querySelector("[data-builder-project-open-files-list]");
       const uiOpenRows = Array.from(document.querySelectorAll('[data-builder-project-open-file-kind="ui"]'));
       const logicRow = document.querySelector('[data-builder-project-open-file="logic:rust"]');
       const buildRow = document.querySelector('[data-builder-project-open-file="build:workspace"]');
       const newUiButton = document.querySelector("[data-builder-project-open-files-new-ui]");
       const tabStripRect = tabStrip?.getBoundingClientRect();
+      const projectOpenFilesRect = projectOpenFiles?.getBoundingClientRect();
       const tabStripStyle = tabStrip ? getComputedStyle(tabStrip) : null;
       window.__novaSmokeProjectFileCount = Number((document.querySelector("[data-builder-editor-tabs-summary]")?.textContent || "").match(/(\\d+)\\s*文件/)?.[1] || 0);
       window.__novaSmokeOpenUiTabs = uiOpenRows.length;
@@ -2597,15 +2601,54 @@ async function runProjectWorkspaceChecks(send, verified) {
           Boolean(tabStripRect && tabStripRect.height <= 2 && tabStripRect.width <= 2) &&
           tabStripStyle?.position === "absolute" &&
           Boolean(projectOpenFiles) &&
+          projectOpenFiles?.tagName === "DETAILS" &&
+          !projectOpenFiles.hasAttribute("open") &&
+          projectOpenFiles.getAttribute("data-builder-project-open-files-density") === "collapsed-summary" &&
+          projectOpenFilesSummary?.getAttribute("data-builder-project-open-files-summary") === "single-row" &&
+          projectOpenFilesDetails?.getAttribute("data-builder-project-open-files-details") === "deferred" &&
+          Boolean(projectOpenFilesList) &&
+          Boolean(projectOpenFilesRect && projectOpenFilesRect.height <= 58) &&
           uiOpenRows.length >= 1 &&
           Boolean(logicRow) &&
           Boolean(buildRow) &&
           Boolean(newUiButton) &&
           Number(tabStrip?.getAttribute("data-builder-editor-tab-count") || 0) >= uiOpenRows.length + 2,
-        detail: \`uiRows=\${uiOpenRows.length}, editorTabs=\${tabStrip?.getAttribute("data-builder-editor-tab-count") || "0"}, visibility=\${tabStrip?.getAttribute("data-builder-editor-tabs-visibility") || "missing"}, rect=\${tabStripRect ? Math.round(tabStripRect.width) + "x" + Math.round(tabStripRect.height) : "missing"}, projectFiles=\${window.__novaSmokeProjectFileCount || 0}, logic=\${Boolean(logicRow)}, build=\${Boolean(buildRow)}\`
+        detail: \`uiRows=\${uiOpenRows.length}, editorTabs=\${tabStrip?.getAttribute("data-builder-editor-tab-count") || "0"}, visibility=\${tabStrip?.getAttribute("data-builder-editor-tabs-visibility") || "missing"}, rect=\${tabStripRect ? Math.round(tabStripRect.width) + "x" + Math.round(tabStripRect.height) : "missing"}, openFilesHeight=\${Math.round(projectOpenFilesRect?.height || 0)}, openFilesCollapsed=\${Boolean(projectOpenFiles && !projectOpenFiles.hasAttribute("open"))}, projectFiles=\${window.__novaSmokeProjectFileCount || 0}, logic=\${Boolean(logicRow)}, build=\${Boolean(buildRow)}\`
       };
     })()`,
     "project open files manager replaces the duplicated top editor tab strip",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-open-files-summary]")`, "project open files summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-open-files]")?.hasAttribute("open") === true`,
+    "expanded project open files manager",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const projectOpenFiles = document.querySelector("[data-builder-project-open-files]");
+      const details = document.querySelector("[data-builder-project-open-files-details]");
+      const list = document.querySelector("[data-builder-project-open-files-list]");
+      const rows = Array.from(document.querySelectorAll("[data-builder-project-open-file]"));
+      const actions = [
+        document.querySelector("[data-builder-project-open-files-close-clean]"),
+        document.querySelector("[data-builder-project-open-files-close-others]"),
+        document.querySelector("[data-builder-project-open-files-new-ui]"),
+      ];
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          projectOpenFiles?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-project-open-files-details") === "deferred" &&
+          Boolean(list) &&
+          rows.length >= 3 &&
+          actions.every(Boolean) &&
+          Boolean(detailsRect && detailsRect.height > 160),
+        detail: \`open=\${projectOpenFiles?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, rows=\${rows.length}, actions=\${actions.filter(Boolean).length}\`
+      };
+    })()`,
+    "project open files expands to tab management actions",
   );
 
   await evaluate(send, `document.querySelector("[data-builder-project-open-files-new-ui]")?.click(); true`);
