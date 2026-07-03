@@ -2151,6 +2151,30 @@ async function runProjectWorkspaceChecks(send, verified) {
     send,
     `(() => {
       const tree = document.querySelector("[data-builder-project-workspace-tree]");
+      const rows = Array.from(document.querySelectorAll("[data-builder-project-workspace-node]"));
+      const details = Array.from(document.querySelectorAll("[data-builder-project-workspace-node-detail]"));
+      const rowRects = rows.map((row) => row.getBoundingClientRect());
+      const compactRows = rows.filter((row) => row.getAttribute("data-builder-project-workspace-node-density") === "compact-row");
+      const hiddenDetails = details.filter((detail) => detail.getAttribute("data-builder-project-workspace-node-detail") === "deferred");
+      const maxRowHeight = Math.max(0, ...rowRects.map((rect) => Math.round(rect.height)));
+      return {
+        passed:
+          tree?.getAttribute("data-builder-project-workspace-tree-density") === "compact-explorer" &&
+          rows.length >= 6 &&
+          compactRows.length === rows.length &&
+          hiddenDetails.length === rows.length &&
+          maxRowHeight <= 34,
+        detail: \`density=\${tree?.getAttribute("data-builder-project-workspace-tree-density") || "missing"}, rows=\${compactRows.length}/\${rows.length}, details=\${hiddenDetails.length}, maxRow=\${maxRowHeight}\`
+      };
+    })()`,
+    "project file tree rows use compact explorer density",
+  );
+  verified.projectTreeCompactRowsRuntime = true;
+
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const tree = document.querySelector("[data-builder-project-workspace-tree]");
       const nodes = Array.from(document.querySelectorAll("[data-builder-project-workspace-node]"));
       const topology = document.querySelector("[data-builder-project-topology]");
       const sourceOverview = document.querySelector("[data-builder-project-source-overview]");
@@ -5867,6 +5891,7 @@ try {
     appSettingsLanguageRuntime: false,
     projectTree: false,
     projectTreeCompactHeaderRuntime: false,
+    projectTreeCompactRowsRuntime: false,
     projectWorkspaceTree: false,
     projectTopology: false,
     projectSourceOverview: false,

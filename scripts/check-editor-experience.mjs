@@ -1026,6 +1026,9 @@ mustContain(builder, "data-builder-issue-next", "Problem dock exposes next issue
 mustContain(builder, 'id: "problem-navigation"', "Editor experience audit checks problem navigation");
 
 mustContain(builder, "data-builder-project-workspace-tree", "Project mode has a workspace file tree");
+mustContain(builder, 'data-builder-project-workspace-tree-density="compact-explorer"', "Project workspace tree uses compact explorer density");
+mustContain(builder, 'data-builder-project-workspace-node-density="compact-row"', "Project workspace tree rows stay compact");
+mustContain(builder, 'data-builder-project-workspace-node-detail="deferred"', "Project workspace tree defers row detail text to the detail panel");
 mustContain(builder, "data-builder-project-tree-node", "Project tree nodes have stable markers");
 mustContain(builder, "handleProjectExplorerTreeKeyDown", "Project tree supports IDE-style keyboard navigation");
 mustContain(builder, "data-builder-project-tree-keyboard-nav", "Project tree exposes a stable keyboard navigation surface");
@@ -1033,6 +1036,7 @@ mustContain(builder, "data-builder-project-tree-selected-node", "Project tree ex
 mustContain(builder, "data-builder-project-tree-visible-count", "Project tree exposes visible node count for keyboard checks");
 mustContain(builder, "data-builder-project-tree-collapsed-count", "Project tree exposes collapsed folder count");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.projectTreeKeyboardRuntime = true", "Browser smoke verifies project tree keyboard navigation");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.projectTreeCompactRowsRuntime = true", "Browser smoke verifies compact project tree rows");
 mustContain(builder, "expandProjectExplorerTree", "Project tree supports expanding all folders");
 mustContain(builder, "collapseProjectExplorerTree", "Project tree supports collapsing all folders");
 mustContain(builder, "data-builder-project-tree-expand-all", "Project workspace exposes expand-all control");
