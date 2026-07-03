@@ -3568,14 +3568,15 @@ async function runLogicRustChecks(send, verified) {
           auxiliarySummary?.getAttribute("data-builder-logic-auxiliary-summary-density") === "single-line" &&
           auxiliaryContent?.getAttribute("data-builder-logic-auxiliary-content-density") === "deferred-scroll" &&
           resourcePanel?.getAttribute("data-builder-logic-resource-density") === "compact-outline" &&
+          resourcePanel?.getAttribute("data-builder-logic-resource-panel-chrome") === "low-chrome" &&
           search?.getAttribute("data-builder-logic-search-density") === "single-row" &&
           outline?.getAttribute("data-builder-rust-outline-density") === "compact-list" &&
           resourceHeight > auxiliaryHeight &&
           auxiliaryHeight <= 72 &&
           auxiliaryClosed &&
           outputClearance &&
-          searchHeight <= 52,
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, closed=\${auxiliaryClosed}, outputClearance=\${outputClearance}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}\`
+          searchHeight <= 42,
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, closed=\${auxiliaryClosed}, outputClearance=\${outputClearance}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}, chrome=\${resourcePanel?.getAttribute("data-builder-logic-resource-panel-chrome") || "missing"}\`
       };
     })()`,
     "logic resources-first sidebar density",
@@ -3599,16 +3600,19 @@ async function runLogicRustChecks(send, verified) {
       const contents = ids.map((id) => document.querySelector(\`[data-builder-logic-resource-section-content="\${id}"]\`));
       const visibleSections = sections.filter((section) => section && section.offsetParent !== null);
       const closedSections = sections.filter((section) => section?.tagName === "DETAILS" && section.open === false);
-      const compactSections = sections.filter((section) => (section?.getBoundingClientRect().height || 999) <= 56);
+      const compactSections = sections.filter((section) => (section?.getBoundingClientRect().height || 999) <= 42);
+      const compactSummaries = summaries.filter((summary) => (summary?.getBoundingClientRect().height || 999) <= 36);
       return {
         passed:
           visibleSections.length === 6 &&
           closedSections.length === 6 &&
           compactSections.length === 6 &&
+          compactSummaries.length === 6 &&
           summaries.every(Boolean) &&
           contents.every(Boolean) &&
-          sections.every((section) => section?.getAttribute("data-builder-logic-resource-section-density") === "collapsed-in-all"),
-        detail: \`visible=\${visibleSections.length}, closed=\${closedSections.length}, compact=\${compactSections.length}, summaries=\${summaries.filter(Boolean).length}\`
+          sections.every((section) => section?.getAttribute("data-builder-logic-resource-section-density") === "collapsed-in-all") &&
+          sections.every((section) => section?.getAttribute("data-builder-logic-resource-section-chrome") === "flat-outline"),
+        detail: \`visible=\${visibleSections.length}, closed=\${closedSections.length}, compact=\${compactSections.length}, summaries=\${summaries.filter(Boolean).length}, compactSummaries=\${compactSummaries.length}\`
       };
     })()`,
     "logic all resource sections collapse by default",
@@ -3627,14 +3631,18 @@ async function runLogicRustChecks(send, verified) {
       const rows = Array.from(document.querySelectorAll("[data-builder-cargo-dependency]"));
       const addButton = document.querySelector("[data-builder-new-cargo-dependency]");
       const rect = content?.getBoundingClientRect();
+      const thinRows = rows.filter((row) => row.getAttribute("data-builder-logic-resource-item-density") === "thin-row");
+      const rowHeights = rows.map((row) => row.getBoundingClientRect().height);
       return {
         passed:
           section?.open === true &&
           content?.getAttribute("data-builder-logic-resource-section-content") === "dependencies" &&
           rows.length >= 1 &&
+          thinRows.length === rows.length &&
           Boolean(addButton) &&
-          Boolean(rect && rect.height > 80),
-        detail: \`open=\${section?.open}, rows=\${rows.length}, add=\${Boolean(addButton)}, height=\${Math.round(rect?.height || 0)}\`
+          Boolean(rect && rect.height > 56 && rect.height < 128) &&
+          rowHeights.every((height) => height <= 44),
+        detail: \`open=\${section?.open}, rows=\${rows.length}, thinRows=\${thinRows.length}, add=\${Boolean(addButton)}, height=\${Math.round(rect?.height || 0)}, rowHeights=\${rowHeights.map((height) => Math.round(height)).join("/")}\`
       };
     })()`,
     "logic dependencies resource expands on demand",

@@ -502,6 +502,17 @@ const logicResourceViewOptions: Array<{ value: LogicResourceViewId; label: strin
   { value: "state", label: "状态" },
 ];
 const logicResourceViewIds = logicResourceViewOptions.map((option) => option.value) as LogicResourceViewId[];
+const logicResourceSectionClass =
+  "group rounded-lg border border-outline-variant/80 bg-surface-container-low/70 text-xs shadow-none";
+const logicResourceSectionSummaryClass =
+  "focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1.5 py-1 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden";
+const logicResourceSectionIconClass =
+  "flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary";
+const logicResourceSectionContentClass = "space-y-1 border-t border-outline-variant/70 p-1.5";
+const logicResourceItemClass = "w-full rounded-lg border px-2 py-1 text-left transition";
+const logicResourceItemActiveClass = "border-primary bg-primary/10 text-on-surface shadow-m3-1";
+const logicResourceItemIdleClass =
+  "border-outline-variant/80 bg-transparent text-on-surface-variant hover:border-outline hover:bg-surface-container-high";
 const logicConnectionFilterOptions: Array<{ value: LogicConnectionFilterId; label: string }> = [
   { value: "all", label: "全部" },
   { value: "unbound", label: "待绑定" },
@@ -37751,10 +37762,11 @@ export function BuilderShowcase() {
         ) : mode === "logic" ? (
           <LogicWorkspace>
             <aside
-              className="subtle-scrollbar min-h-0 space-y-1.5 overflow-y-auto rounded-[14px] border border-outline-variant bg-surface-container p-2"
+              className="subtle-scrollbar min-h-0 space-y-1 overflow-y-auto rounded-lg border border-outline-variant bg-surface-container-low p-1.5"
               data-builder-logic-resource-density="compact-outline"
+              data-builder-logic-resource-panel-chrome="low-chrome"
             >
-              <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 px-1">
+              <div className="flex min-h-7 min-w-0 items-center justify-between gap-2 px-1">
                 <div className="flex min-w-0 items-center gap-2">
                   <p className="truncate text-xs font-semibold text-on-surface">逻辑资源</p>
                   <Badge variant="outline" className="shrink-0 text-[0.6rem]">
@@ -37766,24 +37778,24 @@ export function BuilderShowcase() {
                 </Badge>
               </div>
               <div
-                className="rounded-xl border border-outline-variant bg-surface-container-low p-1"
+                className="rounded-lg border border-outline-variant/80 bg-surface-container p-0.5"
                 data-builder-logic-search=""
                 data-builder-logic-search-density="single-row"
               >
-                <div className="flex items-center gap-2 rounded-xl bg-surface-container-high px-2">
-                  <Search aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
+                <div className="flex items-center gap-1.5 rounded-md bg-surface-container-high px-1.5">
+                  <Search aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                   <Input
                     aria-label="搜索 Rust 逻辑资源"
                     value={logicSearchQuery}
                     onChange={(event) => setLogicSearchQuery(event.target.value)}
                     placeholder="搜索命令、槽函数、状态、模块..."
-                    className="h-8 min-w-0 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:border-transparent"
+                    className="h-7 min-w-0 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:border-transparent"
                     spellCheck={false}
                   />
                   {logicSearchQuery ? (
                     <button
                       type="button"
-                      className="focus-ring shrink-0 rounded-lg px-2 py-1 text-[0.68rem] text-on-surface-variant hover:bg-surface-container"
+                      className="focus-ring shrink-0 rounded-md px-1.5 py-0.5 text-[0.64rem] text-on-surface-variant hover:bg-surface-container"
                       onClick={() => setLogicSearchQuery("")}
                     >
                       清除
@@ -37797,12 +37809,12 @@ export function BuilderShowcase() {
                 </div>
               </div>
               <div
-                className="rounded-xl border border-outline-variant bg-surface-container-low p-1.5 text-xs"
+                className="rounded-lg border border-outline-variant/80 bg-surface-container p-1 text-xs"
                 data-builder-rust-outline=""
                 data-builder-rust-outline-sidebar=""
                 data-builder-rust-outline-density="compact-list"
               >
-                <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 px-1">
+                <div className="mb-1 flex min-w-0 items-center justify-between gap-2 px-1">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-on-surface">Rust 大纲</p>
                     <p className="sr-only">侧栏跳转，不占用代码区</p>
@@ -37818,16 +37830,16 @@ export function BuilderShowcase() {
                         key={`sidebar-outline-${entry.id}`}
                         type="button"
                         className={cn(
-                          "focus-ring grid w-full min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition",
+                          "focus-ring grid w-full min-w-0 grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-1.5 rounded-md border px-1.5 py-1 text-left transition",
                           entry.active
                             ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                            : "border-outline-variant bg-surface-container-high text-on-surface-variant hover:border-outline hover:text-on-surface",
+                            : "border-outline-variant/80 bg-transparent text-on-surface-variant hover:border-outline hover:bg-surface-container-high hover:text-on-surface",
                         )}
                         data-builder-rust-outline-entry={entry.kind}
                         data-builder-rust-outline-entry-kind={rustOutlineKindLabel(entry.kind)}
                         onClick={() => openRustLogicOutlineEntry(entry)}
                       >
-                        <span className="flex size-7 items-center justify-center rounded-xl bg-surface-container-lowest font-mono text-[0.66rem] text-primary">
+                        <span className="flex size-6 items-center justify-center rounded-md bg-surface-container-lowest font-mono text-[0.62rem] text-primary">
                           {entry.line ?? "--"}
                         </span>
                         <span className="min-w-0">
@@ -37848,7 +37860,7 @@ export function BuilderShowcase() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="mt-2 h-7 w-full text-[0.68rem]"
+                    className="mt-1.5 h-7 w-full text-[0.68rem]"
                     data-builder-rust-create-missing-slots=""
                     onClick={appendMissingRustSlots}
                   >
@@ -37857,7 +37869,7 @@ export function BuilderShowcase() {
                   </Button>
                 ) : null}
               </div>
-              <div className="subtle-scrollbar flex gap-1 overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-low p-0.5" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
+              <div className="subtle-scrollbar flex gap-0.5 overflow-x-auto rounded-lg border border-outline-variant/80 bg-surface-container p-0.5" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
                 {logicResourceViewOptions.map((option) => (
                   <button
                     key={option.value}
@@ -37865,7 +37877,7 @@ export function BuilderShowcase() {
                     role="radio"
                     aria-checked={logicResourceView === option.value}
                     className={cn(
-                      "focus-ring h-7 shrink-0 rounded-lg px-2 text-[0.66rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
+                      "focus-ring h-6 shrink-0 rounded-md px-1.5 text-[0.64rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
                       logicResourceView === option.value && "bg-secondary-container text-secondary-container-foreground shadow-m3-1",
                     )}
                     onClick={() => setLogicResourceView(option.value)}
@@ -37877,21 +37889,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-connections-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("connections") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("connections") && "hidden")}
                 data-builder-logic-resource-section="connections"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="connections"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <CornerDownRight aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">信号/槽连接</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">绑定、槽函数和运行入口</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">绑定、槽函数和运行入口</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -37899,8 +37912,8 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="connections">
-                <div className="grid grid-cols-4 gap-1 rounded-2xl border border-outline-variant bg-surface-container-low p-1" role="radiogroup" aria-label="连接绑定状态过滤" data-builder-logic-connection-filter="">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="connections">
+                <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-outline-variant/80 bg-surface-container p-0.5" role="radiogroup" aria-label="连接绑定状态过滤" data-builder-logic-connection-filter="">
                   {logicConnectionFilterOptions.map((option) => (
                     <button
                       key={option.value}
@@ -37910,7 +37923,7 @@ export function BuilderShowcase() {
                       data-builder-logic-connection-filter-option={option.value}
                       data-builder-logic-connection-filter-missing-slot={option.value === "missing-slot" ? "" : undefined}
                       className={cn(
-                        "focus-ring h-8 rounded-xl px-2 text-[0.68rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
+                        "focus-ring h-6 rounded-md px-1.5 text-[0.64rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface",
                         logicConnectionFilter === option.value && "bg-secondary-container text-secondary-container-foreground shadow-m3-1",
                       )}
                       onClick={() => setLogicConnectionFilter(option.value)}
@@ -37925,19 +37938,20 @@ export function BuilderShowcase() {
                     <div
                       key={row.id}
                       className={cn(
-                        "rounded-2xl border bg-surface-container-low p-2.5 transition",
+                        "rounded-lg border px-2 py-1.5 transition",
                         row.selected
-                          ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
+                          ? logicResourceItemActiveClass
                           : rowNeedsSlot
-                            ? "border-tertiary/35 text-on-surface-variant hover:border-tertiary/60 hover:bg-tertiary-container/20"
-                            : "border-outline-variant text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                            ? "border-tertiary/35 bg-transparent text-on-surface-variant hover:border-tertiary/60 hover:bg-tertiary-container/20"
+                            : logicResourceItemIdleClass,
                       )}
+                      data-builder-logic-resource-item-density="thin-row"
                       data-builder-logic-connection-resource={row.command ? "bound" : "unbound"}
                       data-builder-logic-connection-resource-slot-state={rowNeedsSlot ? "missing" : row.command ? "located" : "unbound"}
                     >
                       <button
                         type="button"
-                        className="focus-ring w-full rounded-xl text-left"
+                        className="focus-ring w-full rounded-md text-left"
                         onClick={() => {
                           setSelectedId(row.item.id);
                           setRightDockTab("connections");
@@ -37954,17 +37968,17 @@ export function BuilderShowcase() {
                             </Badge>
                           ) : null}
                         </span>
-                        <span className="mt-1 flex min-w-0 items-center gap-1.5 text-[0.68rem] text-on-surface-variant">
-                          <span className="shrink-0 rounded-full bg-surface-container-highest px-2 py-0.5 font-mono">{row.eventName}</span>
+                        <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.66rem] text-on-surface-variant">
+                          <span className="shrink-0 rounded-md bg-surface-container-highest px-1.5 py-0.5 font-mono">{row.eventName}</span>
                           <ArrowRight aria-hidden className="size-3.5 shrink-0" />
                           <span className="truncate font-mono">{row.command ? sanitizeRustCommandName(row.command.name) : "未绑定 command"}</span>
                         </span>
                       </button>
-                      <div className="mt-2 grid grid-cols-3 gap-1.5">
+                      <div className="mt-1.5 grid grid-cols-3 gap-1">
                         <Button
                           size="sm"
                           variant={rowNeedsSlot ? "default" : row.command ? "secondary" : "default"}
-                          className="h-7 px-2 text-[0.68rem]"
+                          className="h-6 px-1.5 text-[0.64rem]"
                           data-builder-logic-connection-generate-missing-slot={rowNeedsSlot ? "" : undefined}
                           onClick={() => goToSlotForItem(row.item)}
                         >
@@ -37973,7 +37987,7 @@ export function BuilderShowcase() {
                         <Button
                           size="sm"
                           variant={row.command ? "ghost" : "secondary"}
-                          className="h-7 px-2 text-[0.68rem]"
+                          className="h-6 px-1.5 text-[0.64rem]"
                           disabled={!row.command && !activeRustCommand.id}
                           data-builder-logic-connection-bind-active-command={row.command ? undefined : ""}
                           onClick={() =>
@@ -37987,7 +38001,7 @@ export function BuilderShowcase() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[0.68rem]"
+                          className="h-6 px-1.5 text-[0.64rem]"
                           onClick={() => openLogicConnectionSettings(row.item, row.eventName)}
                         >
                           设置
@@ -37997,7 +38011,7 @@ export function BuilderShowcase() {
                   );
                 })}
                 {filteredLogicConnectionRows.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                  <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                     没有匹配的{logicConnectionFilter === "bound" ? "已绑定" : logicConnectionFilter === "unbound" ? "待绑定" : logicConnectionFilter === "missing-slot" ? "缺槽" : ""}信号/槽连接。
                   </div>
                 ) : null}
@@ -38006,21 +38020,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-commands-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("commands") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("commands") && "hidden")}
                 data-builder-logic-resource-section="commands"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="commands"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <Braces aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">命令注册表</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">Tauri invoke handler</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">Tauri invoke handler</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -38028,7 +38043,7 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="commands">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="commands">
                 {filteredRustCommands.map((command) => (
                   <button
                     key={command.id}
@@ -38036,22 +38051,23 @@ export function BuilderShowcase() {
                     data-builder-rust-command={command.name}
                     onClick={() => selectRustCommand(command.id)}
                     className={cn(
-                      "w-full rounded-2xl border p-3 text-left transition",
+                      logicResourceItemClass,
                       command.id === activeProject.activeRustCommandId
-                        ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                        : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                        ? logicResourceItemActiveClass
+                        : logicResourceItemIdleClass,
                     )}
+                    data-builder-logic-resource-item-density="thin-row"
                   >
                     <span className="block truncate font-mono text-xs">{sanitizeRustCommandName(command.name)}</span>
-                    <span className="mt-1 block truncate text-[0.68rem]">{command.response || DEFAULT_RUST_COMMAND_RESPONSE}</span>
+                    <span className="mt-0.5 block truncate text-[0.62rem] leading-3">{command.response || DEFAULT_RUST_COMMAND_RESPONSE}</span>
                   </button>
                 ))}
                 {filteredRustCommands.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                  <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                     没有匹配的 Rust 命令。
                   </div>
                 ) : null}
-                <Button className="w-full" variant="secondary" data-builder-new-command="" onClick={createRustCommandInProject}>
+                <Button className="h-7 w-full text-[0.68rem]" variant="secondary" data-builder-new-command="" onClick={createRustCommandInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建命令
                 </Button>
@@ -38060,21 +38076,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-modules-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("modules") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("modules") && "hidden")}
                 data-builder-logic-resource-section="modules"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="modules"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <FileJson aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">Rust 模块</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">生成到 src-tauri/src/*.rs</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">生成到 src-tauri/src/*.rs</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -38082,8 +38099,8 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="border-t border-outline-variant p-2" data-builder-logic-resource-section-content="modules">
-                <div className="space-y-2">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="modules">
+                <div className="space-y-1">
                   {filteredRustModules.map((module) => (
                     <button
                       key={module.id}
@@ -38091,23 +38108,24 @@ export function BuilderShowcase() {
                       data-builder-rust-module={module.name}
                       onClick={() => selectRustModule(module.id)}
                       className={cn(
-                        "w-full rounded-2xl border p-3 text-left transition",
+                        logicResourceItemClass,
                         module.id === activeProject.activeRustModuleId
-                          ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                          : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                          ? logicResourceItemActiveClass
+                          : logicResourceItemIdleClass,
                       )}
+                      data-builder-logic-resource-item-density="thin-row"
                     >
                       <span className="block truncate font-mono text-xs">{sanitizeRustModuleName(module.name)}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">{booleanStateLabel(module.enabled)} · {module.source.split(/\r?\n/).length} 行</span>
+                      <span className="mt-0.5 block truncate text-[0.62rem] leading-3">{booleanStateLabel(module.enabled)} · {module.source.split(/\r?\n/).length} 行</span>
                     </button>
                   ))}
                   {filteredRustModules.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                    <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                       没有匹配的 Rust 模块。
                     </div>
                   ) : null}
                 </div>
-                <Button className="mt-2 w-full" variant="secondary" data-builder-new-rust-module="" onClick={createRustModuleInProject}>
+                <Button className="mt-1 h-7 w-full text-[0.68rem]" variant="secondary" data-builder-new-rust-module="" onClick={createRustModuleInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建模块
                 </Button>
@@ -38116,21 +38134,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-dependencies-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("dependencies") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("dependencies") && "hidden")}
                 data-builder-logic-resource-section="dependencies"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="dependencies"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <Box aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">Cargo 依赖</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">写入 Cargo.toml 的 crate</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">写入 Cargo.toml 的 crate</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -38138,7 +38157,7 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="dependencies">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="dependencies">
                   {filteredCargoDependencies.map((dependency) => (
                     <button
                       key={dependency.id}
@@ -38146,25 +38165,26 @@ export function BuilderShowcase() {
                       data-builder-cargo-dependency={dependency.name}
                       onClick={() => selectCargoDependency(dependency.id)}
                       className={cn(
-                        "w-full rounded-2xl border p-3 text-left transition",
+                        logicResourceItemClass,
                         dependency.id === activeProject.activeCargoDependencyId
-                          ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                          : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                          ? logicResourceItemActiveClass
+                          : logicResourceItemIdleClass,
                       )}
+                      data-builder-logic-resource-item-density="thin-row"
                     >
                       <span className="block truncate font-mono text-xs">{sanitizeCargoDependencyName(dependency.name)}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">
+                      <span className="mt-0.5 block truncate text-[0.62rem] leading-3">
                         {booleanStateLabel(dependency.enabled)} · v{dependency.version}
                         {dependency.features ? ` · ${dependency.features}` : ""}
                       </span>
                     </button>
                   ))}
                   {filteredCargoDependencies.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                    <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                       没有匹配的 Cargo 依赖。
                     </div>
                   ) : null}
-                <Button className="w-full" variant="secondary" data-builder-new-cargo-dependency="" onClick={createCargoDependencyInProject}>
+                <Button className="h-7 w-full text-[0.68rem]" variant="secondary" data-builder-new-cargo-dependency="" onClick={createCargoDependencyInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建依赖
                 </Button>
@@ -38173,21 +38193,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-integrations-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("integrations") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("integrations") && "hidden")}
                 data-builder-logic-resource-section="integrations"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="integrations"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <Terminal aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">后端集成</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">C++ FFI、sidecar、本地服务</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">C++ FFI、sidecar、本地服务</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -38195,7 +38216,7 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="integrations">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="integrations">
                   {filteredBackendIntegrations.map((integration) => (
                     <button
                       key={integration.id}
@@ -38203,24 +38224,25 @@ export function BuilderShowcase() {
                       data-builder-backend-integration={integration.name}
                       onClick={() => selectBackendIntegration(integration.id)}
                       className={cn(
-                        "w-full rounded-2xl border p-3 text-left transition",
+                        logicResourceItemClass,
                         integration.id === activeProject.activeBackendIntegrationId
-                          ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                          : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                          ? logicResourceItemActiveClass
+                          : logicResourceItemIdleClass,
                       )}
+                      data-builder-logic-resource-item-density="thin-row"
                     >
                       <span className="block truncate font-mono text-xs">{integration.name}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">
+                      <span className="mt-0.5 block truncate text-[0.62rem] leading-3">
                         {booleanStateLabel(integration.enabled)} · {integration.language} · {integration.transport}
                       </span>
                     </button>
                   ))}
                   {filteredBackendIntegrations.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                    <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                       没有匹配的后端集成。
                     </div>
                   ) : null}
-                <Button className="w-full" variant="secondary" data-builder-new-backend-integration="" onClick={createBackendIntegrationInProject}>
+                <Button className="h-7 w-full text-[0.68rem]" variant="secondary" data-builder-new-backend-integration="" onClick={createBackendIntegrationInProject}>
                   <Plus aria-hidden className="size-4" />
                   新建集成
                 </Button>
@@ -38229,21 +38251,22 @@ export function BuilderShowcase() {
               <details
                 key={`logic-resource-state-${logicResourceView}`}
                 open={logicResourceView !== "all"}
-                className={cn("group rounded-xl border border-outline-variant bg-surface-container-low text-xs", !logicResourceVisible("state") && "hidden")}
+                className={cn(logicResourceSectionClass, !logicResourceVisible("state") && "hidden")}
                 data-builder-logic-resource-section="state"
                 data-builder-logic-resource-section-density="collapsed-in-all"
+                data-builder-logic-resource-section-chrome="flat-outline"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2 py-1.5 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  className={logicResourceSectionSummaryClass}
                   data-builder-logic-resource-section-summary="state"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                    <span className={logicResourceSectionIconClass}>
                       <ToggleLeft aria-hidden className="size-3.5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-on-surface">状态存储</span>
-                      <span className="block truncate text-[0.64rem] text-on-surface-variant">共享状态和控件绑定</span>
+                      <span className="block truncate text-[0.6rem] leading-3 text-on-surface-variant">共享状态和控件绑定</span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
@@ -38251,7 +38274,7 @@ export function BuilderShowcase() {
                     <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                   </span>
                 </summary>
-                <div className="space-y-2 border-t border-outline-variant p-2" data-builder-logic-resource-section-content="state">
+                <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="state">
                   {filteredStateVariables.map((state) => (
                     <button
                       key={state.id}
@@ -38259,24 +38282,25 @@ export function BuilderShowcase() {
                       data-builder-state-variable={state.name}
                       onClick={() => selectStateVariable(state.id, { feedback: true })}
                       className={cn(
-                        "w-full rounded-2xl border p-3 text-left transition",
+                        logicResourceItemClass,
                         state.id === activeProject.activeStateVariableId
-                          ? "border-primary bg-primary/10 text-on-surface shadow-m3-1"
-                          : "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high",
+                          ? logicResourceItemActiveClass
+                          : logicResourceItemIdleClass,
                       )}
+                      data-builder-logic-resource-item-density="thin-row"
                     >
                       <span className="block truncate font-mono text-xs">{state.name}</span>
-                      <span className="mt-1 block truncate text-[0.68rem]">
+                      <span className="mt-0.5 block truncate text-[0.62rem] leading-3">
                         {state.initialValue || "空"} · {formatStateReferenceCount(stateReferenceCounts.get(state.id) ?? 0)}
                       </span>
                     </button>
                   ))}
                   {filteredStateVariables.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-3 text-xs leading-5 text-on-surface-variant">
+                    <div className="rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-2 py-2 text-xs leading-5 text-on-surface-variant">
                       没有匹配的状态变量。
                     </div>
                   ) : null}
-                <Button className="w-full" variant="secondary" data-builder-new-state="" onClick={() => createStateVariableInProject({ feedback: true })}>
+                <Button className="h-7 w-full text-[0.68rem]" variant="secondary" data-builder-new-state="" onClick={() => createStateVariableInProject({ feedback: true })}>
                   <Plus aria-hidden className="size-4" />
                   新建状态
                 </Button>

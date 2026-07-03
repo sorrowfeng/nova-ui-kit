@@ -1567,9 +1567,14 @@ mustContain(builder, 'data-builder-rust-editor-search-lane-density="inline"', "R
 mustContain(builder, 'data-builder-logic-main-panel-layout="editor-only"', "Logic main panel hides non-editor documentation blocks from the primary code surface");
 mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic resource sidebar defaults to a focused dock view instead of showing every resource group");
 mustContain(builder, 'data-builder-logic-resource-density="compact-outline"', "Logic resource panel uses compact outline density");
+mustContain(builder, 'data-builder-logic-resource-panel-chrome="low-chrome"', "Logic resource panel reduces chrome to match IDE outline sidebars");
 mustContain(builder, 'data-builder-logic-search-density="single-row"', "Logic resource search no longer consumes a multi-row card");
 mustContain(builder, 'data-builder-rust-outline-density="compact-list"', "Logic Rust outline uses compact list density");
+mustContain(builder, "logicResourceSectionSummaryClass", "Logic resource summary rows share a thin outline row class");
+mustContain(builder, "logicResourceItemClass", "Logic expanded resource items share a thin row class");
 mustContain(builder, 'data-builder-logic-resource-section-density="collapsed-in-all"', "Logic resource sections collapse by default in the all-resources view");
+mustContain(builder, 'data-builder-logic-resource-section-chrome="flat-outline"', "Logic resource sections use flat outline chrome instead of stacked cards");
+mustContain(builder, 'data-builder-logic-resource-item-density="thin-row"', "Logic resource items expose thin-row density for runtime checks");
 mustContain(builder, 'data-builder-logic-resource-section-summary="connections"', "Logic connections resource section exposes a compact summary row");
 mustContain(builder, 'data-builder-logic-resource-section-summary="commands"', "Logic commands resource section exposes a compact summary row");
 mustContain(builder, 'data-builder-logic-resource-section-summary="modules"', "Logic modules resource section exposes a compact summary row");
