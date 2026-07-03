@@ -45378,15 +45378,31 @@ export function BuilderShowcase() {
                     })}
                   </div>
 
-                  <div className="min-w-0 rounded-xl border border-outline-variant bg-surface-container p-2" data-builder-desktop-runtime-console="" data-builder-desktop-runtime-console-density="low-profile">
-                    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行控制台</h3>
-                        <p className="truncate text-[0.68rem] text-on-surface-variant">
-                          {desktopRuntimeLogPath || "运行桌面端后写入 .nova/runtime"}
-                        </p>
+                  <details
+                    className="group min-w-0 rounded-xl border border-outline-variant bg-surface-container px-2.5 py-1.5 text-xs"
+                    data-builder-desktop-runtime-console=""
+                    data-builder-desktop-runtime-console-density="collapsed-summary"
+                    data-builder-desktop-runtime-console-state="collapsed-default"
+                  >
+                    <summary
+                      className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 [&::-webkit-details-marker]:hidden"
+                      data-builder-desktop-runtime-console-summary="single-row"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                        <div className="min-w-0">
+                          <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行控制台</h3>
+                          <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                            {desktopRuntimeLogPath || "运行桌面端后写入 .nova/runtime"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-1">
+                      <Badge variant="outline" className="shrink-0">
+                        按需展开
+                      </Badge>
+                    </summary>
+                    <div className="mt-2 border-t border-outline-variant pt-2" data-builder-desktop-runtime-console-details="deferred">
+                      <div className="mb-1.5 flex flex-wrap items-center justify-end gap-1">
                         <Button
                           size="icon-sm"
                           variant="ghost"
@@ -45415,14 +45431,14 @@ export function BuilderShowcase() {
                           <FileJson aria-hidden className="size-4" />
                         </Button>
                       </div>
+                      <pre
+                        className="max-h-20 min-h-14 overflow-auto whitespace-pre-wrap rounded-lg bg-surface-container-high px-2 py-1.5 font-mono text-[0.66rem] leading-4 text-on-surface-variant"
+                        data-builder-desktop-runtime-log-preview=""
+                      >
+                        {latestRunSessionEntry?.runtimeLogPreview || activeWorkflowRuntimeSession?.summary || "运行桌面端 exe 后会在这里显示 stdout、stderr 和运行状态摘要。"}
+                      </pre>
                     </div>
-                    <pre
-                      className="max-h-20 min-h-14 overflow-auto whitespace-pre-wrap rounded-lg bg-surface-container-high px-2 py-1.5 font-mono text-[0.66rem] leading-4 text-on-surface-variant"
-                      data-builder-desktop-runtime-log-preview=""
-                    >
-                      {latestRunSessionEntry?.runtimeLogPreview || activeWorkflowRuntimeSession?.summary || "运行桌面端 exe 后会在这里显示 stdout、stderr 和运行状态摘要。"}
-                    </pre>
-                  </div>
+                  </details>
                 </div>
 
                 <details

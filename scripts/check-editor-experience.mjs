@@ -1432,12 +1432,16 @@ mustContain(builder, 'data-builder-desktop-runtime-summary-density="single-row-o
 mustContain(builder, 'data-builder-desktop-runtime-summary-layout="inline-property-strip"', "Desktop runtime summary renders as an inline property strip instead of a card wall");
 mustContain(builder, 'data-builder-desktop-runtime-card-density="compact-cell"', "Desktop runtime status items render as compact cells instead of large cards");
 mustContain(builder, "data-builder-desktop-runtime-console", "Desktop runtime workbench exposes the runtime console panel");
-mustContain(builder, 'data-builder-desktop-runtime-console-density="low-profile"', "Desktop runtime console uses a low-profile output pane density");
+mustContain(builder, 'data-builder-desktop-runtime-console-density="collapsed-summary"', "Desktop runtime console defaults to a collapsed summary instead of a permanent output pane");
+mustContain(builder, 'data-builder-desktop-runtime-console-state="collapsed-default"', "Desktop runtime console declares its default collapsed state");
+mustContain(builder, 'data-builder-desktop-runtime-console-summary="single-row"', "Desktop runtime console summary stays in one compact row");
+mustContain(builder, 'data-builder-desktop-runtime-console-details="deferred"', "Desktop runtime console details are deferred until expanded");
 mustContain(builder, "data-builder-desktop-runtime-log-preview", "Desktop runtime workbench previews captured stdout and stderr");
 mustContain(builder, "data-builder-desktop-runtime-validate", "Desktop runtime workbench can enqueue generated-window validation");
 mustContain(builder, "data-builder-desktop-runtime-build", "Desktop runtime workbench can enqueue exe builds");
 mustContain(builder, 'data-builder-desktop-runtime-actions-density="toolbar"', "Desktop runtime actions use a compact toolbar instead of a button grid");
 mustContain(builder, 'id: "desktop-runtime-workbench"', "Editor experience audit checks desktop runtime workbench");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.desktopRuntimeConsoleCollapsedRuntime = true", "Browser smoke verifies the desktop runtime console expands on demand");
 mustContain(builder, "data-builder-runtime-parity-panel", "Build page exposes runtime window parity checks");
 mustContain(builder, 'data-builder-runtime-parity-density="collapsed-default"', "Runtime parity panel defaults to a compact collapsed row");
 mustContain(builder, 'data-builder-runtime-parity-summary="single-row"', "Runtime parity summary stays as a single IDE row");
