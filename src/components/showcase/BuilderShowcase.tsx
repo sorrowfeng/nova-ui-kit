@@ -37611,32 +37611,42 @@ export function BuilderShowcase() {
                   </section>
 
                   <section
-                    className="mt-4 rounded-[22px] border border-outline-variant bg-surface-container p-4"
+                    className="mt-4 rounded-2xl border border-outline-variant bg-surface-container p-2.5"
                     data-builder-project-save-manifest=""
+                    data-builder-project-save-manifest-density="compact-save-settings"
                     data-builder-project-save-root={activeProject.rootPath ? "disk" : "managed-default"}
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-semibold text-on-surface">保存到本地文件夹</h3>
+                          <h3 className="truncate text-xs font-semibold text-on-surface">保存到本地文件夹</h3>
                           <Badge variant={saved ? "secondary" : "outline"}>{saved ? "已同步" : "待同步"}</Badge>
+                          <span className="text-[0.66rem] text-on-surface-variant">
+                            源码 / 生成 / .nova 一次同步
+                          </span>
                         </div>
-                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                          保存项目会同时写入源码、生成目标和隐藏 `.nova` 元数据；不再单独导出 UI 文件。
+                        <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                          保存项目会写入可追踪源码、生成目标和本地编辑器元数据。
                         </p>
                       </div>
                       <Button
                         size="sm"
                         variant="secondary"
+                        className="h-8 px-2.5 text-xs"
                         data-builder-project-save-manifest-run=""
                         loading={diskBusy || runningProjectTask?.actionId === "save-project"}
                         onClick={() => enqueueProjectTask("save-project")}
                       >
-                        <Save aria-hidden className="size-4" />
+                        <Save aria-hidden className="size-3.5" />
                         保存并同步
                       </Button>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs" data-builder-project-save-manifest-summary="">
+
+                    <div
+                      className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 text-xs"
+                      data-builder-project-save-manifest-summary=""
+                      data-builder-project-save-manifest-summary-density="inline-chips"
+                    >
                       {[
                         { scope: "source" as const, label: "源码", count: projectSaveManifestItems.filter((item) => item.scope === "source").length },
                         { scope: "generated" as const, label: "生成", count: projectSaveManifestItems.filter((item) => item.scope === "generated").length },
@@ -37645,141 +37655,147 @@ export function BuilderShowcase() {
                         <button
                           key={group.scope}
                           type="button"
-                          className="focus-ring min-w-0 rounded-2xl bg-surface-container-low px-2 py-2 text-center transition hover:bg-surface-container-high"
+                          className="focus-ring inline-flex h-7 min-w-0 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-low px-2 text-[0.68rem] transition hover:bg-surface-container-high"
                           data-builder-project-save-manifest-scope={group.scope}
+                          data-builder-project-save-manifest-scope-density="inline-chip"
                           onClick={() => {
                             setProjectExplorerFilter(group.scope === "source" ? "all" : group.scope === "generated" ? "build" : "meta");
                             setProjectExplorerQuery("");
                           }}
                         >
-                          <p className="font-mono text-sm text-on-surface">{group.count}</p>
-                          <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{group.label}</p>
+                          <span className="font-mono text-on-surface">{group.count}</span>
+                          <span className="truncate text-on-surface-variant">{group.label}</span>
                         </button>
                       ))}
                     </div>
+
                     <div
-                      className="mt-3 rounded-[18px] border border-outline-variant bg-surface-container-low p-3"
+                      className="mt-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low"
                       data-builder-project-save-plan=""
+                      data-builder-project-save-plan-density="compact-table"
                       data-builder-project-save-plan-count={projectSavePlanSteps.length}
                       data-builder-project-save-plan-pending-count={projectSavePlanSteps.reduce((total, step) => total + step.pendingCount, 0)}
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-on-surface">保存计划</p>
-                          <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">
-                            按源码、生成目标和 `.nova` 元数据拆分保存路径，保存前就能确认哪些内容会写入项目文件夹。
-                          </p>
+                      <div className="grid min-h-8 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-outline-variant px-2.5 py-1.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="text-xs font-semibold text-on-surface">保存计划</span>
+                          <span className="truncate text-[0.66rem] text-on-surface-variant">
+                            阶段表按源码、生成目标和本地状态排列。
+                          </span>
                         </div>
-                        <Badge variant={projectSourceDirty ? "destructive" : "secondary"} data-builder-project-save-plan-state="">
-                          {projectSourceDirty ? "有待同步项" : "计划就绪"}
+                        <Badge variant={projectSourceDirty ? "destructive" : "secondary"} className="shrink-0 text-[0.58rem]" data-builder-project-save-plan-state="">
+                          {projectSourceDirty ? "待同步" : "就绪"}
                         </Badge>
                       </div>
                       <div
-                        className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-2xl border border-outline-variant bg-surface-container px-3 py-2 text-[0.68rem]"
+                        className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(10rem,auto)] items-center gap-2 border-b border-outline-variant bg-surface-container px-2.5 py-1.5 text-[0.66rem]"
                         data-builder-project-save-plan-route={activeProjectSavePlanStep?.id ?? "none"}
                         data-builder-project-save-plan-route-filter={projectExplorerFilter}
                         data-builder-project-save-plan-route-query={projectExplorerQuery}
                       >
                         <span className="min-w-0 truncate text-on-surface-variant">
-                          {activeProjectSavePlanStep
-                            ? `当前定位：${activeProjectSavePlanStep.title}`
-                            : "点击任一步骤可同步项目树筛选和搜索。"}
+                          {activeProjectSavePlanStep ? `当前定位：${activeProjectSavePlanStep.title}` : "未定位阶段"}
                         </span>
-                        <span className="min-w-0 truncate font-mono text-on-surface" data-builder-project-save-plan-route-path="">
+                        <span className="min-w-0 truncate text-right font-mono text-on-surface" data-builder-project-save-plan-route-path="">
                           {activeProjectSavePlanStep?.path ?? "source / generated / .nova"}
                         </span>
                       </div>
-                      <div className="mt-3 grid gap-2 lg:grid-cols-3" data-builder-project-save-plan-list="">
+                      <div className="divide-y divide-outline-variant" data-builder-project-save-plan-list="" data-builder-project-save-plan-list-density="row-table">
                         {projectSavePlanSteps.map((step, index) => {
                           const StepIcon = step.icon;
                           const ready = step.status === "ready";
                           return (
-                            <article
+                            <button
                               key={step.id}
+                              type="button"
                               className={cn(
-                                "grid min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-2 rounded-[16px] border px-3 py-3 text-xs",
-                                step.status === "ready"
-                                  ? "border-outline-variant bg-surface-container"
-                                  : step.status === "warning"
-                                    ? "border-destructive/25 bg-destructive/10"
-                                    : "border-outline-variant bg-surface-container-high",
+                                "focus-ring grid min-h-10 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 px-2.5 py-1.5 text-left text-xs transition hover:bg-surface-container-high",
+                                step.status === "warning" ? "bg-destructive/5" : "bg-transparent",
                               )}
                               data-builder-project-save-plan-step={step.id}
                               data-builder-project-save-plan-step-scope={step.scope}
                               data-builder-project-save-plan-step-status={step.status}
                               data-builder-project-save-plan-step-pending-count={step.pendingCount}
                               data-builder-project-save-plan-step-index={index + 1}
+                              data-builder-project-save-plan-step-density="compact-row"
+                              data-builder-project-save-plan-open={step.id}
+                              onClick={() => openProjectSavePlanStep(step)}
                             >
-                              <div className="flex min-w-0 items-start gap-2">
-                                <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
-                                  <StepIcon aria-hidden className="size-4" />
+                              <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                                <StepIcon aria-hidden className="size-3.5" />
+                              </span>
+                              <span className="grid min-w-0 grid-cols-[minmax(0,8rem)_minmax(0,1fr)] items-center gap-2">
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate font-medium text-on-surface">{step.title}</span>
+                                  <Badge variant={ready ? "secondary" : step.status === "warning" ? "destructive" : "outline"} className="shrink-0 text-[0.56rem]">
+                                    {ready ? "就绪" : step.status === "warning" ? `${step.pendingCount} 待同步` : "待生成"}
+                                  </Badge>
                                 </span>
-                                <span className="min-w-0">
-                                  <span className="flex min-w-0 items-center gap-1.5">
-                                    <span className="truncate font-medium text-on-surface">{step.title}</span>
-                                    <Badge variant={ready ? "secondary" : step.status === "warning" ? "destructive" : "outline"} className="shrink-0 text-[0.58rem]">
-                                      {ready ? "就绪" : step.status === "warning" ? `${step.pendingCount} 待同步` : "待生成"}
-                                    </Badge>
-                                  </span>
-                                  <span className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{step.detail}</span>
-                                </span>
-                              </div>
-                              <div className="min-w-0 rounded-2xl bg-surface-container-lowest px-3 py-2">
-                                <span className="block truncate font-mono text-[0.66rem] text-on-surface" data-builder-project-save-plan-path="">
+                                <span className="hidden min-w-0 truncate text-[0.66rem] text-on-surface-variant lg:block">{step.detail}</span>
+                              </span>
+                              <span className="hidden min-w-0 text-right lg:block">
+                                <span className="block truncate font-mono text-[0.64rem] text-on-surface" data-builder-project-save-plan-path="">
                                   {step.path}
                                 </span>
-                                <span className="mt-0.5 block text-[0.62rem] text-on-surface-variant">
-                                  {step.itemCount} 个清单项 · {step.scope}
+                                <span className="block text-[0.58rem] text-on-surface-variant">
+                                  {step.itemCount} 项 · {step.scope}
                                 </span>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant={step.status === "warning" ? "secondary" : "ghost"}
-                                className="h-8 justify-center text-xs"
-                                data-builder-project-save-plan-open={step.id}
-                                onClick={() => openProjectSavePlanStep(step)}
-                              >
-                                <ArrowRight aria-hidden className="size-4" />
-                                {step.actionLabel}
-                              </Button>
-                            </article>
+                              </span>
+                              <ArrowRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                            </button>
                           );
                         })}
                       </div>
                     </div>
-                    <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low">
-                      {projectSaveManifestItems.map((item) => {
-                        const ItemIcon = item.icon;
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className="focus-ring grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2.5 text-left text-xs transition hover:bg-surface-container-high"
-                            data-builder-project-save-manifest-item={item.id}
-                            data-builder-project-save-manifest-item-scope={item.scope}
-                            onClick={() => {
-                              setProjectExplorerQuery(item.path);
-                              setProjectExplorerFilter(item.scope === "generated" ? "build" : item.scope === "metadata" ? "meta" : "all");
-                            }}
-                          >
-                            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
-                              <ItemIcon aria-hidden className="size-4" />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="flex min-w-0 items-center gap-2">
-                                <span className="truncate font-medium text-on-surface">{item.title}</span>
-                                <Badge variant={item.scope === "metadata" ? "outline" : item.scope === "generated" ? "secondary" : "outline"} className="shrink-0">
-                                  {item.scope === "source" ? "源码" : item.scope === "generated" ? "生成" : ".nova"}
-                                </Badge>
+
+                    <details
+                      className="group mt-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low"
+                      data-builder-project-save-manifest-list=""
+                      data-builder-project-save-manifest-list-density="collapsed-rows"
+                      data-builder-project-save-manifest-list-state="collapsed-default"
+                    >
+                      <summary className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-1.5 text-xs transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                          <span className="truncate font-medium text-on-surface">完整写入清单</span>
+                          <Badge variant="outline" className="text-[0.58rem]">{projectSaveManifestItems.length} 项</Badge>
+                        </span>
+                        <span className="truncate text-[0.66rem] text-on-surface-variant">展开查看每个路径</span>
+                      </summary>
+                      <div className="divide-y divide-outline-variant border-t border-outline-variant bg-surface-container-lowest" data-builder-project-save-manifest-item-list="">
+                        {projectSaveManifestItems.map((item) => {
+                          const ItemIcon = item.icon;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              className="focus-ring grid min-h-9 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-1.5 text-left text-xs transition hover:bg-surface-container-high"
+                              data-builder-project-save-manifest-item={item.id}
+                              data-builder-project-save-manifest-item-scope={item.scope}
+                              data-builder-project-save-manifest-item-density="compact-row"
+                              onClick={() => {
+                                setProjectExplorerQuery(item.path);
+                                setProjectExplorerFilter(item.scope === "generated" ? "build" : item.scope === "metadata" ? "meta" : "all");
+                              }}
+                            >
+                              <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                                <ItemIcon aria-hidden className="size-3.5" />
                               </span>
-                              <span className="mt-0.5 block truncate text-on-surface-variant">{item.detail}</span>
-                              <span className="mt-0.5 block truncate font-mono text-[0.68rem] text-on-surface-variant">{item.path}</span>
-                            </span>
-                            <ArrowRight aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
-                          </button>
-                        );
-                      })}
-                    </div>
+                              <span className="grid min-w-0 grid-cols-[minmax(0,8rem)_minmax(0,1fr)] items-center gap-2">
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate font-medium text-on-surface">{item.title}</span>
+                                  <Badge variant={item.scope === "metadata" ? "outline" : item.scope === "generated" ? "secondary" : "outline"} className="shrink-0 text-[0.56rem]">
+                                    {item.scope === "source" ? "源码" : item.scope === "generated" ? "生成" : ".nova"}
+                                  </Badge>
+                                </span>
+                                <span className="hidden min-w-0 truncate text-[0.66rem] text-on-surface-variant lg:block">{item.detail}</span>
+                              </span>
+                              <span className="hidden min-w-0 max-w-[18rem] truncate text-right font-mono text-[0.64rem] text-on-surface-variant xl:block">{item.path}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </details>
                   </section>
 
                   <section className="mt-4 rounded-[22px] border border-outline-variant bg-surface-container p-4" data-builder-project-workspace-metadata="">

@@ -2985,7 +2985,16 @@ async function runProjectWorkspaceChecks(send, verified) {
       const generatedItems = saveItems.filter((item) => item.getAttribute("data-builder-project-save-manifest-item-scope") === "generated");
       const metadataItems = saveItems.filter((item) => item.getAttribute("data-builder-project-save-manifest-item-scope") === "metadata");
       const savePlan = document.querySelector("[data-builder-project-save-plan]");
+      const saveManifestRect = saveManifest?.getBoundingClientRect();
+      const savePlanRect = savePlan?.getBoundingClientRect();
+      const saveManifestSummary = document.querySelector("[data-builder-project-save-manifest-summary]");
+      const saveManifestScopeChips = Array.from(document.querySelectorAll("[data-builder-project-save-manifest-scope]"));
+      const saveManifestList = document.querySelector("[data-builder-project-save-manifest-list]");
+      const saveManifestListRect = saveManifestList?.getBoundingClientRect();
+      const savePlanList = document.querySelector("[data-builder-project-save-plan-list]");
+      const savePlanListRect = savePlanList?.getBoundingClientRect();
       const savePlanSteps = Array.from(document.querySelectorAll("[data-builder-project-save-plan-step]"));
+      const savePlanStepRects = savePlanSteps.map((step) => step.getBoundingClientRect());
       const savePlanScopes = savePlanSteps.map((step) => step.getAttribute("data-builder-project-save-plan-step-scope") || "");
       const savePlanStates = savePlanSteps.map((step) => step.getAttribute("data-builder-project-save-plan-step-status") || "");
       const savePlanPending = savePlanSteps.map((step) => {
@@ -3010,13 +3019,31 @@ async function runProjectWorkspaceChecks(send, verified) {
         passed:
           Boolean(saveManifest) &&
           Boolean(saveRoot) &&
+          saveManifest?.getAttribute("data-builder-project-save-manifest-density") === "compact-save-settings" &&
+          Boolean(saveManifestRect && saveManifestRect.height <= 380) &&
+          saveManifestSummary?.getAttribute("data-builder-project-save-manifest-summary-density") === "inline-chips" &&
+          saveManifestScopeChips.length === 3 &&
+          saveManifestScopeChips.every((chip) => chip.getAttribute("data-builder-project-save-manifest-scope-density") === "inline-chip") &&
           saveItems.length >= 6 &&
+          saveItems.every((item) => item.getAttribute("data-builder-project-save-manifest-item-density") === "compact-row") &&
           sourceItems.length > 0 &&
           generatedItems.length > 0 &&
           metadataItems.length > 0 &&
+          saveManifestList?.tagName === "DETAILS" &&
+          !saveManifestList?.hasAttribute("open") &&
+          saveManifestList?.getAttribute("data-builder-project-save-manifest-list-density") === "collapsed-rows" &&
+          saveManifestList?.getAttribute("data-builder-project-save-manifest-list-state") === "collapsed-default" &&
+          Boolean(saveManifestListRect && saveManifestListRect.height <= 42) &&
           Boolean(savePlan) &&
+          savePlan?.getAttribute("data-builder-project-save-plan-density") === "compact-table" &&
+          Boolean(savePlanRect && savePlanRect.height <= 205) &&
+          savePlanList?.getAttribute("data-builder-project-save-plan-list-density") === "row-table" &&
+          Boolean(savePlanListRect && savePlanListRect.height <= 140) &&
           Number(savePlan?.getAttribute("data-builder-project-save-plan-count") || 0) === 3 &&
           savePlanSteps.length === 3 &&
+          savePlanSteps.every((step) => step.tagName === "BUTTON") &&
+          savePlanSteps.every((step) => step.getAttribute("data-builder-project-save-plan-step-density") === "compact-row") &&
+          savePlanStepRects.every((rect) => rect.height <= 46) &&
           ["source", "generated", "metadata"].every((scope) => savePlanScopes.includes(scope)) &&
           savePlanStates.every((state) => ["ready", "warning", "pending"].includes(state)) &&
           savePlanPending.every((count) => count >= 0) &&
@@ -3042,7 +3069,7 @@ async function runProjectWorkspaceChecks(send, verified) {
           routeRects.every((rect) => rect.height <= 36) &&
           Boolean(metadataGroup) &&
           Boolean(runButton),
-        detail: \`saveRoot=\${saveRoot}, manifest=\${saveItems.length}, source=\${sourceItems.length}, generated=\${generatedItems.length}, metadata=\${metadataItems.length}, savePlan=\${savePlanSteps.length}/\${savePlanScopes.join("/")}, states=\${savePlanStates.join("/")}, pending=\${savePlanPending.join("/")}, paths=\${savePlanPaths.join("|")}, open=\${savePlanOpen.length}, routing=\${Boolean(routing)}/\${routing?.getAttribute("data-builder-project-file-routing-density") || "missing"}/\${Math.round(routingRect?.height || 0)}, table=\${routingTable?.getAttribute("data-builder-project-file-route-table-density") || "missing"}/\${Math.round(routingTableRect?.height || 0)}, metadataGroup=\${Boolean(metadataGroup)}, runButton=\${Boolean(runButton)}, routeGroups=\${routeGroups.length}/\${Math.round(Math.max(0, ...routeGroupRects.map((rect) => rect.height)))}, summaries=\${routeGroupSummaries.length}, details=\${routeDetails.length}, routes=\${routes.length}/\${Math.round(Math.max(0, ...routeRects.map((rect) => rect.height)))}\`
+        detail: \`saveRoot=\${saveRoot}, saveDensity=\${saveManifest?.getAttribute("data-builder-project-save-manifest-density") || "missing"}/\${Math.round(saveManifestRect?.height || 0)}, manifest=\${saveItems.length}, source=\${sourceItems.length}, generated=\${generatedItems.length}, metadata=\${metadataItems.length}, manifestList=\${saveManifestList?.tagName || "missing"}/\${saveManifestList?.getAttribute("data-builder-project-save-manifest-list-density") || "missing"}/\${Math.round(saveManifestListRect?.height || 0)}, savePlan=\${savePlanSteps.length}/\${savePlan?.getAttribute("data-builder-project-save-plan-density") || "missing"}/\${Math.round(savePlanRect?.height || 0)}/\${savePlanScopes.join("/")}, planList=\${savePlanList?.getAttribute("data-builder-project-save-plan-list-density") || "missing"}/\${Math.round(savePlanListRect?.height || 0)}, stepRows=\${Math.round(Math.max(0, ...savePlanStepRects.map((rect) => rect.height)))}, states=\${savePlanStates.join("/")}, pending=\${savePlanPending.join("/")}, paths=\${savePlanPaths.join("|")}, open=\${savePlanOpen.length}, routing=\${Boolean(routing)}/\${routing?.getAttribute("data-builder-project-file-routing-density") || "missing"}/\${Math.round(routingRect?.height || 0)}, table=\${routingTable?.getAttribute("data-builder-project-file-route-table-density") || "missing"}/\${Math.round(routingTableRect?.height || 0)}, metadataGroup=\${Boolean(metadataGroup)}, runButton=\${Boolean(runButton)}, routeGroups=\${routeGroups.length}/\${Math.round(Math.max(0, ...routeGroupRects.map((rect) => rect.height)))}, summaries=\${routeGroupSummaries.length}, details=\${routeDetails.length}, routes=\${routes.length}/\${Math.round(Math.max(0, ...routeRects.map((rect) => rect.height)))}\`
       };
     })()`,
     "project folder save destinations and .nova metadata routing",

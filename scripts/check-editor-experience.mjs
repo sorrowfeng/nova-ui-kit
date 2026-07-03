@@ -1278,13 +1278,19 @@ mustContain(builder, "closeOtherEditorFileTabs(activeFile.id)", "Project open fi
 mustContain(builder, 'id: "project-open-files-manager"', "Editor experience audit checks project open files manager");
 mustContain(builder, ".nova/workspace.json", "Project UI surfaces hidden .nova workspace metadata");
 mustContain(builder, "data-builder-project-save-manifest", "Project mode explains what saving writes to the project folder");
+mustContain(builder, 'data-builder-project-save-manifest-density="compact-save-settings"', "Project save manifest renders as a compact IDE settings panel");
+mustContain(builder, 'data-builder-project-save-manifest-summary-density="inline-chips"', "Project save manifest scope summary uses inline chips");
 mustContain(builder, "data-builder-project-save-manifest-item", "Project save manifest lists source, generated, and metadata targets");
+mustContain(builder, 'data-builder-project-save-manifest-item-density="compact-row"', "Project save manifest item rows stay compact when expanded");
 mustContain(builder, "data-builder-project-save-manifest-run", "Project save manifest can enqueue project save and sync");
 mustContain(builder, "projectSaveManifestItems", "Project save manifest is driven by reusable project metadata");
 mustContain(builder, "type ProjectSavePlanStep", "Project save plan has a reusable typed model");
 mustContain(builder, "projectSavePlanSteps", "Project save plan derives source/generated/.nova stages");
 mustContain(builder, "data-builder-project-save-plan", "Project mode renders a staged save plan");
+mustContain(builder, 'data-builder-project-save-plan-density="compact-table"', "Project save plan renders as a compact table rather than large cards");
+mustContain(builder, 'data-builder-project-save-plan-list-density="row-table"', "Project save plan list uses compact row density");
 mustContain(builder, "data-builder-project-save-plan-step", "Project save plan renders stage rows");
+mustContain(builder, 'data-builder-project-save-plan-step-density="compact-row"', "Project save plan stage rows fit the IDE table rhythm");
 mustContain(builder, "data-builder-project-save-plan-step-status", "Project save plan exposes per-stage state");
 mustContain(builder, "data-builder-project-save-plan-open", "Project save plan rows can route to matching project files");
 mustContain(builder, "openProjectSavePlanStep", "Project save plan routes stages into the project tree");
@@ -1292,6 +1298,8 @@ mustContain(builder, "data-builder-project-filter-option", "Project tree filter 
 mustContain(builder, "data-builder-project-save-plan-route", "Project save plan exposes the active routed stage");
 mustContain(builder, "data-builder-project-save-plan-route-filter", "Project save plan reports the routed project tree filter");
 mustContain(builder, "data-builder-project-save-plan-route-query", "Project save plan reports the routed project tree query");
+mustContain(builder, "data-builder-project-save-manifest-list", "Project save manifest hides long path details behind a disclosure");
+mustContain(builder, 'data-builder-project-save-manifest-list-density="collapsed-rows"', "Project save manifest path list is collapsed by default");
 mustContain(builder, 'id: "project-save-plan"', "Editor experience audit checks project save plan");
 mustContain(builder, "type ProjectFolderHealthItem", "Project mode models project folder health boundaries");
 mustContain(builder, "projectFolderHealthItems", "Project mode derives project folder health from source, generated, and metadata routes");
