@@ -4809,6 +4809,14 @@ async function runShellCommandPlacementChecks(send, verified) {
       const visualAuditSummary = document.querySelector("[data-builder-visual-audit-summary]");
       const visualAuditDetails = document.querySelector("[data-builder-visual-audit-details]");
       const visualAuditInline = document.querySelector("[data-builder-visual-audit-summary-detail]");
+      const activityTimeline = document.querySelector("[data-builder-activity-timeline]");
+      const activityTimelineSummary = document.querySelector("[data-builder-activity-timeline-summary]");
+      const activityTimelineDetails = document.querySelector("[data-builder-activity-timeline-details]");
+      const activityTimelineInline = document.querySelector("[data-builder-activity-timeline-summary-detail]");
+      const buildHistory = document.querySelector("[data-builder-build-history]");
+      const buildHistorySummary = document.querySelector("[data-builder-build-history-summary]");
+      const buildHistoryDetails = document.querySelector("[data-builder-build-history-details]");
+      const buildHistoryInline = document.querySelector("[data-builder-build-history-summary-detail]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4822,7 +4830,11 @@ async function runShellCommandPlacementChecks(send, verified) {
       const changeImpactRect = changeImpact?.getBoundingClientRect();
       const releaseReadinessRect = releaseReadiness?.getBoundingClientRect();
       const visualAuditRect = visualAudit?.getBoundingClientRect();
+      const activityTimelineRect = activityTimeline?.getBoundingClientRect();
+      const buildHistoryRect = buildHistory?.getBoundingClientRect();
       const visualAuditDetailsStyle = visualAuditDetails ? getComputedStyle(visualAuditDetails) : null;
+      const activityTimelineDetailsStyle = activityTimelineDetails ? getComputedStyle(activityTimelineDetails) : null;
+      const buildHistoryDetailsStyle = buildHistoryDetails ? getComputedStyle(buildHistoryDetails) : null;
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4901,6 +4913,24 @@ async function runShellCommandPlacementChecks(send, verified) {
         visualAuditInline?.getAttribute("data-builder-visual-audit-summary-detail") === "compact-inline" &&
         visualAuditDetailsStyle?.display === "none" &&
         Boolean(visualAuditRect && visualAuditRect.height <= 52);
+      const activityTimelineCollapsedDefault =
+        activityTimeline?.tagName === "DETAILS" &&
+        !activityTimeline.hasAttribute("open") &&
+        activityTimeline.getAttribute("data-builder-activity-timeline-density") === "collapsed-default" &&
+        activityTimelineSummary?.getAttribute("data-builder-activity-timeline-summary") === "single-row" &&
+        activityTimelineDetails?.getAttribute("data-builder-activity-timeline-details") === "deferred" &&
+        activityTimelineInline?.getAttribute("data-builder-activity-timeline-summary-detail") === "compact-inline" &&
+        activityTimelineDetailsStyle?.display === "none" &&
+        Boolean(activityTimelineRect && activityTimelineRect.height <= 52);
+      const buildHistoryCollapsedDefault =
+        buildHistory?.tagName === "DETAILS" &&
+        !buildHistory.hasAttribute("open") &&
+        buildHistory.getAttribute("data-builder-build-history-density") === "collapsed-default" &&
+        buildHistorySummary?.getAttribute("data-builder-build-history-summary") === "single-row" &&
+        buildHistoryDetails?.getAttribute("data-builder-build-history-details") === "deferred" &&
+        buildHistoryInline?.getAttribute("data-builder-build-history-summary-detail") === "compact-inline" &&
+        buildHistoryDetailsStyle?.display === "none" &&
+        Boolean(buildHistoryRect && buildHistoryRect.height <= 52);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4922,8 +4952,10 @@ async function runShellCommandPlacementChecks(send, verified) {
           changeImpactCollapsedDefault &&
           releaseReadinessCollapsedDefault &&
           visualAuditCollapsedDefault &&
+          activityTimelineCollapsedDefault &&
+          buildHistoryCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -5029,6 +5061,74 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-visual-audit]")?.hasAttribute("open") === false`,
     "collapsed build visual audit details",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-activity-timeline-summary]")`, "build activity timeline summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-activity-timeline]")?.hasAttribute("open") === true`,
+    "expanded build activity timeline details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const timeline = document.querySelector("[data-builder-activity-timeline]");
+      const details = document.querySelector("[data-builder-activity-timeline-details]");
+      const inline = document.querySelector("[data-builder-activity-timeline-summary-detail]");
+      const detailsRect = details?.getBoundingClientRect();
+      const detailsStyle = details ? getComputedStyle(details) : null;
+      const text = details?.textContent || "";
+      return {
+        passed:
+          timeline?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-activity-timeline-details") === "deferred" &&
+          inline?.getAttribute("data-builder-activity-timeline-summary-detail") === "compact-inline" &&
+          detailsStyle?.display !== "none" &&
+          (/项目活动/.test(text) || /Runtime log|Build|smoke|验证|构建|运行/.test(text)) &&
+          Boolean(detailsRect && detailsRect.height > 60),
+        detail: \`open=\${timeline?.hasAttribute("open")}, display=\${detailsStyle?.display || "missing"}, detailsHeight=\${Math.round(detailsRect?.height || 0)}\`
+      };
+    })()`,
+    "build activity timeline expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-activity-timeline-summary]")`, "collapse build activity timeline summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-activity-timeline]")?.hasAttribute("open") === false`,
+    "collapsed build activity timeline details",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-history-summary]")`, "build artifact history summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-history]")?.hasAttribute("open") === true`,
+    "expanded build artifact history details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const history = document.querySelector("[data-builder-build-history]");
+      const details = document.querySelector("[data-builder-build-history-details]");
+      const inline = document.querySelector("[data-builder-build-history-summary-detail]");
+      const detailsRect = details?.getBoundingClientRect();
+      const detailsStyle = details ? getComputedStyle(details) : null;
+      const text = details?.textContent || "";
+      return {
+        passed:
+          history?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-build-history-details") === "deferred" &&
+          inline?.getAttribute("data-builder-build-history-summary-detail") === "compact-inline" &&
+          detailsStyle?.display !== "none" &&
+          (/构建产物/.test(text) || /exe|安装包|输出目录|Smoke/.test(text)) &&
+          Boolean(detailsRect && detailsRect.height > 60),
+        detail: \`open=\${history?.hasAttribute("open")}, display=\${detailsStyle?.display || "missing"}, detailsHeight=\${Math.round(detailsRect?.height || 0)}\`
+      };
+    })()`,
+    "build artifact history expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-history-summary]")`, "collapse build artifact history summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-history]")?.hasAttribute("open") === false`,
+    "collapsed build artifact history details",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "build release settings summary");
   await waitFor(

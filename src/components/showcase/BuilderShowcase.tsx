@@ -46586,14 +46586,31 @@ export function BuilderShowcase() {
                 ) : null}
               </div>
               </details>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-activity-timeline="">
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-medium">活动时间线</h2>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">项目级事件流，聚合验证、构建、运行、日志、smoke 和磁盘检查点。</p>
-                  </div>
-                  <Badge variant={activityTimeline.length ? "secondary" : "outline"}>{activityTimeline.length}</Badge>
-                </div>
+              <details
+                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                data-builder-activity-timeline=""
+                data-builder-activity-timeline-density="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs transition hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-activity-timeline-summary="single-row"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <Clock3 aria-hidden className="size-4 shrink-0 text-primary" />
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-on-surface">活动时间线</span>
+                      <span className="block truncate text-[0.68rem] text-on-surface-variant">验证、构建、运行、日志和 smoke 事件流</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5" data-builder-activity-timeline-summary-detail="compact-inline">
+                    <Badge variant={activityTimeline.length ? "secondary" : "outline"}>{activityTimeline.length} 项</Badge>
+                    <Badge variant={activityTimeline[0]?.status === "failed" || activityTimeline[0]?.status === "error" ? "destructive" : activityTimeline[0] ? "outline" : "secondary"}>
+                      {activityTimeline[0]?.status ?? "空"}
+                    </Badge>
+                  </span>
+                </summary>
+                <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-activity-timeline-details="deferred">
                 {activityTimeline.length ? (
                   <div className="space-y-2">
                     {activityTimeline.slice(0, 10).map((activity) => (
@@ -46654,15 +46671,33 @@ export function BuilderShowcase() {
                     还没有项目活动。执行验证、构建、启动或创建磁盘检查点后，这里会显示事件流。
                   </div>
                 )}
-              </div>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-build-history="">
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-medium">构建产物历史</h2>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">记录最近生成的 exe、安装包、输出目录和构建时的项目检查状态。</p>
-                  </div>
-                  <Badge variant={activeProject.buildHistory?.length ? "secondary" : "outline"}>{activeProject.buildHistory?.length ?? 0}</Badge>
                 </div>
+              </details>
+              <details
+                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                data-builder-build-history=""
+                data-builder-build-history-density="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs transition hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-build-history-summary="single-row"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <Box aria-hidden className="size-4 shrink-0 text-primary" />
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-on-surface">构建产物历史</span>
+                      <span className="block truncate text-[0.68rem] text-on-surface-variant">exe、安装包、输出目录和运行证据</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5" data-builder-build-history-summary-detail="compact-inline">
+                    <Badge variant={activeProject.buildHistory?.length ? "secondary" : "outline"}>{activeProject.buildHistory?.length ?? 0} 项</Badge>
+                    <Badge variant={activeProject.buildHistory?.[0]?.buildKind ? "outline" : "secondary"}>
+                      {activeProject.buildHistory?.[0]?.buildKind ?? "空"}
+                    </Badge>
+                  </span>
+                </summary>
+                <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-build-history-details="deferred">
                 {activeProject.buildHistory?.length ? (
                   <div className="grid gap-3 xl:grid-cols-2">
                     {activeProject.buildHistory.slice(0, 6).map((entry) => {
@@ -46896,7 +46931,8 @@ export function BuilderShowcase() {
                     尚无构建产物。构建成功后会记录 exe、安装包、输出目录和检查状态。
                   </div>
                 )}
-              </div>
+                </div>
+              </details>
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
