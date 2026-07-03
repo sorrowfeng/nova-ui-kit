@@ -36801,9 +36801,13 @@ export function BuilderShowcase() {
                   data-builder-project-detail-panel-density="low-chrome-dock"
                 >
                   {selectedProjectExplorerNode ? (
-                    <section className="rounded-xl border border-outline-variant bg-surface-container px-2.5 py-2" data-builder-project-workspace-detail="">
-                      <div className="flex min-w-0 items-start gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
+                    <section
+                      className="rounded-lg border border-outline-variant bg-surface-container px-2 py-1.5"
+                      data-builder-project-workspace-detail=""
+                      data-builder-project-workspace-detail-density="thin-inspector-stack"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-container-highest text-primary">
                           <SelectedProjectExplorerIcon aria-hidden className="size-4" />
                         </span>
                         <div className="min-w-0 flex-1">
@@ -36812,13 +36816,14 @@ export function BuilderShowcase() {
                             <Badge variant="outline">{projectExplorerActionLabel(selectedProjectExplorerNode.action)}</Badge>
                             {selectedProjectExplorerNode.badge ? <Badge variant="secondary">{selectedProjectExplorerNode.badge}</Badge> : null}
                           </div>
-                          <p className="mt-1 text-xs leading-5 text-on-surface-variant">{selectedProjectExplorerNode.detail}</p>
+                          <p className="sr-only">{selectedProjectExplorerNode.detail}</p>
                         </div>
                       </div>
                       <nav
-                        className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-1.5 text-[0.68rem]"
+                        className="mt-1.5 flex min-h-7 min-w-0 flex-wrap items-center gap-1 rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-1 text-[0.68rem]"
                         aria-label="当前项目节点路径"
                         data-builder-project-tree-breadcrumb=""
+                        data-builder-project-tree-breadcrumb-density="inline-row"
                       >
                         {selectedProjectExplorerPathNodes.map((node, index) => {
                           const current = node.id === selectedProjectExplorerNode.id;
@@ -36828,7 +36833,7 @@ export function BuilderShowcase() {
                               <button
                                 type="button"
                                 className={cn(
-                                  "focus-ring max-w-[12rem] truncate rounded-lg px-2 py-1 transition",
+                                  "focus-ring max-w-[12rem] truncate rounded-md px-1.5 py-0.5 transition",
                                   current
                                     ? "bg-secondary-container text-secondary-container-foreground"
                                     : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
@@ -36843,13 +36848,11 @@ export function BuilderShowcase() {
                           );
                         })}
                       </nav>
-                      <div className="mt-2 rounded-xl bg-surface-container-low px-2.5 py-1.5">
-                        <p className="break-all font-mono text-xs leading-5 text-on-surface-variant">
-                          {selectedProjectExplorerDisplayPath}
-                        </p>
-                      </div>
+                      <p className="sr-only" data-builder-project-tree-selected-full-path="deferred">
+                        {selectedProjectExplorerDisplayPath}
+                      </p>
                       <section
-                        className="mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
+                        className="mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1"
                         data-builder-project-node-action-strip=""
                         data-builder-project-node-action-strip-density="primary-row-with-deferred-secondary"
                         data-builder-project-node-action-strip-node={selectedProjectExplorerNode.id}
@@ -36976,7 +36979,7 @@ export function BuilderShowcase() {
                         </div>
                       </section>
                       <div
-                        className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-[0.68rem]"
+                        className="mt-1.5 flex min-w-0 flex-wrap items-center gap-1.5 rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-1 text-[0.68rem]"
                         data-builder-project-tree-selected-context=""
                         data-builder-project-tree-selected-context-density="single-row"
                       >
@@ -37015,12 +37018,12 @@ export function BuilderShowcase() {
                       </div>
                       {selectedProjectExplorerDossier ? (
                         <div
-                          className="mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2 text-xs"
+                          className="mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1 text-xs"
                           data-builder-project-node-dossier=""
-                          data-builder-project-node-dossier-density="compact-property-strip"
+                          data-builder-project-node-dossier-density="thin-inspector-strip"
                           data-builder-project-node-dossier-domain={selectedProjectExplorerDossier.groupId}
                         >
-                          <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-center">
+                          <div className="grid min-w-0 gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] xl:items-center">
                             <div className="min-w-0">
                               <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 <Badge variant="secondary" data-builder-project-node-dossier-domain-label="">
@@ -37045,42 +37048,47 @@ export function BuilderShowcase() {
                               <span className="mr-1 text-[0.62rem] uppercase tracking-[0.08em] text-on-surface-variant">状态</span>
                               <span className="inline-block max-w-[10rem] truncate align-bottom font-medium text-on-surface">{selectedProjectExplorerDossier.artifactState}</span>
                             </div>
-                          </div>
-                          <div className="mt-2 flex min-w-0 flex-wrap gap-1.5" data-builder-project-node-dossier-tasks="">
-                            {selectedProjectExplorerDossier.taskIds.map((taskId) => (
-                              <button
-                                key={taskId}
-                                type="button"
-                                className="focus-ring inline-flex max-w-full items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-2.5 py-1 text-on-surface-variant transition hover:border-outline hover:bg-surface-container-high hover:text-on-surface"
-                                data-builder-project-node-dossier-task={taskId}
-                                onClick={() => enqueueProjectTask(taskId)}
-                                title={projectTaskDefinitions[taskId].detail}
-                              >
-                                <Play aria-hidden className="size-3.5 shrink-0" />
-                                <span className="truncate">{projectTaskDefinitions[taskId].title}</span>
-                              </button>
-                            ))}
+                            <div
+                              className="flex min-w-0 shrink-0 items-center gap-0.5 rounded-md border border-outline-variant bg-surface-container px-1 py-0.5"
+                              data-builder-project-node-dossier-tasks=""
+                              data-builder-project-node-dossier-task-strip="icon-strip"
+                            >
+                              {selectedProjectExplorerDossier.taskIds.map((taskId) => (
+                                <button
+                                  key={taskId}
+                                  type="button"
+                                  className="focus-ring inline-flex size-7 items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
+                                  data-builder-project-node-dossier-task={taskId}
+                                  onClick={() => enqueueProjectTask(taskId)}
+                                  title={projectTaskDefinitions[taskId].detail}
+                                  aria-label={projectTaskDefinitions[taskId].title}
+                                >
+                                  <Play aria-hidden className="size-3.5" />
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       ) : null}
                       {selectedProjectExplorerImpactItems.length > 0 ? (
                         <details
-                          className="group mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-xs"
+                          className="group mt-1.5 rounded-md border border-outline-variant bg-surface-container-low px-2 py-1 text-xs"
                           data-builder-project-node-impact=""
                           data-builder-project-node-impact-count={selectedProjectExplorerImpactItems.length}
                           data-builder-project-node-impact-density="collapsed-summary"
                           data-builder-project-node-impact-state="collapsed-default"
                         >
                           <summary
-                            className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1 [&::-webkit-details-marker]:hidden"
+                            className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 [&::-webkit-details-marker]:hidden"
                             data-builder-project-node-impact-summary="single-row"
+                            data-builder-project-node-impact-summary-density="thin-row"
                           >
                             <span className="flex min-w-0 items-center gap-2">
                               <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                               <ListChecks aria-hidden className="size-4 shrink-0 text-primary" />
                               <span className="min-w-0">
-                                <span className="block truncate font-medium text-on-surface">节点影响</span>
-                                <span className="block truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                                <span className="truncate font-medium text-on-surface">节点影响</span>
+                                <span className="sr-only">
                                   路径、同步、标签和推荐任务
                                 </span>
                               </span>

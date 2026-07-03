@@ -2416,21 +2416,33 @@ async function runProjectWorkspaceChecks(send, verified) {
   await assertRuntimeCheck(
     send,
     `(() => {
+      const detail = document.querySelector("[data-builder-project-workspace-detail]");
+      const breadcrumb = document.querySelector("[data-builder-project-tree-breadcrumb]");
+      const fullPath = document.querySelector("[data-builder-project-tree-selected-full-path]");
       const dossier = document.querySelector("[data-builder-project-node-dossier]");
-      const tasks = document.querySelectorAll("[data-builder-project-node-dossier-task]");
+      const taskStrip = document.querySelector("[data-builder-project-node-dossier-tasks]");
+      const tasks = Array.from(document.querySelectorAll("[data-builder-project-node-dossier-task]"));
       const openFiles = document.querySelector("[data-builder-project-open-files]");
       const scopes = document.querySelector("[data-builder-project-workspace-scopes]");
       const scopeRows = document.querySelectorAll("[data-builder-project-workspace-scope-row]");
       const scopeActions = document.querySelectorAll("[data-builder-project-workspace-scope-action]");
+      const dossierRect = dossier?.getBoundingClientRect();
       return {
         passed:
+          detail?.getAttribute("data-builder-project-workspace-detail-density") === "thin-inspector-stack" &&
+          breadcrumb?.getAttribute("data-builder-project-tree-breadcrumb-density") === "inline-row" &&
+          fullPath?.getAttribute("data-builder-project-tree-selected-full-path") === "deferred" &&
           Boolean(dossier) &&
+          dossier?.getAttribute("data-builder-project-node-dossier-density") === "thin-inspector-strip" &&
+          taskStrip?.getAttribute("data-builder-project-node-dossier-task-strip") === "icon-strip" &&
           tasks.length > 0 &&
+          tasks.every((task) => Boolean(task.getAttribute("aria-label"))) &&
+          Boolean(dossierRect && dossierRect.height <= 76) &&
           Boolean(openFiles) &&
           scopes?.getAttribute("data-builder-project-workspace-scopes-density") === "ide-scope-strip" &&
           scopeRows.length >= 4 &&
           scopeActions.length >= 4,
-        detail: \`tasks=\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${scopes?.getAttribute("data-builder-project-workspace-scopes-density") || "missing"}, rows=\${scopeRows.length}, actions=\${scopeActions.length}\`
+        detail: \`detail=\${detail?.getAttribute("data-builder-project-workspace-detail-density") || "missing"}, dossier=\${dossier?.getAttribute("data-builder-project-node-dossier-density") || "missing"}/\${Math.round(dossierRect?.height || 0)}px, taskStrip=\${taskStrip?.getAttribute("data-builder-project-node-dossier-task-strip") || "missing"}/\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${scopes?.getAttribute("data-builder-project-workspace-scopes-density") || "missing"}, rows=\${scopeRows.length}, actions=\${scopeActions.length}\`
       };
     })()`,
     "project node dossier and project workspace panels",
@@ -2503,11 +2515,12 @@ async function runProjectWorkspaceChecks(send, verified) {
           !impact.hasAttribute("open") &&
           impact.getAttribute("data-builder-project-node-impact-density") === "collapsed-summary" &&
           summary?.getAttribute("data-builder-project-node-impact-summary") === "single-row" &&
+          summary?.getAttribute("data-builder-project-node-impact-summary-density") === "thin-row" &&
           details?.getAttribute("data-builder-project-node-impact-details") === "deferred" &&
           Boolean(list) &&
           items.length >= 1 &&
-          Boolean(rect && rect.height <= 58),
-        detail: \`open=\${impact?.hasAttribute("open")}, height=\${Math.round(rect?.height || 0)}, items=\${items.length}, density=\${impact?.getAttribute("data-builder-project-node-impact-density") || "missing"}\`
+          Boolean(rect && rect.height <= 48),
+        detail: \`open=\${impact?.hasAttribute("open")}, height=\${Math.round(rect?.height || 0)}, items=\${items.length}, density=\${impact?.getAttribute("data-builder-project-node-impact-density") || "missing"}, summary=\${summary?.getAttribute("data-builder-project-node-impact-summary-density") || "missing"}\`
       };
     })()`,
     "project node impact summary defaults collapsed",

@@ -1093,7 +1093,9 @@ mustContain(builder, "selectedProjectExplorerPathNodes", "Project tree derives b
 mustContain(builder, "selectedProjectExplorerRelativePath", "Project tree exposes relative paths for source-friendly copy actions");
 mustContain(builder, "data-builder-project-workspace-node-select", "Project workspace tree can select nodes without opening them");
 mustContain(builder, "data-builder-project-tree-breadcrumb", "Project workspace shows a breadcrumb for the selected project node");
+mustContain(builder, 'data-builder-project-tree-breadcrumb-density="inline-row"', "Project selected-node breadcrumb renders as a compact inline row");
 mustContain(builder, "data-builder-project-tree-breadcrumb-segment", "Project workspace breadcrumb segments can select ancestor nodes");
+mustContain(builder, 'data-builder-project-tree-selected-full-path="deferred"', "Project selected-node full path is deferred from visible chrome");
 mustContain(builder, "data-builder-project-tree-quick-actions", "Project workspace exposes quick actions for the selected node");
 mustContain(builder, 'data-builder-project-tree-quick-actions-density="collapsed-summary"', "Project workspace quick actions default to a collapsed summary row");
 mustContain(builder, 'data-builder-project-tree-quick-actions-summary="single-row"', "Project workspace quick action summary stays on one row");
@@ -1127,10 +1129,12 @@ mustContain(builder, "selectedProjectExplorerDossier", "Project workspace derive
 mustContain(builder, "projectExplorerDossierSourceOfTruth", "Project node dossier maps domains to source-of-truth paths");
 mustContain(builder, "projectExplorerDossierTasks", "Project node dossier maps domains to recommended project tasks");
 mustContain(builder, "data-builder-project-node-dossier", "Project workspace renders the selected-node dossier");
-mustContain(builder, 'data-builder-project-node-dossier-density="compact-property-strip"', "Project node dossier uses a compact property-strip density");
+mustContain(builder, 'data-builder-project-workspace-detail-density="thin-inspector-stack"', "Project selected-node detail uses a thin inspector stack");
+mustContain(builder, 'data-builder-project-node-dossier-density="thin-inspector-strip"', "Project node dossier uses a thin inspector strip");
 mustContain(builder, "data-builder-project-node-dossier-source-of-truth", "Project node dossier shows source-of-truth files");
 mustContain(builder, "data-builder-project-node-dossier-save-target", "Project node dossier shows the save target");
 mustContain(builder, "data-builder-project-node-dossier-artifact-state", "Project node dossier shows artifact or sync state");
+mustContain(builder, 'data-builder-project-node-dossier-task-strip="icon-strip"', "Project node dossier recommended tasks use a compact icon strip");
 mustContain(builder, "data-builder-project-node-dossier-task", "Project node dossier exposes recommended task actions");
 mustContain(builder, 'id: "project-node-dossier"', "Editor experience audit checks project node dossier context");
 mustContain(builder, "type ProjectExplorerImpactItem", "Project workspace models selected-node impact items");
@@ -1139,6 +1143,7 @@ mustContain(builder, "runSelectedProjectExplorerImpactAction", "Project workspac
 mustContain(builder, "data-builder-project-node-impact", "Project workspace renders selected-node impact summary");
 mustContain(builder, 'data-builder-project-node-impact-density="collapsed-summary"', "Project node impact summary defaults to a compact collapsed row");
 mustContain(builder, 'data-builder-project-node-impact-summary="single-row"', "Project node impact summary stays one row");
+mustContain(builder, 'data-builder-project-node-impact-summary-density="thin-row"', "Project node impact summary renders as a thin inspector row");
 mustContain(builder, 'data-builder-project-node-impact-details="deferred"', "Project node impact details stay deferred until expanded");
 mustContain(builder, "data-builder-project-node-impact-list", "Project impact summary renders a list of impacts");
 mustContain(builder, 'data-builder-project-node-impact-list-density="single-column-property-rows"', "Project node impact list renders single-column property rows");
