@@ -16264,6 +16264,7 @@ export function BuilderShowcase() {
   const [launchingExeId, setLaunchingExeId] = useState("");
   const [checkingRunId, setCheckingRunId] = useState("");
   const [stoppingRunId, setStoppingRunId] = useState("");
+  const [desktopRuntimeConsoleOpen, setDesktopRuntimeConsoleOpen] = useState(false);
   const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
   const autoRunSessionRefreshRef = useRef<{ key: string; checkedAt: number }>({ key: "", checkedAt: 0 });
   const [readingRuntimeLogId, setReadingRuntimeLogId] = useState("");
@@ -45515,15 +45516,17 @@ export function BuilderShowcase() {
             </aside>
             <section className="space-y-2">
               <div
-                className="rounded-md border border-outline-variant bg-surface-container-low/80 p-1.5"
+                className="overflow-hidden rounded-md border border-outline-variant bg-surface-container-low/70"
                 data-builder-desktop-runtime-workbench=""
                 data-builder-desktop-runtime-workbench-density="thin-output-stack"
+                data-builder-desktop-runtime-workbench-chrome="flat-output-panel"
                 data-builder-desktop-runtime-state={desktopRuntimeState}
               >
                 <div
-                  className="mb-1 flex min-h-7 flex-col gap-1 lg:flex-row lg:items-center lg:justify-between"
+                  className="flex min-h-7 flex-col gap-1 border-b border-outline-variant px-2 py-0.5 lg:flex-row lg:items-center lg:justify-between"
                   data-builder-desktop-runtime-header=""
                   data-builder-desktop-runtime-header-density="single-row"
+                  data-builder-desktop-runtime-header-chrome="flat-toolbar"
                 >
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -45619,12 +45622,17 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="grid items-start gap-1 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.48fr)]">
+                <div
+                  className="grid items-stretch divide-y divide-outline-variant lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.48fr)] lg:divide-x lg:divide-y-0"
+                  data-builder-desktop-runtime-body=""
+                  data-builder-desktop-runtime-body-density="flat-split-strip"
+                >
                   <div
-                    className="grid min-w-0 overflow-hidden rounded-md border border-outline-variant bg-surface-container text-xs md:grid-cols-4 md:divide-x md:divide-outline-variant"
+                    className="grid min-w-0 overflow-hidden text-xs md:grid-cols-4 md:divide-x md:divide-outline-variant"
                     data-builder-desktop-runtime-summary=""
                     data-builder-desktop-runtime-summary-density="single-row-output"
                     data-builder-desktop-runtime-summary-layout="inline-property-strip"
+                    data-builder-desktop-runtime-summary-chrome="borderless-property-strip"
                   >
                     {[
                       {
@@ -45660,7 +45668,7 @@ export function BuilderShowcase() {
                       return (
                         <article
                           key={item.label}
-                          className="min-w-0 self-start px-1.5 py-0.5"
+                          className="min-w-0 self-start px-2 py-1"
                           title={`${item.label}: ${item.value} · ${item.detail}`}
                           data-builder-desktop-runtime-card={item.label}
                           data-builder-desktop-runtime-card-density="compact-cell"
@@ -45682,9 +45690,12 @@ export function BuilderShowcase() {
                   </div>
 
                   <details
-                    className="group min-w-0 rounded-md border border-outline-variant bg-surface-container px-1.5 py-0.5 text-xs"
+                    open={desktopRuntimeConsoleOpen}
+                    onToggle={(event) => setDesktopRuntimeConsoleOpen(event.currentTarget.open)}
+                    className="group min-w-0 px-2 py-1 text-xs"
                     data-builder-desktop-runtime-console=""
                     data-builder-desktop-runtime-console-density="collapsed-summary"
+                    data-builder-desktop-runtime-console-chrome="inline-disclosure-row"
                     data-builder-desktop-runtime-console-state="collapsed-default"
                   >
                     <summary
