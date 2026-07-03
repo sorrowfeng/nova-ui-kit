@@ -43946,201 +43946,256 @@ export function BuilderShowcase() {
                       </div>
                     </div>
                   </section>
-                  <section className="rounded-lg bg-surface-container-low px-2 py-2" data-builder-readiness="">
-                    <div className="mb-2 flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建就绪度</h3>
-                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">构建前检查项目结构、Rust 同步、事件绑定和资源引用。</p>
-                      </div>
-                      <Badge
-                        variant={
-                          buildReadinessSummary.errorCount > 0
-                            ? "destructive"
-                            : buildReadinessSummary.warningCount > 0
-                              ? "outline"
-                              : "secondary"
-                        }
-                      >
-                        {buildReadinessSummary.score}%
-                      </Badge>
-                    </div>
-                    <Progress value={buildReadinessSummary.score} />
-                    <div className="mt-2 grid grid-cols-3 gap-1.5 text-center text-xs">
-                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
-                        <p className="font-medium text-destructive">{buildReadinessSummary.errorCount}</p>
-                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">错误</p>
-                      </div>
-                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
-                        <p className="font-medium text-on-surface">{buildReadinessSummary.warningCount}</p>
-                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">警告</p>
-                      </div>
-                      <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
-                        <p className="font-medium text-primary">{buildReadinessSummary.readyCount}</p>
-                        <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">就绪</p>
-                      </div>
-                    </div>
-                    <div className="mt-2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-2" data-builder-property-repair-plan="">
-                      <div className="flex items-start justify-between gap-3">
+                  <section
+                    className="rounded-md bg-surface-container-low px-2 py-1.5"
+                    data-builder-readiness=""
+                    data-builder-readiness-density="compact-issue-list"
+                  >
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                          <ListChecks aria-hidden className="size-3.5" />
+                        </span>
                         <div className="min-w-0">
-                          <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">属性修复计划</h4>
-                          <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                          <h3 className="truncate text-xs font-medium text-on-surface">构建就绪度</h3>
+                          <p className="truncate text-[0.66rem] leading-3 text-on-surface-variant">结构 / Rust / 事件 / 资源</p>
+                        </div>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <Badge
+                          variant={
+                            buildReadinessSummary.errorCount > 0
+                              ? "destructive"
+                              : buildReadinessSummary.warningCount > 0
+                                ? "outline"
+                                : "secondary"
+                          }
+                        >
+                          {buildReadinessSummary.score}%
+                        </Badge>
+                        <span className="text-[0.66rem] text-on-surface-variant">
+                          {buildReadinessSummary.errorCount} 错 · {buildReadinessSummary.warningCount} 警
+                        </span>
+                      </span>
+                    </div>
+                    <Progress value={buildReadinessSummary.score} className="mt-1.5 h-1" />
+                    <div
+                      className="mt-2 grid grid-cols-3 gap-1 text-center text-[0.66rem]"
+                      data-builder-readiness-summary-strip="inline-counts"
+                    >
+                      <div className="rounded-md bg-surface-container-high px-1.5 py-1">
+                        <span className="font-medium text-destructive">{buildReadinessSummary.errorCount}</span>
+                        <span className="ml-1 text-on-surface-variant">错误</span>
+                      </div>
+                      <div className="rounded-md bg-surface-container-high px-1.5 py-1">
+                        <span className="font-medium text-on-surface">{buildReadinessSummary.warningCount}</span>
+                        <span className="ml-1 text-on-surface-variant">警告</span>
+                      </div>
+                      <div className="rounded-md bg-surface-container-high px-1.5 py-1">
+                        <span className="font-medium text-primary">{buildReadinessSummary.readyCount}</span>
+                        <span className="ml-1 text-on-surface-variant">就绪</span>
+                      </div>
+                    </div>
+                    <details
+                      className="group mt-2 rounded-md border border-outline-variant/70 bg-surface-container-high px-1.5 py-1"
+                      data-builder-property-repair-plan=""
+                      data-builder-property-repair-plan-density="collapsed-summary"
+                    >
+                      <summary
+                        className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs transition hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                        data-builder-property-repair-plan-summary="single-row"
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                          <span className="truncate font-medium text-on-surface">属性修复计划</span>
+                        </span>
+                        <span className="flex shrink-0 items-center gap-1.5 text-[0.66rem] text-on-surface-variant">
+                          <span>{projectPropertyAutoFixSummary.issueCount > 0 ? `${projectPropertyAutoFixSummary.issueCount} 项` : "无问题"}</span>
+                          <Badge variant={projectPropertyAutoFixSummary.targets.length > 0 ? "outline" : "secondary"}>
+                            {projectPropertyAutoFixSummary.targets.length} 控件
+                          </Badge>
+                        </span>
+                      </summary>
+                      <div
+                        className="mt-2 space-y-2 border-t border-outline-variant pt-2"
+                        data-builder-property-repair-plan-details="deferred"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 text-xs leading-5 text-on-surface-variant">
                             {projectPropertyAutoFixSummary.issueCount > 0
                               ? `${projectPropertyAutoFixSummary.errorCount} 个错误，${projectPropertyAutoFixSummary.warningCount} 个警告。可安全修复 ${projectPropertyAutoFixSummary.propertyCount} 个属性。`
                               : "项目内控件属性 schema 暂无问题。"}
                           </p>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={projectPropertyAutoFixSummary.targets.length === 0}
+                            data-builder-apply-project-property-fixes=""
+                            onClick={applyProjectPropertyAutoFixes}
+                          >
+                            <Wand2 aria-hidden className="size-4" />
+                            修复
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled={projectPropertyAutoFixSummary.targets.length === 0}
-                          data-builder-apply-project-property-fixes=""
-                          onClick={applyProjectPropertyAutoFixes}
-                        >
-                          <Wand2 aria-hidden className="size-4" />
-                          修复项目
-                        </Button>
-                      </div>
-                      <div className="mt-2 grid grid-cols-3 gap-1.5 text-center text-xs">
-                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
-                          <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.fileCount}</p>
-                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">文件</p>
-                        </div>
-                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
-                          <p className="font-medium text-primary">{projectPropertyAutoFixSummary.targets.length}</p>
-                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">控件</p>
-                        </div>
-                        <div className="rounded-lg bg-surface-container-low px-2 py-1.5">
-                          <p className="font-medium text-on-surface">{projectPropertyAutoFixSummary.manualIssueCount}</p>
-                          <p className="mt-0.5 text-[0.68rem] text-on-surface-variant">手动</p>
-                        </div>
-                      </div>
-                  {projectPropertyAutoFixSummary.targets.length > 0 ? (
-                    <div className="mt-3 space-y-2">
-                      {projectPropertyAutoFixSummary.targets.slice(0, 3).map((target) => (
-                        <button
-                          key={`${target.fileId}-${target.itemId}`}
-                          type="button"
-                          className="flex w-full min-w-0 items-center justify-between gap-3 rounded-xl bg-surface-container-low p-2 text-left text-xs transition hover:bg-surface-container"
-                          onClick={() =>
-                            focusBuildReadinessItem({
-                              id: `property-repair-${target.fileId}-${target.itemId}`,
-                              severity: "warning",
-                              title: "属性修复",
-                              detail: "",
-                              fileId: target.fileId,
-                              fileName: target.fileName,
-                              itemId: target.itemId,
-                              itemName: target.itemName,
-                            })
-                          }
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate font-medium text-on-surface">{target.itemName}</span>
-                            <span className="block truncate text-on-surface-variant">
-                              {target.fileName} · {target.itemType} · {target.propertyCount} 项修复
-                            </span>
-                          </span>
-                          <MousePointer2 aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
-                        </button>
-                      ))}
-                      {projectPropertyAutoFixSummary.targets.length > 3 ? (
-                        <p className="text-[0.68rem] text-on-surface-variant">另有 {projectPropertyAutoFixSummary.targets.length - 3} 个控件会在批量修复中处理。</p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  {activeProject.maintenanceHistory?.length ? (
-                    <div className="mt-3 space-y-2 border-t border-outline-variant pt-3" data-builder-maintenance-history="">
-                      <div className="flex items-center justify-between gap-3">
-                        <h5 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">修复历史</h5>
-                        <Badge variant="outline">{activeProject.maintenanceHistory.length}</Badge>
-                      </div>
-                      {activeProject.maintenanceHistory.slice(0, 4).map((entry) => (
-                        <article key={entry.id} className="rounded-xl bg-surface-container-low p-2 text-xs">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="truncate font-medium text-on-surface">{entry.title}</p>
-                              <p className="mt-1 text-[0.68rem] text-on-surface-variant">{validationTimeLabel(entry.createdAt)}</p>
-                            </div>
-                            <Badge variant={entry.status === "partial" ? "outline" : "secondary"}>{entry.status}</Badge>
+                        <div className="grid grid-cols-3 gap-1 text-center text-[0.66rem]">
+                          <div className="rounded-md bg-surface-container-low px-1.5 py-1">
+                            <span className="font-medium text-on-surface">{projectPropertyAutoFixSummary.fileCount}</span>
+                            <span className="ml-1 text-on-surface-variant">文件</span>
                           </div>
-                          <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{entry.summary}</p>
-                          <div className="mt-2 flex flex-wrap gap-1.5 text-[0.68rem] text-on-surface-variant">
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.fileCount} 文件</span>
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.itemCount} 控件</span>
-                            <span className="rounded-full bg-surface-container-high px-2 py-1">{entry.propertyCount} 属性</span>
+                          <div className="rounded-md bg-surface-container-low px-1.5 py-1">
+                            <span className="font-medium text-primary">{projectPropertyAutoFixSummary.targets.length}</span>
+                            <span className="ml-1 text-on-surface-variant">控件</span>
                           </div>
-                          {entry.changes.length ? (
-                            <div className="mt-2 space-y-1">
-                              {entry.changes.slice(0, 3).map((change) => (
-                                <button
-                                  key={`${entry.id}-${change.fileId}-${change.itemId}`}
-                                  type="button"
-                                  className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-surface-container-high px-2 py-1.5 text-left text-[0.68rem] transition hover:bg-surface-container"
-                                  onClick={() =>
-                                    focusBuildReadinessItem({
-                                      id: `maintenance-${entry.id}-${change.itemId}`,
-                                      severity: "ready",
-                                      title: entry.title,
-                                      detail: entry.summary,
-                                      fileId: change.fileId,
-                                      fileName: change.fileName,
-                                      itemId: change.itemId,
-                                      itemName: change.itemName,
-                                    })
-                                  }
-                                >
-                                  <span className="min-w-0 truncate">
-                                    {change.itemName} · {change.props.join(", ")}
+                          <div className="rounded-md bg-surface-container-low px-1.5 py-1">
+                            <span className="font-medium text-on-surface">{projectPropertyAutoFixSummary.manualIssueCount}</span>
+                            <span className="ml-1 text-on-surface-variant">手动</span>
+                          </div>
+                        </div>
+                        {projectPropertyAutoFixSummary.targets.length > 0 ? (
+                          <div className="space-y-1">
+                            {projectPropertyAutoFixSummary.targets.slice(0, 3).map((target) => (
+                              <button
+                                key={`${target.fileId}-${target.itemId}`}
+                                type="button"
+                                className="focus-ring flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md bg-surface-container-low px-2 text-left text-xs transition hover:bg-surface-container"
+                                onClick={() =>
+                                  focusBuildReadinessItem({
+                                    id: `property-repair-${target.fileId}-${target.itemId}`,
+                                    severity: "warning",
+                                    title: "属性修复",
+                                    detail: "",
+                                    fileId: target.fileId,
+                                    fileName: target.fileName,
+                                    itemId: target.itemId,
+                                    itemName: target.itemName,
+                                  })
+                                }
+                              >
+                                <span className="min-w-0 truncate">
+                                  <span className="font-medium text-on-surface">{target.itemName}</span>
+                                  <span className="ml-1 text-on-surface-variant">
+                                    {target.fileName} · {target.itemType} · {target.propertyCount} 项
                                   </span>
-                                  <MousePointer2 aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
-                                </button>
-                              ))}
+                                </span>
+                                <MousePointer2 aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                              </button>
+                            ))}
+                            {projectPropertyAutoFixSummary.targets.length > 3 ? (
+                              <p className="text-[0.68rem] text-on-surface-variant">另有 {projectPropertyAutoFixSummary.targets.length - 3} 个控件会在批量修复中处理。</p>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {activeProject.maintenanceHistory?.length ? (
+                          <div className="space-y-1 border-t border-outline-variant pt-2" data-builder-maintenance-history="">
+                            <div className="flex items-center justify-between gap-3">
+                              <h5 className="text-xs font-medium text-on-surface">修复历史</h5>
+                              <Badge variant="outline">{activeProject.maintenanceHistory.length}</Badge>
                             </div>
-                          ) : null}
-                        </article>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="mt-3 max-h-64 space-y-2 overflow-auto pr-1">
-                  {buildReadinessSummary.items.map((item) => (
-                    <article key={item.id} className="rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs">
-                      <div className="mb-1 flex items-start justify-between gap-2">
-                        <div className="flex min-w-0 items-center gap-2">
-                          {item.severity === "ready" ? (
+                            {activeProject.maintenanceHistory.slice(0, 4).map((entry) => (
+                              <div key={entry.id} className="rounded-md bg-surface-container-low px-2 py-1.5 text-xs">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="min-w-0 truncate font-medium text-on-surface">{entry.title}</span>
+                                  <Badge variant={entry.status === "partial" ? "outline" : "secondary"}>{entry.status}</Badge>
+                                </div>
+                                <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
+                                  {validationTimeLabel(entry.createdAt)} · {entry.fileCount} 文件 · {entry.itemCount} 控件 · {entry.propertyCount} 属性
+                                </p>
+                                {entry.changes.length ? (
+                                  <div className="mt-1 space-y-1">
+                                    {entry.changes.slice(0, 3).map((change) => (
+                                      <button
+                                        key={`${entry.id}-${change.fileId}-${change.itemId}`}
+                                        type="button"
+                                        className="focus-ring flex h-7 w-full min-w-0 items-center justify-between gap-2 rounded-md bg-surface-container-high px-2 text-left text-[0.68rem] transition hover:bg-surface-container"
+                                        onClick={() =>
+                                          focusBuildReadinessItem({
+                                            id: `maintenance-${entry.id}-${change.itemId}`,
+                                            severity: "ready",
+                                            title: entry.title,
+                                            detail: entry.summary,
+                                            fileId: change.fileId,
+                                            fileName: change.fileName,
+                                            itemId: change.itemId,
+                                            itemName: change.itemName,
+                                          })
+                                        }
+                                      >
+                                        <span className="min-w-0 truncate">
+                                          {change.itemName} · {change.props.join(", ")}
+                                        </span>
+                                        <MousePointer2 aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </details>
+                    <div
+                      className="subtle-scrollbar mt-2 max-h-56 space-y-1 overflow-auto pr-1"
+                      data-builder-readiness-list=""
+                      data-builder-readiness-list-density="thin-rows"
+                    >
+                      {buildReadinessSummary.items.map((item) => {
+                        const isActionableReadinessItem = item.severity !== "ready" || Boolean(item.fileId);
+                        const severityIcon =
+                          item.severity === "ready" ? (
                             <CheckCircle2 aria-hidden className="size-3.5 shrink-0 text-primary" />
                           ) : (
                             <AlertTriangle
                               aria-hidden
                               className={cn("size-3.5 shrink-0", item.severity === "error" ? "text-destructive" : "text-on-surface-variant")}
                             />
-                          )}
-                          <span className="truncate font-medium">{item.title}</span>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {item.severity !== "ready" || item.fileId ? (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              data-builder-focus-readiness={item.id}
-                              aria-label={`${buildReadinessActionLabel(item)} ${item.title}`}
-                              onClick={() => openBuildReadinessItem(item)}
-                            >
-                              {item.fileId ? <MousePointer2 aria-hidden className="size-4" /> : <ArrowRight aria-hidden className="size-4" />}
-                              {buildReadinessActionLabel(item)}
-                            </Button>
-                          ) : null}
-                          <Badge variant={item.severity === "error" ? "destructive" : item.severity === "warning" ? "outline" : "secondary"}>
-                            {buildReadinessSeverityLabel(item.severity)}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="leading-5 text-on-surface-variant">{item.detail}</p>
-                      {item.fileName ? <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">{item.fileName}</p> : null}
-                    </article>
-                  ))}
-                  </div>
-                </section>
+                          );
+                        const rowClassName =
+                          "flex min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-outline-variant/70 bg-surface-container-high px-2 py-1 text-left text-xs";
+                        const rowBody = (
+                          <>
+                            <span className="flex min-w-0 items-center gap-2">
+                              {severityIcon}
+                              <span className="min-w-0">
+                                <span className="block truncate font-medium text-on-surface">{item.title}</span>
+                                <span className="block truncate text-[0.66rem] leading-3 text-on-surface-variant">
+                                  {item.fileName ? `${item.fileName} · ${item.detail}` : item.detail}
+                                </span>
+                              </span>
+                            </span>
+                            <span className="flex shrink-0 items-center gap-1.5">
+                              <Badge variant={item.severity === "error" ? "destructive" : item.severity === "warning" ? "outline" : "secondary"}>
+                                {buildReadinessSeverityLabel(item.severity)}
+                              </Badge>
+                              {isActionableReadinessItem ? (
+                                <span className="hidden text-[0.66rem] text-on-surface-variant 2xl:inline">
+                                  {buildReadinessActionLabel(item)}
+                                </span>
+                              ) : null}
+                            </span>
+                          </>
+                        );
+
+                        return isActionableReadinessItem ? (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={cn("focus-ring transition hover:bg-surface-container", rowClassName)}
+                            data-builder-focus-readiness={item.id}
+                            data-builder-readiness-row-density="thin-row"
+                            aria-label={`${buildReadinessActionLabel(item)} ${item.title}`}
+                            onClick={() => openBuildReadinessItem(item)}
+                          >
+                            {rowBody}
+                          </button>
+                        ) : (
+                          <div key={item.id} className={rowClassName} data-builder-readiness-row-density="thin-row">
+                            {rowBody}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
                 </div>
               </details>
               <details

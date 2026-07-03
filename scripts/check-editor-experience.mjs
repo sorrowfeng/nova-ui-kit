@@ -1660,6 +1660,11 @@ mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.buildReleasePip
 mustContain(builder, 'data-builder-build-target-dock-density="collapsed-summary"', "Build target readiness stays as a collapsed sidebar dock summary");
 mustContain(builder, 'data-builder-build-target-dock-summary="single-row"', "Build target readiness defaults to a single-row summary");
 mustContain(builder, 'data-builder-build-target-dock-details="deferred"', "Build target readiness details are deferred until expanded");
+mustContain(builder, 'data-builder-readiness-density="compact-issue-list"', "Expanded build readiness uses a compact issue list instead of stacked cards");
+mustContain(builder, 'data-builder-readiness-list-density="thin-rows"', "Expanded build readiness issues render as thin IDE rows");
+mustContain(builder, 'data-builder-readiness-row-density="thin-row"', "Each build readiness issue row stays compact");
+mustContain(builder, 'data-builder-property-repair-plan-density="collapsed-summary"', "Property repair plan stays collapsed inside build readiness");
+mustContain(builder, 'data-builder-property-repair-plan-details="deferred"', "Property repair plan details are deferred until expanded");
 mustContain(builder, 'data-builder-generated-file-plan-density="collapsed-summary"', "Build generated file plan defaults to a collapsed summary");
 mustContain(builder, 'data-builder-generated-file-plan-surface="compact-output-pane"', "Build generated file plan keeps compact output-pane chrome");
 mustContain(builder, 'data-builder-generated-plan-summary="single-row"', "Build generated file plan exposes one summary row");

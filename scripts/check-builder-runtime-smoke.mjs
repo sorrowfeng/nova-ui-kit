@@ -5626,23 +5626,38 @@ async function runShellCommandPlacementChecks(send, verified) {
       const details = document.querySelector("[data-builder-build-target-dock-details]");
       const generated = document.querySelector("[data-builder-generated-incremental-summary]");
       const readiness = document.querySelector("[data-builder-readiness]");
+      const readinessList = document.querySelector("[data-builder-readiness-list]");
       const repair = document.querySelector("[data-builder-property-repair-plan]");
+      const repairSummary = document.querySelector("[data-builder-property-repair-plan-summary]");
+      const repairDetails = document.querySelector("[data-builder-property-repair-plan-details]");
       const readinessItems = Array.from(document.querySelectorAll("[data-builder-focus-readiness]"));
+      const readinessRows = Array.from(document.querySelectorAll("[data-builder-readiness-row-density]"));
       const detailsRect = details?.getBoundingClientRect();
+      const readinessRect = readiness?.getBoundingClientRect();
+      const readinessRowRects = readinessRows.map((row) => row.getBoundingClientRect());
       return {
         passed:
           targetDock?.hasAttribute("open") === true &&
           details?.getAttribute("data-builder-build-target-dock-details") === "deferred" &&
           generated?.getAttribute("data-builder-generated-incremental-summary-density") === "compact-property-strip" &&
-          Boolean(readiness) &&
-          Boolean(repair) &&
+          readiness?.getAttribute("data-builder-readiness-density") === "compact-issue-list" &&
+          readinessList?.getAttribute("data-builder-readiness-list-density") === "thin-rows" &&
+          repair?.tagName === "DETAILS" &&
+          !repair.hasAttribute("open") &&
+          repair.getAttribute("data-builder-property-repair-plan-density") === "collapsed-summary" &&
+          repairSummary?.getAttribute("data-builder-property-repair-plan-summary") === "single-row" &&
+          repairDetails?.getAttribute("data-builder-property-repair-plan-details") === "deferred" &&
           readinessItems.length >= 1 &&
+          readinessRows.length >= 10 &&
+          readinessRowRects.every((rect) => rect.height <= 44) &&
+          Boolean(readinessRect && readinessRect.height <= 390) &&
           Boolean(detailsRect && detailsRect.height > 120),
-        detail: \`open=\${targetDock?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, generated=\${generated?.getAttribute("data-builder-generated-incremental-summary-density") || "missing"}, readiness=\${Boolean(readiness)}, repair=\${Boolean(repair)}, items=\${readinessItems.length}\`
+        detail: \`open=\${targetDock?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, generated=\${generated?.getAttribute("data-builder-generated-incremental-summary-density") || "missing"}, readiness=\${readiness?.getAttribute("data-builder-readiness-density") || "missing"}/\${Math.round(readinessRect?.height || 0)}px, list=\${readinessList?.getAttribute("data-builder-readiness-list-density") || "missing"}, repair=\${repair?.getAttribute("data-builder-property-repair-plan-density") || "missing"}/open:\${repair?.hasAttribute("open")}, rows=\${readinessRows.length}/\${Math.round(Math.max(0, ...readinessRowRects.map((rect) => rect.height)))}, items=\${readinessItems.length}\`
       };
     })()`,
     "build target readiness shortcut expands to generated target checks",
   );
+  verified.buildTargetReadinessCompactRuntime = true;
   await clickElementCenter(send, `document.querySelector("[data-builder-build-target-dock-summary]")`, "collapse build target readiness summary");
   await waitFor(
     send,
