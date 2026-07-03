@@ -1921,6 +1921,10 @@ mustContain(builder, "data-builder-component-group-details", "Component palette 
 mustContain(builder, "visibleComponentPaletteGroups", "Component palette derives grouped visible rows instead of a single long flat list");
 mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.componentPaletteCategoryDisclosureRuntime = true", "Browser smoke verifies component palette category disclosures");
 mustContain(builder, 'data-builder-component-quick-insert-priority="secondary-tools"', "Component palette keeps quick insert as secondary tooling instead of occupying the first widget-box viewport");
+mustContain(builder, 'data-builder-component-quick-insert-density="tool-strip"', "Component palette quick insert uses a single compact tool strip instead of a card grid");
+mustContain(builder, 'data-builder-component-quick-insert-strip="single-row"', "Component palette quick insert buttons stay in one horizontal row");
+mustContain(builder, 'data-builder-component-quick-insert-item-density="compact"', "Component palette quick insert buttons use compact density");
+mustContain("scripts/check-builder-runtime-smoke.mjs", 'quickInsertPriority?.getAttribute("data-builder-component-quick-insert-density") === "tool-strip"', "Browser smoke verifies quick insert strip density");
 mustContain(builder, 'data-builder-component-kits-layout="compact-list"', "Component palette kit launcher avoids large marketing-style cards");
 mustContain(builder, 'data-builder-component-kits-density="single-line"', "Component palette kit rows stay single-line like an IDE widget box");
 mustContain(builder, 'data-builder-component-collections-mode="summary-strip"', "Component palette secondary collections default to a compact summary strip");

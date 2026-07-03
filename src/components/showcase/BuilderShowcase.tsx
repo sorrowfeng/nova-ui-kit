@@ -48507,16 +48507,23 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteQuickInsert ? (
                   <section
-                    className="order-4 rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    className="order-4 rounded-lg border border-outline-variant/80 bg-surface-container-low p-0.5"
                     data-builder-component-quick-insert-priority="secondary-tools"
+                    data-builder-component-quick-insert-density="tool-strip"
                   >
-                    <div className="mb-0.5 flex items-center justify-between gap-2 px-1">
-                      <span className="truncate text-[0.66rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
+                    <div className="flex items-center gap-1">
+                      <span
+                        className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant"
+                        data-builder-component-quick-insert-label="compact"
+                      >
                         常用控件
                       </span>
-                      <span className="shrink-0 text-[0.66rem] text-on-surface-variant">{componentPaletteQuickInsertDefinitions.length} 个</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1">
+                    <div
+                      className="flex min-w-0 flex-1 justify-end gap-0.5"
+                      role="toolbar"
+                      aria-label="常用控件快速插入"
+                      data-builder-component-quick-insert-strip="single-row"
+                    >
                       {componentPaletteQuickInsertDefinitions.map((definition) => {
                         const Icon = definition.icon;
                         return (
@@ -48524,14 +48531,19 @@ export function BuilderShowcase() {
                             key={definition.type}
                             type="button"
                             data-builder-component-quick-insert={definition.type}
+                            data-builder-component-quick-insert-item-density="compact"
                             onClick={() => addComponent(definition.type)}
-                            className="focus-ring m3-state-layer flex h-7 min-w-0 items-center gap-1.5 rounded-md bg-surface-container px-2 text-left text-xs font-medium transition-colors hover:bg-surface-container-high"
+                            aria-label={`添加常用控件 ${definition.title}`}
+                            title={`添加 ${definition.title}`}
+                            className="focus-ring m3-state-layer flex size-7 shrink-0 items-center justify-center rounded-md bg-transparent text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
                           >
                             <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                            <span className="truncate">{definition.title}</span>
+                            <span className="sr-only">{definition.title}</span>
                           </button>
                         );
                       })}
+                    </div>
+                    <span className="sr-only">{componentPaletteQuickInsertDefinitions.length} 个常用控件</span>
                     </div>
                   </section>
                 ) : null}
