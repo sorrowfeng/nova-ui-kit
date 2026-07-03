@@ -1302,9 +1302,15 @@ mustContain(builder, "data-builder-project-folder-health-path", "Project folder 
 mustContain(builder, "data-builder-project-folder-health-open", "Project folder health rows can route to the matching project surface");
 mustContain(builder, 'id: "project-folder-health"', "Editor experience audit checks project folder health");
 mustContain(builder, "data-builder-project-file-routing", "Project mode exposes an IDE-style file routing panel");
+mustContain(builder, 'data-builder-project-file-routing-density="compact-table"', "Project file routing renders as a compact IDE table instead of route cards");
 mustContain(builder, "data-builder-project-save-destinations", "Project file routing documents save destinations");
+mustContain(builder, 'data-builder-project-file-route-table-density="compact-rows"', "Project file routing table keeps compact row density");
 mustContain(builder, "data-builder-project-file-route-group", "Project file routing groups source, generated, and metadata targets");
+mustContain(builder, 'data-builder-project-file-route-group-density="collapsed-table-section"', "Project file routing group headers default to collapsed table sections");
+mustContain(builder, 'data-builder-project-file-route-group-state="collapsed-default"', "Project file routing keeps destination details collapsed by default");
+mustContain(builder, 'data-builder-project-file-route-details="deferred"', "Project file routing defers low-frequency destination rows behind disclosure");
 mustContain(builder, "data-builder-project-file-route", "Project file routing exposes clickable destination rows");
+mustContain(builder, 'data-builder-project-file-route-density="compact-row"', "Project file routing destination rows are compact");
 mustContain(builder, "data-builder-project-nova-metadata", "Project file routing calls out hidden .nova metadata");
 mustContain(builder, "projectFileRouteGroups", "Project file routing is driven by reusable project metadata");
 mustContain(builder, 'id: "project-file-routing"', "Editor experience audit checks project file routing");

@@ -37501,59 +37501,79 @@ export function BuilderShowcase() {
                   </section>
 
                   <section
-                    className="mt-4 rounded-[22px] border border-outline-variant bg-surface-container p-4"
+                    className="mt-3 rounded-lg border border-outline-variant bg-surface-container px-2 py-1.5"
                     data-builder-project-file-routing=""
+                    data-builder-project-file-routing-density="compact-table"
                     data-builder-project-save-destinations=""
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-semibold text-on-surface">项目文件路由</h3>
-                          <Badge variant="outline">{projectFileRouteGroups.reduce((total, group) => total + group.routes.length, 0)} 路径</Badge>
-                        </div>
-                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                          像 IDE 工程视图一样把源码、生成目标和 `.nova` 本地状态拆开；保存项目时写入目录结构，而不是再导出单个 UI 文件。
-                        </p>
+                    <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate text-xs font-semibold text-on-surface">项目文件路由</h3>
+                        <Badge variant="outline">{projectFileRouteGroups.reduce((total, group) => total + group.routes.length, 0)} 路径</Badge>
+                        <span className="hidden min-w-0 truncate text-[0.68rem] text-on-surface-variant lg:block">
+                          源码、生成目标和 `.nova` 本地状态按项目文件夹分层保存
+                        </span>
                       </div>
-                      <Badge variant={activeProject.rootPath ? "secondary" : "outline"}>
+                      <Badge variant={activeProject.rootPath ? "secondary" : "outline"} className="shrink-0">
                         {activeProject.rootPath ? "项目文件夹" : "保存后创建"}
                       </Badge>
                     </div>
-                    <div className="mt-3 grid gap-3 xl:grid-cols-3">
+                    <p className="sr-only">
+                      像 IDE 工程视图一样把源码、生成目标和 `.nova` 本地状态拆开；保存项目时写入目录结构，而不是再导出单个 UI 文件。
+                    </p>
+                    <div
+                      className="mt-1.5 overflow-hidden rounded-md border border-outline-variant bg-surface-container-low text-xs"
+                      data-builder-project-file-route-table=""
+                      data-builder-project-file-route-table-density="compact-rows"
+                    >
+                      <div className="grid h-7 items-center gap-2 border-b border-outline-variant bg-surface-container px-2 text-[0.62rem] font-medium text-on-surface-variant max-lg:hidden lg:grid-cols-[10rem_7rem_minmax(0,1fr)_2rem]">
+                        <span>边界</span>
+                        <span>状态</span>
+                        <span>路径</span>
+                        <span className="text-right">打开</span>
+                      </div>
                       {projectFileRouteGroups.map((group) => {
                         const GroupIcon = group.icon;
                         return (
-                          <article
+                          <details
                             key={group.id}
-                            className="min-w-0 rounded-[20px] border border-outline-variant bg-surface-container-low p-3"
+                            className="group border-b border-outline-variant last:border-b-0"
                             data-builder-project-file-route-group={group.id}
+                            data-builder-project-file-route-group-density="collapsed-table-section"
+                            data-builder-project-file-route-group-state="collapsed-default"
                             data-builder-project-nova-metadata={group.id === "metadata" ? "true" : undefined}
                           >
-                            <div className="flex min-w-0 items-start gap-3">
-                              <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                                <GroupIcon aria-hidden className="size-4" />
+                            <summary
+                              className="focus-ring grid min-h-8 min-w-0 cursor-pointer list-none items-center gap-2 bg-surface-container px-2 py-1 transition hover:bg-surface-container-high lg:grid-cols-[10rem_7rem_minmax(0,1fr)_2rem] [&::-webkit-details-marker]:hidden"
+                              data-builder-project-file-route-group-summary="single-row"
+                            >
+                              <span className="flex min-w-0 items-center gap-2">
+                                <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-highest text-primary">
+                                  <GroupIcon aria-hidden className="size-3" />
+                                </span>
+                                <span className="truncate font-medium text-on-surface">{group.title}</span>
                               </span>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex min-w-0 items-center justify-between gap-2">
-                                  <h4 className="truncate text-sm font-medium text-on-surface">{group.title}</h4>
-                                  <span className="shrink-0 rounded-full bg-surface-container-high px-2 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">
-                                    {group.countLabel}
-                                  </span>
-                                </div>
-                                <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{group.detail}</p>
-                              </div>
-                            </div>
-                            <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container">
+                              <span className="min-w-0 truncate rounded-full bg-surface-container-high px-2 py-0.5 font-mono text-[0.62rem] text-on-surface-variant lg:justify-self-start">
+                                {group.countLabel}
+                              </span>
+                              <span className="min-w-0 truncate text-[0.68rem] text-on-surface-variant">{group.detail}</span>
+                              <span className="flex items-center justify-end gap-1 text-[0.62rem] text-on-surface-variant">
+                                <span>{group.routes.length}</span>
+                                <ChevronRight aria-hidden className="size-3.5 transition-transform group-open:rotate-90" />
+                              </span>
+                            </summary>
+                            <div className="divide-y divide-outline-variant border-t border-outline-variant/70" data-builder-project-file-route-details="deferred">
                               {group.routes.map((route) => {
                                 const RouteIcon = route.icon;
                                 return (
                                   <button
                                     key={route.id}
                                     type="button"
-                                    className="focus-ring grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-2 text-left text-xs transition hover:bg-surface-container-high"
-                                    title={route.path}
+                                    className="focus-ring grid min-h-8 w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 py-1 text-left text-xs transition hover:bg-surface-container-high lg:grid-cols-[10rem_7rem_minmax(0,1fr)_2rem]"
+                                    title={`${route.title}: ${route.path}`}
                                     data-builder-project-file-route={route.id}
                                     data-builder-project-file-route-filter={route.filter}
+                                    data-builder-project-file-route-density="compact-row"
                                     onClick={() => {
                                       setProjectExplorerFilter(route.filter);
                                       setProjectExplorerQuery(route.query);
@@ -37562,27 +37582,29 @@ export function BuilderShowcase() {
                                       }
                                     }}
                                   >
-                                    <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
-                                      <RouteIcon aria-hidden className="size-3.5" />
-                                    </span>
-                                    <span className="min-w-0">
-                                      <span className="flex min-w-0 items-center gap-1.5">
-                                        <span className="truncate font-medium text-on-surface">{route.title}</span>
-                                        {route.badge ? (
-                                          <Badge variant={group.id === "generated" ? "secondary" : "outline"} className="shrink-0 text-[0.6rem]">
-                                            {route.badge}
-                                          </Badge>
-                                        ) : null}
+                                    <span className="flex min-w-0 items-center gap-2">
+                                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                                        <RouteIcon aria-hidden className="size-3" />
                                       </span>
-                                      <span className="mt-0.5 block truncate text-on-surface-variant">{route.detail}</span>
-                                      <span className="mt-0.5 block truncate font-mono text-[0.66rem] text-on-surface-variant">{route.path}</span>
+                                      <span className="truncate font-medium text-on-surface">{route.title}</span>
                                     </span>
-                                    <ArrowRight aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
+                                    <span className="hidden min-w-0 lg:block">
+                                      {route.badge ? (
+                                        <Badge variant={group.id === "generated" ? "secondary" : "outline"} className="max-w-full truncate text-[0.58rem]">
+                                          {route.badge}
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-[0.66rem] text-on-surface-variant">-</span>
+                                      )}
+                                    </span>
+                                    <span className="hidden min-w-0 truncate font-mono text-[0.66rem] text-on-surface-variant lg:block">{route.path}</span>
+                                    <span className="sr-only">{route.detail}</span>
+                                    <ArrowRight aria-hidden className="size-3.5 shrink-0 justify-self-end text-on-surface-variant" />
                                   </button>
                                 );
                               })}
                             </div>
-                          </article>
+                          </details>
                         );
                       })}
                     </div>

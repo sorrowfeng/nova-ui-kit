@@ -2995,8 +2995,15 @@ async function runProjectWorkspaceChecks(send, verified) {
       const savePlanPaths = Array.from(document.querySelectorAll("[data-builder-project-save-plan-path]")).map((node) => node.textContent?.trim() || "");
       const savePlanOpen = Array.from(document.querySelectorAll("[data-builder-project-save-plan-open]"));
       const routing = document.querySelector("[data-builder-project-file-routing][data-builder-project-save-destinations]");
+      const routingTable = document.querySelector("[data-builder-project-file-route-table]");
       const routeGroups = Array.from(document.querySelectorAll("[data-builder-project-file-route-group]"));
+      const routeGroupSummaries = Array.from(document.querySelectorAll("[data-builder-project-file-route-group-summary]"));
+      const routeDetails = Array.from(document.querySelectorAll("[data-builder-project-file-route-details]"));
       const routes = Array.from(document.querySelectorAll("[data-builder-project-file-route]"));
+      const routingRect = routing?.getBoundingClientRect();
+      const routingTableRect = routingTable?.getBoundingClientRect();
+      const routeGroupRects = routeGroups.map((group) => group.getBoundingClientRect());
+      const routeRects = routes.map((route) => route.getBoundingClientRect());
       const metadataGroup = document.querySelector('[data-builder-project-nova-metadata="true"]');
       const runButton = document.querySelector("[data-builder-project-save-manifest-run]");
       return {
@@ -3016,11 +3023,26 @@ async function runProjectWorkspaceChecks(send, verified) {
           savePlanPaths.some((path) => path.includes(".nova")) &&
           savePlanOpen.length === 3 &&
           Boolean(routing) &&
+          routing?.getAttribute("data-builder-project-file-routing-density") === "compact-table" &&
+          routingTable?.getAttribute("data-builder-project-file-route-table-density") === "compact-rows" &&
+          Boolean(routingRect && routingRect.height <= 190) &&
+          Boolean(routingTableRect && routingTableRect.height <= 142) &&
           routeGroups.length >= 3 &&
+          routeGroups.every((group) => group.tagName === "DETAILS") &&
+          routeGroups.every((group) => !group.hasAttribute("open")) &&
+          routeGroups.every((group) => group.getAttribute("data-builder-project-file-route-group-density") === "collapsed-table-section") &&
+          routeGroups.every((group) => group.getAttribute("data-builder-project-file-route-group-state") === "collapsed-default") &&
+          routeGroupSummaries.length >= 3 &&
+          routeGroupSummaries.every((summary) => summary.getAttribute("data-builder-project-file-route-group-summary") === "single-row") &&
+          routeGroupRects.every((rect) => rect.height <= 38) &&
+          routeDetails.length >= 3 &&
+          routeDetails.every((details) => details.getAttribute("data-builder-project-file-route-details") === "deferred") &&
           routes.length >= 6 &&
+          routes.every((route) => route.getAttribute("data-builder-project-file-route-density") === "compact-row") &&
+          routeRects.every((rect) => rect.height <= 36) &&
           Boolean(metadataGroup) &&
           Boolean(runButton),
-        detail: \`saveRoot=\${saveRoot}, manifest=\${saveItems.length}, source=\${sourceItems.length}, generated=\${generatedItems.length}, metadata=\${metadataItems.length}, savePlan=\${savePlanSteps.length}/\${savePlanScopes.join("/")}, states=\${savePlanStates.join("/")}, pending=\${savePlanPending.join("/")}, paths=\${savePlanPaths.join("|")}, open=\${savePlanOpen.length}, routing=\${Boolean(routing)}, metadataGroup=\${Boolean(metadataGroup)}, runButton=\${Boolean(runButton)}, routeGroups=\${routeGroups.length}, routes=\${routes.length}\`
+        detail: \`saveRoot=\${saveRoot}, manifest=\${saveItems.length}, source=\${sourceItems.length}, generated=\${generatedItems.length}, metadata=\${metadataItems.length}, savePlan=\${savePlanSteps.length}/\${savePlanScopes.join("/")}, states=\${savePlanStates.join("/")}, pending=\${savePlanPending.join("/")}, paths=\${savePlanPaths.join("|")}, open=\${savePlanOpen.length}, routing=\${Boolean(routing)}/\${routing?.getAttribute("data-builder-project-file-routing-density") || "missing"}/\${Math.round(routingRect?.height || 0)}, table=\${routingTable?.getAttribute("data-builder-project-file-route-table-density") || "missing"}/\${Math.round(routingTableRect?.height || 0)}, metadataGroup=\${Boolean(metadataGroup)}, runButton=\${Boolean(runButton)}, routeGroups=\${routeGroups.length}/\${Math.round(Math.max(0, ...routeGroupRects.map((rect) => rect.height)))}, summaries=\${routeGroupSummaries.length}, details=\${routeDetails.length}, routes=\${routes.length}/\${Math.round(Math.max(0, ...routeRects.map((rect) => rect.height)))}\`
       };
     })()`,
     "project folder save destinations and .nova metadata routing",
