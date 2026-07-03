@@ -37397,7 +37397,11 @@ export function BuilderShowcase() {
                     </div>
                   </details>
 
-                  <section className="mt-4 grid gap-3 md:grid-cols-2" data-builder-project-workspace-scopes="">
+                  <section
+                    className="mt-2 grid overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low sm:grid-cols-2 xl:grid-cols-4"
+                    data-builder-project-workspace-scopes=""
+                    data-builder-project-workspace-scopes-density="ide-scope-strip"
+                  >
                     {[
                       {
                         id: "ui",
@@ -37434,19 +37438,28 @@ export function BuilderShowcase() {
                     ].map((scope) => {
                       const ScopeIcon = scope.icon;
                       return (
-                        <article key={scope.id} className="rounded-[20px] border border-outline-variant bg-surface-container p-3">
-                          <div className="flex min-w-0 items-start gap-3">
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                              <ScopeIcon aria-hidden className="size-4" />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <h4 className="truncate text-sm font-medium text-on-surface">{scope.title}</h4>
-                              <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">{scope.detail}</p>
-                            </div>
+                        <article
+                          key={scope.id}
+                          className="grid min-h-12 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-outline-variant px-2.5 py-1.5 text-xs last:border-b-0 hover:bg-surface-container xl:border-b-0 xl:border-r xl:last:border-r-0"
+                          data-builder-project-workspace-scope-row={scope.id}
+                        >
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                            <ScopeIcon aria-hidden className="size-3.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <h4 className="truncate font-medium text-on-surface">{scope.title}</h4>
+                            <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">{scope.detail}</p>
                           </div>
-                          <Button size="sm" variant="ghost" className="mt-3 w-full" onClick={scope.onAction}>
-                            <ArrowRight aria-hidden className="size-4" />
-                            {scope.action}
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            className="size-7 shrink-0 rounded-lg"
+                            data-builder-project-workspace-scope-action={scope.id}
+                            aria-label={scope.action}
+                            title={scope.action}
+                            onClick={scope.onAction}
+                          >
+                            <ArrowRight aria-hidden className="size-3.5" />
                           </Button>
                         </article>
                       );

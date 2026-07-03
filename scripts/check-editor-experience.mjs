@@ -1164,6 +1164,9 @@ mustContain(builder, "data-builder-project-working-set-open", "Project working s
 mustContain(builder, "data-builder-project-working-set-reveal", "Project working set rows expose reveal actions");
 mustContain(builder, "data-builder-project-working-set-copy-path", "Project working set rows expose path copy actions");
 mustContain(builder, 'id: "project-working-set"', "Editor experience audit checks the project working set");
+mustContain(builder, 'data-builder-project-workspace-scopes-density="ide-scope-strip"', "Project scope shortcuts render as a compact IDE strip instead of large cards");
+mustContain(builder, "data-builder-project-workspace-scope-row", "Project scope shortcuts expose compact per-scope rows");
+mustContain(builder, "data-builder-project-workspace-scope-action", "Project scope shortcuts keep explicit per-scope actions");
 mustContain(builder, "type ProjectActionCenterItem", "Project mode models a central next-action queue");
 mustContain(builder, "projectActionCenterItems", "Project mode derives a project action center from sources, working set, Rust state, run kit, tasks, and release target");
 mustContain(builder, "runProjectActionCenterItem", "Project action center can execute existing project actions");

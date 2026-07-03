@@ -2373,9 +2373,17 @@ async function runProjectWorkspaceChecks(send, verified) {
       const tasks = document.querySelectorAll("[data-builder-project-node-dossier-task]");
       const openFiles = document.querySelector("[data-builder-project-open-files]");
       const scopes = document.querySelector("[data-builder-project-workspace-scopes]");
+      const scopeRows = document.querySelectorAll("[data-builder-project-workspace-scope-row]");
+      const scopeActions = document.querySelectorAll("[data-builder-project-workspace-scope-action]");
       return {
-        passed: Boolean(dossier) && tasks.length > 0 && Boolean(openFiles) && Boolean(scopes),
-        detail: \`tasks=\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${Boolean(scopes)}\`
+        passed:
+          Boolean(dossier) &&
+          tasks.length > 0 &&
+          Boolean(openFiles) &&
+          scopes?.getAttribute("data-builder-project-workspace-scopes-density") === "ide-scope-strip" &&
+          scopeRows.length >= 4 &&
+          scopeActions.length >= 4,
+        detail: \`tasks=\${tasks.length}, openFiles=\${Boolean(openFiles)}, scopes=\${scopes?.getAttribute("data-builder-project-workspace-scopes-density") || "missing"}, rows=\${scopeRows.length}, actions=\${scopeActions.length}\`
       };
     })()`,
     "project node dossier and project workspace panels",
