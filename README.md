@@ -229,6 +229,25 @@ Logic mode is Rust-first. It manages commands, modules, Cargo dependencies, even
 
 Build mode coordinates generated target files, readiness checks, visual validation, quick checks, exe builds, bundle artifacts, release metadata, installer smoke handoff, runtime logs, and task history.
 
+## Current project generation pipeline
+
+Nova's project flow is designed around a generated Tauri application target:
+
+```text
+Project workspace
+  -> UI files, assets, state, and release metadata
+  -> visual canvas and component tree
+  -> Rust command registry and module files
+  -> event bindings and result/state patch schemas
+  -> generated file plan with disk diff status
+  -> readiness checks and generated-window validation
+  -> generated React runtime and Tauri project files
+  -> frontend/Rust quick checks
+  -> Tauri release executable or installer bundle
+```
+
+This keeps the editor, generated source files, validation artifacts, build logs, and release output connected as one desktop application workflow.
+
 ## Adding Components
 
 To add a new draggable component:
