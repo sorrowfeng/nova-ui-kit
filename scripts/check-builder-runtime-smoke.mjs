@@ -3730,6 +3730,11 @@ async function runLogicRustChecks(send, verified) {
       const outputClearance = outputRect ? (auxiliaryRect?.bottom || 9999) <= outputRect.top : false;
       const searchHeight = search?.getBoundingClientRect().height || 999;
       const auxiliaryClosed = auxiliaryDetails?.tagName === "DETAILS" && auxiliaryDetails.open === false;
+      const auxiliaryContentRect = auxiliaryContent?.getBoundingClientRect();
+      const auxiliaryContentHidden =
+        auxiliaryContent?.getAttribute("data-builder-logic-auxiliary-content-state") === "hidden-until-open" &&
+        (!auxiliaryContentRect || auxiliaryContentRect.height === 0) &&
+        window.getComputedStyle(auxiliaryContent).display === "none";
       return {
         passed:
           workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority") === "resources-first" &&
@@ -3737,19 +3742,20 @@ async function runLogicRustChecks(send, verified) {
           secondary?.getAttribute("data-builder-logic-secondary-sidebar-priority") === "resources-first" &&
           resourceDock?.getAttribute("data-builder-logic-resource-dock-priority") === "primary-outline" &&
           auxiliaryDock?.getAttribute("data-builder-logic-auxiliary-dock-priority") === "secondary-inspector" &&
-          auxiliaryDetails?.getAttribute("data-builder-logic-auxiliary-details-density") === "collapsed-default" &&
-          auxiliarySummary?.getAttribute("data-builder-logic-auxiliary-summary-density") === "single-line" &&
-          auxiliaryContent?.getAttribute("data-builder-logic-auxiliary-content-density") === "deferred-scroll" &&
+          auxiliaryDetails?.getAttribute("data-builder-logic-auxiliary-details-density") === "collapsed-thin-inspector" &&
+          auxiliarySummary?.getAttribute("data-builder-logic-auxiliary-summary-density") === "thin-status-row" &&
+          auxiliaryContent?.getAttribute("data-builder-logic-auxiliary-content-density") === "hidden-until-open-scroll" &&
           resourcePanel?.getAttribute("data-builder-logic-resource-density") === "compact-outline" &&
           resourcePanel?.getAttribute("data-builder-logic-resource-panel-chrome") === "low-chrome" &&
           search?.getAttribute("data-builder-logic-search-density") === "single-row" &&
           outline?.getAttribute("data-builder-rust-outline-density") === "compact-list" &&
           resourceHeight > auxiliaryHeight &&
-          auxiliaryHeight <= 72 &&
+          auxiliaryHeight <= 42 &&
           auxiliaryClosed &&
+          auxiliaryContentHidden &&
           outputClearance &&
           searchHeight <= 42,
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, closed=\${auxiliaryClosed}, outputClearance=\${outputClearance}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}, chrome=\${resourcePanel?.getAttribute("data-builder-logic-resource-panel-chrome") || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-logic-workspace-sidebar-priority")}, resource=\${Math.round(resourceHeight)}, auxiliary=\${Math.round(auxiliaryHeight)}, closed=\${auxiliaryClosed}, hidden=\${auxiliaryContentHidden}/\${Math.round(auxiliaryContentRect?.height || 0)}/\${auxiliaryContent ? window.getComputedStyle(auxiliaryContent).display : "missing"}, outputClearance=\${outputClearance}, search=\${Math.round(searchHeight)}, density=\${resourcePanel?.getAttribute("data-builder-logic-resource-density") || "missing"}, chrome=\${resourcePanel?.getAttribute("data-builder-logic-resource-panel-chrome") || "missing"}\`
       };
     })()`,
     "logic resources-first sidebar density",

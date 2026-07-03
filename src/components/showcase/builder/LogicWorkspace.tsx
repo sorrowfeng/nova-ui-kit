@@ -34,36 +34,37 @@ export function LogicWorkspace({ children }: { children: ReactNode }) {
           {resourcePanel}
         </aside>
         <details
-          className="group min-h-0 min-w-0 overflow-hidden rounded-[14px] border border-outline-variant bg-surface-container text-xs shadow-m3-1"
+          className="group min-h-0 min-w-0 overflow-hidden rounded-xl border border-outline-variant bg-surface-container text-xs shadow-none"
           data-builder-logic-auxiliary-dock="bottom-panel"
           data-builder-logic-auxiliary-dock-priority="secondary-inspector"
           data-builder-logic-auxiliary-details=""
-          data-builder-logic-auxiliary-details-density="collapsed-default"
+          data-builder-logic-auxiliary-details-density="collapsed-thin-inspector"
         >
           <summary
-            className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 text-left transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+            className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 px-2 py-1.5 text-left transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
             data-builder-logic-auxiliary-summary=""
-            data-builder-logic-auxiliary-summary-density="single-line"
+            data-builder-logic-auxiliary-summary-density="thin-status-row"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-high text-primary">
-                <Bug aria-hidden className="size-3.5" />
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                <Bug aria-hidden className="size-3" />
               </span>
-              <span className="min-w-0">
-                <span className="block truncate font-medium text-on-surface">调试与命令属性</span>
-                <span className="block truncate text-[0.66rem] text-on-surface-variant">按需展开辅助检查器</span>
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className="truncate font-medium text-on-surface">调试与命令属性</span>
+                <span className="truncate text-[0.66rem] text-on-surface-variant">按需展开</span>
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-1.5 text-[0.66rem] text-on-surface-variant">
-              <Settings2 aria-hidden className="size-3.5" />
-              <span>辅助</span>
+              <Settings2 aria-hidden className="size-3" />
+              <span>检查器</span>
               <ChevronRight aria-hidden className="size-3.5 transition group-open:rotate-90" />
             </span>
           </summary>
           <div
-            className="subtle-scrollbar max-h-[min(32rem,calc(100vh-14rem))] overflow-y-auto border-t border-outline-variant bg-surface-container-low p-2 [&>*]:rounded-[14px] [&>*]:border-0 [&>*]:bg-transparent [&>*]:p-0 [&>*]:shadow-none"
+            className="subtle-scrollbar hidden max-h-[min(32rem,calc(100vh-14rem))] overflow-y-auto border-t border-outline-variant bg-surface-container-low p-2 group-open:block [&>*]:rounded-[14px] [&>*]:border-0 [&>*]:bg-transparent [&>*]:p-0 [&>*]:shadow-none"
             data-builder-logic-auxiliary-content=""
-            data-builder-logic-auxiliary-content-density="deferred-scroll"
+            data-builder-logic-auxiliary-content-density="hidden-until-open-scroll"
+            data-builder-logic-auxiliary-content-state="hidden-until-open"
           >
             {inspectorPanel}
           </div>
