@@ -3208,6 +3208,10 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
       const categoryGroupDetails = Array.from(document.querySelectorAll("[data-builder-component-group-details]"));
       const sideDock = document.querySelector('[data-builder-side-dock="project"][data-builder-side-dock-active-tab="components"]');
       const sideDockHeader = sideDock?.querySelector("[data-builder-side-dock-tab-density]");
+      const sideDockContent = sideDock?.querySelector("[data-builder-side-dock-content-density]");
+      const sideDockClearance = sideDock?.getAttribute("data-builder-side-dock-bottom-clearance") || "";
+      const sideDockClearanceSize = Number.parseFloat(sideDock?.getAttribute("data-builder-side-dock-bottom-clearance-size") || "0");
+      const sideDockContentPaddingBottom = Number.parseFloat(sideDockContent ? getComputedStyle(sideDockContent).paddingBottom : "0");
       const dockTabList = sideDock?.querySelector("[data-builder-dock-tab-list]");
       const dockTabs = Array.from(sideDock?.querySelectorAll("[data-builder-dock-tab]") ?? []);
       const dockTabRects = dockTabs.map((tab) => tab.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0);
@@ -3252,6 +3256,9 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           Boolean(md3ShellGroup) &&
           /完整/.test(md3ShellBadge?.textContent || "") &&
           Boolean(paletteHeader && paletteHeaderRect && paletteHeaderRect.height <= 32) &&
+          sideDockClearance === "reserved" &&
+          sideDockClearanceSize >= 60 &&
+          sideDockContentPaddingBottom >= sideDockClearanceSize &&
           sideDockHeader?.getAttribute("data-builder-side-dock-tab-density") === "single-row" &&
           dockTabList?.getAttribute("data-builder-dock-tab-list") === "inline" &&
           dockTabs.length >= 4 &&
@@ -3313,10 +3320,44 @@ async function runComponentPaletteRuntimeChecks(send, verified) {
           Boolean(collectionDetailList) &&
           Boolean(favorites) &&
           Boolean(recents),
-        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, dockTabs=\${dockTabs.length}/\${dockTabRects.map((rect) => Math.round(rect.height)).join("/")}, dockTabList=\${dockTabList?.getAttribute("data-builder-dock-tab-list") || "missing"}, quickInsert=\${quickInsert.length}, quickPriority=\${quickInsertPriority?.getAttribute("data-builder-component-quick-insert-priority") || "missing"}, quickDensity=\${quickInsertPriority?.getAttribute("data-builder-component-quick-insert-density") || "missing"}, quickHeight=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.height) : "missing"}, quickStrip=\${quickInsertStrip?.getAttribute("data-builder-component-quick-insert-strip") || "missing"}, quickRows=\${quickInsertRects.map((rect) => Math.round(rect.height)).join("/")}, listPriority=\${componentListPriority ? "first" : "missing"}, listMode=\${componentListMode?.getAttribute("data-builder-component-list-mode") || "missing"}, listHeight=\${componentListModeRect ? Math.round(componentListModeRect.height) : "missing"}, categoryGroups=\${categoryGroups.length}, openCategoryGroups=\${openCategoryGroups.length}, closedCategoryGroups=\${closedCategoryGroups.length}, listY=\${componentListPriorityRect ? Math.round(componentListPriorityRect.top) : "missing"}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, coverageY=\${coverageRect ? Math.round(coverageRect.top) : "missing"}, collectionsY=\${collectionsRect ? Math.round(collectionsRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, palettePriority=\${paletteLayout?.getAttribute("data-builder-component-palette-priority") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, visibleCompactRows=\${compactRowRects.filter((rect) => rect.top >= 0 && rect.top < window.innerHeight).length}, rowDensity=\${compactRows[0]?.getAttribute("data-builder-palette-row-density") || "missing"}, rowHeights=\${compactRowRects.map((rect) => Math.round(rect.height)).join("/")}, categoryMetadata=\${rowCategoryMetadata.length}, categoryMetadataRects=\${categoryMetadataRects.map((rect) => \`\${Math.round(rect.width)}x\${Math.round(rect.height)}\`).join("/")}, favoriteVisibility=\${pinnedFavoriteToggles.length}/\${hoverFavoriteToggles.length}/\${firstPinnedFavoriteOpacity}/\${firstHoverFavoriteOpacity}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, collectionsMode=\${collections?.getAttribute("data-builder-component-collections-mode") || "missing"}, collectionsHeight=\${collectionsRect ? Math.round(collectionsRect.height) : "missing"}, collectionsOpen=\${Boolean(collectionDetails?.open)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
+        detail: \`count=\${countLabel}, coverageMode=\${coverage?.getAttribute("data-builder-component-coverage-mode") || "missing"}, coverageHeight=\${coverageRect ? Math.round(coverageRect.height) : "missing"}, coverageOpen=\${Boolean(coverageDetails?.open)}, groups=\${groups.length}, completeGroups=\${completeGroups.length}, md3Shell=\${Boolean(md3ShellGroup)}, header=\${paletteHeaderRect ? Math.round(paletteHeaderRect.height) : "missing"}, dockTabs=\${dockTabs.length}/\${dockTabRects.map((rect) => Math.round(rect.height)).join("/")}, dockTabList=\${dockTabList?.getAttribute("data-builder-dock-tab-list") || "missing"}, dockClearance=\${sideDockClearance}/\${Math.round(sideDockClearanceSize)}/\${Math.round(sideDockContentPaddingBottom)}, quickInsert=\${quickInsert.length}, quickPriority=\${quickInsertPriority?.getAttribute("data-builder-component-quick-insert-priority") || "missing"}, quickDensity=\${quickInsertPriority?.getAttribute("data-builder-component-quick-insert-density") || "missing"}, quickHeight=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.height) : "missing"}, quickStrip=\${quickInsertStrip?.getAttribute("data-builder-component-quick-insert-strip") || "missing"}, quickRows=\${quickInsertRects.map((rect) => Math.round(rect.height)).join("/")}, listPriority=\${componentListPriority ? "first" : "missing"}, listMode=\${componentListMode?.getAttribute("data-builder-component-list-mode") || "missing"}, listHeight=\${componentListModeRect ? Math.round(componentListModeRect.height) : "missing"}, categoryGroups=\${categoryGroups.length}, openCategoryGroups=\${openCategoryGroups.length}, closedCategoryGroups=\${closedCategoryGroups.length}, listY=\${componentListPriorityRect ? Math.round(componentListPriorityRect.top) : "missing"}, quickY=\${quickInsertPriorityRect ? Math.round(quickInsertPriorityRect.top) : "missing"}, kitY=\${kitLayoutRect ? Math.round(kitLayoutRect.top) : "missing"}, coverageY=\${coverageRect ? Math.round(coverageRect.top) : "missing"}, collectionsY=\${collectionsRect ? Math.round(collectionsRect.top) : "missing"}, kitHeight=\${kitLayoutRect ? Math.round(kitLayoutRect.height) : "missing"}, kitRows=\${kitRowRects.map((rect) => Math.round(rect.height)).join("/")}, categories=\${categories.length}, categoryStrip=\${categoryStrip?.getAttribute("data-builder-component-category-strip") || "missing"}, paletteLayout=\${paletteLayout?.getAttribute("data-builder-component-palette-layout") || "missing"}, palettePriority=\${paletteLayout?.getAttribute("data-builder-component-palette-priority") || "missing"}, kits=\${kits.length}, kitLayout=\${kitLayout?.getAttribute("data-builder-component-kits-layout") || "missing"}, kitDensity=\${kitLayout?.getAttribute("data-builder-component-kits-density") || "missing"}, kitTypes=\${kitTypes.length}, compactRows=\${compactRows.length}, visibleCompactRows=\${compactRowRects.filter((rect) => rect.top >= 0 && rect.top < window.innerHeight).length}, rowDensity=\${compactRows[0]?.getAttribute("data-builder-palette-row-density") || "missing"}, rowHeights=\${compactRowRects.map((rect) => Math.round(rect.height)).join("/")}, categoryMetadata=\${rowCategoryMetadata.length}, categoryMetadataRects=\${categoryMetadataRects.map((rect) => \`\${Math.round(rect.width)}x\${Math.round(rect.height)}\`).join("/")}, favoriteVisibility=\${pinnedFavoriteToggles.length}/\${hoverFavoriteToggles.length}/\${firstPinnedFavoriteOpacity}/\${firstHoverFavoriteOpacity}, scaffoldActions=\${kitScaffoldActions.length}, collections=\${Boolean(collections)}, collectionsMode=\${collections?.getAttribute("data-builder-component-collections-mode") || "missing"}, collectionsHeight=\${collectionsRect ? Math.round(collectionsRect.height) : "missing"}, collectionsOpen=\${Boolean(collectionDetails?.open)}, favorites=\${Boolean(favorites)}, recents=\${Boolean(recents)}\`
       };
     })()`,
     "MD3 and Qt desktop component palette coverage",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const sideDock = document.querySelector('[data-builder-side-dock="project"][data-builder-side-dock-active-tab="components"]');
+      const sideDockContent = sideDock?.querySelector("[data-builder-side-dock-content-density]");
+      const outputDock = document.querySelector("[data-builder-output-dock]");
+      if (sideDock) {
+        sideDock.scrollTop = sideDock.scrollHeight;
+      }
+      const lastKit = Array.from(document.querySelectorAll("[data-builder-component-kit]")).pop();
+      const collections = document.querySelector("[data-builder-component-collections]");
+      const terminalSurface = collections || lastKit;
+      const sideRect = sideDock?.getBoundingClientRect();
+      const outputRect = outputDock?.getBoundingClientRect();
+      const terminalRect = terminalSurface?.getBoundingClientRect();
+      const clearanceSize = Number.parseFloat(sideDock?.getAttribute("data-builder-side-dock-bottom-clearance-size") || "0");
+      const contentPaddingBottom = Number.parseFloat(sideDockContent ? getComputedStyle(sideDockContent).paddingBottom : "0");
+      const bottomLimit = Math.min(
+        outputRect ? outputRect.top - 4 : window.innerHeight - 36,
+        sideRect ? sideRect.bottom - 4 : window.innerHeight - 36,
+      );
+      return {
+        passed:
+          sideDock?.getAttribute("data-builder-side-dock-bottom-clearance") === "reserved" &&
+          clearanceSize >= 60 &&
+          contentPaddingBottom >= clearanceSize &&
+          Boolean(terminalRect) &&
+          terminalRect.bottom <= bottomLimit &&
+          terminalRect.top >= 0,
+        detail: \`clearance=\${sideDock?.getAttribute("data-builder-side-dock-bottom-clearance") || "missing"}/\${Math.round(clearanceSize)}/\${Math.round(contentPaddingBottom)}, terminal=\${terminalSurface?.getAttribute("data-builder-component-collections") !== null ? "collections" : "kit"}, terminalBottom=\${Math.round(terminalRect?.bottom || 0)}, limit=\${Math.round(bottomLimit)}, sideBottom=\${Math.round(sideRect?.bottom || 0)}, outputTop=\${Math.round(outputRect?.top || 0)}\`
+      };
+    })()`,
+    "component palette side dock scrolls terminal content above the bottom output dock",
   );
   await evaluate(send, `document.querySelector("[data-builder-component-coverage-details] > summary")?.click(); true`);
   await waitFor(send, `Boolean(document.querySelector("[data-builder-component-coverage-details]")?.open)`, "component coverage details expand");

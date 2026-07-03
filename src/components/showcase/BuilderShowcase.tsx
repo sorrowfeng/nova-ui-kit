@@ -16199,6 +16199,7 @@ export function BuilderShowcase() {
     scrollPaddingBottom: "var(--builder-canvas-dock-scroll-padding)",
     paddingBottom: "var(--builder-canvas-dock-visual-padding)",
   } as CSSProperties;
+  const designSideDockBottomClearance = mode === "design" ? `${canvasViewportDockScrollPadding}px` : undefined;
   const toggleOutputDockVisibility = () => {
     setBottomDockMinimized((minimized) => {
       const nextMinimized = !minimized;
@@ -47375,6 +47376,7 @@ export function BuilderShowcase() {
               collapsed={leftDockCollapsed}
               onCollapsedChange={setLeftDockCollapsed}
               tabLayout="inline"
+              bottomClearance={designSideDockBottomClearance}
             >
               {leftDockTab === "project" ? (
                 <>
@@ -50418,6 +50420,7 @@ export function BuilderShowcase() {
               onTabChange={setRightDockTab}
               collapsed={rightDockCollapsed}
               onCollapsedChange={setRightDockCollapsed}
+              bottomClearance={designSideDockBottomClearance}
             >
               <section
                 className={cn(

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { BuilderDockTab } from "./ProjectDock";
 import { DockTabList } from "./ProjectDock";
@@ -10,6 +10,7 @@ export function InspectorDock<T extends string>({
   onTabChange,
   collapsed = false,
   onCollapsedChange,
+  bottomClearance,
   children,
 }: {
   tabs: BuilderDockTab<T>[];
@@ -17,15 +18,31 @@ export function InspectorDock<T extends string>({
   onTabChange: (tab: T) => void;
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  bottomClearance?: string;
   children: ReactNode;
 }) {
+  const dockStyle = bottomClearance
+    ? ({
+        "--builder-side-dock-bottom-clearance": bottomClearance,
+        scrollPaddingBottom: "var(--builder-side-dock-bottom-clearance)",
+      } as CSSProperties)
+    : undefined;
+  const dockContentStyle = bottomClearance
+    ? ({
+        paddingBottom: "calc(var(--builder-side-dock-bottom-clearance) + 0.5rem)",
+      } as CSSProperties)
+    : undefined;
+
   if (collapsed) {
     return (
       <aside
         className="relative z-10 flex h-full min-h-0 flex-col items-center border-t border-outline-variant bg-surface-container xl:border-l xl:border-t-0"
+        style={dockStyle}
         data-builder-readable-dock="right"
         data-builder-side-dock="inspector"
         data-builder-side-dock-collapsed="true"
+        data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}
+        data-builder-side-dock-bottom-clearance-size={bottomClearance ?? "0px"}
       >
         <button
           type="button"
@@ -75,9 +92,12 @@ export function InspectorDock<T extends string>({
   return (
     <aside
       className="subtle-scrollbar relative z-10 h-full min-h-0 overflow-x-hidden overflow-y-auto border-t border-outline-variant bg-surface-container xl:border-l xl:border-t-0"
+      style={dockStyle}
       data-builder-readable-dock="right"
       data-builder-side-dock="inspector"
       data-builder-side-dock-collapsed="false"
+      data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}
+      data-builder-side-dock-bottom-clearance-size={bottomClearance ?? "0px"}
     >
       <div className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-2 backdrop-blur">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -99,7 +119,7 @@ export function InspectorDock<T extends string>({
           </div>
         </div>
       </div>
-      <div className="p-3">{children}</div>
+      <div className="p-3" style={dockContentStyle}>{children}</div>
     </aside>
   );
 }

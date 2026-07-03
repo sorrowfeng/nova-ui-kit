@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ export function ProjectDock<T extends string>({
   collapsed = false,
   onCollapsedChange,
   tabLayout = "grid",
+  bottomClearance,
   children,
 }: {
   tabs: BuilderDockTab<T>[];
@@ -25,16 +26,32 @@ export function ProjectDock<T extends string>({
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
   tabLayout?: "grid" | "inline";
+  bottomClearance?: string;
   children: ReactNode;
 }) {
+  const dockStyle = bottomClearance
+    ? ({
+        "--builder-side-dock-bottom-clearance": bottomClearance,
+        scrollPaddingBottom: "var(--builder-side-dock-bottom-clearance)",
+      } as CSSProperties)
+    : undefined;
+  const dockContentStyle = bottomClearance
+    ? ({
+        paddingBottom: "calc(var(--builder-side-dock-bottom-clearance) + 0.5rem)",
+      } as CSSProperties)
+    : undefined;
+
   if (collapsed) {
     return (
       <aside
         className="flex h-full min-h-0 flex-col items-center border-b border-outline-variant bg-surface-container xl:border-b-0 xl:border-r"
+        style={dockStyle}
         data-builder-readable-dock="left"
         data-builder-side-dock="project"
         data-builder-side-dock-active-tab={activeTab}
         data-builder-side-dock-collapsed="true"
+        data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}
+        data-builder-side-dock-bottom-clearance-size={bottomClearance ?? "0px"}
       >
         <button
           type="button"
@@ -84,11 +101,14 @@ export function ProjectDock<T extends string>({
   return (
     <aside
       className="subtle-scrollbar h-full min-h-0 overflow-y-auto border-b border-outline-variant bg-surface-container xl:border-b-0 xl:border-r"
+      style={dockStyle}
       data-builder-readable-dock="left"
       data-builder-side-dock="project"
       data-builder-side-dock-density="balanced-compact"
       data-builder-side-dock-active-tab={activeTab}
       data-builder-side-dock-collapsed="false"
+      data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}
+      data-builder-side-dock-bottom-clearance-size={bottomClearance ?? "0px"}
     >
       <div
         className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container/95 p-1.5 backdrop-blur"
@@ -113,7 +133,7 @@ export function ProjectDock<T extends string>({
           ) : null}
         </div>
       </div>
-      <div className="p-2" data-builder-side-dock-content-density="compact">
+      <div className="p-2" style={dockContentStyle} data-builder-side-dock-content-density="compact">
         {children}
       </div>
     </aside>

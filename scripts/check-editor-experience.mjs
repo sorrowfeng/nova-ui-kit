@@ -1580,6 +1580,8 @@ mustContain(designWorkspace, "data-builder-workspace-layout=\"balanced-left-dock
 mustContain(designWorkspace, 'data-builder-left-dock-width="balanced-320"', "Design workspace caps the expanded component dock to a compact desktop width");
 mustContain(designWorkspace, 'data-builder-design-workspace-bottom-dock-clearance="reserved"', "Design workspace reserves clearance above the bottom output dock");
 mustContain(designWorkspace, "overflow-hidden bg-surface-container-low pb-11", "Design workspace keeps canvas and side docks above the bottom output dock");
+mustContain(builder, "designSideDockBottomClearance", "Design workspace derives side-dock scroll clearance from the current output dock height");
+mustContain(builder, "bottomClearance={designSideDockBottomClearance}", "Design workspace passes output-dock clearance into side docks");
 mustContain(builder, 'data-builder-canvas-stage-alignment="centered-when-room"', "Design canvas stage centers in the available viewport when it fits");
 mustContain(builder, "canvasStageViewportStyle", "Design canvas stage has a dedicated viewport alignment wrapper");
 mustContain(logicWorkspace, 'data-builder-logic-workspace-layout="code-primary"', "Logic workspace declares the Rust code-primary layout contract");
@@ -1735,12 +1737,19 @@ mustContain(designWorkspace, "2xl:grid-cols-[320px_minmax(0,1fr)_56px]", "Design
 mustContain(projectDock, 'data-builder-readable-dock="left"', "Project dock exposes a readable left dock marker");
 mustContain(projectDock, 'data-builder-side-dock-density="balanced-compact"', "Project dock uses compact side-dock chrome in design mode");
 mustContain(projectDock, 'data-builder-side-dock-content-density="compact"', "Project dock content uses reduced padding");
+mustContain(projectDock, "bottomClearance?: string", "Project dock accepts bottom clearance for floating output dock avoidance");
+mustContain(projectDock, 'data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}', "Project dock exposes bottom clearance state for runtime checks");
+mustContain(projectDock, "scrollPaddingBottom", "Project dock scroll snapping avoids the bottom output dock");
+mustContain(projectDock, 'paddingBottom: "calc(var(--builder-side-dock-bottom-clearance) + 0.5rem)"', "Project dock content reserves scrollable space above the bottom output dock");
 mustContain(projectDock, "tabLayout = \"grid\"", "Project dock keeps grid tabs as the default for non-design consumers");
 mustContain(projectDock, "data-builder-side-dock-tab-density", "Project dock exposes tab density for runtime layout checks");
 mustContain(projectDock, "data-builder-dock-tab-list={layout}", "Project dock exposes the dock tab list layout");
 mustContain(projectDock, "data-builder-left-dock-collapse", "Project dock can collapse into a compact rail");
 mustContain(projectDock, "data-builder-left-dock-expand", "Project dock can expand from the compact rail");
 mustContain(inspectorDock, 'data-builder-readable-dock="right"', "Inspector dock exposes a readable right dock marker");
+mustContain(inspectorDock, "bottomClearance?: string", "Inspector dock accepts bottom clearance for floating output dock avoidance");
+mustContain(inspectorDock, 'data-builder-side-dock-bottom-clearance={bottomClearance ? "reserved" : "none"}', "Inspector dock exposes bottom clearance state for runtime checks");
+mustContain(inspectorDock, "scrollPaddingBottom", "Inspector dock scroll snapping avoids the bottom output dock");
 mustContain(inspectorDock, "data-builder-right-dock-collapse", "Inspector dock can collapse into a compact rail");
 mustContain(inspectorDock, "data-builder-right-dock-expand", "Inspector dock can expand from the compact rail");
 mustContain(builder, "rightDockCollapsed, setRightDockCollapsed", "Builder keeps the inspector collapsed by default for a quieter canvas");
