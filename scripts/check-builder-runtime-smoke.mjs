@@ -4854,6 +4854,10 @@ async function runShellCommandPlacementChecks(send, verified) {
       const releasePipelinesSummary = document.querySelector("[data-builder-release-pipelines-summary]");
       const releasePipelinesDetails = document.querySelector("[data-builder-release-pipelines-details]");
       const releasePipelinesInline = document.querySelector("[data-builder-release-pipelines-summary-detail]");
+      const buildLogPanel = document.querySelector("[data-builder-build-log-panel]");
+      const buildLogSummary = document.querySelector("[data-builder-build-log-summary]");
+      const buildLogDetails = document.querySelector("[data-builder-build-log-details]");
+      const buildLogInline = document.querySelector("[data-builder-build-log-summary-detail]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4871,10 +4875,12 @@ async function runShellCommandPlacementChecks(send, verified) {
       const activityTimelineRect = activityTimeline?.getBoundingClientRect();
       const buildHistoryRect = buildHistory?.getBoundingClientRect();
       const releasePipelinesRect = releasePipelines?.getBoundingClientRect();
+      const buildLogRect = buildLogPanel?.getBoundingClientRect();
       const visualAuditDetailsStyle = visualAuditDetails ? getComputedStyle(visualAuditDetails) : null;
       const activityTimelineDetailsStyle = activityTimelineDetails ? getComputedStyle(activityTimelineDetails) : null;
       const buildHistoryDetailsStyle = buildHistoryDetails ? getComputedStyle(buildHistoryDetails) : null;
       const releasePipelinesDetailsStyle = releasePipelinesDetails ? getComputedStyle(releasePipelinesDetails) : null;
+      const buildLogDetailsStyle = buildLogDetails ? getComputedStyle(buildLogDetails) : null;
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4986,6 +4992,15 @@ async function runShellCommandPlacementChecks(send, verified) {
         releasePipelinesInline?.getAttribute("data-builder-release-pipelines-summary-detail") === "compact-inline" &&
         releasePipelinesDetailsStyle?.display === "none" &&
         Boolean(releasePipelinesRect && releasePipelinesRect.height <= 68);
+      const buildLogCollapsedDefault =
+        buildLogPanel?.tagName === "DETAILS" &&
+        !buildLogPanel.hasAttribute("open") &&
+        buildLogPanel.getAttribute("data-builder-build-log-density") === "collapsed-summary" &&
+        buildLogSummary?.getAttribute("data-builder-build-log-summary") === "single-row" &&
+        buildLogDetails?.getAttribute("data-builder-build-log-details") === "deferred" &&
+        buildLogInline?.getAttribute("data-builder-build-log-summary-detail") === "compact-inline" &&
+        buildLogDetailsStyle?.display === "none" &&
+        Boolean(buildLogRect && buildLogRect.height <= 64);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -5010,8 +5025,9 @@ async function runShellCommandPlacementChecks(send, verified) {
           activityTimelineCollapsedDefault &&
           buildHistoryCollapsedDefault &&
           releasePipelinesCollapsedDefault &&
+          buildLogCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, pipelineHeight=\${Math.round(releasePipelinesRect?.height || 0)}, pipelineCollapsed=\${releasePipelinesCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, pipelineHeight=\${Math.round(releasePipelinesRect?.height || 0)}, pipelineCollapsed=\${releasePipelinesCollapsedDefault}, buildLogHeight=\${Math.round(buildLogRect?.height || 0)}, buildLogCollapsed=\${buildLogCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -5462,6 +5478,48 @@ async function runShellCommandPlacementChecks(send, verified) {
     `document.querySelector("[data-builder-release-pipelines]")?.hasAttribute("open") === false`,
     "collapsed build release pipelines",
   );
+  await evaluate(send, `document.querySelector("[data-builder-build-log-summary]")?.click(); true`);
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-log-panel]")?.hasAttribute("open") === true`,
+    "expanded build log details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const panel = document.querySelector("[data-builder-build-log-panel]");
+      const details = document.querySelector("[data-builder-build-log-details]");
+      const textArea = document.querySelector("[data-builder-build-log]");
+      const openDock = document.querySelector("[data-builder-build-log-open-dock]");
+      const detailsRect = details?.getBoundingClientRect();
+      const logText = textArea?.value || "";
+      return {
+        passed:
+          panel?.hasAttribute("open") === true &&
+          panel?.getAttribute("data-builder-build-log-density") === "collapsed-summary" &&
+          details?.getAttribute("data-builder-build-log-details") === "deferred" &&
+          Boolean(textArea) &&
+          Boolean(openDock) &&
+          Boolean(detailsRect && detailsRect.height > 120) &&
+          /构建|Tauri|exe|尚未构建/.test(logText),
+        detail: \`open=\${panel?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, textArea=\${Boolean(textArea)}, openDock=\${Boolean(openDock)}, chars=\${logText.length}\`
+      };
+    })()`,
+    "build log expands to deferred details on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-log-open-dock]")`, "build log open dock button");
+  await waitFor(
+    send,
+    `document.querySelector('[data-builder-dock-tab="logs"]')?.getAttribute("data-builder-dock-tab-active") === "true" && document.querySelector("[data-builder-output-dock]")?.getAttribute("data-builder-output-dock-layout") !== "minimized"`,
+    "build log routes output to bottom log dock",
+  );
+  verified.buildLogCollapsedRuntime = true;
+  await evaluate(send, `document.querySelector("[data-builder-build-log-summary]")?.click(); true`);
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-build-log-panel]")?.hasAttribute("open") === false`,
+    "collapsed build log details",
+  );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(
     send,
@@ -5748,6 +5806,7 @@ try {
     rustWordWrapRuntime: false,
     rustDebugWorkbenchRuntime: false,
     runtimeWorkbench: false,
+    buildLogCollapsedRuntime: false,
     outputDockLayout: false,
     outputDockContentRuntime: false,
     outputDockNoClipRuntime: false,
@@ -5808,7 +5867,7 @@ try {
   socket.close();
   clearTimeout(smokeTimeout);
   console.log(
-    `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
+      `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, buildLogCollapsedRuntime=${verified.buildLogCollapsedRuntime}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
   );
   passed = true;
 } finally {

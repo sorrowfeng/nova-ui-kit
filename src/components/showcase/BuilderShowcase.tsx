@@ -18432,6 +18432,11 @@ export function BuilderShowcase() {
     [navigatorQuery, treeRows],
   );
   const combinedBuildLog = useMemo(() => [activeProject.buildLog, buildError].filter(Boolean).join("\n"), [activeProject.buildLog, buildError]);
+  const buildLogPreviewText = combinedBuildLog || "尚未构建。点击“exe”会生成可执行文件，点击“打包”会运行完整 Tauri bundle。";
+  const buildLogLineCount = useMemo(
+    () => combinedBuildLog.split(/\r?\n/).filter((line) => line.trim()).length,
+    [combinedBuildLog],
+  );
   const activeRustSourceMap = useMemo(
     () => normalizeGeneratedRustSourceMap(activeProject.rustSourceMap) ?? parseRustSourceMapFromLog(combinedBuildLog),
     [activeProject.rustSourceMap, combinedBuildLog],
@@ -20605,6 +20610,16 @@ export function BuilderShowcase() {
     [activeProject.outputBundleDir, activeProject.rootPath, latestBuildEntry?.bundleDir],
   );
   const activeBundlePath = activeProject.outputBundlePaths?.[0] || latestBuildEntry?.bundlePaths?.[0] || "";
+  const buildArtifactReady = Boolean(activeBundlePath || activeProject.outputExePath);
+  const buildArtifactStatusLabel = bundling
+    ? "打包中"
+    : activeBundlePath
+      ? "安装包就绪"
+      : activeProject.outputExePath
+        ? "exe 就绪"
+        : building
+          ? "构建中"
+          : "空闲";
   const activeBundleManifestPath = activeProject.outputBundleManifestPath || latestBuildEntry?.bundleManifestPath || "";
   const latestRunSessionRunning = latestRunSessionEntry?.runStatus === "running";
   const activeGeneratedPreviewEntry = useMemo(
@@ -47006,23 +47021,66 @@ export function BuilderShowcase() {
                 )}
                 </div>
               </details>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-medium">构建日志</h2>
-                    <p className="mt-1 text-xs text-on-surface-variant">这里显示 `npm install`、Tauri 构建和 Rust 编译输出。</p>
+              <details
+                className="group rounded-lg border border-outline-variant bg-surface-container-low/80 p-1.5 text-xs"
+                data-builder-build-log-panel=""
+                data-builder-build-log-density="collapsed-summary"
+              >
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-outline-variant bg-surface-container px-2 py-1 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-log-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <span className="grid size-6 shrink-0 place-items-center rounded-md bg-secondary-container text-secondary-container-foreground">
+                      <Terminal aria-hidden className="size-3.5" />
+                    </span>
+                    <h2 className="truncate text-sm font-medium">构建日志</h2>
+                    <Badge variant={buildArtifactReady ? "secondary" : "outline"} className="h-5 shrink-0 px-1.5 text-[0.65rem]">
+                      {buildArtifactStatusLabel}
+                    </Badge>
+                    <span className="hidden min-w-0 truncate text-[0.68rem] text-on-surface-variant md:inline">
+                      详细输出在底部 Output Dock
+                    </span>
                   </div>
-                  <Badge variant={activeBundlePath || activeProject.outputExePath ? "secondary" : "outline"}>
-                    {bundling ? "打包中" : activeBundlePath ? "安装包就绪" : activeProject.outputExePath ? "exe 就绪" : building ? "构建中" : "空闲"}
-                  </Badge>
+                  <div
+                    className="hidden shrink-0 items-center gap-2 text-[0.68rem] text-on-surface-variant sm:flex"
+                    data-builder-build-log-summary-detail="compact-inline"
+                  >
+                    <Badge variant="outline" className="h-5 px-1.5 text-[0.65rem]">
+                      {buildLogLineCount > 0 ? `${buildLogLineCount} 行` : "未开始"}
+                    </Badge>
+                    <span>按需展开</span>
+                  </div>
+                </summary>
+                <div
+                  className="mt-2 hidden gap-2 border-t border-outline-variant pt-2 group-open:grid"
+                  data-builder-build-log-details="deferred"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="min-w-0 truncate text-[0.68rem] text-on-surface-variant">
+                      这里显示 npm install、Tauri 构建和 Rust 编译输出；持续查看时建议打开底部日志 Dock。
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 px-2 text-[0.68rem]"
+                      onClick={() => openBottomDock("logs", false)}
+                      data-builder-build-log-open-dock=""
+                    >
+                      <Terminal aria-hidden className="mr-1 size-3.5" />
+                      日志 Dock
+                    </Button>
+                  </div>
+                  <Textarea
+                    data-builder-build-log=""
+                    readOnly
+                    value={buildLogPreviewText}
+                    className="max-h-[320px] min-h-[220px] resize-none font-mono text-xs leading-5"
+                  />
                 </div>
-                <Textarea
-                  data-builder-build-log=""
-                  readOnly
-                  value={activeProject.buildLog || "尚未构建。点击“exe”会生成可执行文件，点击“打包”会运行完整 Tauri bundle。"}
-                  className="min-h-[420px] resize-none font-mono text-xs leading-5"
-                />
-              </div>
+              </details>
             </section>
           </BuildWorkspace>
         ) : (
