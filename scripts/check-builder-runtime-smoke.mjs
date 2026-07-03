@@ -2349,6 +2349,64 @@ async function runProjectWorkspaceChecks(send, verified) {
     "project node dossier and project workspace panels",
   );
   verified.projectNodeDossier = true;
+  await waitFor(send, `Boolean(document.querySelector("[data-builder-project-node-impact]"))`, "project node impact summary after node click");
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const impact = document.querySelector("[data-builder-project-node-impact]");
+      const summary = document.querySelector("[data-builder-project-node-impact-summary]");
+      const details = document.querySelector("[data-builder-project-node-impact-details]");
+      const list = document.querySelector("[data-builder-project-node-impact-list]");
+      const items = Array.from(document.querySelectorAll("[data-builder-project-node-impact-item]"));
+      const rect = impact?.getBoundingClientRect();
+      return {
+        passed:
+          impact?.tagName === "DETAILS" &&
+          !impact.hasAttribute("open") &&
+          impact.getAttribute("data-builder-project-node-impact-density") === "collapsed-summary" &&
+          summary?.getAttribute("data-builder-project-node-impact-summary") === "single-row" &&
+          details?.getAttribute("data-builder-project-node-impact-details") === "deferred" &&
+          Boolean(list) &&
+          items.length >= 1 &&
+          Boolean(rect && rect.height <= 58),
+        detail: \`open=\${impact?.hasAttribute("open")}, height=\${Math.round(rect?.height || 0)}, items=\${items.length}, density=\${impact?.getAttribute("data-builder-project-node-impact-density") || "missing"}\`
+      };
+    })()`,
+    "project node impact summary defaults collapsed",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-node-impact-summary]")`, "project node impact summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-node-impact]")?.hasAttribute("open") === true`,
+    "expanded project node impact summary",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const impact = document.querySelector("[data-builder-project-node-impact]");
+      const details = document.querySelector("[data-builder-project-node-impact-details]");
+      const items = Array.from(document.querySelectorAll("[data-builder-project-node-impact-item]"));
+      const actions = Array.from(document.querySelectorAll("[data-builder-project-node-impact-action]"));
+      const detailRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          impact?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-project-node-impact-details") === "deferred" &&
+          items.length >= 1 &&
+          actions.length >= 1 &&
+          Boolean(detailRect && detailRect.height > 80),
+        detail: \`open=\${impact?.hasAttribute("open")}, detailsHeight=\${Math.round(detailRect?.height || 0)}, items=\${items.length}, actions=\${actions.length}\`
+      };
+    })()`,
+    "project node impact expands to path and task actions",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-node-impact-summary]")`, "collapse project node impact summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-node-impact]")?.hasAttribute("open") === false`,
+    "collapsed project node impact summary",
+  );
+  verified.projectNodeImpactRuntime = true;
 
   await evaluate(
     send,

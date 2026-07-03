@@ -1125,12 +1125,15 @@ mustContain(builder, "type ProjectExplorerImpactItem", "Project workspace models
 mustContain(builder, "selectedProjectExplorerImpactItems", "Project workspace derives impact items for the selected node");
 mustContain(builder, "runSelectedProjectExplorerImpactAction", "Project workspace impact cards can run their recommended actions");
 mustContain(builder, "data-builder-project-node-impact", "Project workspace renders selected-node impact summary");
-mustContain(builder, 'data-builder-project-node-impact-density="property-list"', "Project node impact summary uses a compact property-list density");
+mustContain(builder, 'data-builder-project-node-impact-density="collapsed-summary"', "Project node impact summary defaults to a compact collapsed row");
+mustContain(builder, 'data-builder-project-node-impact-summary="single-row"', "Project node impact summary stays one row");
+mustContain(builder, 'data-builder-project-node-impact-details="deferred"', "Project node impact details stay deferred until expanded");
 mustContain(builder, "data-builder-project-node-impact-list", "Project impact summary renders a list of impacts");
 mustContain(builder, 'data-builder-project-node-impact-list-density="single-column-property-rows"', "Project node impact list renders single-column property rows");
 mustContain(builder, "data-builder-project-node-impact-item", "Project impact summary exposes per-impact markers");
 mustContain(builder, "data-builder-project-node-impact-task", "Project impact summary links recommended project tasks");
 mustContain(builder, "data-builder-project-node-impact-action", "Project impact summary exposes clickable actions");
+mustContain("scripts/check-builder-runtime-smoke.mjs", "verified.projectNodeImpactRuntime = true", "Browser smoke verifies project node impact summary expands on demand");
 mustContain(builder, 'id: "project-node-impact-summary"', "Editor experience audit checks project node impact summary");
 mustContain(builder, "type ProjectSourceOverviewRow", "Project mode models a central source-file overview");
 mustContain(builder, "projectSourceOverviewRows", "Project mode derives source, generated, and .nova overview rows");

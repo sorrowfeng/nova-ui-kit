@@ -36993,23 +36993,34 @@ export function BuilderShowcase() {
                         </div>
                       ) : null}
                       {selectedProjectExplorerImpactItems.length > 0 ? (
-                        <section
-                          className="mt-3 rounded-2xl border border-outline-variant bg-surface-container-low px-3 py-2.5 text-xs"
+                        <details
+                          className="group mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5 text-xs"
                           data-builder-project-node-impact=""
                           data-builder-project-node-impact-count={selectedProjectExplorerImpactItems.length}
-                          data-builder-project-node-impact-density="property-list"
+                          data-builder-project-node-impact-density="collapsed-summary"
+                          data-builder-project-node-impact-state="collapsed-default"
                         >
-                          <div className="mb-2 flex min-w-0 items-center justify-between gap-3">
-                            <div className="flex min-w-0 items-center gap-2">
+                          <summary
+                            className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1 [&::-webkit-details-marker]:hidden"
+                            data-builder-project-node-impact-summary="single-row"
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                               <ListChecks aria-hidden className="size-4 shrink-0 text-primary" />
-                              <span className="truncate font-medium text-on-surface">节点影响</span>
-                              <Badge variant="outline">{selectedProjectExplorerDossier?.groupLabel ?? "项目"}</Badge>
-                            </div>
-                            <span className="hidden truncate text-[0.68rem] text-on-surface-variant md:block">
-                              路径、同步状态、打开标签和推荐工程任务
+                              <span className="min-w-0">
+                                <span className="block truncate font-medium text-on-surface">节点影响</span>
+                                <span className="block truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                                  路径、同步、标签和推荐任务
+                                </span>
+                              </span>
                             </span>
-                          </div>
-                          <div className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-container" data-builder-project-node-impact-list="" data-builder-project-node-impact-list-density="single-column-property-rows">
+                            <span className="flex shrink-0 items-center gap-1.5">
+                              <Badge variant="outline">{selectedProjectExplorerDossier?.groupLabel ?? "项目"}</Badge>
+                              <Badge variant="secondary">{selectedProjectExplorerImpactItems.length} 项</Badge>
+                            </span>
+                          </summary>
+                          <div className="mt-2 border-t border-outline-variant pt-2" data-builder-project-node-impact-details="deferred">
+                            <div className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-container" data-builder-project-node-impact-list="" data-builder-project-node-impact-list-density="single-column-property-rows">
                             {selectedProjectExplorerImpactItems.map((item) => {
                               const ImpactIcon = item.icon;
                               return (
@@ -37060,8 +37071,9 @@ export function BuilderShowcase() {
                                 </button>
                               );
                             })}
+                            </div>
                           </div>
-                        </section>
+                        </details>
                       ) : null}
                       {selectedProjectExplorerFile ? (
                         <div className="mt-3" data-builder-project-file-rename-editor="">
