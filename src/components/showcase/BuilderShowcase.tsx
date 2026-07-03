@@ -35986,19 +35986,20 @@ export function BuilderShowcase() {
               </section>
 
               <section
-                className="rounded-[24px] border border-outline-variant bg-surface-container p-4 shadow-m3-1"
+                className="rounded-lg border border-outline-variant bg-surface-container-low px-2 py-2"
                 data-builder-project-source-overview=""
                 data-builder-project-source-overview-count={projectSourceOverviewRows.length}
+                data-builder-project-source-overview-density="compact-table"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-1">
                   <div className="min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
                         <FileText aria-hidden className="size-4" />
                       </span>
                       <div className="min-w-0">
                         <h3 className="truncate text-sm font-semibold text-on-surface">项目源文件总览</h3>
-                        <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                        <p className="sr-only">
                           像桌面 IDE 一样集中查看 UI 文件、Rust 逻辑、后端集成、资源、发布配置和 `.nova` 本地状态，不再只依赖窄侧栏。
                         </p>
                       </div>
@@ -36014,8 +36015,12 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="mt-3 overflow-hidden rounded-[20px] border border-outline-variant bg-surface-container-low" data-builder-project-source-overview-table="">
-                  <div className="grid grid-cols-[minmax(0,1.35fr)_8rem_minmax(0,1.1fr)_auto] gap-3 border-b border-outline-variant bg-surface-container-high px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant max-lg:hidden">
+                <div
+                  className="mt-2 overflow-hidden rounded-md border border-outline-variant bg-surface-container"
+                  data-builder-project-source-overview-table=""
+                  data-builder-project-source-overview-table-density="compact-rows"
+                >
+                  <div className="grid h-7 grid-cols-[minmax(0,1.35fr)_7rem_minmax(0,1.1fr)_4.75rem] items-center gap-2 border-b border-outline-variant bg-surface-container-high px-2 text-[0.62rem] font-medium text-on-surface-variant max-lg:hidden">
                     <span>来源</span>
                     <span>状态</span>
                     <span>路径</span>
@@ -36027,47 +36032,54 @@ export function BuilderShowcase() {
                       return (
                         <article
                           key={row.id}
-                          className="grid gap-3 px-3 py-3 text-xs lg:grid-cols-[minmax(0,1.35fr)_8rem_minmax(0,1.1fr)_auto] lg:items-center"
+                          className="grid min-h-10 gap-2 px-2 py-1 text-xs lg:grid-cols-[minmax(0,1.35fr)_7rem_minmax(0,1.1fr)_4.75rem] lg:items-center"
                           data-builder-project-source-overview-row={row.id}
+                          data-builder-project-source-overview-row-density="compact-row"
                           data-builder-project-source-overview-scope={row.scope}
                           data-builder-project-source-overview-status={row.status}
                           data-builder-project-source-overview-metadata={row.scope === "metadata" ? "true" : undefined}
                         >
                           <button
                             type="button"
-                            className="focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-2xl px-2 py-2 text-left transition hover:bg-surface-container-high lg:-ml-2"
+                            className="focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md px-1 py-1 text-left transition hover:bg-surface-container-high lg:-ml-1"
+                            data-builder-project-source-overview-focus-density="flat-cell"
                             data-builder-project-source-overview-focus={row.nodeId}
                             title={row.detail}
                             onClick={() => focusProjectSourceOverviewRow(row)}
                           >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-primary">
-                              <RowIcon aria-hidden className="size-4" />
+                            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                              <RowIcon aria-hidden className="size-3.5" />
                             </span>
                             <span className="min-w-0">
-                              <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+                              <span className="flex min-w-0 items-center gap-1.5">
                                 <span className="truncate font-semibold text-on-surface">{row.title}</span>
                                 <Badge variant="outline" className="shrink-0 text-[0.58rem]">
                                   {row.kind}
                                 </Badge>
                               </span>
-                              <span className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{row.detail}</span>
+                              <span className="sr-only">{row.detail}</span>
                             </span>
                           </button>
-                          <div className="flex min-w-0 items-center gap-2 lg:block">
+                          <div className="flex min-w-0 items-center gap-1.5">
                             <Badge variant={projectSourceOverviewBadgeVariant(row.status)} className="shrink-0" data-builder-project-source-overview-state={row.status}>
                               {row.statusLabel}
                             </Badge>
-                            <span className="truncate text-[0.66rem] text-on-surface-variant lg:mt-1 lg:block">{row.scope}</span>
+                            <span className="truncate text-[0.66rem] text-on-surface-variant">{row.scope}</span>
                           </div>
-                          <div className="min-w-0 rounded-2xl bg-surface-container px-3 py-2" data-builder-project-source-overview-path="">
+                          <div
+                            className="min-w-0 rounded-md bg-transparent px-1 py-1"
+                            data-builder-project-source-overview-path=""
+                            data-builder-project-source-overview-path-density="single-line"
+                            title={row.path}
+                          >
                             <span className="block truncate font-mono text-[0.68rem] text-on-surface">{row.relativePath}</span>
-                            <span className="mt-0.5 block truncate font-mono text-[0.62rem] text-on-surface-variant">{row.path}</span>
+                            <span className="sr-only">{row.path}</span>
                           </div>
-                          <div className="flex shrink-0 items-center justify-end gap-1.5">
+                          <div className="flex shrink-0 items-center justify-end gap-1" data-builder-project-source-overview-actions-density="icon-strip">
                             <Button
                               size="icon-sm"
                               variant="ghost"
-                              className="size-8 rounded-xl"
+                              className="size-7 rounded-md"
                               aria-label={`复制 ${row.title} 的路径`}
                               title="复制路径"
                               data-builder-project-source-overview-copy={row.id}
@@ -36076,14 +36088,15 @@ export function BuilderShowcase() {
                               <ClipboardCopy aria-hidden className="size-4" />
                             </Button>
                             <Button
-                              size="sm"
+                              size="icon-sm"
                               variant="secondary"
-                              className="h-8 px-2.5 text-xs"
+                              className="size-7 rounded-md"
+                              aria-label={`打开 ${row.title}`}
+                              title={row.actionLabel}
                               data-builder-project-source-overview-open={row.id}
                               onClick={() => openProjectSourceOverviewRow(row)}
                             >
-                              <ArrowRight aria-hidden className="size-4" />
-                              {row.actionLabel}
+                              <ArrowRight aria-hidden className="size-3.5" />
                             </Button>
                           </div>
                         </article>

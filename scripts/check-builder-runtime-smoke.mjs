@@ -2178,6 +2178,19 @@ async function runProjectWorkspaceChecks(send, verified) {
       const nodes = Array.from(document.querySelectorAll("[data-builder-project-workspace-node]"));
       const topology = document.querySelector("[data-builder-project-topology]");
       const sourceOverview = document.querySelector("[data-builder-project-source-overview]");
+      const sourceOverviewTable = document.querySelector("[data-builder-project-source-overview-table]");
+      const sourceOverviewRows = Array.from(document.querySelectorAll("[data-builder-project-source-overview-row]"));
+      const compactSourceOverviewRows = sourceOverviewRows.filter(
+        (row) => row.getAttribute("data-builder-project-source-overview-row-density") === "compact-row",
+      );
+      const sourceOverviewMaxRowHeight = sourceOverviewRows.reduce(
+        (max, row) => Math.max(max, row.getBoundingClientRect().height),
+        0,
+      );
+      const sourceOverviewFocusCells = Array.from(document.querySelectorAll("[data-builder-project-source-overview-focus-density]"));
+      const sourceOverviewSingleLinePaths = Array.from(document.querySelectorAll("[data-builder-project-source-overview-path-density='single-line']"));
+      const sourceOverviewActionStrips = Array.from(document.querySelectorAll("[data-builder-project-source-overview-actions-density='icon-strip']"));
+      const sourceOverviewOpenButtons = Array.from(document.querySelectorAll("[data-builder-project-source-overview-open]"));
       const folderHealth = document.querySelector("[data-builder-project-folder-health]");
       const actionCenter = document.querySelector("[data-builder-project-action-center]");
       const workingSet = document.querySelector("[data-builder-project-working-set]");
@@ -2206,6 +2219,16 @@ async function runProjectWorkspaceChecks(send, verified) {
           nodes.length >= 6 &&
           topologyCount > 0 &&
           sourceCount > 0 &&
+          sourceOverview?.getAttribute("data-builder-project-source-overview-density") === "compact-table" &&
+          sourceOverviewTable?.getAttribute("data-builder-project-source-overview-table-density") === "compact-rows" &&
+          sourceOverviewRows.length === sourceCount &&
+          compactSourceOverviewRows.length === sourceOverviewRows.length &&
+          sourceOverviewFocusCells.length === sourceOverviewRows.length &&
+          sourceOverviewSingleLinePaths.length === sourceOverviewRows.length &&
+          sourceOverviewActionStrips.length === sourceOverviewRows.length &&
+          sourceOverviewOpenButtons.length === sourceOverviewRows.length &&
+          sourceOverviewOpenButtons.every((button) => Boolean(button.getAttribute("aria-label"))) &&
+          sourceOverviewMaxRowHeight <= 52 &&
           folderHealthCount >= 4 &&
           folderHealthRows.length === folderHealthCount &&
           ["root", "source", "generated", "metadata"].every((id) => folderHealthIds.includes(id)) &&
@@ -2222,7 +2245,7 @@ async function runProjectWorkspaceChecks(send, verified) {
           Boolean(workingSetOpen) &&
           Boolean(workingSetReveal) &&
           ownershipCount > 0,
-        detail: \`nodes=\${nodes.length}, topology=\${topologyCount}, source=\${sourceCount}, folderHealth=\${folderHealthCount}/\${folderHealthIds.join("/")}, actionCenter=\${actionCount}/\${actionKinds.join("/")}, runKit=\${actionRunKit}, workingSet=\${workingSetCount}, ownership=\${ownershipCount}\`
+        detail: \`nodes=\${nodes.length}, topology=\${topologyCount}, source=\${sourceCount}, sourceRows=\${compactSourceOverviewRows.length}/\${sourceOverviewRows.length}, sourceMaxRow=\${Math.round(sourceOverviewMaxRowHeight)}, folderHealth=\${folderHealthCount}/\${folderHealthIds.join("/")}, actionCenter=\${actionCount}/\${actionKinds.join("/")}, runKit=\${actionRunKit}, workingSet=\${workingSetCount}, ownership=\${ownershipCount}\`
       };
     })()`,
     "project workspace tree, topology, source overview, folder health, action center, working set, and ownership matrix",

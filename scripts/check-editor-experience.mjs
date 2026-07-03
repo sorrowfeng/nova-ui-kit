@@ -1152,9 +1152,14 @@ mustContain(builder, "projectSourceOverviewRows", "Project mode derives source, 
 mustContain(builder, "focusProjectSourceOverviewRow", "Project source overview can focus rows in the project tree");
 mustContain(builder, "openProjectSourceOverviewRow", "Project source overview can open UI, Rust, metadata, and build targets");
 mustContain(builder, "data-builder-project-source-overview", "Project workspace renders a central source-file overview");
+mustContain(builder, 'data-builder-project-source-overview-density="compact-table"', "Project source overview uses compact IDE table density");
+mustContain(builder, 'data-builder-project-source-overview-table-density="compact-rows"', "Project source overview table uses compact rows");
 mustContain(builder, "data-builder-project-source-overview-row", "Project source overview exposes per-source rows");
+mustContain(builder, 'data-builder-project-source-overview-row-density="compact-row"', "Project source overview rows are compact table rows");
 mustContain(builder, "data-builder-project-source-overview-status", "Project source overview exposes row sync status");
 mustContain(builder, "data-builder-project-source-overview-metadata", "Project source overview explicitly marks .nova metadata");
+mustContain(builder, 'data-builder-project-source-overview-path-density="single-line"', "Project source overview paths stay single-line in the default table");
+mustContain(builder, 'data-builder-project-source-overview-actions-density="icon-strip"', "Project source overview actions use a compact icon strip");
 mustContain(builder, "data-builder-project-source-overview-open", "Project source overview rows expose open actions");
 mustContain(builder, 'id: "project-source-overview"', "Editor experience audit checks project source overview");
 mustContain(builder, "type ProjectWorkingSetItem", "Project mode models a Qt Creator style working set");
