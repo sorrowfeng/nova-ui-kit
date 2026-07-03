@@ -4798,6 +4798,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       const settingsDetails = document.querySelector("[data-builder-release-settings-shortcut-details]");
       const generatedPlan = document.querySelector("[data-builder-generated-file-plan]");
       const generatedStatus = document.querySelector("[data-builder-generated-plan-status]");
+      const generatedDetails = document.querySelector("[data-builder-generated-file-plan-details]");
       const changeImpact = document.querySelector("[data-builder-change-impact]");
       const changeImpactSummary = document.querySelector("[data-builder-change-impact-summary]");
       const changeImpactDetails = document.querySelector("[data-builder-change-impact-details]");
@@ -4826,6 +4827,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       const buildTargetRect = buildTargetDock?.getBoundingClientRect();
       const qualityRect = qualityDock?.getBoundingClientRect();
       const assistRect = assistDock?.getBoundingClientRect();
+      const generatedPlanRect = generatedPlan?.getBoundingClientRect();
       const generatedStatusRect = generatedStatus?.getBoundingClientRect();
       const changeImpactRect = changeImpact?.getBoundingClientRect();
       const releaseReadinessRect = releaseReadiness?.getBoundingClientRect();
@@ -4886,9 +4888,15 @@ async function runShellCommandPlacementChecks(send, verified) {
         parityItems.length >= 4 &&
         Boolean(parityRect && parityRect.height <= 62);
       const generatedPlanCompact =
-        generatedPlan?.getAttribute("data-builder-generated-file-plan-density") === "compact-output-pane" &&
+        generatedPlan?.tagName === "DETAILS" &&
+        !generatedPlan.hasAttribute("open") &&
+        generatedPlan?.getAttribute("data-builder-generated-file-plan-density") === "collapsed-summary" &&
+        generatedPlan?.getAttribute("data-builder-generated-file-plan-surface") === "compact-output-pane" &&
         generatedStatus?.getAttribute("data-builder-generated-plan-status-density") === "single-row" &&
-        Boolean(generatedStatusRect && generatedStatusRect.height <= 48);
+        generatedStatus?.getAttribute("data-builder-generated-plan-summary") === "single-row" &&
+        generatedDetails?.getAttribute("data-builder-generated-file-plan-details") === "deferred" &&
+        Boolean(generatedStatusRect && generatedStatusRect.height <= 56) &&
+        Boolean(generatedPlanRect && generatedPlanRect.height <= 76);
       const changeImpactCollapsedDefault =
         changeImpact?.tagName === "DETAILS" &&
         !changeImpact.hasAttribute("open") &&
@@ -4955,12 +4963,41 @@ async function runShellCommandPlacementChecks(send, verified) {
           activityTimelineCollapsedDefault &&
           buildHistoryCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
   );
   verified.buildOutputSidebarLowChromeRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-generated-plan-status]")`, "build generated file plan summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-generated-file-plan]")?.hasAttribute("open") === true`,
+    "expanded generated file plan details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const generatedPlan = document.querySelector("[data-builder-generated-file-plan]");
+      const details = document.querySelector("[data-builder-generated-file-plan-details]");
+      const changeImpact = document.querySelector("[data-builder-change-impact]");
+      const dependencyGraph = document.querySelector("[data-builder-dependency-graph]");
+      const emptyState = details?.textContent || "";
+      const detailsRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          generatedPlan?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-generated-file-plan-details") === "deferred" &&
+          Boolean(changeImpact) &&
+          Boolean(dependencyGraph) &&
+          (/尚未生成文件计划/.test(emptyState) || Boolean(document.querySelector("[data-builder-generated-file]"))) &&
+          Boolean(detailsRect && detailsRect.height > 100),
+        detail: \`open=\${generatedPlan?.hasAttribute("open")}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, impact=\${Boolean(changeImpact)}, dependency=\${Boolean(dependencyGraph)}\`
+      };
+    })()`,
+    "build generated file plan expands to deferred plan details",
+  );
+  verified.buildGeneratedFilePlanRuntime = true;
   await clickElementCenter(send, `document.querySelector("[data-builder-change-impact-summary]")`, "build change impact summary");
   await waitFor(
     send,

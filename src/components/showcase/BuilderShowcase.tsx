@@ -45518,17 +45518,20 @@ export function BuilderShowcase() {
                   </Button>
                 </div>
               </div>
-              <div
-                className="rounded-lg border border-outline-variant bg-surface-container-low/80 p-2.5"
+              <details
+                className="group rounded-lg border border-outline-variant bg-surface-container-low/80 p-2.5 text-xs"
                 data-builder-generated-file-plan=""
-                data-builder-generated-file-plan-density="compact-output-pane"
+                data-builder-generated-file-plan-density="collapsed-summary"
+                data-builder-generated-file-plan-surface="compact-output-pane"
               >
-                <div
-                  className="mb-2 flex min-w-0 flex-col gap-2 rounded-md border border-outline-variant bg-surface-container px-2 py-1.5 text-xs lg:flex-row lg:items-center lg:justify-between"
+                <summary
+                  className="focus-ring flex min-h-9 cursor-pointer list-none flex-col gap-2 rounded-md border border-outline-variant bg-surface-container px-2 py-1.5 transition hover:bg-surface-container-high lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden"
                   data-builder-generated-plan-status=""
                   data-builder-generated-plan-status-density="single-row"
+                  data-builder-generated-plan-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                     <span
                       className={cn(
                         "flex size-7 shrink-0 items-center justify-center rounded-lg border",
@@ -45565,7 +45568,10 @@ export function BuilderShowcase() {
                       data-builder-generated-plan-primary=""
                       loading={previewingGeneratedFiles || applyingGeneratedFiles}
                       disabled={generatedPlanBusy}
-                      onClick={() => enqueueProjectTask(generatedPlanPrimaryAction)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        enqueueProjectTask(generatedPlanPrimaryAction);
+                      }}
                     >
                       {projectChangeImpact.status === "dirty" ? <Download aria-hidden className="size-3.5" /> : <Play aria-hidden className="size-3.5" />}
                       {generatedPlanPrimaryLabel}
@@ -45575,7 +45581,10 @@ export function BuilderShowcase() {
                       variant="ghost"
                       className="h-7 px-2 text-[0.68rem]"
                       data-builder-generated-plan-tasks=""
-                      onClick={() => openRelevantTaskDock()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openRelevantTaskDock();
+                      }}
                     >
                       <ClipboardCopy aria-hidden className="size-3.5" />
                       任务
@@ -45592,7 +45601,8 @@ export function BuilderShowcase() {
                       高级
                     </Button>
                   </div>
-                </div>
+                </summary>
+                <div className="mt-2 border-t border-outline-variant pt-2" data-builder-generated-file-plan-details="deferred">
                 {showGeneratedPlanAdvanced ? (
                   <div className="mb-4 border-t border-outline-variant pt-3" data-builder-generated-plan-advanced="">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -46145,7 +46155,8 @@ export function BuilderShowcase() {
                     尚未生成文件计划。点击“生成计划”可以在写盘和构建前查看目标文件树。
                   </div>
                 )}
-              </div>
+                </div>
+              </details>
               <details
                 className="group rounded-lg border border-outline-variant bg-surface-container-low/80 text-xs"
                 data-builder-release-readiness=""
