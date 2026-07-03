@@ -4818,6 +4818,10 @@ async function runShellCommandPlacementChecks(send, verified) {
       const buildHistorySummary = document.querySelector("[data-builder-build-history-summary]");
       const buildHistoryDetails = document.querySelector("[data-builder-build-history-details]");
       const buildHistoryInline = document.querySelector("[data-builder-build-history-summary-detail]");
+      const releasePipelines = document.querySelector("[data-builder-release-pipelines]");
+      const releasePipelinesSummary = document.querySelector("[data-builder-release-pipelines-summary]");
+      const releasePipelinesDetails = document.querySelector("[data-builder-release-pipelines-details]");
+      const releasePipelinesInline = document.querySelector("[data-builder-release-pipelines-summary-detail]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4834,9 +4838,11 @@ async function runShellCommandPlacementChecks(send, verified) {
       const visualAuditRect = visualAudit?.getBoundingClientRect();
       const activityTimelineRect = activityTimeline?.getBoundingClientRect();
       const buildHistoryRect = buildHistory?.getBoundingClientRect();
+      const releasePipelinesRect = releasePipelines?.getBoundingClientRect();
       const visualAuditDetailsStyle = visualAuditDetails ? getComputedStyle(visualAuditDetails) : null;
       const activityTimelineDetailsStyle = activityTimelineDetails ? getComputedStyle(activityTimelineDetails) : null;
       const buildHistoryDetailsStyle = buildHistoryDetails ? getComputedStyle(buildHistoryDetails) : null;
+      const releasePipelinesDetailsStyle = releasePipelinesDetails ? getComputedStyle(releasePipelinesDetails) : null;
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4939,6 +4945,15 @@ async function runShellCommandPlacementChecks(send, verified) {
         buildHistoryInline?.getAttribute("data-builder-build-history-summary-detail") === "compact-inline" &&
         buildHistoryDetailsStyle?.display === "none" &&
         Boolean(buildHistoryRect && buildHistoryRect.height <= 52);
+      const releasePipelinesCollapsedDefault =
+        releasePipelines?.tagName === "DETAILS" &&
+        !releasePipelines.hasAttribute("open") &&
+        releasePipelines.getAttribute("data-builder-release-pipelines-density") === "collapsed-summary" &&
+        releasePipelinesSummary?.getAttribute("data-builder-release-pipelines-summary") === "single-row" &&
+        releasePipelinesDetails?.getAttribute("data-builder-release-pipelines-details") === "deferred" &&
+        releasePipelinesInline?.getAttribute("data-builder-release-pipelines-summary-detail") === "compact-inline" &&
+        releasePipelinesDetailsStyle?.display === "none" &&
+        Boolean(releasePipelinesRect && releasePipelinesRect.height <= 68);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4962,8 +4977,9 @@ async function runShellCommandPlacementChecks(send, verified) {
           visualAuditCollapsedDefault &&
           activityTimelineCollapsedDefault &&
           buildHistoryCollapsedDefault &&
+          releasePipelinesCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, pipelineHeight=\${Math.round(releasePipelinesRect?.height || 0)}, pipelineCollapsed=\${releasePipelinesCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -5379,6 +5395,40 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-task-center]")?.hasAttribute("open") === false`,
     "collapsed build task center",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-pipelines-summary]")`, "build release pipelines summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-pipelines]")?.hasAttribute("open") === true`,
+    "expanded build release pipelines",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const pipelines = document.querySelector("[data-builder-release-pipelines]");
+      const details = document.querySelector("[data-builder-release-pipelines-details]");
+      const refresh = document.querySelector("[data-builder-refresh-release-pipelines]");
+      const records = Array.from(document.querySelectorAll("[data-builder-release-pipeline]"));
+      const empty = details?.textContent || "";
+      const detailRect = details?.getBoundingClientRect();
+      return {
+        passed:
+          pipelines?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-release-pipelines-details") === "deferred" &&
+          Boolean(refresh) &&
+          (/发布流水线/.test(empty) || /还没有发布流水线/.test(empty) || records.length > 0) &&
+          Boolean(detailRect && detailRect.height > 60),
+        detail: \`open=\${pipelines?.hasAttribute("open")}, detailsHeight=\${Math.round(detailRect?.height || 0)}, refresh=\${Boolean(refresh)}, records=\${records.length}\`
+      };
+    })()`,
+    "build release pipelines expand to deferred records on demand",
+  );
+  verified.buildReleasePipelinesRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-release-pipelines-summary]")`, "collapse build release pipelines summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-release-pipelines]")?.hasAttribute("open") === false`,
+    "collapsed build release pipelines",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(

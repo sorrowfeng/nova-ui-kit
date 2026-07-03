@@ -45042,21 +45042,53 @@ export function BuilderShowcase() {
                 </div>
                 </div>
               </details>
-              <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-release-pipelines="">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布流水线</h3>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+              <details
+                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                data-builder-release-pipelines=""
+                data-builder-release-pipelines-density="collapsed-summary"
+              >
+                <summary
+                  className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-[17px] px-3 py-2 text-xs transition-colors hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-release-pipelines-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-primary">
+                      <GitBranch aria-hidden className="size-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布流水线</h3>
+                        <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
+                          {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
+                        </Badge>
+                      </div>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        {latestReleasePipeline ? latestReleasePipeline.summary : "按需展开查看流水线记录和复跑入口"}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className="hidden shrink-0 items-center gap-1.5 sm:flex"
+                    data-builder-release-pipelines-summary-detail="compact-inline"
+                  >
+                    <Badge variant="outline" className="px-1.5 text-[0.62rem]">
+                      {activeProject.releasePipelineHistory?.length ?? 0} 条
+                    </Badge>
+                    <Badge variant={refreshingPipelineRecords ? "secondary" : "outline"} className="px-1.5 text-[0.62rem]">
+                      {refreshingPipelineRecords ? "刷新中" : activeProject.rootPath ? "可刷新" : "本地"}
+                    </Badge>
+                  </span>
+                </summary>
+                <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-release-pipelines-details="deferred">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <p className="min-w-0 text-xs leading-5 text-on-surface-variant">
                       每次运行 preset 都会归档为一条流水线，聚合步骤、日志、失败点和最终产物。
                     </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
-                      {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
-                    </Badge>
                     <Button
                       size="sm"
                       variant="ghost"
+                      className="shrink-0"
                       data-builder-refresh-release-pipelines=""
                       loading={refreshingPipelineRecords}
                       disabled={refreshingPipelineRecords || !activeProject.rootPath}
@@ -45066,9 +45098,8 @@ export function BuilderShowcase() {
                       刷新
                     </Button>
                   </div>
-                </div>
-                {activeProject.releasePipelineHistory?.length ? (
-                  <div className="space-y-3">
+                  {activeProject.releasePipelineHistory?.length ? (
+                    <div className="space-y-3">
                     {activeProject.releasePipelineHistory.slice(0, 4).map((entry) => (
                       <article key={entry.id} className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs" data-builder-release-pipeline={entry.id}>
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -45191,13 +45222,14 @@ export function BuilderShowcase() {
                         </div>
                       </article>
                     ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs leading-5 text-on-surface-variant">
-                    还没有发布流水线。运行设计预检、发布 exe 或安装包流水线后会在这里留下完整记录。
-                  </div>
-                )}
-              </section>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs leading-5 text-on-surface-variant">
+                      还没有发布流水线。运行设计预检、发布 exe 或安装包流水线后会在这里留下完整记录。
+                    </div>
+                  )}
+                </div>
+              </details>
               <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
                 <Button variant="secondary" data-builder-save-disk="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy}>
                   <Save aria-hidden className="size-4" />
