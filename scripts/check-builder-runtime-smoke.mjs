@@ -4805,6 +4805,10 @@ async function runShellCommandPlacementChecks(send, verified) {
       const releaseReadinessSummary = document.querySelector("[data-builder-release-readiness-summary]");
       const releaseReadinessDetails = document.querySelector("[data-builder-release-readiness-details]");
       const releaseReadinessInline = document.querySelector("[data-builder-release-readiness-summary-detail]");
+      const visualAudit = document.querySelector("[data-builder-visual-audit]");
+      const visualAuditSummary = document.querySelector("[data-builder-visual-audit-summary]");
+      const visualAuditDetails = document.querySelector("[data-builder-visual-audit-details]");
+      const visualAuditInline = document.querySelector("[data-builder-visual-audit-summary-detail]");
       const outputRect = outputSidebar?.getBoundingClientRect();
       const sidebarRect = sidebar?.getBoundingClientRect();
       const mainRect = mainPane?.getBoundingClientRect();
@@ -4817,6 +4821,8 @@ async function runShellCommandPlacementChecks(send, verified) {
       const generatedStatusRect = generatedStatus?.getBoundingClientRect();
       const changeImpactRect = changeImpact?.getBoundingClientRect();
       const releaseReadinessRect = releaseReadiness?.getBoundingClientRect();
+      const visualAuditRect = visualAudit?.getBoundingClientRect();
+      const visualAuditDetailsStyle = visualAuditDetails ? getComputedStyle(visualAuditDetails) : null;
       const outputClearance =
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
@@ -4886,6 +4892,15 @@ async function runShellCommandPlacementChecks(send, verified) {
         releaseReadinessDetails?.getAttribute("data-builder-release-readiness-details") === "deferred" &&
         releaseReadinessInline?.getAttribute("data-builder-release-readiness-summary-detail") === "compact-inline" &&
         Boolean(releaseReadinessRect && releaseReadinessRect.height <= 52);
+      const visualAuditCollapsedDefault =
+        visualAudit?.tagName === "DETAILS" &&
+        !visualAudit.hasAttribute("open") &&
+        visualAudit.getAttribute("data-builder-visual-audit-density") === "collapsed-default" &&
+        visualAuditSummary?.getAttribute("data-builder-visual-audit-summary") === "single-row" &&
+        visualAuditDetails?.getAttribute("data-builder-visual-audit-details") === "deferred" &&
+        visualAuditInline?.getAttribute("data-builder-visual-audit-summary-detail") === "compact-inline" &&
+        visualAuditDetailsStyle?.display === "none" &&
+        Boolean(visualAuditRect && visualAuditRect.height <= 52);
       const toolbarStyle = toolbar ? getComputedStyle(toolbar) : null;
       return {
         passed:
@@ -4906,8 +4921,9 @@ async function runShellCommandPlacementChecks(send, verified) {
           generatedPlanCompact &&
           changeImpactCollapsedDefault &&
           releaseReadinessCollapsedDefault &&
+          visualAuditCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",
@@ -4976,6 +4992,43 @@ async function runShellCommandPlacementChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-release-readiness]")?.hasAttribute("open") === false`,
     "collapsed build release readiness details",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-visual-audit-summary]")`, "build visual audit summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-visual-audit]")?.hasAttribute("open") === true`,
+    "expanded build visual audit details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const visualAudit = document.querySelector("[data-builder-visual-audit]");
+      const details = document.querySelector("[data-builder-visual-audit-details]");
+      const inline = document.querySelector("[data-builder-visual-audit-summary-detail]");
+      const focusActions = Array.from(document.querySelectorAll("[data-builder-focus-audit-issue]"));
+      const detailsRect = details?.getBoundingClientRect();
+      const detailsStyle = details ? getComputedStyle(details) : null;
+      const text = details?.textContent || "";
+      return {
+        passed:
+          visualAudit?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-visual-audit-details") === "deferred" &&
+          inline?.getAttribute("data-builder-visual-audit-summary-detail") === "compact-inline" &&
+          detailsStyle?.display !== "none" &&
+          /文件/.test(text) &&
+          /控件/.test(text) &&
+          (focusActions.length >= 1 || /没有发现明显视觉风险/.test(text)) &&
+          Boolean(detailsRect && detailsRect.height > 120),
+        detail: \`open=\${visualAudit?.hasAttribute("open")}, display=\${detailsStyle?.display || "missing"}, detailsHeight=\${Math.round(detailsRect?.height || 0)}, focusActions=\${focusActions.length}\`
+      };
+    })()`,
+    "build visual audit expands on demand",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-visual-audit-summary]")`, "collapse build visual audit summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-visual-audit]")?.hasAttribute("open") === false`,
+    "collapsed build visual audit details",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-release-settings-shortcut-summary]")`, "build release settings summary");
   await waitFor(

@@ -46216,24 +46216,44 @@ export function BuilderShowcase() {
                 </div>
                 </div>
               </details>
-              <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-visual-audit="">
-                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <h2 className="text-sm font-medium">目标窗口视觉校验</h2>
-                    <p className="mt-1 text-xs leading-5 text-on-surface-variant">在编译前检查生成窗口的溢出、重叠、尺寸、文本和 Frame 布局风险。</p>
-                  </div>
-                  <Badge
-                    variant={
-                      windowVisualAudit.errorCount > 0
-                        ? "destructive"
-                        : windowVisualAudit.warningCount > 0
-                          ? "outline"
-                          : "secondary"
-                    }
-                  >
-                    {windowVisualAudit.score}%
-                  </Badge>
-                </div>
+              <details
+                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                data-builder-visual-audit=""
+                data-builder-visual-audit-density="collapsed-default"
+              >
+                <summary
+                  className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs transition hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-visual-audit-summary="single-row"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <ListChecks aria-hidden className="size-4 shrink-0 text-primary" />
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-on-surface">目标窗口视觉校验</span>
+                      <span className="block truncate text-[0.68rem] text-on-surface-variant">
+                        溢出、重叠、尺寸、文本和 Frame 布局风险
+                      </span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5" data-builder-visual-audit-summary-detail="compact-inline">
+                    <Badge
+                      variant={
+                        windowVisualAudit.errorCount > 0
+                          ? "destructive"
+                          : windowVisualAudit.warningCount > 0
+                            ? "outline"
+                            : "secondary"
+                      }
+                    >
+                      {windowVisualAudit.score}%
+                    </Badge>
+                    <Badge variant="outline">{windowVisualAudit.checkedFiles} 文件</Badge>
+                    <Badge variant="outline">{windowVisualAudit.checkedItems} 控件</Badge>
+                    <Badge variant={windowVisualAudit.errorCount > 0 ? "destructive" : "secondary"}>{windowVisualAudit.errorCount} 错误</Badge>
+                    <Badge variant={windowVisualAudit.warningCount > 0 ? "outline" : "secondary"}>{windowVisualAudit.warningCount} 警告</Badge>
+                  </span>
+                </summary>
+                <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-visual-audit-details="deferred">
                 <Progress value={windowVisualAudit.score} />
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
                   <div className="rounded-2xl bg-surface-container p-3">
@@ -46565,6 +46585,7 @@ export function BuilderShowcase() {
                   </section>
                 ) : null}
               </div>
+              </details>
               <div className="rounded-[24px] border border-outline-variant bg-surface-container-low p-4" data-builder-activity-timeline="">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
