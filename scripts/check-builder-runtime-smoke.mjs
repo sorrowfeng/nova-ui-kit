@@ -4899,6 +4899,9 @@ async function runShellCommandPlacementChecks(send, verified) {
       const artifactActionButtons = artifactActions ? Array.from(artifactActions.querySelectorAll("button")) : [];
       const buildSidebarActions = document.querySelector("[data-builder-build-sidebar-actions]");
       const buildSidebarActionButtons = buildSidebarActions ? Array.from(buildSidebarActions.querySelectorAll("button")) : [];
+      const sidebarSections = Array.from(document.querySelectorAll("[data-builder-build-sidebar-section-density]"));
+      const sidebarSectionSummaries = Array.from(document.querySelectorAll("[data-builder-build-sidebar-section-summary]"));
+      const sidebarSectionRects = sidebarSections.map((section) => section.getBoundingClientRect());
       const settingsShortcut = document.querySelector("[data-builder-release-settings-shortcut]");
       const buildTargetDock = document.querySelector("[data-builder-build-target-dock]");
       const buildTargetSummary = document.querySelector("[data-builder-build-target-dock-summary]");
@@ -4947,6 +4950,10 @@ async function runShellCommandPlacementChecks(send, verified) {
       const buildHistorySummary = document.querySelector("[data-builder-build-history-summary]");
       const buildHistoryDetails = document.querySelector("[data-builder-build-history-details]");
       const buildHistoryInline = document.querySelector("[data-builder-build-history-summary-detail]");
+      const taskCenter = document.querySelector("[data-builder-task-center]");
+      const taskCenterSummary = document.querySelector("[data-builder-build-task-center-summary]");
+      const taskCenterDetails = document.querySelector("[data-builder-build-task-center-details]");
+      const taskCenterInline = document.querySelector("[data-builder-build-task-center-summary-detail]");
       const releasePipelines = document.querySelector("[data-builder-release-pipelines]");
       const releasePipelinesSummary = document.querySelector("[data-builder-release-pipelines-summary]");
       const releasePipelinesDetails = document.querySelector("[data-builder-release-pipelines-details]");
@@ -4975,6 +4982,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       const visualAuditRect = visualAudit?.getBoundingClientRect();
       const activityTimelineRect = activityTimeline?.getBoundingClientRect();
       const buildHistoryRect = buildHistory?.getBoundingClientRect();
+      const taskCenterRect = taskCenter?.getBoundingClientRect();
       const releasePipelinesRect = releasePipelines?.getBoundingClientRect();
       const buildLogRect = buildLogPanel?.getBoundingClientRect();
       const visualAuditDetailsStyle = visualAuditDetails ? getComputedStyle(visualAuditDetails) : null;
@@ -4986,6 +4994,12 @@ async function runShellCommandPlacementChecks(send, verified) {
         Boolean(outputDockRect) &&
         (sidebarRect?.bottom || 9999) <= outputDockRect.top &&
         (mainRect?.bottom || 9999) <= outputDockRect.top;
+      const thinSidebarSectionRows =
+        sidebarSections.length >= 6 &&
+        sidebarSections.every((section) => section.getAttribute("data-builder-build-sidebar-section-density") === "thin-outline-row") &&
+        sidebarSectionSummaries.length >= 6 &&
+        sidebarSectionSummaries.every((summary) => summary.getAttribute("data-builder-build-sidebar-section-summary") === "one-line") &&
+        sidebarSectionRects.every((rect) => rect.height <= 44);
       const settingsCollapsedDefault =
         settingsShortcut?.tagName === "DETAILS" &&
         !settingsShortcut.hasAttribute("open") &&
@@ -5093,15 +5107,25 @@ async function runShellCommandPlacementChecks(send, verified) {
         buildHistoryInline?.getAttribute("data-builder-build-history-summary-detail") === "compact-inline" &&
         buildHistoryDetailsStyle?.display === "none" &&
         Boolean(buildHistoryRect && buildHistoryRect.height <= 52);
+      const taskCenterCollapsedDefault =
+        taskCenter?.tagName === "DETAILS" &&
+        !taskCenter.hasAttribute("open") &&
+        taskCenter.getAttribute("data-builder-build-task-center-density") === "collapsed-summary" &&
+        taskCenterSummary?.getAttribute("data-builder-build-task-center-summary") === "single-row" &&
+        taskCenterSummary?.getAttribute("data-builder-build-sidebar-section-summary") === "one-line" &&
+        taskCenterDetails?.getAttribute("data-builder-build-task-center-details") === "deferred" &&
+        taskCenterInline?.getAttribute("data-builder-build-task-center-summary-detail") === "compact-inline" &&
+        Boolean(taskCenterRect && taskCenterRect.height <= 44);
       const releasePipelinesCollapsedDefault =
         releasePipelines?.tagName === "DETAILS" &&
         !releasePipelines.hasAttribute("open") &&
         releasePipelines.getAttribute("data-builder-release-pipelines-density") === "collapsed-summary" &&
         releasePipelinesSummary?.getAttribute("data-builder-release-pipelines-summary") === "single-row" &&
+        releasePipelinesSummary?.getAttribute("data-builder-build-sidebar-section-summary") === "one-line" &&
         releasePipelinesDetails?.getAttribute("data-builder-release-pipelines-details") === "deferred" &&
         releasePipelinesInline?.getAttribute("data-builder-release-pipelines-summary-detail") === "compact-inline" &&
         releasePipelinesDetailsStyle?.display === "none" &&
-        Boolean(releasePipelinesRect && releasePipelinesRect.height <= 68);
+        Boolean(releasePipelinesRect && releasePipelinesRect.height <= 44);
       const buildLogCollapsedDefault =
         buildLogPanel?.tagName === "DETAILS" &&
         !buildLogPanel.hasAttribute("open") &&
@@ -5129,6 +5153,7 @@ async function runShellCommandPlacementChecks(send, verified) {
           buildSidebarActions?.getAttribute("data-builder-build-sidebar-actions-density") === "single-row-icons" &&
           buildSidebarActionButtons.length === 4 &&
           buildSidebarActionButtons.every((button) => Boolean(button.getAttribute("aria-label"))) &&
+          thinSidebarSectionRows &&
           Boolean(outputHeaderRect && outputHeaderRect.height <= 36) &&
           Boolean(artifactActionsRect && artifactActionsRect.height <= 38) &&
           Boolean(buildSidebarActionsRect && buildSidebarActionsRect.height <= 38) &&
@@ -5146,10 +5171,11 @@ async function runShellCommandPlacementChecks(send, verified) {
           visualAuditCollapsedDefault &&
           activityTimelineCollapsedDefault &&
           buildHistoryCollapsedDefault &&
+          taskCenterCollapsedDefault &&
           releasePipelinesCollapsedDefault &&
           buildLogCollapsedDefault &&
           Boolean(toolbarStyle && toolbarStyle.boxShadow === "none"),
-        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, outputHeader=\${Math.round(outputHeaderRect?.height || 0)}, artifactActions=\${artifactActions?.getAttribute("data-builder-build-artifact-actions") || "missing"}/\${artifactActions?.getAttribute("data-builder-build-artifact-actions-density") || "missing"}/\${Math.round(artifactActionsRect?.height || 0)}px/\${artifactActionButtons.length}, sidebarActions=\${buildSidebarActions?.getAttribute("data-builder-build-sidebar-actions") || "missing"}/\${buildSidebarActions?.getAttribute("data-builder-build-sidebar-actions-density") || "missing"}/\${Math.round(buildSidebarActionsRect?.height || 0)}px/\${buildSidebarActionButtons.length}, runtimeHeight=\${Math.round(mainRect?.height || 0)}, runtimeConsoleHeight=\${Math.round(runtimeConsoleRect?.height || 0)}, runtimeConsoleCollapsed=\${runtimeConsoleCollapsedDefault}, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, pipelineHeight=\${Math.round(releasePipelinesRect?.height || 0)}, pipelineCollapsed=\${releasePipelinesCollapsedDefault}, buildLogHeight=\${Math.round(buildLogRect?.height || 0)}, buildLogCollapsed=\${buildLogCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
+        detail: \`workspace=\${workspace?.getAttribute("data-builder-build-sidebar-density") || "missing"}, clearance=\${workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") || "missing"}, outputClearance=\${outputClearance}, sidebarBottom=\${Math.round(sidebarRect?.bottom || 0)}, mainBottom=\${Math.round(mainRect?.bottom || 0)}, dockTop=\${Math.round(outputDockRect?.top || 0)}, output=\${Math.round(outputRect?.width || 0)}px, outputHeader=\${Math.round(outputHeaderRect?.height || 0)}, artifactActions=\${artifactActions?.getAttribute("data-builder-build-artifact-actions") || "missing"}/\${artifactActions?.getAttribute("data-builder-build-artifact-actions-density") || "missing"}/\${Math.round(artifactActionsRect?.height || 0)}px/\${artifactActionButtons.length}, sidebarActions=\${buildSidebarActions?.getAttribute("data-builder-build-sidebar-actions") || "missing"}/\${buildSidebarActions?.getAttribute("data-builder-build-sidebar-actions-density") || "missing"}/\${Math.round(buildSidebarActionsRect?.height || 0)}px/\${buildSidebarActionButtons.length}, thinRows=\${thinSidebarSectionRows}/\${sidebarSections.length}/\${Math.round(Math.max(0, ...sidebarSectionRects.map((rect) => rect.height)))}, runtimeHeight=\${Math.round(mainRect?.height || 0)}, runtimeConsoleHeight=\${Math.round(runtimeConsoleRect?.height || 0)}, runtimeConsoleCollapsed=\${runtimeConsoleCollapsedDefault}, settingsHeight=\${Math.round(settingsRect?.height || 0)}, settingsCollapsed=\${settingsCollapsedDefault}, targetHeight=\${Math.round(buildTargetRect?.height || 0)}, targetCollapsed=\${buildTargetCollapsedDefault}, qualityHeight=\${Math.round(qualityRect?.height || 0)}, qualityCollapsed=\${qualityDockCollapsedDefault}, assistHeight=\${Math.round(assistRect?.height || 0)}, assistCollapsed=\${assistDockCollapsedDefault}, taskCenterHeight=\${Math.round(taskCenterRect?.height || 0)}, taskCenterCollapsed=\${taskCenterCollapsedDefault}, pipelineHeight=\${Math.round(releasePipelinesRect?.height || 0)}, pipelineCollapsed=\${releasePipelinesCollapsedDefault}, buildLogHeight=\${Math.round(buildLogRect?.height || 0)}, buildLogCollapsed=\${buildLogCollapsedDefault}, parityHeight=\${Math.round(parityRect?.height || 0)}, parityCollapsed=\${parityCollapsedDefault}, planOuterHeight=\${Math.round(generatedPlanRect?.height || 0)}, planStatusHeight=\${Math.round(generatedStatusRect?.height || 0)}, planCompact=\${generatedPlanCompact}, impactHeight=\${Math.round(changeImpactRect?.height || 0)}, impactCollapsed=\${changeImpactCollapsedDefault}, releaseHeight=\${Math.round(releaseReadinessRect?.height || 0)}, releaseCollapsed=\${releaseReadinessCollapsedDefault}, visualAuditHeight=\${Math.round(visualAuditRect?.height || 0)}, visualAuditCollapsed=\${visualAuditCollapsedDefault}, activityHeight=\${Math.round(activityTimelineRect?.height || 0)}, activityCollapsed=\${activityTimelineCollapsedDefault}, historyHeight=\${Math.round(buildHistoryRect?.height || 0)}, historyCollapsed=\${buildHistoryCollapsedDefault}, shadow=\${toolbarStyle?.boxShadow || "missing"}\`
       };
     })()`,
     "build output sidebar uses low chrome compact IDE layout",

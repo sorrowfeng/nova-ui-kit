@@ -43298,20 +43298,22 @@ export function BuilderShowcase() {
                 ) : null}
               </div>
               <details
-                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-release-settings-shortcut=""
                 data-builder-release-settings-shortcut-density="collapsed-summary"
                 data-builder-release-settings-shortcut-state="collapsed-default"
               >
                 <summary
-                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-release-settings-shortcut-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                     <div className="min-w-0">
-                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置</h3>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">Release config 由 Project Dock 管理，展开查看当前目标。</p>
+                      <h3 className="truncate text-xs font-medium text-on-surface">项目设置</h3>
+                      <p className="sr-only">Release config 由 Project Dock 管理，展开查看当前目标。</p>
                     </div>
                   </div>
                   <Badge variant="outline" className="shrink-0">
@@ -43811,20 +43813,22 @@ export function BuilderShowcase() {
                 </div>
               ) : null}
               <details
-                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-build-target-dock=""
                 data-builder-build-target-dock-density="collapsed-summary"
                 data-builder-build-target-dock-state="collapsed-default"
               >
                 <summary
-                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-build-target-dock-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                     <div className="min-w-0">
-                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">生成目标</h3>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                      <h3 className="truncate text-xs font-medium text-on-surface">生成目标</h3>
+                      <p className="sr-only">
                         {latestGeneratedFileSummary
                           ? `${latestGeneratedFileSummary.total_count} 目标 · ${latestGeneratedFileSummary.changed_count} 变更`
                           : `${buildReadinessSummary.score}% 就绪 · 展开查看增量和修复计划`}
@@ -44080,20 +44084,22 @@ export function BuilderShowcase() {
                 </div>
               </details>
               <details
-                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-build-quality-dock=""
                 data-builder-build-quality-dock-density="collapsed-summary"
                 data-builder-build-quality-dock-state="collapsed-default"
               >
                 <summary
-                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-build-quality-dock-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                     <div className="min-w-0">
-                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">诊断 / 体验审计</h3>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                      <h3 className="truncate text-xs font-medium text-on-surface">诊断 / 体验审计</h3>
+                      <p className="sr-only">
                         {buildDiagnostics.length > 0
                           ? `${buildDiagnostics.length} 个构建诊断`
                           : `${editorExperienceAuditStats.score}% 审计评分 · ${editorExperienceAuditStats.warningCount} 提醒`}
@@ -44431,7 +44437,8 @@ export function BuilderShowcase() {
                 </div>
               </details>
               <details
-                className="group rounded-md border border-outline-variant/70 bg-surface-container px-2 py-1.5"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-build-assist-dock=""
                 data-builder-build-assist-dock-density="collapsed-summary"
                 data-builder-build-assist-dock-state="collapsed-default"
@@ -44439,14 +44446,15 @@ export function BuilderShowcase() {
                 data-builder-build-page-deemphasized-actions=""
               >
                 <summary
-                  className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-build-assist-dock-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                     <div className="min-w-0">
-                      <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">构建辅助</h3>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                      <h3 className="truncate text-xs font-medium text-on-surface">构建辅助</h3>
+                      <p className="sr-only">
                         {selectedRailActionPreset?.title ?? "未选择 preset"} · {railRunTargetLabel}
                       </p>
                     </div>
@@ -44569,27 +44577,27 @@ export function BuilderShowcase() {
                 </div>
               </details>
               <details
-                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-task-center=""
                 data-builder-build-task-center-density="collapsed-summary"
               >
                 <summary
-                  className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-[17px] px-3 py-2 text-xs transition-colors hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-build-task-center-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-primary">
-                      <ListChecks aria-hidden className="size-3.5" />
-                    </span>
+                    <ListChecks aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-2">
-                        <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">任务中心</h3>
+                        <h3 className="truncate text-xs font-medium text-on-surface">任务中心</h3>
                         <Badge variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}>
                           {runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
                         </Badge>
                       </div>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                      <p className="sr-only">
                         {taskQueueStateTitle} · {taskQueueNextActionLabel}
                       </p>
                     </div>
@@ -45132,27 +45140,27 @@ export function BuilderShowcase() {
                 </div>
               </details>
               <details
-                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                className="group rounded-md border border-outline-variant/60 bg-transparent px-1 py-0.5 transition-colors hover:bg-surface-container"
+                data-builder-build-sidebar-section-density="thin-outline-row"
                 data-builder-release-pipelines=""
                 data-builder-release-pipelines-density="collapsed-summary"
               >
                 <summary
-                  className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-[17px] px-3 py-2 text-xs transition-colors hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1.5 text-xs transition-colors hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                  data-builder-build-sidebar-section-summary="one-line"
                   data-builder-release-pipelines-summary="single-row"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-primary">
-                      <GitBranch aria-hidden className="size-3.5" />
-                    </span>
+                    <GitBranch aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-2">
-                        <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布流水线</h3>
+                        <h3 className="truncate text-xs font-medium text-on-surface">发布流水线</h3>
                         <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
                           {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
                         </Badge>
                       </div>
-                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                      <p className="sr-only">
                         {latestReleasePipeline ? latestReleasePipeline.summary : "按需展开查看流水线记录和复跑入口"}
                       </p>
                     </div>
