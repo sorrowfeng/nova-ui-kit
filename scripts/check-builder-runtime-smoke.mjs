@@ -5249,6 +5249,7 @@ async function runShellCommandPlacementChecks(send, verified) {
       return {
         passed:
           workspace?.getAttribute("data-builder-build-sidebar-density") === "low-chrome" &&
+          workspace?.getAttribute("data-builder-build-sidebar-width") === "compact-rail" &&
           workspace?.getAttribute("data-builder-build-workspace-bottom-dock-clearance") === "reserved" &&
           Boolean(sidebar) &&
           toolbar?.getAttribute("data-builder-build-sidebar-toolbar") === "low-chrome" &&
@@ -5264,6 +5265,7 @@ async function runShellCommandPlacementChecks(send, verified) {
           buildSidebarActionButtons.length === 4 &&
           buildSidebarActionButtons.every((button) => Boolean(button.getAttribute("aria-label"))) &&
           thinSidebarSectionRows &&
+          Boolean(sidebarRect && sidebarRect.width <= 284) &&
           Boolean(outputHeaderRect && outputHeaderRect.height <= 36) &&
           Boolean(artifactActionsRect && artifactActionsRect.height <= 38) &&
           Boolean(buildSidebarActionsRect && buildSidebarActionsRect.height <= 38) &&

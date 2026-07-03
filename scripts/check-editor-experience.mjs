@@ -504,6 +504,9 @@ mustContain(builder, "data-builder-workspace-output-padding", "Workspace exposes
 mustContain(builder, 'data-builder-workspace-no-output-background-shield=""', "Workspace declares that the output dock no longer paints a background shield");
 mustContain(builder, 'const outputDockWorkspacePadding = "pb-0";', "Workspace removes the visible output dock padding band in minimized and expanded states");
 mustContain(builder, "data-builder-build-toolbar-status-actions", "Build toolbar keeps artifact badges and actions in a bounded action strip");
+mustContain(builder, 'aria-label="打开输出 Dock"', "Build toolbar output action stays accessible after compacting to an icon");
+mustContain(builder, 'aria-label="打开任务 Dock"', "Build toolbar task action stays accessible after compacting to an icon");
+mustNotContain(builder, "subtle-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto overflow-y-hidden pb-0.5", "Build toolbar status strip does not keep the old scroll-only layout");
 mustContain(builder, 'id: "output-dock-resizable"', "Editor experience audit checks output dock resizing");
 mustContain(builder, 'id: "output-dock-viewport-fit"', "Editor experience audit checks output dock viewport fitting");
 mustContain(builder, 'id: "output-dock-safe-scroll-dom"', "Editor experience audit checks output dock status-bar and scroll avoidance");
@@ -1614,6 +1617,7 @@ mustContain(buildWorkspace, "px-2 pt-2 pb-11", "Build sidebar layout keeps build
 mustContain(buildWorkspace, "grid-rows-[minmax(0,1fr)]", "Build sidebar layout constrains panes to a single scrollable grid row");
 mustContain(buildWorkspace, "subtle-scrollbar h-full min-h-0", "Build sidebar scroll container owns overflow instead of letting content escape");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-density="low-chrome"', "Build workspace uses a low-chrome sidebar instead of nested cards");
+mustContain(buildWorkspace, 'data-builder-build-sidebar-width="compact-rail"', "Build workspace keeps the build/config sidebar as a compact desktop rail");
 mustContain(buildWorkspace, 'data-builder-build-sidebar-toolbar="low-chrome"', "Build workspace toolbar is a low-chrome strip");
 mustContain(builder, 'data-builder-build-output-sidebar-density="low-chrome"', "Build output sidebar avoids stacked card chrome");
 mustContain(builder, 'data-builder-build-output-header-density="single-row"', "Build output sidebar title and status stay in one compact row");

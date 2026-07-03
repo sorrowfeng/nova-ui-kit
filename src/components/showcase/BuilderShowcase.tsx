@@ -43085,34 +43085,34 @@ export function BuilderShowcase() {
                   </span>
                 </div>
                 <div
-                  className="subtle-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto overflow-y-hidden pb-0.5"
+                  className="flex min-w-0 items-center gap-1 overflow-hidden"
                   data-builder-build-toolbar-status-actions=""
                 >
-                  <Badge variant={activeProject.outputExePath ? "secondary" : "outline"} className="h-7 shrink-0">
+                  <Badge variant={activeProject.outputExePath ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.65rem]">
                     {activeProject.outputExePath ? "exe 就绪" : "无 exe"}
                   </Badge>
-                  <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"} className="h-7 shrink-0">
+                  <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.65rem]">
                     {activeBundlePath || activeBundleDir ? "包就绪" : "无安装包"}
                   </Badge>
-                  <Button size="sm" variant="ghost" className="h-8 shrink-0 px-2" onClick={() => openBottomDock("output", false)}>
-                    <Download aria-hidden className="size-4" />
-                    输出
+                  <Button size="icon-sm" variant="ghost" className="size-7 shrink-0" aria-label="打开输出 Dock" title="打开输出 Dock" onClick={() => openBottomDock("output", false)}>
+                    <Download aria-hidden className="size-3.5" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="ghost"
-                    className="h-8 shrink-0 px-2"
+                    className="size-7 shrink-0"
+                    aria-label="打开任务 Dock"
+                    title="打开任务 Dock"
                     onClick={() => openRelevantTaskDock(latestProjectTask, false)}
                   >
-                    <ClipboardCopy aria-hidden className="size-4" />
-                    任务
+                    <ClipboardCopy aria-hidden className="size-3.5" />
                   </Button>
                 </div>
               </div>
             }
           >
             <aside
-              className="space-y-1.5 rounded-lg border border-outline-variant bg-surface-container-low px-1.5 py-1.5"
+              className="space-y-1 rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-1.5"
               data-builder-build-output-sidebar=""
               data-builder-build-output-sidebar-density="low-chrome"
             >
@@ -45405,25 +45405,25 @@ export function BuilderShowcase() {
                 </Button>
               </div>
             </aside>
-            <section className="space-y-4">
+            <section className="space-y-2">
               <div
-                className="rounded-lg border border-outline-variant bg-surface-container-low/80 p-2"
+                className="rounded-md border border-outline-variant bg-surface-container-low/80 p-1.5"
                 data-builder-desktop-runtime-workbench=""
                 data-builder-desktop-runtime-workbench-density="thin-output-stack"
                 data-builder-desktop-runtime-state={desktopRuntimeState}
               >
                 <div
-                  className="mb-1.5 flex min-h-8 flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between"
+                  className="mb-1 flex min-h-7 flex-col gap-1 lg:flex-row lg:items-center lg:justify-between"
                   data-builder-desktop-runtime-header=""
                   data-builder-desktop-runtime-header-density="single-row"
                 >
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-secondary-container text-secondary-container-foreground">
-                        <Monitor aria-hidden className="size-3.5" />
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-secondary-container text-secondary-container-foreground">
+                        <Monitor aria-hidden className="size-3" />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="truncate text-sm font-semibold leading-5 text-on-surface">桌面运行</h2>
+                        <h2 className="truncate text-[0.82rem] font-semibold leading-5 text-on-surface">桌面运行</h2>
                         <p className="sr-only">
                           Tauri exe 目标、窗口验证与运行控制台
                         </p>
@@ -45511,7 +45511,7 @@ export function BuilderShowcase() {
                   </div>
                 </div>
 
-                <div className="grid items-start gap-1.5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.52fr)]">
+                <div className="grid items-start gap-1 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.48fr)]">
                   <div
                     className="grid min-w-0 overflow-hidden rounded-md border border-outline-variant bg-surface-container text-xs md:grid-cols-4 md:divide-x md:divide-outline-variant"
                     data-builder-desktop-runtime-summary=""
@@ -45552,19 +45552,19 @@ export function BuilderShowcase() {
                       return (
                         <article
                           key={item.label}
-                          className="min-w-0 self-start px-2 py-1"
+                          className="min-w-0 self-start px-1.5 py-0.5"
                           title={`${item.label}: ${item.value} · ${item.detail}`}
                           data-builder-desktop-runtime-card={item.label}
                           data-builder-desktop-runtime-card-density="compact-cell"
                           data-builder-desktop-runtime-card-detail="deferred"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-surface-container-highest text-primary">
+                            <span className="flex size-3.5 shrink-0 items-center justify-center rounded-sm bg-surface-container-highest text-primary">
                               <ItemIcon aria-hidden className="size-3" />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-[0.6rem] font-medium text-on-surface-variant">{item.label}</p>
-                              <p className="truncate text-[0.72rem] font-medium leading-4 text-on-surface">{item.value}</p>
+                              <p className="truncate text-[0.58rem] font-medium text-on-surface-variant">{item.label}</p>
+                              <p className="truncate text-[0.7rem] font-medium leading-4 text-on-surface">{item.value}</p>
                               <p className="sr-only">{item.detail}</p>
                             </div>
                           </div>
@@ -45574,13 +45574,13 @@ export function BuilderShowcase() {
                   </div>
 
                   <details
-                    className="group min-w-0 rounded-md border border-outline-variant bg-surface-container px-2 py-1 text-xs"
+                    className="group min-w-0 rounded-md border border-outline-variant bg-surface-container px-1.5 py-0.5 text-xs"
                     data-builder-desktop-runtime-console=""
                     data-builder-desktop-runtime-console-density="collapsed-summary"
                     data-builder-desktop-runtime-console-state="collapsed-default"
                   >
                     <summary
-                      className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 [&::-webkit-details-marker]:hidden"
+                      className="focus-ring flex min-h-6 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 [&::-webkit-details-marker]:hidden"
                       data-builder-desktop-runtime-console-summary="single-row"
                     >
                       <div className="flex min-w-0 items-center gap-2">
@@ -45637,7 +45637,7 @@ export function BuilderShowcase() {
                 </div>
 
                 <details
-                  className="group mt-1.5 rounded-md border border-outline-variant bg-surface-container px-2 py-1"
+                  className="group mt-1 rounded-md border border-outline-variant bg-surface-container px-1.5 py-0.5"
                   data-builder-runtime-parity-panel=""
                   data-builder-runtime-parity-density="collapsed-default"
                   data-builder-runtime-parity-grid="off"
@@ -45648,7 +45648,7 @@ export function BuilderShowcase() {
                   data-builder-runtime-parity-validation={latestValidationRun?.status ?? "missing"}
                 >
                   <summary
-                    className="focus-ring flex min-h-7 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
+                    className="focus-ring flex min-h-6 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs [&::-webkit-details-marker]:hidden"
                     data-builder-runtime-parity-summary="single-row"
                   >
                     <div className="flex min-w-0 items-center gap-2">
@@ -45738,13 +45738,13 @@ export function BuilderShowcase() {
                 </details>
               </div>
               <details
-                className="group rounded-lg border border-outline-variant bg-surface-container-low/80 p-2.5 text-xs"
+                className="group rounded-md border border-outline-variant bg-surface-container-low/80 p-1.5 text-xs"
                 data-builder-generated-file-plan=""
                 data-builder-generated-file-plan-density="collapsed-summary"
                 data-builder-generated-file-plan-surface="compact-output-pane"
               >
                 <summary
-                  className="focus-ring flex min-h-9 cursor-pointer list-none flex-col gap-2 rounded-md border border-outline-variant bg-surface-container px-2 py-1.5 transition hover:bg-surface-container-high lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden"
+                  className="focus-ring flex min-h-8 cursor-pointer list-none flex-col gap-1.5 rounded-md border border-outline-variant bg-surface-container px-2 py-1 transition hover:bg-surface-container-high lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden"
                   data-builder-generated-plan-status=""
                   data-builder-generated-plan-status-density="single-row"
                   data-builder-generated-plan-summary="single-row"
