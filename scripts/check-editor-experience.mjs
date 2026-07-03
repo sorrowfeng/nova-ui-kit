@@ -1581,9 +1581,10 @@ mustContain(logicWorkspace, "px-2 pt-2 pb-11", "Logic workspace padding keeps ed
 mustContain(logicWorkspace, 'data-builder-logic-secondary-sidebar=""', "Logic workspace keeps resource and debug panels in a secondary sidebar");
 mustContain(logicWorkspace, 'data-builder-logic-code-editor-primary=""', "Logic workspace gives the code editor the primary region");
 mustContain(builder, 'data-builder-rust-editor-primary-toolbar=""', "Rust editor exposes a stable primary toolbar above the code area");
-mustContain(builder, 'data-builder-rust-editor-primary-toolbar-density="single-row"', "Rust editor primary toolbar uses a single-row IDE density");
+mustContain(builder, 'data-builder-logic-main-panel-density="flat-code-editor"', "Logic main panel uses flat code-editor chrome instead of a large card");
+mustContain(builder, 'data-builder-rust-editor-primary-toolbar-density="thin-ide-row"', "Rust editor primary toolbar uses a thin IDE row");
 mustContain(builder, 'data-builder-rust-editor-command-strip-density="icon-only"', "Rust editor command strip avoids wide text buttons");
-mustContain(builder, 'data-builder-rust-editor-search-lane-density="inline"', "Rust editor search, replace, rename, and goto fields stay inline with the toolbar");
+mustContain(builder, 'data-builder-rust-editor-search-lane-density="thin-inline"', "Rust editor search, replace, rename, and goto fields stay inline but compact");
 mustContain(builder, 'data-builder-logic-main-panel-layout="editor-only"', "Logic main panel hides non-editor documentation blocks from the primary code surface");
 mustContain(builder, 'useState<LogicResourceViewId>("connections")', "Logic resource sidebar defaults to a focused dock view instead of showing every resource group");
 mustContain(builder, 'data-builder-logic-resource-density="compact-outline"', "Logic resource panel uses compact outline density");

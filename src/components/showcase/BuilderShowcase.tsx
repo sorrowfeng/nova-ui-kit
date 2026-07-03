@@ -38331,8 +38331,9 @@ export function BuilderShowcase() {
               </details>
             </aside>
             <section
-              className="flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-outline-variant bg-surface-container-low p-2"
+              className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-outline-variant bg-surface-container-low p-1"
               data-builder-logic-main-panel="code-primary"
+              data-builder-logic-main-panel-density="flat-code-editor"
               data-builder-logic-main-panel-scroll="none"
               data-builder-logic-main-panel-layout="editor-only"
             >
@@ -38351,9 +38352,9 @@ export function BuilderShowcase() {
                 </div>
               </div>
               <div
-                className="order-first z-30 mb-1.5 flex min-w-0 shrink-0 flex-wrap items-center gap-1.5 rounded-[14px] border border-outline-variant bg-surface-container-high/95 px-1.5 py-1 text-xs backdrop-blur"
+                className="order-first z-30 -mx-1 -mt-1 mb-1 flex min-w-0 shrink-0 flex-wrap items-center gap-1 border-b border-outline-variant bg-surface-container px-1 py-0.5 text-xs"
                 data-builder-rust-editor-primary-toolbar=""
-                data-builder-rust-editor-primary-toolbar-density="single-row"
+                data-builder-rust-editor-primary-toolbar-density="thin-ide-row"
               >
                 <div className="flex min-w-0 shrink-0 items-center gap-1.5">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
@@ -38456,9 +38457,9 @@ export function BuilderShowcase() {
                     <span className="sr-only">跳转</span>
                   </Button>
                 </div>
-                <div className="grid min-w-0 flex-1 basis-[30rem] gap-1 lg:grid-cols-[minmax(8rem,1.05fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_minmax(5rem,0.55fr)] xl:basis-auto" data-builder-rust-editor-search-lane="" data-builder-rust-editor-search-lane-density="inline">
+                <div className="grid min-w-0 flex-1 basis-[26rem] gap-0.5 lg:grid-cols-[minmax(7rem,1fr)_minmax(5.5rem,0.65fr)_minmax(5.5rem,0.65fr)_4.5rem] xl:basis-auto" data-builder-rust-editor-search-lane="" data-builder-rust-editor-search-lane-density="thin-inline">
                   <div
-                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
+                    className="flex h-7 min-w-0 items-center gap-1 rounded-md border border-outline-variant/70 bg-surface-container-low px-1"
                     data-builder-rust-editor-find=""
                     data-builder-rust-editor-find-count={rustFindMatches.length}
                   >
@@ -38473,13 +38474,13 @@ export function BuilderShowcase() {
                       }}
                       onKeyDown={handleRustFindInputKeyDown}
                       placeholder="查找"
-                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      className="h-6 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
                       spellCheck={false}
                     />
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-1 text-[0.66rem]"
+                      className="h-6 px-1 text-[0.66rem]"
                       data-builder-rust-editor-find-prev=""
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(-1)}
@@ -38489,7 +38490,7 @@ export function BuilderShowcase() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 px-1 text-[0.66rem]"
+                      className="h-6 px-1 text-[0.66rem]"
                       data-builder-rust-editor-find-next=""
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(1)}
@@ -38502,7 +38503,7 @@ export function BuilderShowcase() {
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5">
+                  <div className="flex h-7 min-w-0 items-center gap-1 rounded-md border border-outline-variant/70 bg-surface-container-low px-1">
                     <TextCursorInput aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
                     <Input
                       aria-label="替换 Rust 源码"
@@ -38510,13 +38511,13 @@ export function BuilderShowcase() {
                       onChange={(event) => setRustReplaceQuery(event.target.value)}
                       onKeyDown={handleRustReplaceInputKeyDown}
                       placeholder="替换"
-                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      className="h-6 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
                       data-builder-rust-editor-replace=""
                       spellCheck={false}
                     />
                   </div>
                   <div
-                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
+                    className="flex h-7 min-w-0 items-center gap-1 rounded-md border border-outline-variant/70 bg-surface-container-low px-1"
                     data-builder-rust-editor-rename-symbol=""
                     data-builder-rust-editor-rename-count={rustCurrentIdentifierOccurrences.length}
                   >
@@ -38534,13 +38535,13 @@ export function BuilderShowcase() {
                       }}
                       onKeyDown={handleRustRenameInputKeyDown}
                       placeholder={rustCurrentIdentifier ? rustCurrentIdentifier.name : "符号"}
-                      className="h-7 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      className="h-6 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
                       data-builder-rust-editor-rename-input=""
                       spellCheck={false}
                     />
                   </div>
                   <div
-                    className="flex min-w-0 items-center gap-1 rounded-lg bg-surface-container-highest px-1.5"
+                    className="flex h-7 min-w-0 items-center gap-1 rounded-md border border-outline-variant/70 bg-surface-container-low px-1"
                     data-builder-rust-editor-goto-line=""
                   >
                     <Navigation aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" />
@@ -38551,7 +38552,7 @@ export function BuilderShowcase() {
                       onChange={(event) => setRustGoToLineQuery(event.target.value)}
                       onKeyDown={handleRustGoToLineInputKeyDown}
                       placeholder="行:列"
-                      className="h-7 w-16 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
+                      className="h-6 w-14 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
                       spellCheck={false}
                     />
                   </div>
