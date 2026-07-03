@@ -44479,7 +44479,48 @@ export function BuilderShowcase() {
                   </section>
                 </div>
               </details>
-              <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-task-center="">
+              <details
+                className="group overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low"
+                data-builder-task-center=""
+                data-builder-build-task-center-density="collapsed-summary"
+              >
+                <summary
+                  className="focus-ring flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-[17px] px-3 py-2 text-xs transition-colors hover:bg-surface-container [&::-webkit-details-marker]:hidden"
+                  data-builder-build-task-center-summary="single-row"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-secondary-container text-primary">
+                      <ListChecks aria-hidden className="size-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">任务中心</h3>
+                        <Badge variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}>
+                          {runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
+                        </Badge>
+                      </div>
+                      <p className="truncate text-[0.68rem] leading-4 text-on-surface-variant">
+                        {taskQueueStateTitle} · {taskQueueNextActionLabel}
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className="hidden shrink-0 items-center gap-1.5 sm:flex"
+                    data-builder-build-task-center-summary-detail="compact-inline"
+                  >
+                    <Badge variant="outline" className="px-1.5 text-[0.62rem]">
+                      运行 {runningProjectTask ? 1 : 0}
+                    </Badge>
+                    <Badge variant={queuedProjectTaskCount ? "secondary" : "outline"} className="px-1.5 text-[0.62rem]">
+                      等待 {queuedProjectTaskCount}
+                    </Badge>
+                    <Badge variant={failedProjectTaskCount ? "destructive" : "outline"} className="px-1.5 text-[0.62rem]">
+                      失败 {failedProjectTaskCount}
+                    </Badge>
+                  </div>
+                </summary>
+                <div className="border-t border-outline-variant p-3" data-builder-build-task-center-details="deferred">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">任务中心</h3>
@@ -44999,7 +45040,8 @@ export function BuilderShowcase() {
                     清理已完成 {completedProjectTaskCount}
                   </Button>
                 </div>
-              </section>
+                </div>
+              </details>
               <section className="rounded-[22px] bg-surface-container-low p-3" data-builder-release-pipelines="">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">

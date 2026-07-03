@@ -5280,6 +5280,69 @@ async function runShellCommandPlacementChecks(send, verified) {
     `document.querySelector("[data-builder-build-assist-dock]")?.hasAttribute("open") === false`,
     "collapsed build assist dock",
   );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const taskCenter = document.querySelector("[data-builder-task-center]");
+      const summary = document.querySelector("[data-builder-build-task-center-summary]");
+      const details = document.querySelector("[data-builder-build-task-center-details]");
+      const inline = document.querySelector("[data-builder-build-task-center-summary-detail]");
+      const taskRect = taskCenter?.getBoundingClientRect();
+      const summaryRect = summary?.getBoundingClientRect();
+      return {
+        passed:
+          taskCenter?.tagName === "DETAILS" &&
+          taskCenter?.hasAttribute("open") === false &&
+          taskCenter?.getAttribute("data-builder-build-task-center-density") === "collapsed-summary" &&
+          summary?.getAttribute("data-builder-build-task-center-summary") === "single-row" &&
+          details?.getAttribute("data-builder-build-task-center-details") === "deferred" &&
+          inline?.getAttribute("data-builder-build-task-center-summary-detail") === "compact-inline" &&
+          Boolean(summaryRect && summaryRect.height <= 64) &&
+          Boolean(taskRect && taskRect.height <= 68),
+        detail: \`tag=\${taskCenter?.tagName || "missing"}, open=\${taskCenter?.hasAttribute("open")}, taskHeight=\${Math.round(taskRect?.height || 0)}, summaryHeight=\${Math.round(summaryRect?.height || 0)}, inline=\${inline?.getAttribute("data-builder-build-task-center-summary-detail") || "missing"}\`
+      };
+    })()`,
+    "build task center defaults to a compact sidebar summary",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-task-center-summary]")`, "build task center summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-task-center]")?.hasAttribute("open") === true`,
+    "expanded build task center details",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const taskCenter = document.querySelector("[data-builder-task-center]");
+      const details = document.querySelector("[data-builder-build-task-center-details]");
+      const queueStatus = document.querySelector("[data-builder-task-queue-status]");
+      const queueControls = document.querySelector("[data-builder-task-queue-controls]");
+      const presets = document.querySelector("[data-builder-action-presets]");
+      const detailRect = details?.getBoundingClientRect();
+      const text = details?.textContent || "";
+      return {
+        passed:
+          taskCenter?.hasAttribute("open") === true &&
+          details?.getAttribute("data-builder-build-task-center-details") === "deferred" &&
+          Boolean(queueStatus) &&
+          Boolean(queueControls) &&
+          Boolean(presets) &&
+          /运行中/.test(text) &&
+          /排队中/.test(text) &&
+          /失败/.test(text) &&
+          Boolean(detailRect && detailRect.height > 180),
+        detail: \`open=\${taskCenter?.hasAttribute("open")}, detailsHeight=\${Math.round(detailRect?.height || 0)}, queueStatus=\${Boolean(queueStatus)}, controls=\${Boolean(queueControls)}, presets=\${Boolean(presets)}\`
+      };
+    })()`,
+    "build task center expands to queue controls and presets on demand",
+  );
+  verified.buildTaskCenterRuntime = true;
+  await clickElementCenter(send, `document.querySelector("[data-builder-build-task-center-summary]")`, "collapse build task center summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-task-center]")?.hasAttribute("open") === false`,
+    "collapsed build task center",
+  );
   await clickElementCenter(send, `document.querySelector("[data-builder-runtime-parity-summary]")`, "build runtime parity summary");
   await waitFor(
     send,
