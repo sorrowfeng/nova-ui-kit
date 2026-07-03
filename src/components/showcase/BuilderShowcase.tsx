@@ -45293,22 +45293,59 @@ export function BuilderShowcase() {
                   )}
                 </div>
               </details>
-              <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-                <Button variant="secondary" data-builder-save-disk="" onClick={() => enqueueProjectTask("save-project")} loading={diskBusy}>
-                  <Save aria-hidden className="size-4" />
-                  保存
+              <div
+                className="subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-outline-variant/70 bg-surface-container px-1 py-1"
+                data-builder-build-sidebar-actions="icon-strip"
+                data-builder-build-sidebar-actions-density="single-row-icons"
+              >
+                <Button
+                  size="icon-sm"
+                  variant="secondary"
+                  className="size-7 shrink-0"
+                  data-builder-save-disk=""
+                  aria-label="保存项目"
+                  title="保存项目"
+                  onClick={() => enqueueProjectTask("save-project")}
+                  loading={diskBusy}
+                >
+                  <Save aria-hidden className="size-3.5" />
                 </Button>
-                <Button variant="secondary" data-builder-validate-window="" onClick={() => enqueueProjectTask("validate-window")} loading={validatingWindow} disabled={bundling || building}>
-                  <CheckCircle2 aria-hidden className="size-4" />
-                  验证
+                <Button
+                  size="icon-sm"
+                  variant="secondary"
+                  className="size-7 shrink-0"
+                  data-builder-validate-window=""
+                  aria-label="验证窗口"
+                  title="验证窗口"
+                  onClick={() => enqueueProjectTask("validate-window")}
+                  loading={validatingWindow}
+                  disabled={bundling || building}
+                >
+                  <CheckCircle2 aria-hidden className="size-3.5" />
                 </Button>
-                <Button data-builder-run-build="" onClick={() => enqueueProjectTask("build-exe")} loading={building} disabled={bundling}>
-                  <Download aria-hidden className="size-4" />
-                  发布
+                <Button
+                  size="icon-sm"
+                  className="size-7 shrink-0"
+                  data-builder-run-build=""
+                  aria-label="发布 exe"
+                  title="发布 exe"
+                  onClick={() => enqueueProjectTask("build-exe")}
+                  loading={building}
+                  disabled={bundling}
+                >
+                  <Download aria-hidden className="size-3.5" />
                 </Button>
-                <Button data-builder-run-bundle="" onClick={() => enqueueProjectTask("bundle-installer")} loading={bundling} disabled={building}>
-                  <Box aria-hidden className="size-4" />
-                  安装包
+                <Button
+                  size="icon-sm"
+                  className="size-7 shrink-0"
+                  data-builder-run-bundle=""
+                  aria-label="打包安装包"
+                  title="打包安装包"
+                  onClick={() => enqueueProjectTask("bundle-installer")}
+                  loading={bundling}
+                  disabled={building}
+                >
+                  <Box aria-hidden className="size-3.5" />
                 </Button>
               </div>
             </aside>
