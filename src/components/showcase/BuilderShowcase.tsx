@@ -47,6 +47,7 @@ import {
   FileJson,
   FileImage,
   FolderOpen,
+  FolderSearch,
   GitBranch,
   Grid3x3,
   Hand,
@@ -36803,12 +36804,12 @@ export function BuilderShowcase() {
                       <section
                         className="mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
                         data-builder-project-node-action-strip=""
-                        data-builder-project-node-action-strip-density="compact-toolbar"
+                        data-builder-project-node-action-strip-density="primary-row-with-deferred-secondary"
                         data-builder-project-node-action-strip-node={selectedProjectExplorerNode.id}
                         data-builder-project-node-action-strip-kind={selectedProjectExplorerDossier?.groupId ?? projectExplorerNodeGroupId(selectedProjectExplorerNode)}
                         data-builder-project-node-action-strip-file={selectedProjectExplorerFile?.id ?? "none"}
                       >
-                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5" data-builder-project-node-action-strip-summary="single-row">
                           <span className="mr-1 inline-flex min-w-0 max-w-[14rem] items-center gap-1.5 text-[0.68rem] text-on-surface-variant">
                             <MousePointer2 aria-hidden className="size-3.5 shrink-0 text-primary" />
                             <span className="truncate font-medium text-on-surface">{selectedProjectExplorerDossier?.groupLabel ?? "项目"}</span>
@@ -36824,84 +36825,107 @@ export function BuilderShowcase() {
                             <ArrowRight aria-hidden className="size-4" />
                             打开节点
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="subtle"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-rename=""
-                            disabled={!selectedProjectExplorerFile}
-                            onClick={() => runProjectExplorerContextAction("rename-ui-file", selectedProjectExplorerNode)}
+                          <details
+                            className="group min-w-[12rem] flex-1"
+                            data-builder-project-node-action-strip-secondary=""
+                            data-builder-project-node-action-strip-secondary-state="collapsed-default"
                           >
-                            <TextCursorInput aria-hidden className="size-4" />
-                            重命名 UI
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="subtle"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-duplicate=""
-                            disabled={!selectedProjectExplorerFile}
-                            onClick={() => runProjectExplorerContextAction("duplicate-ui-file", selectedProjectExplorerNode)}
-                          >
-                            <Copy aria-hidden className="size-4" />
-                            复制 UI
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="subtle"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-new-ui=""
-                            onClick={() => runProjectExplorerContextAction("new-ui-file", selectedProjectExplorerNode)}
-                          >
-                            <Plus aria-hidden className="size-4" />
-                            新建 UI
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-copy-path=""
-                            disabled={!selectedProjectExplorerDisplayPath}
-                            onClick={() => void copyArtifactPath(selectedProjectExplorerDisplayPath)}
-                          >
-                            <ClipboardCopy aria-hidden className="size-4" />
-                            复制路径
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-reveal=""
-                            disabled={!selectedProjectExplorerDisplayPath || !isTauriRuntime()}
-                            onClick={() => runProjectExplorerContextAction("reveal", selectedProjectExplorerNode)}
-                          >
-                            <FolderOpen aria-hidden className="size-4" />
-                            系统中显示
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-filter=""
-                            onClick={() => runProjectExplorerContextAction("filter-kind", selectedProjectExplorerNode)}
-                          >
-                            <Search aria-hidden className="size-4" />
-                            只看同类
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="h-7 justify-start px-2 text-[0.68rem]"
-                            data-builder-project-node-action-delete=""
-                            disabled={!selectedProjectExplorerFile}
-                            onClick={() => runProjectExplorerContextAction("delete-ui-file", selectedProjectExplorerNode)}
-                          >
-                            <Trash2 aria-hidden className="size-4" />
-                            删除 UI
-                          </Button>
-                          <span className="ml-auto min-w-[6rem] max-w-[16rem] truncate font-mono text-[0.62rem] text-on-surface-variant">
-                            {selectedProjectExplorerRelativePath || selectedProjectExplorerNode.label}
-                          </span>
+                            <summary
+                              className="focus-ring flex h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2 text-[0.68rem] text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface [&::-webkit-details-marker]:hidden"
+                              data-builder-project-node-action-strip-secondary-summary="single-row"
+                            >
+                              <span className="flex min-w-0 items-center gap-1.5">
+                                <ChevronRight aria-hidden className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+                                <span className="truncate font-medium">更多动作</span>
+                              </span>
+                              <span className="flex shrink-0 items-center gap-1.5">
+                                <Badge variant="outline">7 项</Badge>
+                                <span className="hidden max-w-[12rem] truncate font-mono text-[0.62rem] xl:inline">
+                                  {selectedProjectExplorerRelativePath || selectedProjectExplorerNode.label}
+                                </span>
+                              </span>
+                            </summary>
+                            <div
+                              className="mt-2 hidden min-w-0 gap-1.5 border-t border-outline-variant pt-2 group-open:grid sm:grid-cols-2 xl:grid-cols-6"
+                              data-builder-project-node-action-strip-details="deferred"
+                            >
+                              <Button
+                                size="sm"
+                                variant="subtle"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-rename=""
+                                disabled={!selectedProjectExplorerFile}
+                                onClick={() => runProjectExplorerContextAction("rename-ui-file", selectedProjectExplorerNode)}
+                              >
+                                <TextCursorInput aria-hidden className="size-4" />
+                                重命名 UI
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="subtle"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-duplicate=""
+                                disabled={!selectedProjectExplorerFile}
+                                onClick={() => runProjectExplorerContextAction("duplicate-ui-file", selectedProjectExplorerNode)}
+                              >
+                                <Copy aria-hidden className="size-4" />
+                                复制 UI
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="subtle"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-new-ui=""
+                                onClick={() => runProjectExplorerContextAction("new-ui-file", selectedProjectExplorerNode)}
+                              >
+                                <Plus aria-hidden className="size-4" />
+                                新建 UI
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-copy-path=""
+                                disabled={!selectedProjectExplorerDisplayPath}
+                                onClick={() => void copyArtifactPath(selectedProjectExplorerDisplayPath)}
+                              >
+                                <ClipboardCopy aria-hidden className="size-4" />
+                                复制路径
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-reveal=""
+                                disabled={!selectedProjectExplorerDisplayPath || !isTauriRuntime()}
+                                onClick={() => runProjectExplorerContextAction("reveal", selectedProjectExplorerNode)}
+                              >
+                                <FolderOpen aria-hidden className="size-4" />
+                                系统中显示
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 justify-start px-2 text-[0.68rem]"
+                                data-builder-project-node-action-filter=""
+                                onClick={() => runProjectExplorerContextAction("filter-kind", selectedProjectExplorerNode)}
+                              >
+                                <Search aria-hidden className="size-4" />
+                                只看同类
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-7 justify-start px-2 text-[0.68rem] sm:col-span-2 xl:col-span-1"
+                                data-builder-project-node-action-delete=""
+                                disabled={!selectedProjectExplorerFile}
+                                onClick={() => runProjectExplorerContextAction("delete-ui-file", selectedProjectExplorerNode)}
+                              >
+                                <Trash2 aria-hidden className="size-4" />
+                                删除 UI
+                              </Button>
+                            </div>
+                          </details>
                         </div>
                       </section>
                       <div
@@ -37019,7 +37043,7 @@ export function BuilderShowcase() {
                               <Badge variant="secondary">{selectedProjectExplorerImpactItems.length} 项</Badge>
                             </span>
                           </summary>
-                          <div className="mt-2 border-t border-outline-variant pt-2" data-builder-project-node-impact-details="deferred">
+                          <div className="mt-2 hidden border-t border-outline-variant pt-2 group-open:block" data-builder-project-node-impact-details="deferred">
                             <div className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-container" data-builder-project-node-impact-list="" data-builder-project-node-impact-list-density="single-column-property-rows">
                             {selectedProjectExplorerImpactItems.map((item) => {
                               const ImpactIcon = item.icon;
@@ -37102,60 +37126,83 @@ export function BuilderShowcase() {
                           </div>
                         </div>
                       ) : null}
-                      <div className="mt-3 grid gap-2 sm:grid-cols-4" data-builder-project-tree-quick-actions="">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          data-builder-project-workspace-open-node=""
-                          data-builder-project-tree-open-selected=""
-                          disabled={selectedProjectExplorerNode.action === "none"}
-                          onClick={() => handleProjectExplorerNode(selectedProjectExplorerNode)}
+                      <details
+                        className="group mt-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1.5"
+                        data-builder-project-tree-quick-actions=""
+                        data-builder-project-tree-quick-actions-density="collapsed-summary"
+                      >
+                        <summary
+                          className="focus-ring flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-1 text-xs text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface [&::-webkit-details-marker]:hidden"
+                          data-builder-project-tree-quick-actions-summary="single-row"
                         >
-                          <ArrowRight aria-hidden className="size-4" />
-                          {projectExplorerPrimaryActionLabel(selectedProjectExplorerNode)}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          data-builder-project-workspace-copy-node=""
-                          data-builder-project-tree-copy-selected-path=""
-                          disabled={!selectedProjectExplorerDisplayPath}
-                          onClick={() => void copyArtifactPath(selectedProjectExplorerDisplayPath)}
-                        >
-                          <ClipboardCopy aria-hidden className="size-4" />
-                          复制完整
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          data-builder-project-tree-copy-selected-relative-path=""
-                          disabled={!selectedProjectExplorerRelativePath}
-                          onClick={() => void copyArtifactPath(selectedProjectExplorerRelativePath)}
-                        >
-                          <FileJson aria-hidden className="size-4" />
-                          复制相对
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          data-builder-project-workspace-open-artifact=""
-                          data-builder-project-tree-reveal-selected=""
-                          disabled={!selectedProjectExplorerDisplayPath || !isTauriRuntime()}
-                          onClick={() => runProjectExplorerContextAction("reveal", selectedProjectExplorerNode)}
-                        >
-                          <FolderOpen aria-hidden className="size-4" />
-                          显示
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          data-builder-project-tree-filter-selected-kind=""
-                          onClick={() => runProjectExplorerContextAction("filter-kind", selectedProjectExplorerNode)}
-                        >
-                          <Search aria-hidden className="size-4" />
-                          同类
-                        </Button>
-                      </div>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <ChevronRight aria-hidden className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+                            <FolderSearch aria-hidden className="size-4 shrink-0 text-primary" />
+                            <span className="truncate font-medium text-on-surface">路径动作</span>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-1.5">
+                            <Badge variant="outline">5 项</Badge>
+                            <span className="hidden max-w-[12rem] truncate font-mono text-[0.62rem] xl:inline">
+                              {selectedProjectExplorerRelativePath || selectedProjectExplorerNode.label}
+                            </span>
+                          </span>
+                        </summary>
+                        <div className="mt-2 hidden gap-2 border-t border-outline-variant pt-2 group-open:grid sm:grid-cols-2 xl:grid-cols-5" data-builder-project-tree-quick-actions-details="deferred">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            data-builder-project-workspace-open-node=""
+                            data-builder-project-tree-open-selected=""
+                            disabled={selectedProjectExplorerNode.action === "none"}
+                            onClick={() => handleProjectExplorerNode(selectedProjectExplorerNode)}
+                          >
+                            <ArrowRight aria-hidden className="size-4" />
+                            {projectExplorerPrimaryActionLabel(selectedProjectExplorerNode)}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            data-builder-project-workspace-copy-node=""
+                            data-builder-project-tree-copy-selected-path=""
+                            disabled={!selectedProjectExplorerDisplayPath}
+                            onClick={() => void copyArtifactPath(selectedProjectExplorerDisplayPath)}
+                          >
+                            <ClipboardCopy aria-hidden className="size-4" />
+                            复制完整
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            data-builder-project-tree-copy-selected-relative-path=""
+                            disabled={!selectedProjectExplorerRelativePath}
+                            onClick={() => void copyArtifactPath(selectedProjectExplorerRelativePath)}
+                          >
+                            <FileJson aria-hidden className="size-4" />
+                            复制相对
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            data-builder-project-workspace-open-artifact=""
+                            data-builder-project-tree-reveal-selected=""
+                            disabled={!selectedProjectExplorerDisplayPath || !isTauriRuntime()}
+                            onClick={() => runProjectExplorerContextAction("reveal", selectedProjectExplorerNode)}
+                          >
+                            <FolderOpen aria-hidden className="size-4" />
+                            显示
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="sm:col-span-2 xl:col-span-1"
+                            data-builder-project-tree-filter-selected-kind=""
+                            onClick={() => runProjectExplorerContextAction("filter-kind", selectedProjectExplorerNode)}
+                          >
+                            <Search aria-hidden className="size-4" />
+                            同类
+                          </Button>
+                        </div>
+                      </details>
                       {copiedArtifactPath &&
                       (copiedArtifactPath === selectedProjectExplorerDisplayPath || copiedArtifactPath === selectedProjectExplorerRelativePath) ? (
                         <p className="mt-2 text-center text-xs text-primary">路径已复制</p>
@@ -37192,7 +37239,7 @@ export function BuilderShowcase() {
                         </Badge>
                       </span>
                     </summary>
-                    <div className="mt-2 border-t border-outline-variant pt-2" data-builder-project-open-files-details="deferred">
+                    <div className="mt-2 hidden border-t border-outline-variant pt-2 group-open:block" data-builder-project-open-files-details="deferred">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">

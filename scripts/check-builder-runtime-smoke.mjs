@@ -2349,6 +2349,57 @@ async function runProjectWorkspaceChecks(send, verified) {
     "project node dossier and project workspace panels",
   );
   verified.projectNodeDossier = true;
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const quickActions = document.querySelector("[data-builder-project-tree-quick-actions]");
+      const summary = document.querySelector("[data-builder-project-tree-quick-actions-summary]");
+      const details = document.querySelector("[data-builder-project-tree-quick-actions-details]");
+      const rect = quickActions?.getBoundingClientRect();
+      const detailsStyle = details ? getComputedStyle(details) : null;
+      return {
+        passed:
+          quickActions?.tagName === "DETAILS" &&
+          !quickActions.hasAttribute("open") &&
+          quickActions.getAttribute("data-builder-project-tree-quick-actions-density") === "collapsed-summary" &&
+          summary?.getAttribute("data-builder-project-tree-quick-actions-summary") === "single-row" &&
+          details?.getAttribute("data-builder-project-tree-quick-actions-details") === "deferred" &&
+          detailsStyle?.display === "none" &&
+          Boolean(rect && rect.height <= 48),
+        detail: \`open=\${quickActions?.hasAttribute("open")}, detailsDisplay=\${detailsStyle?.display || "missing"}, height=\${Math.round(rect?.height || 0)}\`
+      };
+    })()`,
+    "project quick path actions default collapsed",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-tree-quick-actions-summary]")`, "project quick path actions summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-tree-quick-actions]")?.hasAttribute("open") === true`,
+    "expanded project quick path actions",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const quickActions = document.querySelector("[data-builder-project-tree-quick-actions]");
+      const details = document.querySelector("[data-builder-project-tree-quick-actions-details]");
+      const buttons = Array.from(details?.querySelectorAll("button") || []);
+      const detailsStyle = details ? getComputedStyle(details) : null;
+      return {
+        passed:
+          quickActions?.hasAttribute("open") === true &&
+          detailsStyle?.display !== "none" &&
+          buttons.length >= 5,
+        detail: \`open=\${quickActions?.hasAttribute("open")}, detailsDisplay=\${detailsStyle?.display || "missing"}, buttons=\${buttons.length}\`
+      };
+    })()`,
+    "project quick path actions expand to deferred buttons",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-tree-quick-actions-summary]")`, "collapse project quick path actions summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-tree-quick-actions]")?.hasAttribute("open") === false`,
+    "collapsed project quick path actions",
+  );
   await waitFor(send, `Boolean(document.querySelector("[data-builder-project-node-impact]"))`, "project node impact summary after node click");
   await assertRuntimeCheck(
     send,
@@ -2428,6 +2479,39 @@ async function runProjectWorkspaceChecks(send, verified) {
     send,
     `(() => {
       const strip = document.querySelector("[data-builder-project-node-action-strip]");
+      const summary = document.querySelector("[data-builder-project-node-action-strip-summary]");
+      const secondary = document.querySelector("[data-builder-project-node-action-strip-secondary]");
+      const secondarySummary = document.querySelector("[data-builder-project-node-action-strip-secondary-summary]");
+      const details = document.querySelector("[data-builder-project-node-action-strip-details]");
+      const open = document.querySelector("[data-builder-project-node-action-open]");
+      const rect = strip?.getBoundingClientRect();
+      return {
+        passed:
+          Boolean(strip) &&
+          strip?.getAttribute("data-builder-project-node-action-strip-density") === "primary-row-with-deferred-secondary" &&
+          summary?.getAttribute("data-builder-project-node-action-strip-summary") === "single-row" &&
+          Boolean(open && !open.disabled) &&
+          secondary?.tagName === "DETAILS" &&
+          !secondary.hasAttribute("open") &&
+          secondarySummary?.getAttribute("data-builder-project-node-action-strip-secondary-summary") === "single-row" &&
+          details?.getAttribute("data-builder-project-node-action-strip-details") === "deferred" &&
+          Boolean(rect && rect.height <= 48),
+        detail: \`open=\${Boolean(open && !open.disabled)}, secondaryOpen=\${secondary?.hasAttribute("open")}, height=\${Math.round(rect?.height || 0)}, density=\${strip?.getAttribute("data-builder-project-node-action-strip-density") || "missing"}\`
+      };
+    })()`,
+    "project node action strip defaults to one primary row",
+  );
+  await clickElementCenter(send, `document.querySelector("[data-builder-project-node-action-strip-secondary-summary]")`, "project node action strip secondary summary");
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-node-action-strip-secondary]")?.hasAttribute("open") === true`,
+    "expanded project node action strip secondary actions",
+  );
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const strip = document.querySelector("[data-builder-project-node-action-strip]");
+      const secondary = document.querySelector("[data-builder-project-node-action-strip-secondary]");
       const open = document.querySelector("[data-builder-project-node-action-open]");
       const rename = document.querySelector("[data-builder-project-node-action-rename]");
       const duplicate = document.querySelector("[data-builder-project-node-action-duplicate]");
@@ -2443,6 +2527,7 @@ async function runProjectWorkspaceChecks(send, verified) {
           Boolean(strip) &&
           nodeId.startsWith("ui-") &&
           Boolean(fileId && fileId !== "none") &&
+          secondary?.hasAttribute("open") === true &&
           Boolean(open && !open.disabled) &&
           Boolean(rename && !rename.disabled) &&
           Boolean(duplicate && !duplicate.disabled) &&
@@ -2451,10 +2536,10 @@ async function runProjectWorkspaceChecks(send, verified) {
           Boolean(reveal) &&
           Boolean(filter && !filter.disabled) &&
           Boolean(deleteButton && !deleteButton.disabled),
-        detail: \`node=\${nodeId || "missing"}, file=\${fileId || "missing"}, rename=\${Boolean(rename && !rename.disabled)}, duplicate=\${Boolean(duplicate && !duplicate.disabled)}, delete=\${Boolean(deleteButton && !deleteButton.disabled)}\`
+        detail: \`node=\${nodeId || "missing"}, file=\${fileId || "missing"}, secondaryOpen=\${secondary?.hasAttribute("open")}, rename=\${Boolean(rename && !rename.disabled)}, duplicate=\${Boolean(duplicate && !duplicate.disabled)}, delete=\${Boolean(deleteButton && !deleteButton.disabled)}\`
       };
     })()`,
-    "project node action strip direct file actions",
+    "project node action strip expands to direct file actions",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-project-node-action-rename]")`, "project node action strip rename");
   await waitFor(
@@ -2533,6 +2618,21 @@ async function runProjectWorkspaceChecks(send, verified) {
     send,
     `document.querySelector("[data-builder-project-node-action-strip]")?.getAttribute("data-builder-project-node-action-strip-node") === window.__novaSmokeProjectDuplicateNodeId`,
     "project node action strip selects duplicate UI file",
+  );
+  await evaluate(
+    send,
+    `(() => {
+      const secondary = document.querySelector("[data-builder-project-node-action-strip-secondary]");
+      if (secondary && !secondary.hasAttribute("open")) {
+        document.querySelector("[data-builder-project-node-action-strip-secondary-summary]")?.click();
+      }
+      return Boolean(secondary);
+    })()`,
+  );
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-project-node-action-strip-secondary]")?.hasAttribute("open") === true`,
+    "project node action strip secondary actions expanded for delete",
   );
   await clickElementCenter(send, `document.querySelector("[data-builder-project-node-action-delete]")`, "project node action strip delete");
   await waitFor(send, `Boolean(document.querySelector("[data-builder-destructive-dialog]"))`, "project node delete confirmation dialog");
