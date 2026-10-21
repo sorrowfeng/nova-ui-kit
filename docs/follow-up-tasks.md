@@ -1,7 +1,7 @@
 # 后续任务清单
 
-> 2026-10-22 · `main` @ `704bf452` 之后
-> 状态：构建全绿 · 功能/布局冒烟全绿 · Rust 68 通过 · a11y 自动化 24/24 · 主包 803 kB
+> 2026-10-22 · `main` @ `fc05b86e` 之后
+> 状态：构建全绿 · 功能/布局冒烟全绿 · Rust 68 通过 · a11y 自动化 24/24 · 主包 699 kB
 
 ---
 
@@ -42,9 +42,9 @@
 
 | # | 任务 | 说明 | 状态 |
 |---|------|------|------|
-| 9 | **继续拆 BuilderShowcase** | 目标 2 万行 | 🔄 52021 → **31190**（Project/Logic/Build/Design 视图 + item preview + view-helpers 已抽出；剩余为状态与事件层） |
+| 9 | **继续拆 BuilderShowcase** | 目标 2 万行 | ✅ 完成（52021 → **20299**；Project/Logic/Build/Design/Shell 五个视图 + item preview + view-helpers + 模块作用域声明已抽出，剩余为状态与事件层） |
 | 10 | **冒烟布局套件单列** | `:layout` / `:functional` / `:design` 三套互不阻塞 | ✅ 完成 |
-| 11 | **主包 &lt;1MB** | 按模式 lazy + vendor 分包 | ✅ 完成（ShowcasePage 1793 kB → **803 kB**） |
+| 11 | **主包 &lt;1MB** | 按模式 lazy + vendor 分包 | ✅ 完成（ShowcasePage 1793 kB → **699 kB** raw / 236 kB gzip；`check:bundle-size` 已并入 `npm run build`） |
 | 12 | **Linux/macOS 实机打包** | 配置与 CI 就绪 | 🟡 配置/CI ✅（`check:platform-bundle` + `workflow_dispatch` job + tag 全平台）；**产物验证仍需对应主机** |
 
 ### P3 — 产品化
@@ -62,17 +62,16 @@
 | 项 | 阻塞点 | 解锁方式 |
 |----|--------|----------|
 | P2-12 产物实机验证 | 无 Linux/macOS 主机 | 触发 `build.yml` 的 `linux-bundle` / `macos-bundle`（workflow_dispatch），或打 tag 走 `release.yml` |
-| P12-15 读屏手测 | 需真人 + NVDA/Narrator + 系统缩放 | 按 `docs/accessibility-checklist.md` 手动项（1.4 / 1.6 / 2.7 / 3.3 / 6.x / 7.3）走一轮并填记录表 |
-| P2-9 余量 | 状态/事件层与 JSX 耦合 | 下一步：把 reducer/hook 抽成 `useBuilderState` 等模块，再按域拆 handler |
+| P3-15 读屏手测 | 需真人 + NVDA/Narrator + 系统缩放 | 按 `docs/accessibility-checklist.md` 手动项（1.4 / 1.6 / 2.7 / 3.3 / 6.x / 7.3）走一轮并填记录表 |
 
 ---
 
 ## 建议下一轮
 
 ```text
-1. P2-9 收尾：把 BuilderShowcase 的状态层抽成自定义 hook，冲 2 万行
-2. P2-12 / P3-15：等主机与真人，走一遍剩余实机验证
-3. 打 v0.2.0 tag，验证 release.yml 端到端（version:set → changelog → tag → 产物）
+1. P2-12 / P3-15：等主机与真人，走一遍剩余实机验证
+2. 打 v0.2.0 tag，验证 release.yml 端到端（version:set → changelog → tag → 产物）
+3. 可选的再拆：BuilderShowcase 仍留 20299 行，继续抽状态层（useBuilderState + 按域 handler）可再降一档
 ```
 
-一句话：**工程侧的自动化已经铺完，剩下的都是需要真实主机或真实人的验证。**
+一句话：**清单 15 项里 13 项已落地，剩下的两项卡在真实主机与真人上。**
