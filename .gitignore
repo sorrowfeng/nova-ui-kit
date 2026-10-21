@@ -23,3 +23,7 @@ examples/**/*.lib
 examples/**/*.exp
 
 docs-site/
+
+# scratch output from local check scripts
+scripts/.test-out/
+scripts/.extract-out/
