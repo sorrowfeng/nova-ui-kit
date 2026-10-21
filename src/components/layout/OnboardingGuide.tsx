@@ -102,6 +102,7 @@ export function OnboardingGuide({
             type="button"
             className="focus-ring flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high"
             aria-label="跳过引导"
+            data-builder-onboarding-skip=""
             onClick={finish}
           >
             <X aria-hidden className="size-4" />

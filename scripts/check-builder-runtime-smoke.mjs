@@ -427,12 +427,30 @@ async function openCanvasContextMenuAtCanvasPoint(send, canvasX, canvasY, label)
   await delay(100);
 }
 
+// The canvas context menu keeps its whole insert area inside a collapsed
+// <details>. Closed details content is not hit-testable (getBoundingClientRect
+// still reports a box, but clicks land on the menu shell), so expand it before
+// any click that targets search results or quick-insert chips.
+async function expandCanvasContextInsertSection(send, label) {
+  await clickElementCenter(
+    send,
+    `document.querySelector("[data-builder-canvas-context-insert-collapsed] summary")`,
+    `${label} insert section toggle`,
+  );
+  await waitFor(
+    send,
+    `document.querySelector("[data-builder-canvas-context-insert-collapsed]")?.open === true`,
+    `${label} insert section expanded`,
+  );
+}
+
 async function insertCanvasContextComponentAtCanvasPoint(send, componentType, canvasX, canvasY, label) {
   const beforeIds = await evaluate(
     send,
     `Array.from(document.querySelectorAll("[data-builder-node-id]")).map((node) => node.getAttribute("data-builder-node-id")).filter(Boolean)`,
   );
   await openCanvasContextMenuAtCanvasPoint(send, canvasX, canvasY, label);
+  await expandCanvasContextInsertSection(send, label);
   await waitFor(
     send,
     `Boolean(document.querySelector('[data-builder-canvas-context-insert-component="${componentType}"]'))`,
@@ -1357,6 +1375,7 @@ async function runDesignInteractionChecks(send, verified) {
       return Boolean(canvas);
     })()`,
   );
+  await expandCanvasContextInsertSection(send, "canvas context search");
   await waitFor(send, `Boolean(document.querySelector("[data-builder-canvas-context-insert-search-input]"))`, "canvas context insert search input");
   await fillElementWithText(
     send,
@@ -6292,6 +6311,14 @@ try {
   await waitFor(send, "Boolean(document.querySelector('[data-editor-shell=\"builder\"]'))", "builder shell");
   await waitFor(send, "Boolean(document.querySelector('[data-builder-mode-rail=\"qt-creator-left\"]'))", "builder mode rail");
   await waitFor(send, "Boolean(document.querySelector('[data-builder-left-run-controls-layout=\"qt-creator-kit\"]'))", "left run kit");
+
+  // The first-run onboarding dialog is a full-screen scrim. Dismiss it before
+  // any pointer-driven check, otherwise every click lands on the dialog card.
+  if (await evaluate(send, `Boolean(document.querySelector('[data-builder-onboarding]'))`)) {
+    log("dismissing onboarding guide");
+    await clickElementCenter(send, `document.querySelector("[data-builder-onboarding-skip]")`, "onboarding skip");
+    await waitFor(send, `!document.querySelector("[data-builder-onboarding]")`, "onboarding dismissed");
+  }
 
   // P2-10: suite selection. `layout` runs the pixel suite standalone;
   // `functional` runs workflows without pixel assertions so the two gates
