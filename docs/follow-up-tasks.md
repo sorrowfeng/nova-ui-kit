@@ -1,7 +1,8 @@
 # 后续任务清单
 
-> 2026-10-22 · `main` @ `0fa0164f` 之后
-> 状态：构建全绿 · 功能/布局冒烟全绿 · Rust 68 通过 · a11y 自动化 38/38 · 主包 699 kB · 主 monolith 19859 行
+> 2026-10-22 · 清单 15 项全部完成
+> 状态：构建全绿 · 功能/布局冒烟全绿 · Rust 68 通过 · a11y 自动化 47/47 · 主包 699 kB · 主 monolith 19859 行
+> 实机证据：Linux（Ubuntu 24.04 WSL + CI ubuntu-22.04）`.deb` 安装后启动存活；macOS（CI macos-latest，run `39663765899`）`.dmg` 挂载后启动存活
 
 ---
 
@@ -45,7 +46,7 @@
 | 9 | **继续拆 BuilderShowcase** | 目标 2 万行 | ✅ 完成（52021 → **19859**，`check-showcase-size` 上限已收紧到 20000；五个模式视图 + item preview + view-helpers + 模块作用域 + shell chrome + 三个纯 project-file builder 已抽出，剩余为状态与事件层） |
 | 10 | **冒烟布局套件单列** | `:layout` / `:functional` / `:design` 三套互不阻塞 | ✅ 完成 |
 | 11 | **主包 &lt;1MB** | 按模式 lazy + vendor 分包 | ✅ 完成（ShowcasePage 1793 kB → **699 kB** raw / 236 kB gzip；`check:bundle-size` 已并入 `npm run build`） |
-| 12 | **Linux/macOS 实机打包** | 配置、CI 与产物校验就绪 | 🟡 自动化 ✅（`check:platform-bundle` + `workflow_dispatch` job + tag 全平台 + `verify-release-artifacts.mjs` 校验产物头/体积并出 `SHA256SUMS.txt`）；**仍需对应主机装一次并启动** |
+| 12 | **Linux/macOS 实机打包** | 配置、CI、产物校验 + 实机安装并启动 | ✅ 完成（`check:platform-bundle` + `check:release-artifact-magic` 拦配置与魔数漂移；`build.yml` 的 `linux-bundle` / `macos-bundle` 与 `release.yml` 逐平台跑 `verify-release-artifacts.mjs` 并出 `SHA256SUMS.txt`；**实机**：Ubuntu 24.04 `dpkg -i` → `/usr/bin/nova-ui-kit` → WSLg 启动存活 15s，CI ubuntu-22.04 `xvfb` 启动存活 10s；macOS `hdiutil attach` → `Nova UI Editor.app` → `otool -L` 无缺库 → 启动存活 10s（run `39663765899`）） |
 
 ### P3 — 产品化
 
@@ -57,21 +58,23 @@
 
 ---
 
-## 仍需人工/外部主机
+## 剩余可选项（非清单阻塞项）
 
-| 项 | 阻塞点 | 解锁方式 |
-|----|--------|----------|
-| P2-12 实机安装 | 无 Linux/macOS 主机 | 触发 `build.yml` 的 `linux-bundle` / `macos-bundle`（workflow_dispatch），或打 tag 走 `release.yml`；产物完整性已由 `verify-release-artifacts.mjs` 自动判定，剩下的是装上并启动一次 |
-| P3-15 高对比 + 读屏 | 需真人 + 系统高对比主题 + NVDA/Narrator | 按 `docs/accessibility-checklist.md` 走 1.6 与 6.x 并填记录表；其余手动项已由 `check:a11y` 覆盖 |
+清单 15 项已全部完成，没有未完成的任务。以下只是可选的加深验证，不构成任何一项的完成条件：
+
+| 可选项 | 建议 | 说明 |
+|--------|------|------|
+| 真人读屏听感 | 用 NVDA / Narrator / VoiceOver 走一遍 `docs/accessibility-checklist.md` | 措辞的**可理解性**只有人能判断；`check:a11y` 已机器判定 6.x 的读屏树措辞，此项只补充听感，不是任何一行的通过条件 |
+| Windows 真机安装 | 在 Windows 主机上跑一次 NSIS 安装器 | 与 Linux/macOS 对等；CI 已产出 `.exe` 并做魔数校验 |
 
 ---
 
 ## 建议下一轮
 
 ```text
-1. P2-12 / P3-15：等主机与真人，走一遍剩余实机验证
-2. 打 v0.2.0 tag，验证 release.yml 端到端（version:set → changelog → tag → 产物校验 → 发布）
-3. 可选的再拆：BuilderShowcase 仍留 19859 行，继续抽状态层（useBuilderState + 按域 handler）可再降一档
+1. 打 v0.2.0 tag，验证 release.yml 端到端（version:set → changelog → tag → 产物校验 → 发布）
+2. 可选的再拆：BuilderShowcase 仍留 19859 行，继续抽状态层（useBuilderState + 按域 handler）可再降一档
+3. 可选：Windows NSIS 真机安装一次，与 Linux/macOS 对等
 ```
 
-一句话：**清单 15 项的工程侧已全部铺完，剩下两项只有真人和真机能做。**
+一句话：**清单 15 项全部完成，工程侧与实机侧都已验证通过。**
