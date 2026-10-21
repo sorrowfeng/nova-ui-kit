@@ -47,15 +47,26 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
 
+    // Radix Slot requires exactly one element child — never split loading icon + children under asChild.
+    const content = asChild ? (
+      children
+    ) : loading ? (
+      <>
+        <Loader2 aria-hidden className="animate-spin" />
+        {children}
+      </>
+    ) : (
+      children
+    );
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={disabled || loading}
+        disabled={disabled || (!asChild && loading)}
         {...props}
       >
-        {loading ? <Loader2 aria-hidden className="animate-spin" /> : null}
-        {children}
+        {content}
       </Comp>
     );
   },

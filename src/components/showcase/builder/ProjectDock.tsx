@@ -153,7 +153,7 @@ export function DockTabList<T extends string>({
 }) {
   return (
     <div
-      className={cn(layout === "inline" ? "subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto" : "grid grid-cols-2 gap-1")}
+      className={cn(layout === "inline" ? "subtle-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto overflow-y-hidden" : "grid grid-cols-2 gap-1")}
       data-builder-dock-tab-list={layout}
     >
       {tabs.map((tab) => {
@@ -168,7 +168,7 @@ export function DockTabList<T extends string>({
             data-builder-dock-tab-layout={layout}
             className={cn(
               "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-lg text-[0.68rem] font-medium transition",
-              layout === "inline" ? "h-7 shrink-0 basis-auto px-2" : "px-2 py-1.5",
+              layout === "inline" ? "h-6 shrink-0 basis-auto px-2 text-[0.68rem]" : "px-2 py-1.5",
               active
                 ? "bg-secondary-container text-secondary-container-foreground"
                 : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",

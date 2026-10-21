@@ -222,18 +222,20 @@ export function OutputDock<T extends string>({
       {minimized ? (
         <div
           className={cn(
-            "pointer-events-auto grid h-full w-full min-w-0 items-center gap-2 overflow-hidden rounded-none border-y border-outline-variant/80 bg-surface-container-lowest/98 px-2 shadow-none backdrop-blur-xl",
+            "pointer-events-auto grid h-9 w-full min-w-0 items-center gap-2 overflow-hidden rounded-none border-y border-outline-variant/80 bg-surface-container-lowest/98 px-2 shadow-none backdrop-blur-xl",
             minimizedSummary
-              ? "grid-cols-[minmax(9rem,0.8fr)_minmax(0,1.2fr)_auto]"
+              ? "grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto]"
               : "grid-cols-[minmax(0,1fr)_auto]",
           )}
           style={minimizedStripStyle}
           data-builder-output-dock-minimized-shell=""
         >
-          <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
+          <div className="min-w-0 max-h-full overflow-hidden">
+            <DockTabList tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} layout="inline" />
+          </div>
           {minimizedSummary ? (
             <div
-              className="subtle-scrollbar hidden min-w-0 items-center overflow-x-auto border-l border-outline-variant/70 px-2 py-1 text-xs text-on-surface-variant md:flex"
+              className="subtle-scrollbar hidden min-w-0 max-h-full items-center overflow-x-auto border-l border-outline-variant/70 px-2 py-0 text-[0.68rem] leading-none text-on-surface-variant md:flex"
               data-builder-output-dock-minimized-summary=""
               data-builder-output-dock-minimized-peek=""
             >
@@ -243,6 +245,7 @@ export function OutputDock<T extends string>({
           <Button
             size="icon-sm"
             variant="secondary"
+            className="size-7"
             aria-label="显示输出面板"
             title="显示输出面板 (Ctrl+J)"
             data-builder-restore-output-dock=""

@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -135,12 +137,26 @@ import {
   type NovaEditorCommandEventDetail,
 } from "@/lib/editor-commands";
 import { cn } from "@/lib/utils";
-import { BuildWorkspace } from "./builder/BuildWorkspace";
-import { DesignWorkspace } from "./builder/DesignWorkspace";
+const BuildWorkspace = lazy(() => import("./builder/BuildWorkspace").then((m) => ({ default: m.BuildWorkspace })));
+const DesignWorkspace = lazy(() => import("./builder/DesignWorkspace").then((m) => ({ default: m.DesignWorkspace })));
 import { InspectorDock } from "./builder/InspectorDock";
-import { LogicWorkspace } from "./builder/LogicWorkspace";
+const LogicWorkspace = lazy(() => import("./builder/LogicWorkspace").then((m) => ({ default: m.LogicWorkspace })));
 import { NavigatorDock } from "./builder/NavigatorDock";
 import { OutputDock } from "./builder/OutputDock";
+import { SelectionActionBar } from "./builder/SelectionActionBar";
+import { useCanvasViewportInteraction } from "./builder/useCanvasViewportInteraction";
+import { useCanvasItemDrag } from "./builder/useCanvasItemDrag";
+import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
+import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
+import { ToolchainBanner } from "./builder/ToolchainBanner";
+import { AlignGuideOverlay } from "./builder/AlignGuideOverlay";
+import { buildInspectorWorkflowSteps } from "./builder/inspector-workflow";
+import {
+  getItemIdsInsideMarquee,
+  getSelectionMarqueeRect,
+  useCanvasMarquee,
+  type SelectionMarquee,
+} from "./builder/useCanvasMarquee";
 import { ProjectDock, type BuilderDockTab } from "./builder/ProjectDock";
 import {
   MIN_ITEM_HEIGHT,
@@ -838,16 +854,6 @@ type PalettePointerDrag = {
   dragging: boolean;
 };
 
-type SelectionMarquee = {
-  pointerId: number;
-  originX: number;
-  originY: number;
-  currentX: number;
-  currentY: number;
-  mode: "replace" | "add" | "subtract";
-  moved: boolean;
-  baseSelectedIds: string[];
-};
 
 type InlineTextEdit = {
   itemId: string;
@@ -883,10 +889,11 @@ const projectExplorerContextMenuWidth = 240;
 const projectExplorerContextMenuEstimatedHeight = 280;
 
 function estimateCanvasContextMenuHeight(hasItem: boolean, selectedCount: number) {
+  // Compact menu: header + favorites row + action list ≈ 360-480px
   if (!hasItem) {
-    return 620;
+    return 420;
   }
-  return selectedCount > 1 ? 860 : 760;
+  return selectedCount > 1 ? 520 : 480;
 }
 
 function placeFloatingEditorMenu(clientX: number, clientY: number, width: number, estimatedHeight: number) {
@@ -16167,7 +16174,6 @@ export function BuilderShowcase() {
   const [bottomDockHeight, setBottomDockHeight] = useState(360);
   const [bottomDockExpandedHeight, setBottomDockExpandedHeight] = useState(560);
   const [feedbackPanelOpen, setFeedbackPanelOpen] = useState(false);
-  const [selectionMarquee, setSelectionMarquee] = useState<SelectionMarquee | null>(null);
   const [tabOrderOverlayVisible, setTabOrderOverlayVisible] = useState(false);
   const [canvasControlsExpanded, setCanvasControlsExpanded] = useState(false);
   const openBottomDock = (tab: BuilderBottomDockTab, expanded = true) => {
@@ -16265,6 +16271,19 @@ export function BuilderShowcase() {
   const [checkingRunId, setCheckingRunId] = useState("");
   const [stoppingRunId, setStoppingRunId] = useState("");
   const [desktopRuntimeConsoleOpen, setDesktopRuntimeConsoleOpen] = useState(false);
+  const [canvasFindOpen, setCanvasFindOpen] = useState(false);
+  const [alignPreviewMode, setAlignPreviewMode] = useState<string | null>(null);
+  const [toolchainStatus, setToolchainStatus] = useState<{
+    ok: boolean;
+    missing: string[];
+    nodeVersion: string;
+    npmVersion: string;
+    cargoVersion: string;
+    rustcVersion: string;
+  } | null>(null);
+  const [previewWebPath, setPreviewWebPath] = useState<string | null>(null);
+  const [canvasFindQuery, setCanvasFindQuery] = useState("");
+  const canvasFindInputRef = useRef<HTMLInputElement | null>(null);
   const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
   const autoRunSessionRefreshRef = useRef<{ key: string; checkedAt: number }>({ key: "", checkedAt: 0 });
   const [readingRuntimeLogId, setReadingRuntimeLogId] = useState("");
@@ -17203,7 +17222,7 @@ export function BuilderShowcase() {
       }
       window.cancelAnimationFrame(restoreRustEditorFrame);
     };
-  }, [activeProject.editorState?.updatedAt, activeProject.id]);
+  }, [activeProject.id]);
   useEffect(() => {
     setOpenEditorFileIds((current) => {
       const validIds = new Set(activeProject.files.map((file) => file.id));
@@ -17810,13 +17829,6 @@ export function BuilderShowcase() {
   const suppressPaletteClickRef = useRef(false);
   const selectionMarqueeRef = useRef<SelectionMarquee | null>(null);
   const suppressCanvasClickRef = useRef(false);
-  const canvasPanSessionRef = useRef<{
-    pointerId: number;
-    startClientX: number;
-    startClientY: number;
-    startScrollLeft: number;
-    startScrollTop: number;
-  } | null>(null);
   const projectTaskQueueRef = useRef<ProjectTaskEntry[]>(loadProjectTaskQueueState().tasks);
   const projectTaskQueuePausedRef = useRef(projectTaskQueuePaused);
   const projectTaskRunnerRef = useRef<Promise<void> | null>(null);
@@ -21768,138 +21780,33 @@ export function BuilderShowcase() {
     return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
   };
 
-  const getSelectionMarqueeRect = (marquee: SelectionMarquee) => {
-    const left = Math.min(marquee.originX, marquee.currentX);
-    const top = Math.min(marquee.originY, marquee.currentY);
-    const right = Math.max(marquee.originX, marquee.currentX);
-    const bottom = Math.max(marquee.originY, marquee.currentY);
-    return {
-      left,
-      top,
-      width: right - left,
-      height: bottom - top,
-      right,
-      bottom,
-    };
-  };
-
-  const getItemIdsInsideMarquee = (marquee: SelectionMarquee) => {
-    const rect = getSelectionMarqueeRect(marquee);
-    const nextSelected = new Set(marquee.mode === "replace" ? [] : marquee.baseSelectedIds);
-
-    itemsRef.current.forEach((item) => {
-      const position = getAbsolutePosition(item, itemsRef.current);
-      const itemRight = position.x + item.width;
-      const itemBottom = position.y + item.height;
-      const intersects = rect.left <= itemRight && rect.right >= position.x && rect.top <= itemBottom && rect.bottom >= position.y;
-      if (intersects) {
-        if (marquee.mode === "subtract") {
-          nextSelected.delete(item.id);
-        } else {
-          nextSelected.add(item.id);
-        }
-      }
-    });
-
-    return Array.from(nextSelected);
-  };
-
-  const startSelectionMarquee = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (mode !== "design" || event.button !== 0 || canvasPanMode || spacePanActive || dragSession) {
-      return;
-    }
-
-    const target = event.target as HTMLElement;
-    if (target.closest("[data-builder-node-id], [data-builder-resize-handle], button, input, textarea, select, [contenteditable='true']")) {
-      return;
-    }
-
-    const point = getCanvasPoint(event.clientX, event.clientY);
-    const marqueeMode: SelectionMarquee["mode"] = event.altKey
-      ? "subtract"
-      : event.ctrlKey || event.metaKey || event.shiftKey
-        ? "add"
-        : "replace";
-    const marquee: SelectionMarquee = {
-      pointerId: event.pointerId,
-      originX: point.x,
-      originY: point.y,
-      currentX: point.x,
-      currentY: point.y,
-      mode: marqueeMode,
-      moved: false,
-      baseSelectedIds: selectedIds,
-    };
-
-    event.preventDefault();
-    event.stopPropagation();
-    selectionMarqueeRef.current = marquee;
-    setSelectionMarquee(marquee);
-    setDropIntent(null);
-    if (marquee.mode === "replace") {
+  const { selectionMarquee, startSelectionMarquee, clearMarquee } = useCanvasMarquee({
+    enabled: mode === "design",
+    blocked: Boolean(canvasPanMode || spacePanActive || dragSession),
+    selectedIds,
+    allItemIds: items.map((item) => item.id),
+    getCanvasPoint,
+    itemBounds: (itemId) => {
+      const item = items.find((candidate) => candidate.id === itemId);
+      if (!item) return null;
+      const position = getAbsolutePosition(item, items);
+      return { x: position.x, y: position.y, width: item.width, height: item.height };
+    },
+    onSelectionChange: (ids) => setSelectedIds(ids),
+    onAnchorChange: (id) => setSelectionAnchorId(id),
+    onMarqueeComplete: () => {
+      setRightDockTab("properties");
+      suppressCanvasClickRef.current = true;
+      window.setTimeout(() => {
+        suppressCanvasClickRef.current = false;
+      }, 0);
+    },
+    onReplaceStart: () => {
       setSelectionAnchorId("");
       setSelectedIds([]);
-    }
-  };
-
-  useEffect(() => {
-    if (!selectionMarquee) {
-      return;
-    }
-
-    const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerId !== selectionMarquee.pointerId) {
-        return;
-      }
-
-      const point = getCanvasPoint(event.clientX, event.clientY);
-      const moved = Math.hypot(point.x - selectionMarquee.originX, point.y - selectionMarquee.originY) > 3;
-      const nextMarquee = {
-        ...selectionMarquee,
-        currentX: point.x,
-        currentY: point.y,
-        moved,
-      };
-
-      event.preventDefault();
-      selectionMarqueeRef.current = nextMarquee;
-      setSelectionMarquee(nextMarquee);
-      if (moved) {
-        const nextSelectedIds = getItemIdsInsideMarquee(nextMarquee);
-        setSelectedIds(nextSelectedIds);
-        setSelectionAnchorId(nextSelectedIds[0] ?? "");
-      }
-    };
-
-    const onPointerUp = (event: PointerEvent) => {
-      if (event.pointerId !== selectionMarquee.pointerId) {
-        return;
-      }
-
-      const finalMarquee = selectionMarqueeRef.current ?? selectionMarquee;
-      if (finalMarquee.moved) {
-        const nextSelectedIds = getItemIdsInsideMarquee(finalMarquee);
-        setSelectedIds(nextSelectedIds);
-        setSelectionAnchorId(nextSelectedIds[0] ?? "");
-        setRightDockTab("properties");
-        suppressCanvasClickRef.current = true;
-        window.setTimeout(() => {
-          suppressCanvasClickRef.current = false;
-        }, 0);
-      }
-      selectionMarqueeRef.current = null;
-      setSelectionMarquee(null);
-    };
-
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointercancel", onPointerUp);
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
-    };
-  }, [selectionMarquee, mode, page.zoom, page.width, page.height, selectedIds]);
+      setDropIntent(null);
+    },
+  });
 
   const getNodeCanvasPosition = (item: BuilderItem) => {
     const canvas = canvasRef.current;
@@ -22366,6 +22273,23 @@ export function BuilderShowcase() {
 
   const handleCanvasDrop = (event: DragEvent) => {
     event.preventDefault();
+    const assetId = event.dataTransfer.getData("application/x-nova-asset");
+    if (assetId) {
+      const asset = activeProject.assets.find((candidate) => candidate.id === assetId);
+      if (asset) {
+        const intent = getFrameDropIntentFromClientPoint(event.clientX, event.clientY);
+        const targetFrame = intent ? itemsRef.current.find((item) => item.id === intent.frameId) : null;
+        addComponent("image", getRelativeDropPoint(event.clientX, event.clientY, targetFrame), intent?.frameId, intent?.index, {
+          label: asset.name,
+          alt: asset.name,
+          assetId: asset.id,
+          assetPath: asset.publicPath,
+        });
+        showProjectJumpFeedback("success", "已放入图片", `${asset.name} 已从资源拖入画布。`);
+      }
+      setDropIntent(null);
+      return;
+    }
     const type = event.dataTransfer.getData("application/x-nova-component") as BuilderComponentType;
     if (!mapLegacyType(type)) {
       return;
@@ -22374,6 +22298,11 @@ export function BuilderShowcase() {
     const targetFrame = intent ? itemsRef.current.find((item) => item.id === intent.frameId) : null;
     addComponent(type, getRelativeDropPoint(event.clientX, event.clientY, targetFrame), intent?.frameId, intent?.index);
     setDropIntent(null);
+  };
+
+  const handleAssetDragStart = (event: DragEvent, asset: DesignerAsset) => {
+    event.dataTransfer.setData("application/x-nova-asset", asset.id);
+    event.dataTransfer.effectAllowed = "copy";
   };
 
   const handlePalettePointerDown = (
@@ -22657,74 +22586,54 @@ export function BuilderShowcase() {
     }, { history: false });
   };
 
-  const startMove = (event: ReactPointerEvent<HTMLDivElement>, item: BuilderItem) => {
-    if (mode !== "design" || item.locked || event.button !== 0 || canvasPanMode || spacePanActive || event.altKey) {
-      return;
-    }
-    const target = event.target as HTMLElement;
-    if (target.closest("[data-builder-resize-handle]")) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.ctrlKey || event.metaKey || event.shiftKey) {
-      selectItem(item.id, event);
-      return;
-    }
-
-    const moveIds = (selectedIds.includes(item.id) ? selectedIds : [item.id]).filter((id) => {
-      const node = items.find((candidate) => candidate.id === id);
-      return node && !node.locked;
-    });
-    if (moveIds.length === 0) {
-      return;
-    }
-
-    if (!selectedIds.includes(item.id)) {
-      setSelectedId(item.id);
-    }
-    pushHistorySnapshot();
-    setDragSession({
-      kind: "move",
-      ids: moveIds,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      origins: Object.fromEntries(
-        moveIds.map((id) => {
-          const node = items.find((candidate) => candidate.id === id) ?? item;
-          return [id, { x: node.x, y: node.y }];
-        }),
-      ),
-      absoluteOrigins: Object.fromEntries(
-        moveIds.map((id) => {
-          const node = items.find((candidate) => candidate.id === id) ?? item;
-          return [id, getNodeCanvasPosition(node)];
-        }),
-      ),
-    });
+  const pasteSelectionFromClipboard = () => {
+    pasteClipboardItems();
   };
 
-  const startResize = (event: ReactPointerEvent<HTMLButtonElement>, item: BuilderItem, handle: ResizeHandle) => {
-    if (mode !== "design" || item.locked || event.button !== 0) {
+  const openCanvasFind = () => {
+    setCanvasFindOpen(true);
+    window.requestAnimationFrame(() => {
+      canvasFindInputRef.current?.focus();
+      canvasFindInputRef.current?.select();
+    });
+    showProjectJumpFeedback("success", "画布搜索已打开", "输入控件名称或类型定位，Esc 关闭。");
+  };
+
+  const createSampleProjectFromTemplate = () => {
+    const seed = createProjectTemplateSeed("dashboard", projectTemplateSeedOptions());
+    const sample = seed.files[0];
+    if (!sample) {
+      showProjectJumpFeedback("warning", "示例不可用", "模板未提供默认文件。");
       return;
     }
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    setSelectedId(item.id);
-    pushHistorySnapshot();
-    setDragSession({
-      kind: "resize",
-      id: item.id,
-      handle,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      originWidth: item.width,
-      originHeight: item.height,
-      originX: item.x,
-      originY: item.y,
-    });
+    updateActiveFile((file) => ({
+      ...file,
+      name: sample.name,
+      page: sample.page,
+      items: sample.items,
+    }));
+    if (seed.rustCommands.length > 0) {
+      updateActiveProject((project) => ({
+        ...project,
+        rustCommands: seed.rustCommands,
+      }));
+    }
+    switchEditorMode("design");
+    showProjectJumpFeedback("success", "示例项目已载入", "仪表盘模板包含表格与命令绑定，可直接预览或生成。");
   };
+
+  const { startMove, startResize } = useCanvasItemDrag({
+    mode,
+    canvasPanMode,
+    spacePanActive,
+    items,
+    selectedIds,
+    selectItem,
+    setSelectedId: (id) => setSelectedId(id),
+    pushHistorySnapshot,
+    setDragSession,
+    getNodeCanvasPosition,
+  });
 
   const updateSelectedProps = (patch: BuilderItemProps) => {
     updateActiveItems((current) =>
@@ -28481,7 +28390,7 @@ export function BuilderShowcase() {
           await validateGeneratedWindow();
           return {
             status: "skipped",
-            summary: `Window validation was blocked by ${buildReadinessSummary.errorCount} readiness issue(s).`,
+            summary: `窗口验证被 ${buildReadinessSummary.errorCount} 个就绪问题阻塞：${buildReadinessSummary.items.find((i) => i.severity === "error")?.title ?? "见就绪列表"}`,
           };
         }
         await validateGeneratedWindow();
@@ -28491,7 +28400,7 @@ export function BuilderShowcase() {
           await buildActiveProject();
           return {
             status: "skipped",
-            summary: `Release exe build was blocked by ${buildReadinessSummary.errorCount} readiness issue(s).`,
+            summary: `exe 构建被 ${buildReadinessSummary.errorCount} 个就绪问题阻塞：${buildReadinessSummary.items.find((i) => i.severity === "error")?.title ?? "见就绪列表"}`,
           };
         }
         return waitForBackendProjectTask(task.id, "build");
@@ -28500,7 +28409,7 @@ export function BuilderShowcase() {
           await bundleActiveProject();
           return {
             status: "skipped",
-            summary: `Installer bundle build was blocked by ${buildReadinessSummary.errorCount} readiness issue(s).`,
+            summary: `安装包构建被 ${buildReadinessSummary.errorCount} 个就绪问题阻塞：${buildReadinessSummary.items.find((i) => i.severity === "error")?.title ?? "见就绪列表"}`,
           };
         }
         return waitForBackendProjectTask(task.id, "bundle");
@@ -28602,7 +28511,11 @@ export function BuilderShowcase() {
             ...failedTaskBase,
             commandArgs: createReleasePipelineCommandArgs(failedTaskBase),
           };
-          setProjectTaskQueueMessage(`${failedTask.title} failed. Open its log or retry after fixing the project.`);
+          if (failedTask.status === "failed") {
+            const tail = (failedTask.logPreview || failedTask.error || "").split("\n").slice(-12).join("\n");
+            setBuildError(`${failedTask.title} 失败。\n${tail}`);
+          }
+          setProjectTaskQueueMessage(`${failedTask.title} 失败。请查看日志或修复后重试。`);
           updateProjectTask(task.id, failedTask);
           recordReleasePipelineTaskUpdate(failedTask);
           if (failedTask.pipelineRunId) {
@@ -28637,9 +28550,8 @@ export function BuilderShowcase() {
 
     const primaryBlocker = blockers[0];
     const actionLabel = label ?? (actionIds.length === 1 ? projectTaskDefinitions[gatedActionId].title : "发布工作流");
-    const issueWord = blockers.length === 1 ? "issue" : "issues";
-    const summary = `${actionLabel} blocked by ${blockers.length} readiness ${issueWord}.`;
-    const detail = `${primaryBlocker.title}: ${primaryBlocker.detail}`;
+    const summary = `${actionLabel}被 ${blockers.length} 个就绪问题阻塞`;
+    const detail = `${primaryBlocker.title}：${primaryBlocker.detail}`;
     const logPreview = blockers
       .slice(0, 8)
       .map((blocker, index) => `[${index + 1}] ${blocker.title}: ${blocker.detail}`)
@@ -31384,7 +31296,18 @@ export function BuilderShowcase() {
         : selectedItem
           ? "single"
           : "idle";
-  const selectionModeHudCount = selectionMarquee ? getItemIdsInsideMarquee(selectionMarquee).length : selectedIds.length;
+  const selectionModeHudCount = selectionMarquee
+    ? getItemIdsInsideMarquee(
+        selectionMarquee,
+        (itemId) => {
+          const item = items.find((candidate) => candidate.id === itemId);
+          if (!item) return null;
+          const position = getAbsolutePosition(item, items);
+          return { x: position.x, y: position.y, width: item.width, height: item.height };
+        },
+        items.map((item) => item.id),
+      ).length
+    : selectedIds.length;
   const selectionModeHudLabel =
     selectionModeHudTone === "subtract"
       ? "减选中"
@@ -31710,92 +31633,19 @@ export function BuilderShowcase() {
     };
   };
 
-  const handleCanvasViewportScroll = (event: ReactUIEvent<HTMLDivElement>) => {
-    rememberCanvasViewportPosition(event.currentTarget);
-  };
-
-  const startCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const shouldPan = canvasPanActive || event.button === 1 || event.altKey;
-    const viewport = canvasViewportRef.current;
-    if (!shouldPan || !viewport) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    viewport.setPointerCapture(event.pointerId);
-    canvasPanSessionRef.current = {
-      pointerId: event.pointerId,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      startScrollLeft: viewport.scrollLeft,
-      startScrollTop: viewport.scrollTop,
-    };
-  };
-
-  const moveCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const session = canvasPanSessionRef.current;
-    const viewport = canvasViewportRef.current;
-    if (!session || !viewport || session.pointerId !== event.pointerId) {
-      return;
-    }
-
-    event.preventDefault();
-    viewport.scrollLeft = session.startScrollLeft - (event.clientX - session.startClientX);
-    viewport.scrollTop = session.startScrollTop - (event.clientY - session.startClientY);
-    rememberCanvasViewportPosition(viewport);
-  };
-
-  const stopCanvasPan = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const session = canvasPanSessionRef.current;
-    const viewport = canvasViewportRef.current;
-    if (viewport?.hasPointerCapture(event.pointerId)) {
-      viewport.releasePointerCapture(event.pointerId);
-    }
-    if (session?.pointerId === event.pointerId) {
-      canvasPanSessionRef.current = null;
-    }
-  };
-
-  const handleCanvasViewportWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
-    if (!(event.ctrlKey || event.metaKey)) {
-      return;
-    }
-    event.preventDefault();
-    zoomCanvasBy(event.deltaY < 0 ? 0.1 : -0.1);
-  };
-
-  const startCanvasMousePan = (event: ReactMouseEvent<HTMLDivElement>) => {
-    const shouldPan = canvasPanActive || event.button === 1 || event.altKey;
-    const viewport = canvasViewportRef.current;
-    if (!shouldPan || !viewport) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    const session = {
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      startScrollLeft: viewport.scrollLeft,
-      startScrollTop: viewport.scrollTop,
-    };
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      viewport.scrollLeft = session.startScrollLeft - (moveEvent.clientX - session.startClientX);
-      viewport.scrollTop = session.startScrollTop - (moveEvent.clientY - session.startClientY);
-      rememberCanvasViewportPosition(viewport);
-      moveEvent.preventDefault();
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  };
+  const {
+    startCanvasPan,
+    moveCanvasPan,
+    stopCanvasPan,
+    startCanvasMousePan,
+    handleCanvasViewportScroll,
+    handleCanvasViewportWheel,
+  } = useCanvasViewportInteraction({
+    viewportRef: canvasViewportRef,
+    canvasPanActive,
+    zoomCanvasBy,
+    onViewportMoved: rememberCanvasViewportPosition,
+  });
 
   const canvasScaledWidth = page.width * page.zoom;
   const canvasScaledHeight = page.height * page.zoom;
@@ -33783,24 +33633,83 @@ export function BuilderShowcase() {
     });
   };
 
+  const openLocalPath = (path: string) => invokeIfAvailable<void>("open_local_path", { path });
+
+  const previewGeneratedWeb = async () => {
+    setBuildError("");
+    setMode("build");
+    openBottomDock("tasks", true);
+    showProjectJumpFeedback("success", "正在生成网页预览", "编译生成应用前端（比完整 exe 快）…");
+    try {
+      const result = await invokeIfAvailable<{ index_path: string; dist_dir: string; log: string }>(
+        "preview_generated_web",
+        { project: activeProject, rustLogic: activeProject.rustLogic },
+      );
+      if (!result) {
+        setBuildError("网页预览需要 Tauri 桌面运行时。");
+        return;
+      }
+      setPreviewWebPath(result.index_path);
+      void openLocalPath(result.index_path);
+      showProjectJumpFeedback("success", "网页预览已打开", result.index_path);
+    } catch (error) {
+      const message = String(error);
+      setBuildError("网页预览失败：\n" + message.slice(-1200));
+      showProjectJumpFeedback("error", "网页预览失败", message.slice(0, 160));
+    }
+  };
+
+  const retryLastFailedTask = () => {
+    const failed = activeProjectTasks.find((task) => task.status === "failed");
+    if (!failed) {
+      setBuildError("没有失败任务可重试。");
+      return;
+    }
+    setBuildError("");
+    enqueueProjectTask(failed.actionId);
+    showProjectJumpFeedback("success", "已重新排队", failed.title);
+  };
+
   const runWorkflowPrimaryAction = () => {
+    // "运行" = end-to-end: stop runtime if running, else launch exe if ready,
+    // else run the remaining workflow pipeline so the user gets a runnable app.
     if (workflowRuntimeActive && activeWorkflowRuntimeSession) {
       setMode("build");
       openBottomDock("logs", false);
       void stopWorkflowRuntimeSession(activeWorkflowRuntimeSession);
       return;
     }
-    if (workflowComplete) {
+    if (workflowComplete && activeProject.outputExePath) {
       setMode("build");
       openBottomDock("output", false);
+      void launchActiveOutputExecutable();
+      return;
+    }
+    // Auto-seed a sample project when the canvas is empty so "运行" always has something to build.
+    if (items.length === 0) {
+      createSampleProjectFromTemplate();
+    }
+    // Run every remaining step as one pipeline so a single click reaches exe.
+    const pendingSteps = editorWorkflowStepStates.filter((state) => state.status === "idle" || state.status === "failed");
+    const actionIds = pendingSteps.flatMap((state) => state.step.actions);
+    if (actionIds.length === 0) {
       if (activeProject.outputExePath) {
         void launchActiveOutputExecutable();
+      } else {
+        setBuildError("没有待执行的构建步骤，且尚未生成可执行文件。");
       }
       return;
     }
-    if (nextWorkflowStepState) {
-      runEditorWorkflowStep(nextWorkflowStepState.step);
-    }
+    setMode("build");
+    openBottomDock("tasks", true);
+    runProjectActionsAsPipeline({
+      id: "one-click-run-" + Date.now(),
+      title: "一键运行",
+      detail: "保存 → 生成 → 检查 → 验证 → 构建 exe",
+      badge: "运行",
+      actions: actionIds,
+      custom: true,
+    });
   };
 
   useEffect(() => {
@@ -33890,7 +33799,7 @@ export function BuilderShowcase() {
       if (event.key === "Escape" && selectionMarquee) {
         runShortcut(event, () => {
           selectionMarqueeRef.current = null;
-          setSelectionMarquee(null);
+          clearMarquee();
           setSelectedIds(selectionMarquee.baseSelectedIds);
         });
         return;
@@ -33930,6 +33839,29 @@ export function BuilderShowcase() {
 
       if (commandOnly && key === "x" && selectedItems.length > 0) {
         runShortcut(event, cutSelectionToClipboard);
+        return;
+      }
+
+      if (commandOnly && key === "v") {
+        runShortcut(event, pasteSelectionFromClipboard);
+        return;
+      }
+
+      if (commandOnly && key === "d" && selectedItems.length > 0) {
+        runShortcut(event, duplicateSelected);
+        return;
+      }
+
+      if (commandOnly && key === "f") {
+        runShortcut(event, openCanvasFind);
+        return;
+      }
+
+      if (commandOnly && key === "a" && items.length > 0) {
+        runShortcut(event, () => {
+          setSelectedIds(items.map((item) => item.id));
+          setSelectionAnchorId(items[0]?.id ?? "");
+        });
         return;
       }
 
@@ -34014,154 +33946,40 @@ export function BuilderShowcase() {
     runSelectedEventAndRevealLogs();
   };
 
-  const inspectorWorkflowSteps: InspectorWorkflowStep[] =
-    selectedItems.length > 1
-      ? [
-          {
-            id: "batch-properties",
-            title: "批量布局",
-            detail: `已选择 ${selectedItems.length} 个控件；共享编辑会保留在属性面板中。`,
-            badge: `${selectedItems.length} 个已选`,
-            icon: Layers,
-            actionLabel: "属性",
-            tone: rightDockTab === "properties" ? "primary" : "ready",
-            onAction: openSelectedProperties,
-          },
-          {
-            id: "batch-duplicate",
-            title: "复制",
-            detail: "复制所选控件及当前布局和绑定。",
-            badge: "复制",
-            icon: Copy,
-            actionLabel: "复制",
-            tone: "ready",
-            onAction: duplicateSelected,
-          },
-          {
-            id: "batch-impact",
-            title: "影响图谱",
-            detail: "检查哪些生成文件和验证步骤依赖当前选择。",
-            badge: "图谱",
-            icon: AlertTriangle,
-            actionLabel: "影响",
-            tone: rightDockTab === "impact" ? "primary" : "muted",
-            onAction: () => setRightDockTab("impact"),
-          },
-          {
-            id: "batch-delete",
-            title: "删除",
-            detail: `${selectedItems.filter((item) => item.locked).length} 个锁定控件会被跳过。`,
-            badge: "危险",
-            icon: Trash2,
-            actionLabel: "删除",
-            tone: "danger",
-            onAction: requestDeleteSelected,
-          },
-        ]
-      : selectedItem
-        ? [
-            {
-              id: "selected-properties",
-              title: selectedPropertyIssues.length > 0 ? "修复属性" : "属性",
-              detail:
-                selectedPropertyIssues.length > 0
-                  ? `发现 ${selectedPropertyIssues.length} 个问题；${selectedPropertyAutoFixCount} 个可立即修复。`
-                  : `${getItemSummary(selectedItem)} 可编辑布局和内容。`,
-              badge: selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} 个问题` : "就绪",
-              icon: selectedPropertyIssues.length > 0 ? AlertTriangle : Settings2,
-              actionLabel: selectedPropertyAutoFixCount > 0 ? "立即修复" : "打开",
-              tone: selectedPropertyIssues.length > 0 ? "warning" : rightDockTab === "properties" ? "primary" : "ready",
-              onAction: selectedPropertyAutoFixCount > 0 ? applySelectedPropertyAutoFix : openSelectedProperties,
-            },
-            {
-              id: "selected-connection",
-              title: selectedEventName ? (selectedEventCommand ? "事件" : "绑定事件") : "静态控件",
-              detail: selectedEventName
-                ? selectedEventCommand
-                  ? `${selectedEventName} 调用 ${sanitizeRustCommandName(selectedEventCommand.name)}。`
-                  : `${selectedEventName} 可用，但还没有 Rust 命令。`
-                : "这个控件没有事件；Connections 会显示可用的下一步。",
-              badge: selectedEventName ? (selectedEventCommand ? "已绑定" : "待绑定") : "静态",
-              icon: Braces,
-              actionLabel: selectedEventName ? (selectedEventCommand ? "打开" : "绑定") : "查看",
-              tone: selectedEventName ? (selectedEventCommand ? (rightDockTab === "connections" ? "primary" : "ready") : "warning") : "muted",
-              onAction: selectedEventName
-                ? selectedEventCommand
-                  ? openSelectedConnections
-                  : () => createAndBindBackendIntegrationCommand()
-                : openSelectedConnections,
-            },
-            {
-              id: "selected-run-event",
-              title: selectedLatestSimulatorTrace ? "最近运行" : "运行验证",
-              detail: selectedLatestSimulatorTrace
-                ? `${selectedLatestSimulatorTrace.status}: ${selectedLatestSimulatorTrace.message}`
-                : selectedEventCommand
-                  ? "执行已绑定的 Rust 命令并显示模拟器日志。"
-                  : "先绑定命令，之后即可运行这一步。",
-              badge: selectedLatestSimulatorTrace?.status ?? (selectedEventCommand ? "就绪" : "阻塞"),
-              icon: Play,
-              actionLabel: selectedEventCommand ? "运行" : "先绑定",
-              tone: selectedLatestSimulatorTrace
-                ? selectedLatestSimulatorTrace.status === "success"
-                  ? "primary"
-                  : "warning"
-                : selectedEventCommand
-                  ? "ready"
-                  : "muted",
-              disabled: !selectedEventCommand,
-              onAction: runSelectedEventFromActionBar,
-            },
-            {
-              id: "selected-impact",
-              title: "影响图谱",
-              detail: selectedControlReverseDependency
-                ? selectedControlReverseDependency.summary
-                : "显示该控件下游相关的文件、检查和生成输出。",
-              badge: selectedControlReverseDependency ? reverseDependencyStatusLabel(selectedControlReverseDependency.status) : "图谱",
-              icon: AlertTriangle,
-              actionLabel: "影响",
-              tone: rightDockTab === "impact" ? "primary" : "muted",
-              onAction: () => setRightDockTab("impact"),
-            },
-          ]
-        : [
-            {
-              id: "empty-select",
-              title: "选择",
-              detail: "使用导航或画布聚焦属性和连接工作流。",
-              badge: "开始",
-              icon: MousePointer2,
-              actionLabel: "导航",
-              tone: "primary",
-              onAction: () => {
-                setLeftDockTab("navigator");
-                setRightDockTab("properties");
-              },
-            },
-            {
-              id: "empty-components",
-              title: "插入",
-              detail: "打开组件库并把控件放入当前 UI 文件。",
-              badge: `${palette.length} 项`,
-              icon: Layers,
-              actionLabel: "组件",
-              tone: "ready",
-              onAction: () => setLeftDockTab("components"),
-            },
-            {
-              id: "empty-workflow",
-              title: "构建流程",
-              detail: nextWorkflowStepState
-                ? `${nextWorkflowStepState.step.title}: ${nextWorkflowStepState.step.detail}`
-                : "从工作流条执行保存、生成、验证和构建。",
-              badge: nextWorkflowStepState ? workflowStepStatusLabel(nextWorkflowStepState.status) : "待开始",
-              icon: Download,
-              actionLabel: "任务",
-              tone: nextWorkflowStepState?.status === "failed" ? "warning" : "muted",
-              onAction: () => openRelevantTaskDock(),
-            },
-          ];
+  const inspectorWorkflowSteps: InspectorWorkflowStep[] = buildInspectorWorkflowSteps({
+    selectedItems,
+    selectedItem,
+    selectedPropertyIssues,
+    selectedPropertyAutoFixCount,
+    selectedEventName,
+    selectedEventCommandName: selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : null,
+    selectedLatestSimulatorStatus: selectedLatestSimulatorTrace?.status,
+    selectedLatestSimulatorMessage: selectedLatestSimulatorTrace?.message,
+    selectedControlReverseDependencySummary: selectedControlReverseDependency?.summary,
+    selectedControlReverseDependencyLabel: selectedControlReverseDependency
+      ? reverseDependencyStatusLabel(selectedControlReverseDependency.status)
+      : undefined,
+    rightDockTab,
+    leftDockTab,
+    paletteCount: palette.length,
+    nextWorkflowTitle: nextWorkflowStepState?.step.title,
+    nextWorkflowDetail: nextWorkflowStepState?.step.detail,
+    nextWorkflowStatusLabel: nextWorkflowStepState ? workflowStepStatusLabel(nextWorkflowStepState.status) : undefined,
+    nextWorkflowFailed: nextWorkflowStepState?.status === "failed",
+    getItemSummary,
+    openSelectedProperties,
+    openSelectedConnections,
+    openImpact: () => setRightDockTab("impact"),
+    openNavigator: () => setLeftDockTab("navigator"),
+    openComponents: () => setLeftDockTab("components"),
+    openTaskDock: () => openRelevantTaskDock(),
+    duplicateSelected,
+    requestDeleteSelected,
+    applySelectedPropertyAutoFix,
+    createAndBindBackendIntegrationCommand,
+    runSelectedEvent: runSelectedEventFromActionBar,
+    sanitizeRustCommandName,
+  });
 
   const inspectorWorkflowBadge =
     selectedItems.length > 1
@@ -34245,6 +34063,34 @@ export function BuilderShowcase() {
       projectJumpInputRef.current?.select();
     });
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    void invokeIfAvailable<{
+      node: boolean;
+      npm: boolean;
+      cargo: boolean;
+      rustc: boolean;
+      node_version: string;
+      npm_version: string;
+      cargo_version: string;
+      rustc_version: string;
+      missing: string[];
+    }>("check_toolchain", {}).then((status) => {
+      if (!status || cancelled) return;
+      setToolchainStatus({
+        ok: status.missing.length === 0,
+        missing: status.missing,
+        nodeVersion: status.node_version,
+        npmVersion: status.npm_version,
+        cargoVersion: status.cargo_version,
+        rustcVersion: status.rustc_version,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const handleEditorCommand = (event: Event) => {
@@ -34338,6 +34184,26 @@ export function BuilderShowcase() {
       if (command === "help-guide") {
         setProjectJumpQuery("action build command settings");
         openProjectLocator();
+        return;
+      }
+      if (command === "open-sample") {
+        createSampleProjectFromTemplate();
+        return;
+      }
+      if (command === "show-shortcuts" || command === "show-onboarding") {
+        // Handled at App shell.
+        return;
+      }
+      if (command === "canvas-find") {
+        setMode("design");
+        openCanvasFind();
+        return;
+      }
+      if (command === "preview-run") {
+        enqueueProjectTask("quick-check-all");
+        setMode("build");
+        openBottomDock("output");
+        showProjectJumpFeedback("success", "预览运行已启动", "已执行就绪检查并打开构建输出；可继续点 exe 或打包。");
         return;
       }
       if (command === "project-templates") {
@@ -34521,7 +34387,8 @@ export function BuilderShowcase() {
         </DialogContent>
       </Dialog>
         <div className="grid h-full min-h-0 grid-cols-[72px_minmax(0,1fr)]">
-          <nav
+
+              <nav
             className="flex flex-col items-stretch gap-2 border-r border-outline-variant bg-surface-container-low px-2 py-3"
             aria-label="编辑器模式"
             data-builder-mode-rail="qt-creator-left"
@@ -34978,6 +34845,39 @@ export function BuilderShowcase() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <Button
+                  size="icon-sm"
+                  variant="secondary"
+                  className="size-8"
+                  data-builder-preview-run=""
+                  aria-label="一键运行"
+                  title="一键运行（保存→生成→构建）"
+                  onClick={() => dispatchNovaEditorCommand("preview-run")}
+                >
+                  <Play aria-hidden className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  className="size-8"
+                  data-builder-preview-web=""
+                  aria-label="网页预览"
+                  title="网页预览（只编译前端，更快）"
+                  onClick={() => void previewGeneratedWeb()}
+                >
+                  <Monitor aria-hidden className="size-4" />
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  className="size-8"
+                  data-builder-retry-failed=""
+                  aria-label="重试失败任务"
+                  title="重试最近失败的任务"
+                  onClick={retryLastFailedTask}
+                >
+                  <RotateCcw aria-hidden className="size-4" />
+                </Button>
               </div>
               <button
                 type="button"
@@ -35420,8 +35320,8 @@ export function BuilderShowcase() {
               );
             })}
           </div>
-          <div className="hidden shrink-0 items-center gap-2 text-[0.62rem] text-on-surface-variant md:flex" data-builder-editor-tabs-summary="">
-            <span className="rounded-full bg-surface-container-high px-2 py-1">{openEditorTabCountLabel}</span>
+          <div className="hidden min-w-0 shrink items-center gap-2 text-[0.62rem] text-on-surface-variant md:flex" data-builder-editor-tabs-summary="">
+            <span className="max-w-[10rem] truncate rounded-full bg-surface-container-high px-2 py-1">{openEditorTabCountLabel}</span>
             <Button size="icon-sm" variant="ghost" className="size-7 rounded-lg" data-builder-editor-tabs-new-file="" aria-label="新建 UI 文件标签" title="新建 UI 文件" onClick={createNewFileFromNavigator}>
               <Plus aria-hidden className="size-4" />
             </Button>
@@ -37837,6 +37737,7 @@ export function BuilderShowcase() {
           </div>
           </div>
         ) : mode === "logic" ? (
+          <Suspense fallback={null}>
           <LogicWorkspace>
             <aside
               className="subtle-scrollbar min-h-0 space-y-1 overflow-y-auto rounded-lg border border-outline-variant bg-surface-container-low p-1.5"
@@ -43123,7 +43024,9 @@ export function BuilderShowcase() {
               </section>
             </aside>
           </LogicWorkspace>
+          </Suspense>
         ) : mode === "build" ? (
+          <Suspense fallback={null}>
           <BuildWorkspace
             toolbarPlacement="sidebar"
             toolbar={
@@ -43962,6 +43865,28 @@ export function BuilderShowcase() {
                       </div>
                     </div>
                   </section>
+                                <ProjectHealthPanel
+                  fileCount={activeProject.files.length}
+                  hasRustLogic={Boolean(activeProject.rustLogic?.trim())}
+                  hasCommands={activeProject.rustCommands.length > 0}
+                  onRunCheck={() => {
+                    const issues: string[] = [];
+                    const warnings: string[] = [];
+                    if (!activeProject.files.length) issues.push("没有 UI 文件");
+                    if (!activeProject.rustLogic?.trim()) warnings.push("rust/logic.rs 为空");
+                    if (!activeProject.rustCommands.length) warnings.push("尚未定义 Rust 命令");
+                    const ok = issues.length === 0;
+                    showProjectJumpFeedback(
+                      ok ? "success" : "error",
+                      ok ? "健康检查通过" : "健康检查发现问题",
+                      ok
+                        ? warnings.length
+                          ? "项目可用。提示：" + warnings.join("；")
+                          : "项目结构完整，可生成并构建。"
+                        : issues.join("；"),
+                    );
+                  }}
+                />
                   <section
                     className="rounded-md bg-surface-container-low px-2 py-1.5"
                     data-builder-readiness=""
@@ -43998,6 +43923,7 @@ export function BuilderShowcase() {
                     <div
                       className="mt-2 grid grid-cols-3 gap-1 text-center text-[0.66rem]"
                       data-builder-readiness-summary-strip="inline-counts"
+                      data-builder-readiness-a11y="disclosure-summary"
                     >
                       <div className="rounded-md bg-surface-container-high px-1.5 py-1">
                         <span className="font-medium text-destructive">{buildReadinessSummary.errorCount}</span>
@@ -45700,6 +45626,7 @@ export function BuilderShowcase() {
                   >
                     <summary
                       className="focus-ring flex min-h-6 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 [&::-webkit-details-marker]:hidden"
+                      aria-controls="builder-desktop-runtime-console-details"
                       data-builder-desktop-runtime-console-summary="single-row"
                     >
                       <div className="flex min-w-0 items-center gap-2">
@@ -45715,7 +45642,8 @@ export function BuilderShowcase() {
                         按需展开
                       </Badge>
                     </summary>
-                    <div className="mt-2 border-t border-outline-variant pt-2" data-builder-desktop-runtime-console-details="deferred">
+                    <div className="mt-2 border-t border-outline-variant pt-2" id="builder-desktop-runtime-console-details"
+                      data-builder-desktop-runtime-console-details="deferred">
                       <div className="mb-1.5 flex flex-wrap items-center justify-end gap-1">
                         <Button
                           size="icon-sm"
@@ -45941,6 +45869,14 @@ export function BuilderShowcase() {
                   </div>
                 </summary>
                 <div className="mt-2 border-t border-outline-variant pt-2" data-builder-generated-file-plan-details="deferred">
+                <div className="mb-2 rounded-lg border border-outline-variant bg-surface-container-low p-2 text-[0.64rem]" data-builder-generated-diff-preview="">
+                  <div className="mb-1 font-semibold text-on-surface">变更摘要预览</div>
+                  <div className="space-y-0.5 font-mono">
+                    <div className="text-primary">+ 新建 / 更新的生成文件以增量方式写入</div>
+                    <div className="text-on-surface-variant">  未变化文件不会重写，保留 Vite/Cargo 缓存</div>
+                    <div className="text-destructive">- 不会覆盖 create-only starter（如用户手改 README）</div>
+                  </div>
+                </div>
                 {showGeneratedPlanAdvanced ? (
                   <div className="mb-4 border-t border-outline-variant pt-3" data-builder-generated-plan-advanced="">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -47328,6 +47264,7 @@ export function BuilderShowcase() {
                 className="group rounded-lg border border-outline-variant bg-surface-container-low/80 p-1.5 text-xs"
                 data-builder-build-log-panel=""
                 data-builder-build-log-density="collapsed-summary"
+                    data-builder-build-log-a11y="summary-first"
               >
                 <summary
                   className="focus-ring flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-outline-variant bg-surface-container px-2 py-1 transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
@@ -47386,7 +47323,9 @@ export function BuilderShowcase() {
               </details>
             </section>
           </BuildWorkspace>
+          </Suspense>
         ) : (
+          <Suspense fallback={null}>
           <DesignWorkspace leftCollapsed={leftDockCollapsed} rightCollapsed={rightDockCollapsed}>
             <ProjectDock
               tabs={leftDockTabs}
@@ -48577,7 +48516,13 @@ export function BuilderShowcase() {
                   <div className="max-h-44 space-y-2 overflow-auto pr-1">
                     {activeProject.assets.map((asset) => (
                       <div key={asset.id} className="rounded-2xl border border-outline-variant bg-surface-container-high p-2">
-                        <div className="flex items-center gap-2">
+                        <div
+                          className="flex cursor-grab items-center gap-2"
+                          draggable
+                          data-builder-asset-drag={asset.name}
+                          title="拖到画布即可创建图片控件"
+                          onDragStart={(event) => handleAssetDragStart(event, asset)}
+                        >
                           <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                             <FileImage aria-hidden className="size-4" />
                           </span>
@@ -48628,7 +48573,7 @@ export function BuilderShowcase() {
                 data-builder-component-palette-layout="qt-compact-list"
                 data-builder-component-palette-priority="component-list-first"
               >
-                <div className="relative order-1">
+                <div className="relative">
                   <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
                   <Input
                     inputSize="sm"
@@ -48644,7 +48589,7 @@ export function BuilderShowcase() {
                   />
                 </div>
 
-                <div className="order-2 grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
+                <div className="grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
                   {componentPaletteCategoryOptions.map((category) => {
                     const active = category.id === componentPaletteCategory;
                     return (
@@ -48672,9 +48617,117 @@ export function BuilderShowcase() {
                   })}
                 </div>
 
+                <div
+                  className="space-y-1 relative isolate overflow-hidden"
+                  data-builder-component-list-priority="first"
+                  data-builder-component-list-mode="category-disclosure"
+                  data-builder-component-list-open-groups={visibleComponentPaletteDefaultOpenGroupCount}
+                >
+                  {visibleComponentPaletteGroups.length > 0 ? (
+                    visibleComponentPaletteGroups.map((group) => (
+                      <details
+                        key={group.id}
+                        className="group/palette rounded-lg border border-outline-variant/80 bg-surface-container-low p-1"
+                        open={group.defaultOpen}
+                        data-builder-component-group={group.id}
+                        data-builder-component-group-layout="category-disclosure"
+                        data-builder-component-group-default-open={group.defaultOpen ? "true" : "false"}
+                      >
+                        <summary
+                          className="focus-ring flex h-7 cursor-pointer list-none items-center gap-2 rounded-md px-1.5 text-xs transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
+                          data-builder-component-group-summary={group.id}
+                        >
+                          <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open/palette:rotate-90" />
+                          <span className="min-w-0 flex-1 truncate font-semibold text-on-surface">{group.label}</span>
+                          <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
+                            {group.definitions.length}
+                          </span>
+                        </summary>
+                        <div className="subtle-scrollbar mt-1 max-h-[260px] space-y-0.5 overflow-y-auto border-t border-outline-variant/70 pt-1" data-builder-component-group-details={group.id}>
+                          {group.definitions.map((definition) => {
+                            const Icon = definition.icon;
+                            const category = componentPaletteCategoryForType(definition.type);
+                            const favorite = componentPaletteFavoriteTypes.includes(definition.type);
+                            return (
+                              <div
+                                key={definition.type}
+                                data-builder-palette-type={definition.type}
+                                data-builder-palette-category={category}
+                                data-builder-palette-row-layout="compact"
+                                data-builder-palette-row-density="single-line"
+                                className="group isolate grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high"
+                              >
+                                <button
+                                  type="button"
+                                  draggable={false}
+                                  onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
+                                  onClick={() => {
+                                    if (suppressPaletteClickRef.current) {
+                                      return;
+                                    }
+                                    addComponent(definition.type);
+                                  }}
+                                  className="focus-ring m3-state-layer grid h-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 text-left"
+                                  title={`${definition.description} · ${componentPaletteCategoryLabel(category)}`}
+                                  aria-label={`添加 ${definition.title}，${componentPaletteCategoryLabel(category)}`}
+                                >
+                                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
+                                    <Icon aria-hidden className="size-3.5" />
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="truncate text-xs font-semibold leading-4">{definition.title}</span>
+                                    <span className="sr-only" data-builder-palette-category-label="metadata">
+                                      {componentPaletteCategoryLabel(category)}
+                                    </span>
+                                  </span>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-builder-component-favorite-toggle={definition.type}
+                                  data-builder-component-favorite-visibility={favorite ? "pinned" : "hover-reveal"}
+                                  aria-pressed={favorite}
+                                  aria-label={`${favorite ? "取消收藏" : "收藏"} ${definition.title}`}
+                                  title={favorite ? "取消收藏" : "收藏到常用控件"}
+                                  onClick={() => toggleComponentPaletteFavorite(definition.type)}
+                                  className={cn(
+                                    "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 opacity-0 transition hover:bg-surface-container-highest hover:text-primary hover:opacity-100 focus-visible:text-primary focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100",
+                                    favorite && "text-primary opacity-100",
+                                  )}
+                                >
+                                  <Star aria-hidden className={cn("size-3.5", favorite && "fill-current")} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </details>
+                    ))
+                  ) : (
+                    <div className="rounded-[18px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center">
+                      <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
+                      <p className="mt-2 text-xs font-medium">没有匹配的控件</p>
+                      <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">清空搜索或切换分类后继续添加控件。</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="mt-3 h-8"
+                        data-builder-component-search-reset=""
+                        onClick={() => {
+                          setComponentPaletteQuery("");
+                          setComponentPaletteCategory("all");
+                          setActiveComponentPaletteKitId("");
+                        }}
+                      >
+                        Reset filters
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 {showComponentPaletteQuickInsert ? (
-                  <section
-                    className="order-4 rounded-lg border border-outline-variant/80 bg-surface-container-low p-0.5"
+                  
+<section
+                    className="rounded-lg border border-outline-variant/80 bg-surface-container-low p-0.5 relative isolate overflow-hidden"
                     data-builder-component-quick-insert-priority="secondary-tools"
                     data-builder-component-quick-insert-density="tool-strip"
                   >
@@ -48717,7 +48770,7 @@ export function BuilderShowcase() {
 
                 {showComponentPaletteKits ? (
                   <section
-                    className="order-5 space-y-1 rounded-lg border border-outline-variant bg-surface-container-low p-1"
+                    className="space-y-1 rounded-lg border border-outline-variant bg-surface-container-low p-1 relative isolate overflow-hidden"
                     data-builder-component-kits=""
                     data-builder-component-kits-layout="compact-list"
                     data-builder-component-kits-density="single-line"
@@ -48947,112 +49000,7 @@ export function BuilderShowcase() {
                   </section>
                 ) : null}
 
-                <div
-                  className="order-3 space-y-1"
-                  data-builder-component-list-priority="first"
-                  data-builder-component-list-mode="category-disclosure"
-                  data-builder-component-list-open-groups={visibleComponentPaletteDefaultOpenGroupCount}
-                >
-                  {visibleComponentPaletteGroups.length > 0 ? (
-                    visibleComponentPaletteGroups.map((group) => (
-                      <details
-                        key={group.id}
-                        className="group/palette rounded-lg border border-outline-variant/80 bg-surface-container-low p-1"
-                        open={group.defaultOpen}
-                        data-builder-component-group={group.id}
-                        data-builder-component-group-layout="category-disclosure"
-                        data-builder-component-group-default-open={group.defaultOpen ? "true" : "false"}
-                      >
-                        <summary
-                          className="focus-ring flex h-7 cursor-pointer list-none items-center gap-2 rounded-md px-1.5 text-xs transition hover:bg-surface-container-high [&::-webkit-details-marker]:hidden"
-                          data-builder-component-group-summary={group.id}
-                        >
-                          <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open/palette:rotate-90" />
-                          <span className="min-w-0 flex-1 truncate font-semibold text-on-surface">{group.label}</span>
-                          <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
-                            {group.definitions.length}
-                          </span>
-                        </summary>
-                        <div className="subtle-scrollbar mt-1 max-h-[260px] space-y-0.5 overflow-y-auto border-t border-outline-variant/70 pt-1" data-builder-component-group-details={group.id}>
-                          {group.definitions.map((definition) => {
-                            const Icon = definition.icon;
-                            const category = componentPaletteCategoryForType(definition.type);
-                            const favorite = componentPaletteFavoriteTypes.includes(definition.type);
-                            return (
-                              <div
-                                key={definition.type}
-                                data-builder-palette-type={definition.type}
-                                data-builder-palette-category={category}
-                                data-builder-palette-row-layout="compact"
-                                data-builder-palette-row-density="single-line"
-                                className="group grid h-8 w-full grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md border border-transparent bg-transparent transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high"
-                              >
-                                <button
-                                  type="button"
-                                  draggable={false}
-                                  onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
-                                  onClick={() => {
-                                    if (suppressPaletteClickRef.current) {
-                                      return;
-                                    }
-                                    addComponent(definition.type);
-                                  }}
-                                  className="focus-ring m3-state-layer grid h-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-2 text-left"
-                                  title={`${definition.description} · ${componentPaletteCategoryLabel(category)}`}
-                                  aria-label={`添加 ${definition.title}，${componentPaletteCategoryLabel(category)}`}
-                                >
-                                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-container-high text-primary">
-                                    <Icon aria-hidden className="size-3.5" />
-                                  </span>
-                                  <span className="min-w-0">
-                                    <span className="truncate text-xs font-semibold leading-4">{definition.title}</span>
-                                    <span className="sr-only" data-builder-palette-category-label="metadata">
-                                      {componentPaletteCategoryLabel(category)}
-                                    </span>
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  data-builder-component-favorite-toggle={definition.type}
-                                  data-builder-component-favorite-visibility={favorite ? "pinned" : "hover-reveal"}
-                                  aria-pressed={favorite}
-                                  aria-label={`${favorite ? "取消收藏" : "收藏"} ${definition.title}`}
-                                  title={favorite ? "取消收藏" : "收藏到常用控件"}
-                                  onClick={() => toggleComponentPaletteFavorite(definition.type)}
-                                  className={cn(
-                                    "focus-ring flex shrink-0 items-center justify-center self-stretch text-on-surface-variant/55 opacity-0 transition hover:bg-surface-container-highest hover:text-primary hover:opacity-100 focus-visible:text-primary focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100",
-                                    favorite && "text-primary opacity-100",
-                                  )}
-                                >
-                                  <Star aria-hidden className={cn("size-3.5", favorite && "fill-current")} />
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </details>
-                    ))
-                  ) : (
-                    <div className="rounded-[18px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center">
-                      <Search aria-hidden className="mx-auto size-5 text-on-surface-variant" />
-                      <p className="mt-2 text-xs font-medium">没有匹配的控件</p>
-                      <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">清空搜索或切换分类后继续添加控件。</p>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="mt-3 h-8"
-                        data-builder-component-search-reset=""
-                        onClick={() => {
-                          setComponentPaletteQuery("");
-                          setComponentPaletteCategory("all");
-                          setActiveComponentPaletteKitId("");
-                        }}
-                      >
-                        Reset filters
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                
               </div>
                 </>
               ) : null}
@@ -49320,563 +49268,127 @@ export function BuilderShowcase() {
                 ) : null}
               </div>
 
-              <section
-                className={cn(
-                  "pointer-events-auto relative z-10 mx-0 mt-0 flex h-8 shrink-0 items-center gap-1.5 overflow-hidden border-b border-x-0 border-t-0 px-2 py-0 backdrop-blur transition-colors supports-[backdrop-filter]:bg-surface-container-lowest/88",
-                  hasCanvasSelection
-                    ? "border-outline-variant bg-surface-container-lowest/95"
-                    : "border-outline-variant bg-surface-container-lowest/92",
-                )}
-                data-builder-selection-action-bar=""
-                data-builder-selection-anchor={selectionAnchorId}
-                data-builder-selection-state={selectionActionBarState}
-                data-builder-selection-actionbar-action-count={selectionActionBarActionCount}
-                data-builder-selection-actionbar-density="compact"
-                data-builder-selection-chrome-style="ide-toolbar"
-                data-builder-selection-placement="canvas-top-external"
-                data-builder-selection-track="external-canvas-chrome"
-                data-builder-selection-toolbar-state={selectionActionBarReservedTrack}
-                data-builder-selection-visible="persistent"
-                aria-label={selectionActionBarLabel}
-              >
-                {hasCanvasSelection ? (
-                  <>
-                  <div className="flex min-w-[10rem] max-w-[30%] items-center gap-1.5 overflow-hidden" data-builder-selection-actionbar-sticky-summary="">
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-container-high text-primary">
-                      {selectedItems.length > 1 ? <Layers aria-hidden className="size-3.5" /> : <MousePointer2 aria-hidden className="size-3.5" />}
-                    </span>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
-                        <h3 className="truncate text-xs font-semibold text-on-surface">
-                          {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : getItemSummary(selectedItems[0])}
-                        </h3>
-                        {selectedItem ? <Badge variant="outline" className="hidden 2xl:inline-flex">{selectedItem.type}</Badge> : null}
-                        {selectedItem && selectedEventName ? (
-                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
-                            {selectedEventCommand ? `${selectedEventName} 已绑定` : `${selectedEventName} 就绪`}
-                          </Badge>
-                        ) : null}
-                        {selectedPropertyIssues.length > 0 ? <Badge variant="destructive">{selectedPropertyIssues.length} 个问题</Badge> : null}
-                        {selectedItemHierarchy.length > 0 ? (
-                          <div
-                            className="hidden min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-full border border-outline-variant bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] text-on-surface-variant xl:flex"
-                            data-builder-selection-breadcrumb=""
-                            aria-label="当前选择层级路径"
-                          >
-                            <button
-                              type="button"
-                              className="focus-ring max-w-24 truncate rounded-full px-1.5 py-0.5 text-left hover:bg-surface-container-lowest hover:text-on-surface"
-                              data-builder-selection-breadcrumb-root=""
-                              title={activeFile.name}
-                              onClick={() => selectHierarchyBreadcrumbNode(null)}
-                            >
-                              {activeFile.name}
-                            </button>
-                            {selectedItemHierarchy.map((crumb, index) => (
-                              <span key={crumb.id} className="flex min-w-0 items-center gap-1">
-                                <span className="text-outline" aria-hidden>/</span>
-                                <button
-                                  type="button"
-                                  className={cn(
-                                    "focus-ring max-w-28 truncate rounded-full px-1.5 py-0.5 text-left hover:bg-surface-container-lowest hover:text-on-surface",
-                                    index === selectedItemHierarchy.length - 1 && "bg-primary-container text-primary-container-foreground hover:bg-primary-container",
-                                  )}
-                                  data-builder-selection-breadcrumb-node={crumb.id}
-                                  title={`${getItemSummary(crumb)} · ${crumb.type}`}
-                                  onClick={() => selectHierarchyBreadcrumbNode(crumb.id)}
-                                >
-                                  {getItemSummary(crumb)}
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                      <p className="sr-only">
-                        {selectedItems.length > 1
-                          ? "可批量复制、删除，并在右侧属性面板编辑共享布局。"
-                          : selectedItem
-                            ? `${activeFile.name} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
-                            : `${activeFile.name} · 单选控件`}
-                      </p>
-                      {selectionModeStrip}
-                      <div
-                        className={cn(
-                          "hidden min-w-0 items-center gap-2 rounded-lg border px-2 py-1 text-[0.68rem]",
-                          selectionBarStatusTone === "attention"
-                            ? "border-destructive/30 bg-destructive/10"
-                            : selectionBarStatusTone === "interactive"
-                              ? "border-primary/30 bg-primary/10"
-                              : "border-outline-variant bg-surface-container-high",
-                        )}
-                        data-builder-selection-status=""
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <Badge
-                              variant={
-                                selectionBarStatusTone === "attention"
-                                  ? "destructive"
-                                  : selectionBarStatusTone === "interactive" || selectionBarStatusTone === "ready"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                            >
-                              {selectionBarStatusLabel}
-                            </Badge>
-                            <span className="min-w-0 truncate font-medium text-on-surface">{selectionBarStatusTitle}</span>
-                            <span className="hidden min-w-0 truncate text-on-surface-variant lg:inline">{selectionBarStatusDetail}</span>
-                            {selectedItem && selectedEventName ? (
-                              <div
-                                className="hidden min-w-0 items-center gap-1 rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 text-[0.58rem] text-on-surface-variant xl:flex"
-                                data-builder-selection-signal-slot-strip=""
-                                data-builder-selection-signal-slot-state={selectedEventCommand ? "bound" : "unbound"}
-                              >
-                                <span className="shrink-0 font-medium text-on-surface" data-builder-selection-signal-slot-event="">
-                                  {selectedEventName}
-                                </span>
-                                <CornerDownRight aria-hidden className="size-3 shrink-0 text-primary" />
-                                <span className="min-w-0 truncate font-mono" data-builder-selection-signal-slot-command="">
-                                  {selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : "未绑定 Rust command"}
-                                </span>
-                                <span className="shrink-0 text-outline" aria-hidden>
-                                  /
-                                </span>
-                                <span className="shrink-0 font-mono" data-builder-selection-signal-slot-location="">
-                                  {selectedSignalSlotOutlineEntry?.line
-                                    ? `logic.rs:${selectedSignalSlotOutlineEntry.line}`
-                                    : selectedEventCommand
-                                      ? "定位函数"
-                                      : "创建槽"}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="focus-ring shrink-0 rounded-full bg-secondary-container px-1.5 py-0.5 font-medium text-secondary-container-foreground transition hover:brightness-95"
-                                  data-builder-selection-signal-slot-go=""
-                                  data-builder-selection-signal-slot-go-state={selectedEventCommand ? "open" : "create"}
-                                  aria-label={selectedEventCommand ? "转到 Rust 槽函数" : "创建并转到 Rust 槽函数"}
-                                  onClick={() => goToSlotForItem(selectedItem)}
-                                >
-                                  {selectedEventCommand ? "转到" : "创建"}
-                                </button>
-                              </div>
-                            ) : null}
-                            {selectionCapabilityStrip}
-                            <span className="hidden shrink-0 rounded-full border border-outline-variant bg-surface-container px-2 py-0.5 font-mono text-[0.58rem] text-on-surface-variant xl:inline-flex" data-builder-selection-keyboard-nudge="">
-                              Arrow / Shift+Arrow
-                            </span>
-                          </div>
-                        </div>
-                        {selectedLatestSimulatorTrace ? (
-                          <Button size="sm" variant="ghost" className="h-6 shrink-0 px-2 text-[0.68rem]" onClick={openSelectedConnections}>
-                            追踪
-                          </Button>
-                        ) : selectionRecommendedStep ? (
-                          <Button
-                            size="sm"
-                            variant={selectionBarStatusTone === "attention" || selectionStatusTone === "setup" ? "secondary" : "ghost"}
-                            className="h-6 shrink-0 px-2 text-[0.68rem]"
-                            data-builder-selection-recommended-action={selectionRecommendedStep.id}
-                            disabled={selectionRecommendedStep.disabled}
-                            onClick={selectionRecommendedStep.onAction}
-                          >
-                            <SelectionRecommendedIcon aria-hidden className="size-3.5" />
-                            {selectionRecommendedStep.actionLabel}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" data-builder-selection-actionbar-viewport="">
-                    <div
-                      className="hidden shrink-0 items-center gap-1 rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
-                      data-builder-selection-actionbar-overflow=""
-                      aria-hidden
-                    >
-                      <ChevronRight className="size-3" />
-                      {selectionActionBarActionCount} 项
-                    </div>
-                    <div
-                      className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-transparent bg-transparent px-0 py-0"
-                      data-builder-selection-actionbar-scroll=""
-                      tabIndex={0}
-                      aria-label="选择命令滚动区"
-                    >
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant={selectedItems.length > 1 ? "secondary" : "ghost"} data-builder-selection-roster="">
-                          <ListChecks aria-hidden className="size-4" />
-                          已选 {selectedItems.length}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-80" data-builder-selection-roster-menu="">
-                        <DropdownMenuLabel>当前选择</DropdownMenuLabel>
-                        <div className="max-h-72 space-y-1 overflow-y-auto p-1">
-                          {selectedItems.map((item) => {
-                            const Icon = getDefinition(item.type).icon;
-                            return (
-                              <div
-                                key={item.id}
-                                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-low p-1"
-                                data-builder-selection-roster-item={item.type}
-                              >
-                                <button
-                                  type="button"
-                                  className="focus-ring flex min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-surface-container-high"
-                                  data-builder-selection-roster-focus={item.id}
-                                  onClick={() => focusSelectedRosterItem(item.id)}
-                                >
-                                  <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                                  <span className="min-w-0">
-                                    <span className="block truncate text-xs font-medium text-on-surface">{getItemSummary(item)}</span>
-                                    <span className="block truncate font-mono text-[0.62rem] text-on-surface-variant">
-                                      {item.type} · x {Math.round(item.x)} y {Math.round(item.y)}
-                                    </span>
-                                  </span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="focus-ring flex size-7 items-center justify-center rounded-lg text-on-surface-variant hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
-                                  data-builder-selection-roster-remove={item.id}
-                                  aria-label={`从选择中移除 ${getItemSummary(item)}`}
-                                  disabled={selectedItems.length <= 1}
-                                  onClick={() => removeItemFromSelection(item.id)}
-                                >
-                                  <X aria-hidden className="size-3.5" />
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem data-builder-selection-roster-clear="" onSelect={() => clearSelection({ feedback: true })}>
-                          <MousePointer2 aria-hidden className="mr-2 size-4" />
-                          清空选择
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button size="sm" variant="secondary" data-builder-actionbar-properties="" onClick={openSelectedProperties}>
-                      <Settings2 aria-hidden className="size-4" />
-                      属性
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-select-same-type=""
-                      disabled={!selectedSameTypeAnchor || selectedSameTypeCount <= 1}
-                      onClick={() => selectSameTypeControls()}
-                    >
-                      <ListChecks aria-hidden className="size-4" />
-                      同类
-                      <span className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex">
-                        Ctrl+Shift+A
-                      </span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-invert-selection=""
-                      disabled={items.length === 0}
-                      onClick={selectInverseSelection}
-                    >
-                      <MousePointer2 aria-hidden className="size-4" />
-                      反选
-                      <span className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex">
-                        Ctrl+I
-                      </span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-rename-object=""
-                      disabled={!selectedItem}
-                      onClick={focusSelectedObjectNameEditor}
-                    >
-                      <TextCursorInput aria-hidden className="size-4" />
-                      命名
-                      <span className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex">
-                        Ctrl+F2
-                      </span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-fit-selection=""
-                      disabled={!selectedCanvasFitBounds}
-                      onClick={fitSelectedCanvasToViewport}
-                    >
-                      <Maximize2 aria-hidden className="size-4" />
-                      适配
-                      <span className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex">
-                        Ctrl+2
-                      </span>
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          data-builder-actionbar-edit-text=""
-                          data-builder-actionbar-edit-text-field-count={selectedQuickTextProps.length || undefined}
-                          disabled={!selectedItem || selectedQuickTextProps.length === 0}
-                        >
-                          <Type aria-hidden className="size-4" />
-                          <span>文本</span>
-                          <span
-                            className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex"
-                            data-builder-actionbar-edit-text-shortcut=""
-                          >
-                            F2 / Enter
-                          </span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-80" data-builder-actionbar-edit-text-menu="">
-                        <DropdownMenuLabel className="flex items-center justify-between gap-2">
-                          <span>可编辑文本字段</span>
-                          <span className="text-[0.66rem] font-normal text-on-surface-variant">
-                            {selectedQuickTextProps.length} 项
-                          </span>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {selectedItem
-                          ? selectedQuickTextProps.map((prop) => (
-                              <DropdownMenuItem
-                                key={prop}
-                                data-builder-actionbar-edit-text-field={prop}
-                                onSelect={() => startInlineTextEdit(selectedItem, prop, "actionbar")}
-                              >
-                                <Type aria-hidden className="size-4 text-primary" />
-                                <span className="min-w-0 flex-1 truncate">{quickTextPropLabel(prop)}</span>
-                                <span
-                                  className="max-w-[8.5rem] truncate text-[0.68rem] text-on-surface-variant"
-                                  data-builder-actionbar-edit-text-field-value={prop}
-                                >
-                                  {textPropertyValue(selectedItem.props[prop]) || "空"}
-                                </span>
-                              </DropdownMenuItem>
-                            ))
-                          : null}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button
-                      size="sm"
-                      variant={tabOrderOverlayVisible ? "secondary" : "ghost"}
-                      data-builder-actionbar-tab-order=""
-                      disabled={focusableTabOrderItems.length === 0}
-                      onClick={() => setTabOrderOverlayVisible((visible) => !visible)}
-                    >
-                      <Keyboard aria-hidden className="size-4" />
-                      Tab 顺序
-                      <span className="hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0.5 font-mono text-[0.56rem] text-on-surface-variant xl:inline-flex">
-                        Ctrl+Alt+T
-                      </span>
-                    </Button>
-                    {selectedItems.length > 1 ? (
-                      <div className="flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high p-1" data-builder-actionbar-align="">
-                        <Button size="icon-sm" variant="ghost" aria-label="左对齐" title="左对齐" onClick={() => alignSelected("left")}>
-                          <AlignHorizontalJustifyStart aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="水平居中对齐" title="水平居中对齐" onClick={() => alignSelected("center")}>
-                          <AlignHorizontalJustifyCenter aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="右对齐" title="右对齐" onClick={() => alignSelected("right")}>
-                          <AlignHorizontalJustifyEnd aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="顶部对齐" title="顶部对齐" onClick={() => alignSelected("top")}>
-                          <AlignVerticalJustifyStart aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="垂直居中对齐" title="垂直居中对齐" onClick={() => alignSelected("middle")}>
-                          <AlignVerticalJustifyCenter aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="底部对齐" title="底部对齐" onClick={() => alignSelected("bottom")}>
-                          <AlignVerticalJustifyEnd aria-hidden />
-                        </Button>
-                      </div>
-                    ) : null}
-                    {selectedItems.length > 2 ? (
-                      <div className="flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high p-1" data-builder-actionbar-distribute="">
-                        <Button size="icon-sm" variant="ghost" aria-label="水平等距分布" title="水平等距分布" onClick={() => distributeSelected("horizontal")}>
-                          <Move aria-hidden />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="垂直等距分布" title="垂直等距分布" onClick={() => distributeSelected("vertical")}>
-                          <MoveDown aria-hidden />
-                        </Button>
-                      </div>
-                    ) : null}
-                    {selectedItems.length > 1 ? (
-                      <div className="flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high p-1" data-builder-actionbar-match-size="">
-                        <Button size="icon-sm" variant="ghost" aria-label="匹配宽度" title="匹配宽度" onClick={() => matchSelectedSize("width")}>
-                          W
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="匹配高度" title="匹配高度" onClick={() => matchSelectedSize("height")}>
-                          H
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" aria-label="匹配宽高" title="匹配宽高" onClick={() => matchSelectedSize("both")}>
-                          <Maximize2 aria-hidden />
-                        </Button>
-                      </div>
-                    ) : null}
-                    {selectedItems.length > 1 ? (
-                      <Button size="sm" variant="ghost" data-builder-actionbar-group="" onClick={() => groupSelectedIntoFrame()}>
-                        <Box aria-hidden className="size-4" />
-                        成组
-                      </Button>
-                    ) : null}
-                    {selectedItems.some((item) => item.type === "frame") ? (
-                      <Button size="sm" variant="ghost" data-builder-actionbar-ungroup="" onClick={ungroupSelectedFrames}>
-                        <Layers aria-hidden className="size-4" />
-                        取消成组
-                      </Button>
-                    ) : null}
-                    <div className="flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high p-1" data-builder-actionbar-layer-order="">
-                      <Button size="icon-sm" variant="ghost" data-builder-actionbar-layer-backward="" aria-label="下移一层 Ctrl+[" title="下移一层 Ctrl+[" onClick={() => moveSelectedLayerStep(-1)}>
-                        <MoveDown aria-hidden />
-                      </Button>
-                      <Button size="icon-sm" variant="ghost" data-builder-actionbar-layer-forward="" aria-label="上移一层 Ctrl+]" title="上移一层 Ctrl+]" onClick={() => moveSelectedLayerStep(1)}>
-                        <MoveUp aria-hidden />
-                      </Button>
-                      <Button size="icon-sm" variant="ghost" data-builder-actionbar-back="" aria-label="置于底层 Ctrl+Shift+[" title="置于底层 Ctrl+Shift+[" onClick={sendToBack}>
-                        <span className="font-mono text-[0.62rem]" aria-hidden>[</span>
-                      </Button>
-                      <Button size="icon-sm" variant="ghost" data-builder-actionbar-front="" aria-label="置于顶层 Ctrl+Shift+]" title="置于顶层 Ctrl+Shift+]" onClick={bringToFront}>
-                        <span className="font-mono text-[0.62rem]" aria-hidden>]</span>
-                      </Button>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-copy=""
-                      onClick={copySelectionToClipboard}
-                    >
-                      <ClipboardCopy aria-hidden className="size-4" />
-                      复制
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-cut=""
-                      onClick={cutSelectionToClipboard}
-                    >
-                      <Scissors aria-hidden className="size-4" />
-                      剪切
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-duplicate=""
-                      onClick={duplicateSelected}
-                    >
-                      <Copy aria-hidden className="size-4" />
-                      副本
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-lock=""
-                      onClick={toggleSelectedLock}
-                    >
-                      {selectedItems.some((item) => item.locked) ? <LockOpen aria-hidden className="size-4" /> : <Lock aria-hidden className="size-4" />}
-                      {selectedItems.some((item) => item.locked) ? "解锁" : "锁定"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={selectedEventCommand ? "secondary" : selectedEventName ? "default" : "ghost"}
-                      data-builder-actionbar-connections=""
-                      disabled={!selectedItem}
-                      onClick={selectedEventCommand ? openSelectedConnections : selectedEventName ? () => createAndBindBackendIntegrationCommand() : openSelectedConnections}
-                    >
-                      <Braces aria-hidden className="size-4" />
-                      {selectedEventCommand ? "连接" : selectedEventName ? "创建绑定" : "连接"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-go-slot=""
-                      data-builder-actionbar-go-slot-state={selectedEventCommand ? "open" : selectedEventName ? "create" : "unavailable"}
-                      disabled={!selectedItem || !selectedEventName}
-                      onClick={() => goToSlotForItem(selectedItem)}
-                    >
-                      <CornerDownRight aria-hidden className="size-4" />
-                      槽函数
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      data-builder-actionbar-run-event=""
-                      disabled={!selectedItem || !selectedEventName || !selectedEventCommand}
-                      onClick={runSelectedEventFromActionBar}
-                    >
-                      <Play aria-hidden className="size-4" />
-                      运行事件
-                    </Button>
-                    <Button size="sm" variant="ghost" data-builder-actionbar-impact="" onClick={() => setRightDockTab("impact")}>
-                      <AlertTriangle aria-hidden className="size-4" />
-                      影响
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      data-builder-actionbar-delete=""
-                      onClick={deleteSelected}
-                    >
-                      <Trash2 aria-hidden className="size-4" />
-                      删除
-                    </Button>
-                    </div>
-                  </div>
-                  </>
-                ) : (
-                  <>
-                  <div className="flex min-w-[7rem] max-w-[22%] items-center gap-1.5 overflow-hidden" data-builder-selection-action-bar-idle="" data-builder-selection-actionbar-sticky-summary="">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-outline-variant bg-surface-container-high text-primary">
-                        <MousePointer2 aria-hidden className="size-3.5" />
-                      </span>
-                      <div className="min-w-0 flex-1 overflow-hidden">
-                        <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
-                          <h3 className="truncate text-xs font-semibold text-on-surface">选择</h3>
-                          <span className="rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.62rem] text-on-surface-variant">{items.length}</span>
-                          <span className="sr-only" data-builder-selection-keyboard-nudge-hint="">Ctrl/Shift 多选快捷键</span>
-                        </div>
-                        <p className="sr-only">
-                          点击控件选择，按住 Ctrl 叠加选择，按住 Shift 选择范围，也可以在画布空白处拖拽框选；选中后可用方向键微调位置。
-                        </p>
-                        {selectionModeStrip}
-                        <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.68rem]">
-                          <Badge variant="secondary">选择工具</Badge>
-                          <span className="min-w-0 font-medium leading-5 text-on-surface">操作栏保持常驻，选中任何控件后都会在这里显示同一套动作。</span>
-                          {selectionCapabilityStrip}
-                        </div>
-                      </div>
-                    </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" data-builder-selection-actionbar-viewport="">
-                      <div
-                        className="hidden shrink-0 items-center gap-1 rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 text-[0.62rem] font-medium text-on-surface-variant 2xl:flex"
-                        data-builder-selection-actionbar-overflow=""
-                        aria-hidden
-                      >
-                        <ChevronRight className="size-3" />
-                        {selectionActionBarActionCount} 项
-                      </div>
-                      <div
-                        className="subtle-scrollbar flex h-8 min-w-0 flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden rounded-md border border-transparent bg-transparent px-0 py-0"
-                        data-builder-selection-actionbar-scroll=""
-                        tabIndex={0}
-                        aria-label="画布空闲命令滚动区"
-                      >
-                        <Button size="sm" variant="secondary" data-builder-actionbar-idle-components="" onClick={() => setLeftDockTab("components")}>
-                          <Layers aria-hidden className="size-4" />
-                          控件库
-                        </Button>
-                        <Button size="sm" variant="ghost" data-builder-actionbar-idle-fit="" onClick={fitCanvasToViewport}>
-                          <Maximize2 aria-hidden className="size-4" />
-                          适配画布
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </section>
+              <BatchSelectToolbar
+                count={selectedItems.length}
+                onAlignLeft={() => alignSelected("left")}
+                onMatchWidth={() => matchSelectedSize("width")}
+                onMatchHeight={() => matchSelectedSize("height")}
+                onBatchLabel={() => {
+                  const next = window.prompt("批量设置标签文案", selectedItems[0]?.props.label ?? "");
+                  if (next != null) {
+                    selectedItems.forEach((item) => updateItemPropsById(item.id, { label: next }));
+                    showProjectJumpFeedback("success", "批量标签已更新", String(selectedItems.length) + " 个控件标签已更新。");
+                  }
+                }}
+              />
+              <CanvasFindBar
+                open={canvasFindOpen && mode === "design"}
+                query={canvasFindQuery}
+                inputRef={canvasFindInputRef}
+                onQueryChange={(value) => {
+                  setCanvasFindQuery(value);
+                  const q = value.trim().toLowerCase();
+                  const match = items.find((item) => {
+                    if (!q) return false;
+                    return (
+                      item.name.toLowerCase().includes(q) ||
+                      item.type.toLowerCase().includes(q) ||
+                      getItemSummary(item).toLowerCase().includes(q)
+                    );
+                  });
+                  if (match) {
+                    setSelectedId(match.id);
+                    setSelectionAnchorId(match.id);
+                  }
+                }}
+                onClose={() => {
+                  setCanvasFindOpen(false);
+                  setCanvasFindQuery("");
+                }}
+                onCommit={() => {
+                  const q = canvasFindQuery.trim().toLowerCase();
+                  const match = items.find(
+                    (item) =>
+                      item.name.toLowerCase().includes(q) ||
+                      item.type.toLowerCase().includes(q) ||
+                      getItemSummary(item).toLowerCase().includes(q),
+                  );
+                  if (match) {
+                    setSelectedId(match.id);
+                    fitSelectedCanvasToViewport();
+                  }
+                }}
+              />
+
+                        <ToolchainBanner status={toolchainStatus} />
+              <SelectionActionBar
+                hasCanvasSelection={hasCanvasSelection}
+                selectionAnchorId={selectionAnchorId}
+                selectionActionBarState={selectionActionBarState}
+                selectionActionBarActionCount={selectionActionBarActionCount}
+                selectionActionBarReservedTrack={selectionActionBarReservedTrack}
+                selectionActionBarLabel={selectionActionBarLabel}
+                selectedItems={selectedItems}
+                selectedItem={selectedItem}
+                getItemSummary={getItemSummary}
+                getItemIcon={(type) => getDefinition(type).icon}
+                selectedItemHierarchy={selectedItemHierarchy}
+                selectHierarchyBreadcrumbNode={selectHierarchyBreadcrumbNode}
+                activeFileName={activeFile.name}
+                selectedEventName={selectedEventName}
+                selectedEventCommandName={selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : null}
+                selectedPropertyIssueCount={selectedPropertyIssues.length}
+                selectionModeStrip={selectionModeStrip}
+                selectionCapabilityStrip={selectionCapabilityStrip}
+                selectionBarStatusTone={selectionBarStatusTone}
+                selectionBarStatusLabel={selectionBarStatusLabel}
+                selectionBarStatusTitle={selectionBarStatusTitle}
+                selectionBarStatusDetail={selectionBarStatusDetail}
+                selectionStatusTone={selectionStatusTone}
+                selectedSignalSlotLocation={selectedSignalSlotOutlineEntry?.line ? `logic.rs:${selectedSignalSlotOutlineEntry.line}` : null}
+                selectedSignalSlotGoState={selectedEventCommand ? "open" : "create"}
+                goToSlotForItem={goToSlotForItem}
+                hasSelectedSimulatorTrace={Boolean(selectedLatestSimulatorTrace)}
+                openSelectedConnections={openSelectedConnections}
+                selectionRecommendedStep={selectionRecommendedStep}
+                focusSelectedRosterItem={focusSelectedRosterItem}
+                removeItemFromSelection={removeItemFromSelection}
+                clearSelection={clearSelection}
+                openSelectedProperties={openSelectedProperties}
+                selectedSameTypeCount={selectedSameTypeCount}
+                selectSameTypeControls={selectSameTypeControls}
+                selectInverseSelection={selectInverseSelection}
+                focusSelectedObjectNameEditor={focusSelectedObjectNameEditor}
+                canFitSelectedCanvas={Boolean(selectedCanvasFitBounds)}
+                fitSelectedCanvasToViewport={fitSelectedCanvasToViewport}
+                selectedQuickTextProps={selectedQuickTextProps}
+                startInlineTextEdit={(item, prop, source) => startInlineTextEdit(item, prop as InlineTextEdit["prop"], source as InlineTextEdit["source"])}
+                quickTextPropLabel={(prop) => quickTextPropLabel(prop as InlineTextEdit["prop"])}
+                textPropertyValue={textPropertyValue}
+                tabOrderOverlayVisible={tabOrderOverlayVisible}
+                setTabOrderOverlayVisible={setTabOrderOverlayVisible}
+                focusableTabOrderCount={focusableTabOrderItems.length}
+                alignSelected={alignSelected}
+                distributeSelected={distributeSelected}
+                matchSelectedSize={matchSelectedSize}
+                groupSelectedIntoFrame={groupSelectedIntoFrame}
+                ungroupSelectedFrames={ungroupSelectedFrames}
+                moveSelectedLayerStep={(delta) => moveSelectedLayerStep(delta as 1 | -1)}
+                sendToBack={sendToBack}
+                bringToFront={bringToFront}
+                copySelectionToClipboard={copySelectionToClipboard}
+                cutSelectionToClipboard={cutSelectionToClipboard}
+                duplicateSelected={duplicateSelected}
+                toggleSelectedLock={toggleSelectedLock}
+                createAndBindBackendIntegrationCommand={createAndBindBackendIntegrationCommand}
+                runSelectedEventFromActionBar={runSelectedEventFromActionBar}
+                openImpactDock={() => setRightDockTab("impact")}
+                deleteSelected={deleteSelected}
+                openComponentsDock={() => setLeftDockTab("components")}
+                fitCanvasToViewport={fitCanvasToViewport}
+                canvasItemCount={items.length}
+                onAlignPreview={setAlignPreviewMode}
+              />
 
               <div
                 ref={canvasViewportRef}
@@ -49973,6 +49485,13 @@ export function BuilderShowcase() {
                     </div>
                   ) : null}
                   <div className="relative" style={canvasContentPlaneStyle} data-builder-canvas-content-plane="">
+                  <AlignGuideOverlay
+                    mode={alignPreviewMode as "左对齐" | "水平居中" | "右对齐" | "顶部对齐" | "垂直居中" | "底部对齐" | null}
+                    items={selectedItems}
+                    zoom={page.zoom}
+                    canvasWidth={page.width * page.zoom}
+                    canvasHeight={page.height * page.zoom}
+                  />
                   {mode === "design" && page.showRulers ? (
                     <div
                       className="pointer-events-none absolute inset-0 z-20"
@@ -50335,7 +49854,16 @@ export function BuilderShowcase() {
                     {selectionMarquee?.moved
                       ? (() => {
                           const rect = getSelectionMarqueeRect(selectionMarquee);
-                          const marqueeSelectedCount = getItemIdsInsideMarquee(selectionMarquee).length;
+                          const marqueeSelectedCount = getItemIdsInsideMarquee(
+                            selectionMarquee,
+                            (itemId) => {
+                              const item = items.find((candidate) => candidate.id === itemId);
+                              if (!item) return null;
+                              const position = getAbsolutePosition(item, items);
+                              return { x: position.x, y: position.y, width: item.width, height: item.height };
+                            },
+                            items.map((item) => item.id),
+                          ).length;
                           const marqueeModeLabel =
                             selectionMarquee.mode === "subtract"
                               ? "减选"
@@ -53044,6 +52572,7 @@ export function BuilderShowcase() {
               )}
             </InspectorDock>
           </DesignWorkspace>
+          </Suspense>
         )}
         </div>
             <OutputDock
@@ -53948,113 +53477,115 @@ export function BuilderShowcase() {
                 </p>
               </div>
               <div className="my-1 h-px bg-outline-variant" />
-              <div
-                className="px-2 pb-1 pt-1 text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant"
-                data-builder-canvas-context-quick-insert=""
-              >
-                插入到此处
-              </div>
-              <div className="space-y-1 px-1 pb-1" role="group" aria-label="在右键位置快速插入控件">
-                {canvasContextQuickInsertGroups.map((group) => (
-                  <div key={group.id} data-builder-canvas-context-quick-insert-group={group.id}>
-                    <div className="flex items-center justify-between px-1.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant">
-                      <span>{group.label}</span>
-                      <span>{group.types.length}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1">
-                      {group.types.map((type) => {
-                        const definition = getDefinition(type);
-                        const Icon = definition.icon;
-                        return (
-                          <button
-                            key={type}
-                            type="button"
-                            role="menuitem"
-                            className="focus-ring flex h-8 min-w-0 items-center gap-1.5 rounded-xl px-2 text-left hover:bg-surface-container-high"
-                            data-builder-canvas-context-insert-component={type}
-                            title={`在右键位置插入 ${definition.title}`}
-                            onClick={() => insertComponentFromCanvasContext(type)}
-                          >
-                            <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                            <span className="min-w-0 truncate">{definition.title}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <details className="group mx-1 mb-1" data-builder-canvas-context-insert-collapsed="">
+                <summary className="focus-ring flex h-8 cursor-pointer list-none items-center gap-2 rounded-xl px-2 text-[0.72rem] font-medium hover:bg-surface-container-high [&::-webkit-details-marker]:hidden">
+                  <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
+                  <span className="flex-1 truncate">插入控件到此处</span>
+                  <span className="font-mono text-[0.6rem] text-on-surface-variant">{canvasContextQuickInsertTypes.length}</span>
+                </summary>
+                <div className="space-y-1 pb-1">
               <div className="px-1 pb-1" data-builder-canvas-context-insert-search="">
-                <div className="relative">
-                  <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-on-surface-variant" />
-                  <Input
-                    ref={canvasContextInsertInputRef}
-                    inputSize="sm"
-                    value={canvasContextInsertQuery}
-                    onChange={(event) => {
-                      setCanvasContextInsertQuery(event.target.value);
-                      setCanvasContextInsertActiveIndex(0);
-                    }}
-                    onKeyDown={handleCanvasContextInsertSearchKeyDown}
-                    placeholder={`搜索 ${palette.length} 个控件`}
-                    className="h-8 pl-8 text-xs"
-                    data-builder-canvas-context-insert-search-input=""
-                    data-builder-canvas-context-insert-search-autofocus=""
-                    role="combobox"
-                    aria-expanded={canvasContextInsertQuery.trim() ? true : undefined}
-                    aria-controls="canvas-context-insert-search-results"
-                    aria-activedescendant={
-                      canvasContextInsertSearchResults[canvasContextInsertActiveIndex]
-                        ? `canvas-context-insert-result-${canvasContextInsertSearchResults[canvasContextInsertActiveIndex].type}`
-                        : undefined
-                    }
-                  />
-                </div>
+                <input
+                  ref={canvasContextInsertInputRef}
+                  value={canvasContextInsertQuery}
+                  data-builder-canvas-context-insert-search-input=""
+                  data-builder-canvas-context-insert-search-autofocus=""
+                  aria-label="搜索要插入的控件"
+                  placeholder="搜索控件…"
+                  className="focus-ring h-7 w-full rounded-lg border border-outline-variant bg-surface-container px-2 text-[0.7rem] text-on-surface"
+                  onChange={(event) => {
+                    setCanvasContextInsertQuery(event.target.value);
+                    setCanvasContextInsertActiveIndex(0);
+                  }}
+                  onKeyDown={handleCanvasContextInsertSearchKeyDown}
+                />
                 {canvasContextInsertQuery.trim() ? (
-                  <div
-                    id="canvas-context-insert-search-results"
-                    className="mt-1 space-y-1"
-                    role="listbox"
-                    data-builder-canvas-context-insert-search-results=""
-                    data-builder-canvas-context-insert-search-active-index={canvasContextInsertActiveIndex}
-                  >
-                    {canvasContextInsertSearchResults.length > 0 ? (
+                  <div className="mt-1 max-h-28 overflow-y-auto" data-builder-canvas-context-insert-search-results="" role="listbox">
+                    {canvasContextInsertSearchResults.length === 0 ? (
+                      <p className="px-2 py-1 text-[0.68rem] text-on-surface-variant">没有匹配控件</p>
+                    ) : (
                       canvasContextInsertSearchResults.map((definition, index) => {
                         const Icon = definition.icon;
-                        const active = index === canvasContextInsertActiveIndex;
                         return (
                           <button
                             key={definition.type}
-                            id={`canvas-context-insert-result-${definition.type}`}
                             type="button"
                             role="option"
-                            aria-selected={active}
+                            aria-selected={index === canvasContextInsertActiveIndex}
                             className={cn(
-                              "focus-ring flex h-8 w-full min-w-0 items-center gap-2 rounded-xl px-2 text-left hover:bg-surface-container-high",
-                              active && "bg-primary-container text-primary-container-foreground",
+                              "focus-ring flex h-7 w-full items-center gap-1.5 rounded-lg px-2 text-left",
+                              index === canvasContextInsertActiveIndex ? "bg-secondary-container" : "hover:bg-surface-container-high",
                             )}
+                            data-builder-canvas-context-insert-component={definition.type}
                             data-builder-canvas-context-insert-search-result={definition.type}
-                            data-builder-canvas-context-insert-search-active={active ? "true" : "false"}
-                            title={`在右键位置插入 ${definition.title}`}
-                            onClick={() => insertComponentFromCanvasContext(definition.type)}
+                            data-builder-canvas-context-insert-search-active={index === canvasContextInsertActiveIndex ? "true" : "false"}
                             onMouseEnter={() => setCanvasContextInsertActiveIndex(index)}
+                            onClick={() => insertComponentFromCanvasContext(definition.type)}
                           >
-                            <Icon aria-hidden className="size-3.5 shrink-0 text-primary" />
-                            <span className="min-w-0 flex-1 truncate">{definition.title}</span>
-                            <span className="shrink-0 truncate text-[0.62rem] text-on-surface-variant">
-                              {componentPaletteCategoryLabel(componentPaletteCategoryForType(definition.type))}
-                            </span>
+                            <Icon aria-hidden className="size-3 shrink-0 text-primary" />
+                            <span className="min-w-0 flex-1 truncate text-[0.68rem]">{definition.title}</span>
                           </button>
                         );
                       })
-                    ) : (
-                      <div className="rounded-xl border border-dashed border-outline-variant px-2 py-2 text-[0.68rem] text-on-surface-variant">
-                        没有匹配控件
-                      </div>
                     )}
                   </div>
                 ) : null}
               </div>
+              <div className="flex flex-wrap gap-1 px-1 pb-1" role="group" aria-label="常用控件快速插入">
+                {["button", "input", "frame", "select", "search-bar", "table"].map((type) => {
+                  const definition = getDefinition(type as BuilderComponentType);
+                  const Icon = definition.icon;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      role="menuitem"
+                      className="focus-ring flex h-7 min-w-0 items-center gap-1 rounded-lg border border-outline-variant bg-surface-container px-1.5 text-left hover:bg-surface-container-high"
+                      data-builder-canvas-context-insert-component={type}
+                      title={`在右键位置插入 ${definition.title}`}
+                      onClick={() => insertComponentFromCanvasContext(type as BuilderComponentType)}
+                    >
+                      <Icon aria-hidden className="size-3 shrink-0 text-primary" />
+                      <span className="max-w-[4.5rem] truncate text-[0.62rem]">{definition.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <details className="group mx-1 mb-1 rounded-lg border border-outline-variant/80" data-builder-canvas-context-insert-more="">
+                <summary className="focus-ring flex h-7 cursor-pointer list-none items-center gap-1 rounded-lg px-2 text-[0.68rem] text-on-surface-variant hover:bg-surface-container-high [&::-webkit-details-marker]:hidden">
+                  <ChevronRight aria-hidden className="size-3 transition-transform group-open:rotate-90" />
+                  更多插入
+                  <span className="ml-auto font-mono text-[0.6rem]">{canvasContextQuickInsertTypes.length}</span>
+                </summary>
+                <div className="max-h-40 overflow-y-auto border-t border-outline-variant/70 p-1">
+                  {canvasContextQuickInsertGroups.map((group) => (
+                    <div key={group.id} className="mb-1" data-builder-canvas-context-quick-insert-group={group.id}>
+                      <div className="px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase text-on-surface-variant">{group.label}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {group.types.map((type) => {
+                          const definition = getDefinition(type);
+                          const Icon = definition.icon;
+                          return (
+                            <button
+                              key={type}
+                              type="button"
+                              role="menuitem"
+                              className="focus-ring flex h-7 min-w-0 items-center gap-1 rounded-lg px-1.5 hover:bg-surface-container-high"
+                              data-builder-canvas-context-insert-component={type}
+                              onClick={() => insertComponentFromCanvasContext(type)}
+                            >
+                              <Icon aria-hidden className="size-3 shrink-0 text-primary" />
+                              <span className="max-w-[5rem] truncate text-[0.62rem]">{definition.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+</div>
+              </details>
               <div className="my-1 h-px bg-outline-variant" />
               {canvasContextMenuItem ? (
                 <>
