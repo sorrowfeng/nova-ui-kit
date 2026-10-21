@@ -36,6 +36,7 @@
     "version:set": "node scripts/set-version.mjs",
     "changelog": "node scripts/update-changelog.mjs",
     "release:prepare": "node scripts/set-version.mjs && node scripts/update-changelog.mjs",
+    "release:verify": "node scripts/verify-release-artifacts.mjs",
     "docs:deploy": "npm run docs:site",
     "docs:screenshots": "node scripts/capture-workspace-screenshots.mjs",
     "check:cpp-ffi": "node scripts/check-cpp-ffi-sample.mjs",

@@ -90,11 +90,18 @@ jobs:
       - name: Build Tauri exe
         run: npm run tauri:exe
 
+      - name: Verify Windows exe
+        run: |
+          mkdir -p artifacts/windows
+          cp src-tauri/target/release/nova-ui-kit.exe artifacts/windows/
+          node scripts/verify-release-artifacts.mjs --dir artifacts/windows --platform windows
+
       - name: Upload exe
         uses: actions/upload-artifact@v4
         with:
           name: nova-ui-kit-windows-exe
-          path: src-tauri/target/release/nova-ui-kit.exe
+          if-no-files-found: error
+          path: artifacts/windows/
 
   build-linux:
     name: Linux bundles
@@ -124,13 +131,20 @@ jobs:
       - name: Build Tauri bundles
         run: npm run tauri:build
 
+      - name: Verify and stage Linux bundles
+        run: |
+          node scripts/verify-release-artifacts.mjs --dir src-tauri/target/release/bundle --platform linux
+          mkdir -p artifacts/linux
+          cp src-tauri/target/release/bundle/appimage/*.AppImage artifacts/linux/
+          cp src-tauri/target/release/bundle/deb/*.deb artifacts/linux/
+          cp src-tauri/target/release/bundle/SHA256SUMS.txt artifacts/linux/
+
       - name: Upload bundles
         uses: actions/upload-artifact@v4
         with:
           name: nova-ui-kit-linux-bundles
-          path: |
-            src-tauri/target/release/bundle/appimage/*.AppImage
-            src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: error
+          path: artifacts/linux/
 
   build-macos:
     name: macOS bundle
@@ -155,13 +169,20 @@ jobs:
       - name: Build Tauri bundles
         run: npm run tauri:build
 
+      - name: Verify and stage macOS bundle
+        run: |
+          node scripts/verify-release-artifacts.mjs --dir src-tauri/target/release/bundle --platform macos
+          mkdir -p artifacts/macos
+          cp src-tauri/target/release/bundle/dmg/*.dmg artifacts/macos/
+          cp -R src-tauri/target/release/bundle/macos/*.app artifacts/macos/
+          cp src-tauri/target/release/bundle/SHA256SUMS.txt artifacts/macos/
+
       - name: Upload bundles
         uses: actions/upload-artifact@v4
         with:
           name: nova-ui-kit-macos-bundle
-          path: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app
+          if-no-files-found: error
+          path: artifacts/macos/
 
   publish:
     name: Publish GitHub Release
@@ -175,6 +196,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Verify every platform produced a bundle
+        run: |
+          fail=0
+          require() {
+            if ! ls $1 >/dev/null 2>&1; then echo "missing: $1"; fail=1; fi
+          }
+          require "artifacts/nova-ui-kit-windows-exe/*.exe"
+          require "artifacts/nova-ui-kit-windows-exe/SHA256SUMS.txt"
+          require "artifacts/nova-ui-kit-linux-bundles/*.AppImage"
+          require "artifacts/nova-ui-kit-linux-bundles/*.deb"
+          require "artifacts/nova-ui-kit-linux-bundles/SHA256SUMS.txt"
+          require "artifacts/nova-ui-kit-macos-bundle/*.dmg"
+          require "artifacts/nova-ui-kit-macos-bundle/*.app"
+          require "artifacts/nova-ui-kit-macos-bundle/SHA256SUMS.txt"
+          require "artifacts/release-notes/release-notes-draft.md"
+          echo "--- checksums ---"
+          find artifacts -name SHA256SUMS.txt -exec echo {} \; -exec cat {} \;
+          exit $fail
 
       - name: Resolve tag
         id: tag
@@ -193,6 +233,10 @@ jobs:
           body_path: artifacts/release-notes/release-notes-draft.md
           files: |
             artifacts/nova-ui-kit-windows-exe/*.exe
-            artifacts/nova-ui-kit-linux-bundles/**
-            artifacts/nova-ui-kit-macos-bundle/**
-          fail_on_unmatched_files: false
+            artifacts/nova-ui-kit-windows-exe/SHA256SUMS.txt
+            artifacts/nova-ui-kit-linux-bundles/*.AppImage
+            artifacts/nova-ui-kit-linux-bundles/*.deb
+            artifacts/nova-ui-kit-linux-bundles/SHA256SUMS.txt
+            artifacts/nova-ui-kit-macos-bundle/*.dmg
+            artifacts/nova-ui-kit-macos-bundle/SHA256SUMS.txt
+          fail_on_unmatched_files: true
