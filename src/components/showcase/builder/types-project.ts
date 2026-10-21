@@ -76,6 +76,8 @@ export type PageConfig = {
   gridSize: number;
   zoom: number;
   autoSave: boolean;
+  /** UI locale for the generated app (zh-CN default). */
+  locale?: "zh-CN" | "en-US";
 };
 
 export type BuilderItemProps = {
@@ -110,6 +112,10 @@ export type BuilderItemProps = {
   constraintTop?: boolean;
   constraintBottom?: boolean;
   checked?: boolean;
+  /** Named slot content ids for container controls (see CONTROL_SLOTS in generated app). */
+  slotBindings?: Partial<Record<string, string>>;
+  /** Two-way (v-model style) bindings: prop name -> state variable id. */
+  twoWayBindings?: Partial<Record<string, string>>;
 };
 
 export type BuilderItem = {

@@ -7,11 +7,13 @@ export function ProjectHealthPanel({
   hasRustLogic,
   hasCommands,
   onRunCheck,
+  onGitSnapshot,
 }: {
   fileCount: number;
   hasRustLogic: boolean;
   hasCommands: boolean;
   onRunCheck: () => void;
+  onGitSnapshot?: () => void;
 }) {
   return (
     <details
@@ -29,9 +31,16 @@ export function ProjectHealthPanel({
           文件 {fileCount} · Rust 逻辑 {hasRustLogic ? "有" : "无"} · 命令 {hasCommands ? "有" : "无"}
         </p>
         <p>检查项目清单、schemaVersion、.nova 元数据与 rust/logic.rs 完整性。</p>
-        <Button size="sm" variant="secondary" data-builder-project-health-run="" onClick={onRunCheck}>
-          运行检查
-        </Button>
+        <div className="flex flex-wrap gap-1.5">
+          <Button size="sm" variant="secondary" data-builder-project-health-run="" onClick={onRunCheck}>
+            运行检查
+          </Button>
+          {onGitSnapshot ? (
+            <Button size="sm" variant="ghost" data-builder-project-health-git="" onClick={onGitSnapshot}>
+              Git 快照
+            </Button>
+          ) : null}
+        </div>
       </div>
     </details>
   );

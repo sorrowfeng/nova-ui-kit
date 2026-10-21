@@ -165,3 +165,57 @@ pub(super) fn check_toolchain() -> ToolchainStatus {
     }
 }
 
+
+
+#[derive(serde::Serialize)]
+pub(super) struct GitSnapshotResult {
+    pub ok: bool,
+    pub log: String,
+    pub git_dir: String,
+}
+
+/// Initialize a git repo in the project root and commit current files (D2).
+/// Safe to call repeatedly — commits only when there are changes.
+#[tauri::command]
+pub(super) fn init_project_git(root_path: String) -> Result<GitSnapshotResult, String> {
+    let root = std::path::PathBuf::from(&root_path);
+    if !root.exists() {
+        return Err(format!("Project root does not exist: {root_path}"));
+    }
+    let mut log = String::new();
+    let git = |args: &[&str], log: &mut String| -> Result<(), String> {
+        let output = std::process::Command::new("git")
+            .args(args)
+            .current_dir(&root)
+            .output()
+            .map_err(to_error)?;
+        log.push_str(&format!("$ git {}\n", args.join(" ")));
+        log.push_str(&String::from_utf8_lossy(&output.stdout));
+        log.push_str(&String::from_utf8_lossy(&output.stderr));
+        if !output.status.success() {
+            return Err(String::from_utf8_lossy(&output.stderr).to_string());
+        }
+        Ok(())
+    };
+
+    if !root.join(".git").exists() {
+        git(&["init"], &mut log)?;
+    }
+    git(&["add", "-A"], &mut log)?;
+    // Commit only if there is something staged
+    let status = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .current_dir(&root)
+        .output()
+        .map_err(to_error)?;
+    if !String::from_utf8_lossy(&status.stdout).trim().is_empty() {
+        git(&["commit", "-m", "Nova project snapshot"], &mut log)?;
+    } else {
+        log.push_str("nothing to commit\n");
+    }
+    Ok(GitSnapshotResult {
+        ok: true,
+        log,
+        git_dir: root.join(".git").display().to_string(),
+    })
+}

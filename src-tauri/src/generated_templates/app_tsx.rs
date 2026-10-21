@@ -66,6 +66,20 @@ const CONTROL_SLOTS: Record<string, string[]> = {
   tabs: ["tabs", "panels"],
 };
 
+// C1: slot + two-way binding helpers for generated runtime.
+function slotNameFor(type: string, index: number): string {
+  const slots = CONTROL_SLOTS[type] || [];
+  return slots[index] || "children";
+}
+
+function resolveTwoWayValue(props: ItemProps, stateValues: StateValues, propName: string): string {
+  const twoWay = props.twoWayBindings;
+  if (twoWay && twoWay[propName] && Object.prototype.hasOwnProperty.call(stateValues, twoWay[propName] as string)) {
+    return String(stateValues[twoWay[propName] as string]);
+  }
+  return String((props as Record<string, unknown>)[propName] ?? "");
+}
+
 // C2/i18n: locale message bundle for generated runtime (zh-CN default, en-US optional).
 const GENERATED_MESSAGES = {
   "zh-CN": {
@@ -99,6 +113,11 @@ function generatedMessages(locale?: string): GeneratedMessages {
   return GENERATED_MESSAGES[resolveGeneratedLocale(locale)];
 }
 
+// C2: project-driven locale (set from page config / project settings).
+const projectLocale: GeneratedLocale = resolveGeneratedLocale(
+  (typeof window !== "undefined" && (window as unknown as { __NOVA_LOCALE__?: string }).__NOVA_LOCALE__) || "zh-CN",
+);
+
 type ItemProps = Record<string, unknown> & {
   actionCommandId?: string;
   events?: Partial<Record<EventName, EventBinding>>;
@@ -107,6 +126,8 @@ type ItemProps = Record<string, unknown> & {
   visible?: boolean;
   readOnly?: boolean;
   tabIndex?: number;
+  slotBindings?: Partial<Record<string, string>>;
+  twoWayBindings?: Partial<Record<string, string>>;
 };
 
 type Item = {

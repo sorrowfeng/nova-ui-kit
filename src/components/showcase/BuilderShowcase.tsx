@@ -41414,6 +41414,17 @@ export function BuilderShowcase() {
                   fileCount={activeProject.files.length}
                   hasRustLogic={Boolean(activeProject.rustLogic?.trim())}
                   hasCommands={activeProject.rustCommands.length > 0}
+                  onGitSnapshot={() => {
+                    void invokeIfAvailable<{ ok: boolean; log: string }>("init_project_git", {
+                      rootPath: activeProject.rootPath ?? "",
+                    }).then((result) => {
+                      showProjectJumpFeedback(
+                        result?.ok ? "success" : "error",
+                        result?.ok ? "Git 快照完成" : "Git 快照失败",
+                        result?.ok ? "项目已提交到本地仓库" : "需要 Tauri 桌面运行时且项目已有磁盘路径",
+                      );
+                    });
+                  }}
                   onRunCheck={() => {
                     const issues: string[] = [];
                     const warnings: string[] = [];

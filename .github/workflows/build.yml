@@ -47,6 +47,11 @@ jobs:
       - name: C++ FFI sample contract
         run: npm run check:cpp-ffi
 
+      - name: Build C++ FFI sample
+        run: |
+          cmake -S examples/cpp-ffi -B examples/cpp-ffi/build
+          cmake --build examples/cpp-ffi/build --config Release
+
   build-windows-exe:
     name: Windows exe
     runs-on: windows-latest

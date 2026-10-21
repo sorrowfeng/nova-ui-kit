@@ -105,7 +105,7 @@ use rust_source_map::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
-use system_process::{check_toolchain, open_local_path, run_logged_process, run_process, terminate_process_tree};
+use system_process::{check_toolchain, init_project_git, open_local_path, run_logged_process, run_process, terminate_process_tree};
 use text_utils::{html_text, json_string, json_string_array, to_error};
 
 #[derive(Serialize)]
@@ -370,6 +370,7 @@ pub fn run() {
             inspect_windows_certificate_store,
             create_installer_sandbox_handoff,
             check_toolchain,
+            init_project_git,
             preview_generated_web
         ])
         .run(tauri::generate_context!())

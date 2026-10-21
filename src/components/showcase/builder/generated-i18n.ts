@@ -45,3 +45,10 @@ export function generatedMessageBundle(locale?: string, overrides?: Partial<Gene
   const base = generatedMessages[resolveGeneratedLocale(locale)];
   return { ...base, ...(overrides ?? {}) };
 }
+
+
+export function installGeneratedLocale(locale: string): void {
+  if (typeof window !== "undefined") {
+    (window as unknown as { __NOVA_LOCALE__?: string }).__NOVA_LOCALE__ = resolveGeneratedLocale(locale);
+  }
+}

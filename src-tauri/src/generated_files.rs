@@ -59,6 +59,7 @@ pub struct GeneratedFilePreviewEntry {
     pub line_count: usize,
     pub preview: String,
     pub summary: String,
+    pub line_diff: Option<LineDiffSummary>,
 }
 
 pub struct PlannedGeneratedFile {
@@ -217,7 +218,43 @@ pub fn generated_file_preview_entry(
         line_count,
         preview,
         summary: planned.summary,
+        line_diff: if let Some(content) = planned.content.as_deref() {
+            let old = fs::read_to_string(&path).unwrap_or_default();
+            Some(line_level_diff(&old, content))
+        } else {
+            None
+        },
     })
+}
+
+/// Simple line-level diff summary: counts added/removed/unchanged lines.
+pub fn line_level_diff(old: &str, new: &str) -> LineDiffSummary {
+    let old_lines: Vec<&str> = old.lines().collect();
+    let new_lines: Vec<&str> = new.lines().collect();
+    let mut added = 0usize;
+    let mut removed = 0usize;
+    let mut unchanged = 0usize;
+    let max = old_lines.len().max(new_lines.len());
+    for i in 0..max {
+        match (old_lines.get(i), new_lines.get(i)) {
+            (Some(a), Some(b)) if a == b => unchanged += 1,
+            (Some(_), Some(_)) => {
+                added += 1;
+                removed += 1;
+            }
+            (None, Some(_)) => added += 1,
+            (Some(_), None) => removed += 1,
+            (None, None) => {}
+        }
+    }
+    LineDiffSummary { added, removed, unchanged }
+}
+
+#[derive(serde::Serialize, Clone)]
+pub struct LineDiffSummary {
+    pub added: usize,
+    pub removed: usize,
+    pub unchanged: usize,
 }
 
 fn text_line_count(value: &str) -> usize {
@@ -269,6 +306,7 @@ mod tests {
                 line_count: 1,
                 preview: String::new(),
                 summary: String::new(),
+              line_diff: None,
             },
             GeneratedFilePreviewEntry {
                 path: "b".into(),
@@ -281,6 +319,7 @@ mod tests {
                 line_count: 1,
                 preview: String::new(),
                 summary: String::new(),
+            line_diff: None,
             },
             GeneratedFilePreviewEntry {
                 path: "c".into(),
@@ -293,6 +332,7 @@ mod tests {
                 line_count: 1,
                 preview: String::new(),
                 summary: String::new(),
+            line_diff: None,
             },
             GeneratedFilePreviewEntry {
                 path: "d".into(),
@@ -305,6 +345,7 @@ mod tests {
                 line_count: 1,
                 preview: String::new(),
                 summary: String::new(),
+            line_diff: None,
             },
         ];
         let summary = summarize_generated_file_entries(&entries);
