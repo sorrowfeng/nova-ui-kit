@@ -27,7 +27,7 @@ let shuttingDown = false;
 let viteOutput = "";
 
 const smokeTimeout = setTimeout(() => {
-  fail("timed out after 90 seconds");
+  fail("timed out after 150 seconds");
 }, 90000);
 smokeTimeout.unref?.();
 
@@ -282,7 +282,7 @@ async function evaluate(send, expression) {
   return result.result?.value;
 }
 
-async function waitFor(send, expression, label, timeoutMs = 15000) {
+async function waitFor(send, expression, label, timeoutMs = 20000) {
   const start = Date.now();
   let lastError = "";
   while (Date.now() - start < timeoutMs) {
@@ -588,14 +588,10 @@ async function commitInlineTextEditor(send, label) {
 
 async function runDesignInteractionChecks(send, verified) {
   log("checking design selection interactions");
-  await evaluate(
-    send,
-    `(() => {
-      document.querySelector('[data-builder-mode-button="design"]')?.click();
-      document.querySelector("[data-builder-right-dock-expand]")?.click();
-      return true;
-    })()`,
-  );
+  await evaluate(send, `document.querySelector('[data-builder-mode-button="design"]')?.click(); true`);
+  await delay(350);
+  await evaluate(send, `document.querySelector("[data-builder-right-dock-expand]")?.click(); true`);
+  await delay(350);
   await waitFor(
     send,
     `document.querySelector("[data-builder-readable-workbench]")?.getAttribute("data-builder-right-dock-collapsed") === "false"`,

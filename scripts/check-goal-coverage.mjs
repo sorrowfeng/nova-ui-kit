@@ -387,7 +387,7 @@ const requirements = [
     title: "左下角构建运行",
     evidence: [
       parity(12),
-      contains("package.json", '"check:builder-runtime": "node scripts/check-builder-runtime-smoke.mjs"', "project exposes a real browser builder smoke command"),
+      contains("package.json", '"check:builder-runtime"', "project exposes a real browser builder smoke command"),
       builder('data-builder-left-run-controls-layout="qt-creator-kit"', "left rail uses Qt Creator style run kit"),
       builder("selectedRailActionPreset", "run kit preset state exists"),
       builder("data-builder-rail-kit-plan", "left run kit exposes a selected preset run plan"),

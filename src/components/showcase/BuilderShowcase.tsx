@@ -64,6 +64,7 @@ import {
   Menu,
   MessageSquare,
   Monitor,
+  MonitorPlay,
   MousePointer2,
   Move,
   MoveDown,
@@ -148,6 +149,7 @@ import { useCanvasViewportInteraction } from "./builder/useCanvasViewportInterac
 import { useCanvasItemDrag } from "./builder/useCanvasItemDrag";
 import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
 import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
+import { PreviewDock } from "./builder/PreviewDock";
 import { ToolchainBanner } from "./builder/ToolchainBanner";
 import { AlignGuideOverlay } from "./builder/AlignGuideOverlay";
 import { buildInspectorWorkflowSteps } from "./builder/inspector-workflow";
@@ -487,7 +489,7 @@ type BuilderPropertyIssue = {
 
 type BuilderLeftDockTab = "project" | "navigator" | "components" | "assets";
 type BuilderRightDockTab = "properties" | "connections" | "responsive" | "impact";
-type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs";
+type BuilderBottomDockTab = "issues" | "output" | "tasks" | "logs" | "preview";
 type BuilderPropertySectionId = "layout" | "content" | "state" | "appearance" | "actions";
 type LogicResourceViewId = "all" | "connections" | "commands" | "modules" | "dependencies" | "integrations" | "state";
 type LogicConnectionFilterId = "all" | "unbound" | "bound" | "missing-slot";
@@ -17070,7 +17072,7 @@ export function BuilderShowcase() {
     }
     setLeftDockCollapsed(Boolean(editorState.leftDockCollapsed));
     setRightDockCollapsed(editorState.rightDockCollapsed ?? true);
-    if (editorState.activeBottomDockTab === "issues" || editorState.activeBottomDockTab === "output" || editorState.activeBottomDockTab === "tasks" || editorState.activeBottomDockTab === "logs") {
+    if (editorState.activeBottomDockTab === "issues" || editorState.activeBottomDockTab === "output" || editorState.activeBottomDockTab === "tasks" || editorState.activeBottomDockTab === "logs" || editorState.activeBottomDockTab === "preview") {
       setBottomDockTab(editorState.activeBottomDockTab);
     }
     setBottomDockExpanded(Boolean(editorState.bottomDockExpanded));
@@ -31976,6 +31978,7 @@ export function BuilderShowcase() {
     { value: "output", label: "输出", icon: Terminal },
     { value: "tasks", label: "任务", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
     { value: "logs", label: "日志", icon: FileJson },
+    { value: "preview", label: "预览", icon: MonitorPlay },
   ];
   const editorWorkflowSteps: EditorWorkflowStep[] = [
     {
@@ -33650,6 +33653,7 @@ export function BuilderShowcase() {
         return;
       }
       setPreviewWebPath(result.index_path);
+      openBottomDock("preview", true);
       void openLocalPath(result.index_path);
       showProjectJumpFeedback("success", "网页预览已打开", result.index_path);
     } catch (error) {
@@ -35632,7 +35636,21 @@ export function BuilderShowcase() {
                       </span>
                     </div>
                     <div className="min-w-0">
-                      {bottomDockTab === "issues" ? (
+                      {bottomDockTab === "preview" ? (
+                <PreviewDock
+                  previewUrl={previewWebPath ? convertFileSrc(previewWebPath) : null}
+                  distDir={previewWebPath ? previewWebPath.replace(/[\\/]index\.html$/, "") : null}
+                  onRefresh={() => {
+                    if (previewWebPath) {
+                      void openLocalPath(previewWebPath);
+                    }
+                  }}
+                  onOpenExternal={() => {
+                    if (previewWebPath) void openLocalPath(previewWebPath);
+                  }}
+                  onGenerate={() => void previewGeneratedWeb()}
+                />
+              ) : bottomDockTab === "issues" ? (
                         <span className="block truncate text-on-surface-variant">
                           {selectedBuilderIssue ? `${selectedBuilderIssue.title}: ${selectedBuilderIssue.detail}` : "没有活跃问题。设计验证、构建诊断和运行时检查会显示在这里。"}
                         </span>

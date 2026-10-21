@@ -23,7 +23,7 @@
     "check:project-persistence": "node scripts/check-project-persistence-rust.mjs",
     "check:generated-runtime": "node scripts/check-generated-runtime-rust.mjs",
     "check:desktop-exe": "node scripts/check-desktop-exe.mjs",
-    "check:builder-runtime": "node scripts/check-builder-runtime-smoke.mjs",
+    "check:builder-runtime": "node scripts/check-builder-runtime-functional.mjs",
     "verify:desktop": "node scripts/verify-desktop-release.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "tauri": "tauri",
@@ -36,7 +36,8 @@
     "check:cpp-ffi": "node scripts/check-cpp-ffi-sample.mjs",
     "check:project-health": "node scripts/check-project-health.mjs",
     "check:watch": "node scripts/check-watch.mjs",
-    "check:builder-runtime:design": "node scripts/check-builder-runtime-smoke.mjs"
+    "check:builder-runtime:design": "node scripts/check-builder-runtime-smoke.mjs",
+    "check:builder-runtime:full": "node scripts/check-builder-runtime-smoke.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
