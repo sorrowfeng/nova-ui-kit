@@ -89,8 +89,8 @@ export function OnboardingGuide({
       aria-modal="true"
       aria-label="快速上手"
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-m3-3">
-        <div className="flex items-start justify-between gap-3 px-6 pt-6">
+      <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-m3-3">
+        <div className="flex shrink-0 items-start justify-between gap-3 px-6 pt-6">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-container text-primary-container-foreground">
             <Icon aria-hidden className="size-5" />
           </div>
@@ -109,6 +109,7 @@ export function OnboardingGuide({
           </button>
         </div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-6 mt-4 rounded-2xl border border-outline-variant bg-surface-container px-4 py-3 text-xs text-on-surface-variant">
           {current.hint}
         </div>
@@ -156,7 +157,9 @@ export function OnboardingGuide({
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
+        </div>
+
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
           <div className="flex gap-2">
             {!onOpenTemplate && onOpenSample ? (
               <Button size="sm" variant="secondary" data-onboarding-template="sample" onClick={() => { finish(); onOpenSample(); }}>

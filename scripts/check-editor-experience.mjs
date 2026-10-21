@@ -303,7 +303,11 @@ mustContain(types, "showRulers: boolean", "Page config stores design ruler visib
 mustContain(builder, "showRulers: true", "New UI files default to design rulers on");
 mustContain(builder, "page.showRulers", "Canvas reads design ruler visibility from page config");
 mustContain(builder, "data-builder-canvas-show-rulers", "Canvas controls expose ruler visibility toggle");
-mustContain(builder, "onCheckedChange={(showRulers) => updatePage({ showRulers })}", "Canvas ruler toggle writes page state");
+mustContain(
+  "src/components/showcase/builder/DesignView.tsx",
+  "updatePage({ showRulers })",
+  "Canvas ruler toggle writes page state",
+);
 mustContain(builder, "data-builder-canvas-rulers", "Canvas renders design-time ruler overlays");
 mustContain(builder, 'data-builder-canvas-ruler-axis="x"', "Canvas renders a horizontal ruler");
 mustContain(builder, 'data-builder-canvas-ruler-axis="y"', "Canvas renders a vertical ruler");

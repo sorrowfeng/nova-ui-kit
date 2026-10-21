@@ -6297,6 +6297,12 @@ try {
   const { socket, send } = await connectDevtools(debugPort);
   await send("Runtime.enable");
   await send("Page.enable");
+  // Seed onboarding-complete before the app boots. The guide is a full-screen
+  // scrim and the builder is lazy-loaded, so clicking its skip button races the
+  // first paint; starting with the flag set keeps the gate deterministic.
+  await send("Page.addScriptToEvaluateOnNewDocument", {
+    source: `try { window.localStorage.setItem("nova-onboarding-done", "1"); } catch { /* ignore */ }`,
+  });
   await send("Emulation.setDeviceMetricsOverride", {
     width: 1440,
     height: 960,
@@ -6314,11 +6320,12 @@ try {
 
   // The first-run onboarding dialog is a full-screen scrim. Dismiss it before
   // any pointer-driven check, otherwise every click lands on the dialog card.
-  if (await evaluate(send, `Boolean(document.querySelector('[data-builder-onboarding]'))`)) {
-    log("dismissing onboarding guide");
+  for (let attempt = 1; attempt <= 3 && (await evaluate(send, `Boolean(document.querySelector('[data-builder-onboarding]'))`)); attempt += 1) {
+    log(`dismissing onboarding guide (attempt ${attempt})`);
     await clickElementCenter(send, `document.querySelector("[data-builder-onboarding-skip]")`, "onboarding skip");
-    await waitFor(send, `!document.querySelector("[data-builder-onboarding]")`, "onboarding dismissed");
+    await delay(250);
   }
+  await waitFor(send, `!document.querySelector("[data-builder-onboarding]")`, "onboarding dismissed");
 
   // P2-10: suite selection. `layout` runs the pixel suite standalone;
   // `functional` runs workflows without pixel assertions so the two gates

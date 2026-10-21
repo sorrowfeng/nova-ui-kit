@@ -34,6 +34,21 @@ export type ProjectJumpActionId =
 
 export type ProjectTaskStatus = "queued" | "running" | "succeeded" | "failed" | "skipped" | "canceled";
 
+export type ProjectJumpKind =
+  | "action"
+  | "file"
+  | "component"
+  | "control"
+  | "rust-command"
+  | "state"
+  | "asset"
+  | "artifact"
+  | "validation"
+  | "pipeline"
+  | "maintenance"
+  | "settings"
+  | "checkpoint";
+
 export type ProjectTaskKind = "project" | "design" | "logic" | "generate" | "check" | "validate" | "build" | "repair";
 
 export type ProjectTaskStatusFilter = "all" | ProjectTaskStatus;
