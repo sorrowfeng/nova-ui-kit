@@ -151,12 +151,14 @@ import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
 import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
 import { ConflictMergeEditor, type ConflictFile } from "./builder/ConflictMergeEditor";
 import { GeneratedDiffView } from "./builder/GeneratedDiffView";
-import { renderBuilderPreview } from "./builder/BuilderItemPreview";
+// Mode views are code-split so the design shell does not pay for the
+// project/logic/build workbenches (P2-11).
+const BuilderItemPreview = lazy(() => import("./builder/BuilderItemPreview").then((m) => ({ default: m.BuilderItemPreview })));
+const ProjectView = lazy(() => import("./builder/ProjectView").then((m) => ({ default: m.ProjectView })));
+const LogicView = lazy(() => import("./builder/LogicView").then((m) => ({ default: m.LogicView })));
+const BuildView = lazy(() => import("./builder/BuildView").then((m) => ({ default: m.BuildView })));
 import { itemOptionTexts } from "./builder/item-options";
 import { isTauriRuntime } from "./builder/item-assets";
-import { ProjectView } from "./builder/ProjectView";
-import { LogicView } from "./builder/LogicView";
-import { BuildView } from "./builder/BuildView";
 import { PreviewDock } from "./builder/PreviewDock";
 import { useDebouncedPreviewReload } from "./builder/useDebouncedPreviewReload";
 import { ToolchainBanner } from "./builder/ToolchainBanner";
@@ -24479,7 +24481,7 @@ export function BuilderShowcase() {
         onContextMenu={(event) => openCanvasContextMenu(event, item)}
       >
         <div className={cn("h-full w-full overflow-hidden", mode === "design" && "pointer-events-none")}>
-          {renderBuilderPreview(item, mode, activeProject.assets)}
+          <Suspense fallback={null}><BuilderItemPreview item={item} mode={mode} assets={activeProject.assets} /></Suspense>
         </div>
 
         {mode === "design" && (!runtimeState.visible || !runtimeState.enabled || runtimeState.readOnly) ? (
@@ -28453,6 +28455,7 @@ export function BuilderShowcase() {
           data-builder-workspace-no-output-reserved-band=""
           data-builder-workspace-no-output-background-shield=""
         >
+        <Suspense fallback={null}>
         {mode === "project" ? (
           <ProjectView
             scope={{
@@ -34408,6 +34411,7 @@ export function BuilderShowcase() {
           </DesignWorkspace>
           </Suspense>
         )}
+        </Suspense>
         </div>
             <OutputDock
               tabs={bottomDockTabs}

@@ -15,6 +15,20 @@ export default defineConfig({
   clearScreen: false,
   build: {
     chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        // Keep the entry chunk free of third-party weight so the builder
+        // shell stays under the P2-11 budget (see scripts/check-bundle-size.mjs).
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          if (id.includes("lucide-react")) return "vendor-icons";
+          if (id.includes("@tauri-apps")) return "vendor-tauri";
+          if (id.includes("date-fns") || id.includes("react-day-picker")) return "vendor-dates";
+          return "vendor";
+        },
+      },
+    },
   },
   server: {
     port: 1420,

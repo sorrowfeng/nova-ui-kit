@@ -4825,3 +4825,19 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
     </div>
   );
 }
+
+/**
+ * Component form of {@link renderBuilderPreview}, so the whole preview
+ * renderer can be code-split out of the builder shell (P2-11).
+ */
+export function BuilderItemPreview({
+  item,
+  mode,
+  assets = [],
+}: {
+  item: BuilderItem;
+  mode: BuilderMode;
+  assets?: DesignerAsset[];
+}) {
+  return <>{renderBuilderPreview(item, mode, assets)}</>;
+}
