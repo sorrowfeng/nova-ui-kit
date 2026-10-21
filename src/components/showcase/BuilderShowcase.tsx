@@ -1874,6 +1874,8 @@ const builderPropertySchema: BuilderPropertySchemaField[] = [
   { prop: "visible", label: "可见", kind: "boolean", appliesTo: focusableBuilderComponentTypes },
   { prop: "readOnly", label: "只读", kind: "boolean", appliesTo: readOnlyBuilderComponentTypes },
   { prop: "tabIndex", label: "Tab 顺序", kind: "number", appliesTo: focusableBuilderComponentTypes, min: -1, max: 999 },
+  { prop: "slotBindings", label: "插槽绑定", kind: "text", appliesTo: ["frame", "card", "tabs", "dialog-button-box", "group-box"], maxLength: 120 },
+  { prop: "twoWayBindings", label: "双向绑定", kind: "text", appliesTo: ["input", "textarea", "select", "checkbox", "switch", "slider", "number-field"], maxLength: 120 },
   { prop: "alt", label: "替代文本", kind: "text", appliesTo: ["image"], recommended: true, maxLength: 120 },
   { prop: "objectFit", label: "图片适配", kind: "select", appliesTo: ["image", "image-list"], options: imageFitValues },
   { prop: "layoutMode", label: "布局模式", kind: "select", appliesTo: ["frame"], recommended: true, options: frameLayoutValues },
@@ -13809,6 +13811,7 @@ export function BuilderShowcase() {
   const [previewWebPath, setPreviewWebPath] = useState<string | null>(null);
   const [previewAutoRefresh, setPreviewAutoRefresh] = useState(true);
   const [previewVersion, setPreviewVersion] = useState(0);
+  const [projectGitStatus, setProjectGitStatus] = useState<{ clean: boolean; conflicted: string[]; changed: string[] } | null>(null);
   const [canvasFindQuery, setCanvasFindQuery] = useState("");
   const canvasFindInputRef = useRef<HTMLInputElement | null>(null);
   const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
@@ -41414,6 +41417,7 @@ export function BuilderShowcase() {
                   fileCount={activeProject.files.length}
                   hasRustLogic={Boolean(activeProject.rustLogic?.trim())}
                   hasCommands={activeProject.rustCommands.length > 0}
+                  gitStatus={projectGitStatus}
                   onGitSnapshot={() => {
                     void invokeIfAvailable<{ ok: boolean; log: string }>("init_project_git", {
                       rootPath: activeProject.rootPath ?? "",
@@ -43936,6 +43940,13 @@ export function BuilderShowcase() {
                                 <span className="rounded-full bg-surface-container-high px-2 py-0.5">{entry.kind}</span>
                                 <span>{entry.line_count ? `${entry.line_count} 行` : entry.exists ? "已存在" : "计划写入"}</span>
                                 {entry.changed ? <span className="text-primary">已变更</span> : null}
+                                {entry.line_diff ? (
+                                  <span className="font-mono text-[0.62rem]" data-builder-generated-line-diff="">
+                                    <span className="text-primary">+{entry.line_diff.added}</span>{" "}
+                                    <span className="text-destructive">-{entry.line_diff.removed}</span>{" "}
+                                    <span className="text-on-surface-variant">{entry.line_diff.unchanged}~</span>
+                                  </span>
+                                ) : null}
                               </div>
                             </button>
                           </article>

@@ -174,8 +174,50 @@ pub(super) struct GitSnapshotResult {
     pub git_dir: String,
 }
 
+#[derive(serde::Serialize)]
+pub(super) struct GitProjectStatus {
+    pub clean: bool,
+    pub conflicted: Vec<String>,
+    pub changed: Vec<String>,
+    pub log: String,
+}
+
+/// Report git working-tree status including conflict markers (D2).
+#[tauri::command]
+pub(super) fn git_project_status(root_path: String) -> Result<GitProjectStatus, String> {
+    let root = std::path::PathBuf::from(&root_path);
+    if !root.join(".git").exists() {
+        return Ok(GitProjectStatus {
+            clean: true,
+            conflicted: Vec::new(),
+            changed: Vec::new(),
+            log: "not a git repository".into(),
+        });
+    }
+    let output = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .current_dir(&root)
+        .output()
+        .map_err(to_error)?;
+    let text = String::from_utf8_lossy(&output.stdout).to_string();
+    let mut conflicted = Vec::new();
+    let mut changed = Vec::new();
+    for line in text.lines() {
+        if line.starts_with("UU") || line.starts_with("AA") || line.starts_with("DD") {
+            conflicted.push(line.chars().skip(3).collect::<String>().trim().to_string());
+        } else if !line.trim().is_empty() {
+            changed.push(line.trim().to_string());
+        }
+    }
+    Ok(GitProjectStatus {
+        clean: conflicted.is_empty() && changed.is_empty(),
+        conflicted,
+        changed,
+        log: text,
+    })
+}
+
 /// Initialize a git repo in the project root and commit current files (D2).
-/// Safe to call repeatedly — commits only when there are changes.
 #[tauri::command]
 pub(super) fn init_project_git(root_path: String) -> Result<GitSnapshotResult, String> {
     let root = std::path::PathBuf::from(&root_path);

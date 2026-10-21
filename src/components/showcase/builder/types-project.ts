@@ -78,6 +78,8 @@ export type PageConfig = {
   autoSave: boolean;
   /** UI locale for the generated app (zh-CN default). */
   locale?: "zh-CN" | "en-US";
+  /** Generated app theme (light/dark). */
+  theme?: "light" | "dark";
 };
 
 export type BuilderItemProps = {
@@ -571,17 +573,20 @@ export type EditorBackgroundTaskView = {
   result?: BuildResult | null;
 };
 
+export type LineDiffSummary = { added: number; removed: number; unchanged: number };
+
 export type GeneratedFilePreviewEntry = {
   path: string;
   relative_path: string;
   kind: string;
-  status: "create" | "update" | "unchanged" | "copy" | "managed" | string;
+  status: string;
   changed: boolean;
   exists: boolean;
   size_bytes: number;
   line_count: number;
   preview: string;
   summary: string;
+  line_diff?: LineDiffSummary | null;
 };
 
 export type GeneratedFilePreviewResult = {
