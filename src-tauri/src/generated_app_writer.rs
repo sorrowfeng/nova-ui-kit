@@ -145,13 +145,13 @@ pub(super) fn write_generated_app(
     )?;
     write_text_if_changed(
         &app_dir.join("index.html"),
-        &generated_index_html(&release.app_name),
+        &generated_index_html(&release.app_name, &release.locale),
     )?;
     write_text_if_changed(&app_dir.join("vite.config.ts"), generated_vite_config())?;
     write_text_if_changed(&app_dir.join("tsconfig.json"), generated_tsconfig())?;
     write_text_if_changed(&src_dir.join("main.tsx"), generated_main_tsx())?;
     write_text_if_changed(&src_dir.join("App.tsx"), generated_app_tsx())?;
-    write_text_if_changed(&src_dir.join("styles.css"), generated_styles())?;
+    write_text_if_changed(&src_dir.join("styles.css"), &generated_styles(&release.theme))?;
     write_text_if_changed(
         &scripts_dir.join("capture-window.mjs"),
         generated_capture_window_script(),

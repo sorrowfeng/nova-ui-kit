@@ -150,6 +150,7 @@ import { useCanvasItemDrag } from "./builder/useCanvasItemDrag";
 import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
 import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
 import { ConflictMergeEditor, type ConflictFile } from "./builder/ConflictMergeEditor";
+import { GeneratedDiffView } from "./builder/GeneratedDiffView";
 import { PreviewDock } from "./builder/PreviewDock";
 import { ToolchainBanner } from "./builder/ToolchainBanner";
 import { palette, getDefinition, type ComponentDefinition } from "./builder/component-palette";
@@ -43981,9 +43982,7 @@ export function BuilderShowcase() {
                             <p className="break-all rounded-xl bg-surface-container-high px-3 py-2 font-mono text-[0.68rem] text-on-surface-variant">
                               {activeGeneratedPreviewEntry.path}
                             </p>
-                            <pre className="max-h-[320px] overflow-auto rounded-xl bg-surface-container-highest p-3 font-mono text-[0.68rem] leading-5 text-on-surface-variant">
-                              {activeGeneratedPreviewEntry.preview}
-                            </pre>
+                            <GeneratedDiffView entry={activeGeneratedPreviewEntry} />
                           </div>
                         ) : (
                           <p className="rounded-xl bg-surface-container-high px-3 py-2 text-xs leading-5 text-on-surface-variant">
@@ -46894,11 +46893,11 @@ export function BuilderShowcase() {
                 <ConflictMergeEditor
                   file={conflictFile}
                   onClose={() => setConflictFile(null)}
-                  onResolve={(resolution) => {
+                  onResolve={(resolutions) => {
                     void invokeIfAvailable<string>("resolve_git_conflict", {
                       rootPath: activeProject.rootPath ?? "",
                       filePath: conflictFile.path,
-                      resolution,
+                      resolutions,
                     }).then(() => {
                       setConflictFile(null);
                       void invokeIfAvailable<{ clean: boolean; conflicted: string[]; changed: string[] }>(

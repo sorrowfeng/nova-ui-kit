@@ -38,6 +38,10 @@ pub(super) struct GeneratedReleaseConfig {
     pub(super) min_window_height: u64,
     pub(super) resizable: bool,
     pub(super) show_runtime_panel: bool,
+    /// Generated app copy locale (P0-3): "zh-CN" | "en-US".
+    pub(super) locale: String,
+    /// Generated app stylesheet theme (P0-3): "light" | "dark".
+    pub(super) theme: String,
 }
 
 #[derive(Debug, Clone)]
@@ -338,6 +342,14 @@ pub(super) fn release_config(project: &Value, project_name: &str) -> GeneratedRe
             .get("showRuntimePanel")
             .and_then(Value::as_bool)
             .unwrap_or(false),
+        locale: crate::generated_theme::locale_from_project(
+            project,
+            crate::generated_theme::DEFAULT_LOCALE,
+        ),
+        theme: crate::generated_theme::theme_from_project(
+            project,
+            crate::generated_theme::DEFAULT_THEME,
+        ),
     }
 }
 

@@ -21,6 +21,12 @@ pub fn generated_app_tsx() -> &'static str {
     crate::generated_templates::app_tsx::GENERATED_APP_TSX
 }
 
-pub fn generated_styles() -> &'static str {
-    crate::generated_templates::styles::GENERATED_STYLES
+/// Project theme variables, then the base stylesheet, then surface overrides
+/// so the theme wins the cascade (P0-3).
+pub fn generated_styles(theme: &str) -> String {
+    let mut css = crate::generated_theme::theme_variables(theme);
+    css.push('\n');
+    css.push_str(crate::generated_templates::styles::GENERATED_STYLES);
+    css.push_str(&crate::generated_theme::theme_surface_overrides());
+    css
 }

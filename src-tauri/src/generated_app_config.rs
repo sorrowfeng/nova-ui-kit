@@ -236,15 +236,20 @@ pub fn generated_package_json(release: &GeneratedReleaseConfig) -> String {
     )
 }
 
-pub fn generated_index_html(project_name: &str) -> String {
+/// Generated index.html: the `lang` attribute and the `__NOVA_LOCALE__`
+/// bootstrap both follow the project locale (P0-3).
+pub fn generated_index_html(project_name: &str, locale: &str) -> String {
     let title = html_text(project_name);
+    let lang = crate::generated_theme::html_lang(locale);
+    let bootstrap = crate::generated_theme::locale_bootstrap_script(locale);
     format!(
         r#"<!doctype html>
-<html lang="zh-CN">
+<html lang="{lang}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    {bootstrap}
   </head>
   <body>
     <div id="root"></div>

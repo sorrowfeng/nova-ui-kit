@@ -14,9 +14,12 @@ mod generated_files;
 mod generated_project_docs;
 mod generated_project_files;
 mod generated_templates;
+mod generated_theme;
 mod generated_window_validation;
+mod git_conflict;
 mod incremental_io;
 mod installer_smoke;
+mod line_diff;
 mod project_dependency_graph;
 mod project_model;
 mod project_paths;
@@ -105,7 +108,8 @@ use rust_source_map::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
-use system_process::{check_toolchain, git_project_status, init_project_git, read_git_conflict, resolve_git_conflict, open_local_path, run_logged_process, run_process, terminate_process_tree};
+use git_conflict::{read_git_conflict, resolve_git_conflict};
+use system_process::{check_toolchain, git_project_status, init_project_git, open_local_path, run_logged_process, run_process, terminate_process_tree};
 use text_utils::{html_text, json_string, json_string_array, to_error};
 
 #[derive(Serialize)]
@@ -995,7 +999,7 @@ mod tests {
         let tauri_conf = generated_tauri_conf(&release, &[], &[]);
         let capabilities = generated_capabilities_default();
         let generated_app = generated_app_tsx();
-        let generated_css = generated_styles();
+        let generated_css = generated_styles(&release.theme);
         let generated_capture = generated_capture_window_script();
 
         assert!(
@@ -1492,6 +1496,26 @@ fn app_message() -> String {
             .preview
             .contains("nova_backend_integration_status"));
         assert!(lib_entry.preview.contains("project_state::label()"));
+        // P0-2: created files diff as pure additions with line numbers.
+        assert!(
+            !lib_entry.diff_lines.is_empty(),
+            "created files should still expose diff lines for the preview"
+        );
+        assert!(
+            lib_entry.diff_lines.iter().all(|line| line.kind == "add"),
+            "a create entry should diff as additions only"
+        );
+        assert!(
+            lib_entry
+                .diff_lines
+                .iter()
+                .all(|line| line.old_line.is_none() && line.new_line.is_some()),
+            "addition rows should carry new-file line numbers only"
+        );
+        assert_eq!(
+            lib_entry.line_diff.as_ref().map(|summary| summary.added),
+            Some(lib_entry.diff_lines.len().min(crate::line_diff::MAX_DIFF_LINES)),
+        );
         let source_map_entry = preview
             .entries
             .iter()
@@ -1605,6 +1629,72 @@ fn app_message() -> String {
             .find(|entry| entry.relative_path == "app/src-tauri/src/lib.rs")
             .expect("saved lib.rs preview entry");
         assert_eq!(saved_lib_entry.status, "unchanged");
+    }
+
+    /// P0-3: page config locale/theme must reach the generated CSS and copy.
+    #[test]
+    fn generated_styles_and_copy_follow_project_locale_and_theme() {
+        let root = env::temp_dir().join("nova-ui-generated-locale-theme");
+        if root.exists() {
+            fs::remove_dir_all(&root).expect("remove old locale/theme project");
+        }
+        let mut project = checkpoint_test_project(&root);
+        project["files"] = json!([
+            {
+                "id": "main",
+                "name": "Main",
+                "page": {
+                    "title": "Main",
+                    "locale": "en-US",
+                    "theme": "dark",
+                    "windowKind": "main",
+                    "titlebarStyle": "nova"
+                },
+                "items": []
+            }
+        ]);
+
+        let preview = preview_generated_project_files(project.clone(), DEFAULT_RUST_LOGIC.to_string())
+            .expect("preview with locale/theme");
+        let index_entry = preview
+            .entries
+            .iter()
+            .find(|entry| entry.relative_path == "app/index.html")
+            .expect("index.html preview entry");
+        assert!(
+            index_entry.preview.contains("lang=\"en\""),
+            "index.html lang should follow the project locale, got:\n{}",
+            index_entry.preview
+        );
+        assert!(
+            index_entry.preview.contains("window.__NOVA_LOCALE__ = \"en-US\""),
+            "index.html should bootstrap the project locale, got:\n{}",
+            index_entry.preview
+        );
+
+        let styles_entry = preview
+            .entries
+            .iter()
+            .find(|entry| entry.relative_path == "app/src/styles.css")
+            .expect("styles.css preview entry");
+        assert!(
+            styles_entry.preview.contains("Nova project theme: dark"),
+            "styles.css should carry the project theme marker"
+        );
+        assert!(
+            styles_entry.preview.contains("--nova-theme-bg: #14121c;"),
+            "styles.css should carry the dark palette, got:\n{}",
+            styles_entry.preview
+        );
+
+        save_project_files(&root, &project, DEFAULT_RUST_LOGIC).expect("save locale/theme project");
+        let saved_styles =
+            fs::read_to_string(root.join("app").join("src").join("styles.css")).expect("styles");
+        assert!(saved_styles.contains("Nova project theme: dark"));
+        let saved_index =
+            fs::read_to_string(root.join("app").join("index.html")).expect("index");
+        assert!(saved_index.contains("lang=\"en\""));
+        assert!(saved_index.contains("window.__NOVA_LOCALE__ = \"en-US\""));
     }
 
     #[test]

@@ -405,7 +405,7 @@ fn planned_generated_files(
         &mut files,
         "app/index.html".to_string(),
         "app",
-        generated_index_html(&release.app_name),
+        generated_index_html(&release.app_name, &release.locale),
         "Generated app HTML entry".to_string(),
     );
     push_planned_text_file(
@@ -440,7 +440,7 @@ fn planned_generated_files(
         &mut files,
         "app/src/styles.css".to_string(),
         "app",
-        generated_styles().to_string(),
+        generated_styles(&release.theme),
         "Generated runtime styles".to_string(),
     );
     push_planned_text_file(

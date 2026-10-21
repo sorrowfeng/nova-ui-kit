@@ -575,6 +575,14 @@ export type EditorBackgroundTaskView = {
 
 export type LineDiffSummary = { added: number; removed: number; unchanged: number };
 
+/** One rendered row of the line-level diff preview (P0-2). */
+export type GeneratedDiffLine = {
+  kind: "add" | "remove" | "context" | string;
+  text: string;
+  old_line: number | null;
+  new_line: number | null;
+};
+
 export type GeneratedFilePreviewEntry = {
   path: string;
   relative_path: string;
@@ -587,6 +595,8 @@ export type GeneratedFilePreviewEntry = {
   preview: string;
   summary: string;
   line_diff?: LineDiffSummary | null;
+  diff_lines: GeneratedDiffLine[];
+  diff_truncated: boolean;
 };
 
 export type GeneratedFilePreviewResult = {

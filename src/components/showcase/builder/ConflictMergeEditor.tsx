@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Check, GitMerge, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,32 @@ export type ConflictFile = {
   hunks: ConflictHunk[];
 };
 
+/** Per-hunk merge choice. `both` concatenates ours then theirs. */
+export type ConflictResolution = "ours" | "theirs" | "both";
+
+const RESOLUTIONS: readonly ConflictResolution[] = ["ours", "theirs", "both"];
+
+const RESOLUTION_LABEL: Record<ConflictResolution, string> = {
+  ours: "保留本方",
+  theirs: "采用对方",
+  both: "两者都留",
+};
+
+/** Keyboard shortcuts: 1/2/3 pick ours/theirs/both on the focused hunk. */
+const RESOLUTION_KEYS: Record<string, ConflictResolution> = {
+  Digit1: "ours",
+  Digit2: "theirs",
+  Digit3: "both",
+  Numpad1: "ours",
+  Numpad2: "theirs",
+  Numpad3: "both",
+};
+
 /**
  * Side-by-side conflict merge editor (D2).
- * For each hunk the user picks ours / theirs / both.
+ * Each hunk is resolved independently, then the whole set is written back
+ * (P0-1: per-hunk application). Keys 1/2/3 pick a side, Tab/Shift+Tab move
+ * between hunks (P1-6).
  */
 export function ConflictMergeEditor({
   file,
@@ -24,14 +47,50 @@ export function ConflictMergeEditor({
   onClose,
 }: {
   file: ConflictFile;
-  onResolve: (resolution: "ours" | "theirs" | "both") => void;
+  onResolve: (resolutions: ConflictResolution[]) => void;
   onClose: () => void;
 }) {
-  const [choices, setChoices] = useState<Record<number, "ours" | "theirs" | "both">>({});
+  const [choices, setChoices] = useState<Record<number, ConflictResolution>>({});
+  const [activeHunk, setActiveHunk] = useState(0);
+  const hunkRefs = useRef<Array<HTMLElement | null>>([]);
 
-  const pick = (index: number, value: "ours" | "theirs" | "both") => {
+  const resolutions = useMemo<ConflictResolution[]>(
+    () =>
+      file.hunks.map((_, index) => choices[index] ?? "ours"),
+    [file.hunks, choices],
+  );
+
+  const pick = useCallback((index: number, value: ConflictResolution) => {
     setChoices((c) => ({ ...c, [index]: value }));
-  };
+    setActiveHunk(index);
+  }, []);
+
+  const focusHunk = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, file.hunks.length - 1));
+    setActiveHunk(clamped);
+    hunkRefs.current[clamped]?.focus();
+  }, [file.hunks.length]);
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const resolution = RESOLUTION_KEYS[event.key] ?? RESOLUTION_KEYS[event.code];
+      if (resolution) {
+        event.preventDefault();
+        pick(activeHunk, resolution);
+        return;
+      }
+      if (event.key === "ArrowDown" && event.altKey) {
+        event.preventDefault();
+        focusHunk(activeHunk + 1);
+        return;
+      }
+      if (event.key === "ArrowUp" && event.altKey) {
+        event.preventDefault();
+        focusHunk(activeHunk - 1);
+      }
+    },
+    [activeHunk, focusHunk, pick],
+  );
 
   return (
     <div
@@ -40,6 +99,7 @@ export function ConflictMergeEditor({
       role="dialog"
       aria-modal="true"
       aria-label={`合并冲突 ${file.path}`}
+      onKeyDown={handleKeyDown}
     >
       <div className="flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-m3-3">
         <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-3">
@@ -60,27 +120,45 @@ export function ConflictMergeEditor({
           {file.hunks.map((hunk, index) => (
             <section
               key={index}
-              className="overflow-hidden rounded-xl border border-outline-variant"
+              ref={(node) => {
+                hunkRefs.current[index] = node;
+              }}
+              tabIndex={activeHunk === index ? 0 : -1}
+              className={cn(
+                "overflow-hidden rounded-xl border border-outline-variant focus-ring",
+                activeHunk === index ? "border-primary" : undefined,
+              )}
               data-builder-conflict-hunk={index}
               data-builder-conflict-line={hunk.start_line}
+              data-builder-conflict-choice={resolutions[index]}
+              onFocus={() => setActiveHunk(index)}
             >
               <div className="flex items-center gap-2 border-b border-outline-variant bg-surface-container px-3 py-1.5">
-                <span className="text-[0.68rem] text-on-surface-variant">第 {hunk.start_line} 行</span>
+                <span className="text-[0.68rem] text-on-surface-variant">
+                  第 {hunk.start_line} 行
+                  <span className="ml-2 rounded-full bg-surface-container-high px-1.5 py-0.5 text-[0.6rem]">
+                    {index + 1}/{file.hunks.length}
+                  </span>
+                </span>
                 <div className="ml-auto flex gap-1">
-                  {(["ours", "theirs", "both"] as const).map((value) => (
+                  {RESOLUTIONS.map((value, keyIndex) => (
                     <button
                       key={value}
                       type="button"
                       className={cn(
                         "focus-ring h-6 rounded-full px-2 text-[0.62rem] font-medium",
-                        choices[index] === value
+                        resolutions[index] === value
                           ? "bg-primary-container text-primary-container-foreground"
                           : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest",
                       )}
                       data-builder-conflict-pick={`${index}-${value}`}
+                      title={`快捷键 ${keyIndex + 1}`}
                       onClick={() => pick(index, value)}
                     >
-                      {value === "ours" ? "保留本方" : value === "theirs" ? "采用对方" : "两者都留"}
+                      <kbd className="mr-1 rounded bg-surface-container-highest px-1 text-[0.58rem] opacity-70">
+                        {keyIndex + 1}
+                      </kbd>
+                      {RESOLUTION_LABEL[value]}
                     </button>
                   ))}
                 </div>
@@ -109,21 +187,31 @@ export function ConflictMergeEditor({
 
         <div className="flex items-center justify-between gap-2 border-t border-outline-variant px-4 py-3">
           <p className="text-[0.68rem] text-on-surface-variant">
-            未选择的冲突将默认保留本方。解决后文件会去掉冲突标记。
+            每个冲突可单独选择；未选择的默认保留本方。快捷键 1/2/3 选择，Alt+↑/↓ 切换冲突。
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="ghost" onClick={onClose}>
               取消
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => onResolve("ours")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              data-builder-conflict-apply-all-ours=""
+              onClick={() => onResolve(file.hunks.map(() => "ours" as ConflictResolution))}
+            >
               全部本方
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => onResolve("theirs")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              data-builder-conflict-apply-all-theirs=""
+              onClick={() => onResolve(file.hunks.map(() => "theirs" as ConflictResolution))}
+            >
               全部对方
             </Button>
             <Button
               size="sm"
-              onClick={() => onResolve("both")}
+              onClick={() => onResolve(resolutions)}
               data-builder-conflict-apply=""
             >
               <Check aria-hidden className="size-4" />
