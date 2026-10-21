@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig({
+  base: "./",
   plugins: [react()],
   resolve: {
     alias: {
@@ -12,6 +13,9 @@ export default defineConfig({
     },
   },
   clearScreen: false,
+  build: {
+    chunkSizeWarningLimit: 2000,
+  },
   server: {
     port: 1420,
     strictPort: true,

@@ -21,7 +21,12 @@ export type NovaEditorCommand =
   | "open-build-output"
   | "open-project-files"
   | "help-guide"
-  | "project-templates";
+  | "project-templates"
+  | "open-sample"
+  | "show-shortcuts"
+  | "show-onboarding"
+  | "canvas-find"
+  | "preview-run";
 
 export type NovaEditorCommandEventDetail = {
   command: NovaEditorCommand;

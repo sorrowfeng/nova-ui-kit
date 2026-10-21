@@ -269,6 +269,13 @@
     @apply outline-none ring-offset-2 ring-offset-surface focus-visible:ring-2 focus-visible:ring-ring;
   }
 
+  @media (forced-colors: active) {
+    .focus-ring:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+  }
+
   .panel-surface {
     @apply border border-outline-variant bg-surface-container shadow-m3-1;
   }

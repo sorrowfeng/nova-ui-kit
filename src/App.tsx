@@ -15,6 +15,8 @@ import {
 import { AppSettingsPanel } from "@/components/layout/AppSettingsPanel";
 import { AppShell } from "@/components/layout/AppShell";
 import { CommandPalette, type CommandPaletteAction } from "@/components/layout/CommandPalette";
+import { OnboardingGuide, isOnboardingCompleted, resetOnboarding } from "@/components/layout/OnboardingGuide";
+import { KeyboardShortcutsOverlay } from "@/components/layout/KeyboardShortcutsOverlay";
 import { ShowcasePage } from "@/components/showcase/ShowcasePage";
 import {
   Toast,
@@ -36,6 +38,24 @@ const LANGUAGE_ZH_DEFAULT_MIGRATION_KEY = "nova-language-zh-default-migrated";
 
 function createEditorCommandActions(copy: AppCopy): CommandPaletteAction[] {
   return [
+  {
+    id: "editor-action-open-sample",
+    title: "打开示例项目",
+    description: "一键载入带控件与命令绑定的演示工程",
+    category: "项目",
+    icon: Sparkles,
+    tags: ["sample", "demo", "example", "示例", "模板"],
+    command: "open-sample",
+  },
+  {
+    id: "editor-action-show-shortcuts",
+    title: "快捷键速查",
+    description: "打开可搜索的键盘快捷键列表",
+    category: "帮助",
+    icon: HelpCircle,
+    tags: ["help", "shortcut", "keyboard", "快捷键", "帮助"],
+    command: "show-shortcuts",
+  },
   {
     id: "editor-action-new-project",
     title: copy.commands.newProject[0],
@@ -299,6 +319,8 @@ function App() {
   const [focusModeEnabled, setFocusModeEnabled] = useState(() => getInitialBoolean("nova-focus-mode-enabled", false));
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(() => !isOnboardingCompleted());
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [pendingEditorCommand, setPendingEditorCommand] = useState<NovaEditorCommand | null>(null);
   const [systemDark, setSystemDark] = useState(() =>
@@ -321,9 +343,37 @@ function App() {
       setSettingsOpen(true);
       return;
     }
+    if (command === "show-shortcuts") {
+      setCommandOpen(false);
+      setShortcutsOpen(true);
+      return;
+    }
+    if (command === "show-onboarding") {
+      setCommandOpen(false);
+      resetOnboarding();
+      setOnboardingOpen(true);
+      return;
+    }
     setActiveId("builder");
     setPendingEditorCommand(command);
   }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if (event.key === "F1" || (event.key === "?" && !typing && !event.ctrlKey && !event.metaKey)) {
+        event.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+      if (event.key === "Escape" && shortcutsOpen) {
+        setShortcutsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [shortcutsOpen]);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-color-scheme: dark)");
@@ -526,6 +576,14 @@ function App() {
           onMotionChange={setMotion}
           onResetDefaults={resetPreferences}
         />
+
+        <OnboardingGuide
+          open={onboardingOpen}
+          onOpenChange={setOnboardingOpen}
+          onOpenSample={() => runEditorCommand("open-sample")}
+          onShowShortcuts={() => setShortcutsOpen(true)}
+        />
+        <KeyboardShortcutsOverlay open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
 
         <CommandPalette
           open={commandOpen}
