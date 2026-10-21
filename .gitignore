@@ -12,3 +12,12 @@ src-tauri/gen/
 
 .DS_Store
 Thumbs.db
+
+# example build artifacts
+examples/**/build/
+examples/**/*.obj
+examples/**/*.tlog
+examples/**/*.exe
+examples/**/*.dll
+examples/**/*.lib
+examples/**/*.exp

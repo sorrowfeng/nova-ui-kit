@@ -1,0 +1,4 @@
+{"method":"health","id":"h1"}
+{"method":"add","params":{"a":2,"b":40},"id":"m1"}
+{"method":"upper","params":{"text":"Nova UI"},"id":"m2"}
+{"method":"echo","params":{"value":"hello"},"id":"m3"}

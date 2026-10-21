@@ -15,6 +15,11 @@ The project started as a UI kit showcase and is evolving into **Nova UI Editor**
 ## Screenshots
 
 Screenshots are captured from the current desktop-oriented editor UI.
+Refresh locally with `npm run docs:screenshots` after UI changes.
+
+![Golden path demo](docs/screenshots/golden-path-demo.gif)
+
+> 30 秒黄金路径：新建 → 设计 → 绑定 → 生成 → exe。逐步图文见 [docs/golden-path.md](docs/golden-path.md)。
 
 | Project workspace | Design canvas |
 | --- | --- |
@@ -98,6 +103,9 @@ Nova also includes backend integration scaffolding for non-Rust logic:
 nova-ui-kit/
 ├─ docs/
 │  └─ screenshots/                 # README and project screenshots
+├─ examples/
+│  ├─ python-local-service/        # runnable Python stdio sidecar
+│  └─ cpp-ffi/                     # runnable C++ extern "C" FFI sample
 ├─ src/
 │  ├─ App.tsx
 │  ├─ main.tsx
@@ -187,15 +195,45 @@ npm run tauri:build
 | Script | Description |
 | --- | --- |
 | `npm run dev` | Start Vite on `127.0.0.1:1420`. |
-| `npm run build` | Run component, editor-experience, TypeScript, and Vite production checks. |
+| `npm run build` | Run component, editor-experience, size guard, TypeScript, and Vite production checks. |
 | `npm run preview` | Preview the production frontend build. |
 | `npm run tauri:dev` | Start the Tauri desktop dev app. |
 | `npm run tauri:exe` | Build the release executable without bundling an installer. |
 | `npm run tauri:build` | Build the full Tauri bundle. |
 | `npm run check:components` | Verify component palette/editor/runtime coverage. |
-| `npm run check:experience` | Verify editor UX contracts and Rust project persistence checks. |
+| `npm run check:experience` | Verify editor UX contracts (includes runtime-contract, persistence, goal). |
 | `npm run check:builder-runtime` | Run browser smoke checks for the editor workflow. |
+| `npm run check:showcase-size` | Guard `BuilderShowcase.tsx` line-count ceiling. |
+| `npm run check:runtime-contract` | Verify generated app runtime markers. |
+| `npm run check:generated-runtime` | Run targeted generated-runtime Rust tests. |
+| `npm run check:project-persistence` | Run project persistence Rust tests. |
+| `npm run check:goal` | Verify Qt Creator parity goal coverage. |
+| `npm run check:desktop-exe` | Check desktop exe artifacts. |
+| `npm run release:notes` | Draft release notes from git history. |
 | `npm run verify:desktop` | Run desktop release verification and exe smoke checks. |
+
+UI text / density audits (optional, needs a local browser):
+
+```bash
+node output/ui-audit/run-ui-text-audit.mjs
+node output/goal-audit/run-goal-audit.mjs
+```
+
+## Documentation
+
+| Doc | Contents |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | Module map and where to change things |
+| [docs/project-schema.md](docs/project-schema.md) | `.nova` / project schema and migration policy |
+| [docs/generated-write-policy.md](docs/generated-write-policy.md) | Generated-file write / conflict policy |
+| [docs/accessibility-checklist.md](docs/accessibility-checklist.md) | Manual a11y checklist |
+| [docs/backend-integration.md](docs/backend-integration.md) | Sidecar / FFI backend integration |
+| [docs/release-pipeline.md](docs/release-pipeline.md) | Release evidence and installer smoke |
+| [docs/golden-path.md](docs/golden-path.md) | New project → design → bind → generate → exe |
+| [docs/release-checklist.md](docs/release-checklist.md) | Alpha → beta pre-release checklist |
+| [docs/usability-roadmap.md](docs/usability-roadmap.md) | UX / convenience improvement backlog |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | FAQ and environment troubleshooting |
+| [docs/后续工作计划.md](docs/后续工作计划.md) | Iteration plan and progress snapshot |
 
 ## Development Workflow
 
@@ -252,23 +290,32 @@ This keeps the editor, generated source files, validation artifacts, build logs,
 
 To add a new draggable component:
 
-1. Add the component type to `BuilderComponentType`.
-2. Add a palette entry and default props.
-3. Add editor preview rendering.
-4. Add generated-app rendering.
-5. Add inspector controls for editable props.
-6. Add event binding support if the component emits actions.
-7. Add or update coverage checks so the component appears in palette, editor, and runtime surfaces.
+1. Add the component type to `BuilderComponentType` (`src/components/showcase/builder/types-canvas.ts`).
+2. Add a palette entry and default props (`BuilderShowcase.tsx` palette table).
+3. Add editor preview rendering (`BuilderShowcase.tsx` `renderBuilderPreview`).
+4. Add generated-app rendering (`src-tauri/src/generated_templates/app_tsx.rs`).
+5. Add inspector controls for editable props (`InspectorDock.tsx` / property schema).
+6. Add event binding support if the component emits actions (`builder/event-bindings.ts`).
+7. Add or update coverage checks so the component appears in palette, editor, and runtime surfaces (`npm run check:components`).
+
+Checklist for new components:
+
+- [ ] Type union + palette + preview + runtime branch all updated
+- [ ] Default props render without text clip at 1440 and 1100 viewports
+- [ ] Icon button / interactive control has accessible name
+- [ ] `npm run check:components` and `npm run build` pass
+
+See `docs/architecture.md` for the module map.
 
 ## Roadmap
 
-- Continue extracting editor modules from `BuilderShowcase.tsx`.
-- Make generated component code richer and more extensible.
-- Improve plugin-style backend integrations beyond Rust-first workflows.
-- Add deeper generated-app template customization.
-- Reduce bundle size through code splitting.
-- Expand desktop keyboard navigation and accessibility coverage.
-- Add more packaged releases and release notes automation.
+- Continue extracting editor modules from `BuilderShowcase.tsx` (canvas marquee/resize hooks, mode workspaces).
+- Make generated component code richer (fuller props / events / slots schemas).
+- Ship a runnable non-Rust backend sample (Python local-service / C++ FFI) end to end.
+- Deeper generated-app template customization points.
+- Further bundle splitting of the editor main chunk.
+- Finish remaining a11y manual pass items from `docs/accessibility-checklist.md`.
+- Expand multi-platform installer verification matrix and CI release notes.
 
 ## Contributing
 

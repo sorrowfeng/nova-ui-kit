@@ -4,10 +4,41 @@ import process from "node:process";
 
 const root = process.cwd();
 const sourceCache = new Map();
+const builderPath = "src/components/showcase/BuilderShowcase.tsx";
+const builderModuleDir = "src/components/showcase/builder";
+const typesPath = "src/components/showcase/builder/types.ts";
 
 function read(relativePath) {
   if (!sourceCache.has(relativePath)) {
-    sourceCache.set(relativePath, fs.readFileSync(path.join(root, relativePath), "utf8"));
+    if (relativePath === builderPath) {
+      const main = fs.readFileSync(path.join(root, builderPath), "utf8");
+      const modules = fs
+        .readdirSync(path.join(root, builderModuleDir))
+        .filter((name) => /\.tsx?$/.test(name))
+        .map((name) => fs.readFileSync(path.join(root, builderModuleDir, name), "utf8"))
+        .join("\n");
+      sourceCache.set(relativePath, `${main}\n${modules}`);
+    } else if (relativePath === typesPath) {
+      const parts = ["types-canvas.ts", "types-project.ts", "types-release.ts", "types.ts"].map((name) =>
+        fs.readFileSync(path.join(root, builderModuleDir, name), "utf8"),
+      );
+      sourceCache.set(relativePath, parts.join("\n"));
+    } else if (relativePath === "src-tauri/src/generated_app_runtime.rs") {
+      const templateDir = "src-tauri/src/generated_templates";
+      const parts = [fs.readFileSync(path.join(root, relativePath), "utf8")];
+      const fullTemplateDir = path.join(root, templateDir);
+      if (fs.existsSync(fullTemplateDir)) {
+        parts.push(
+          ...fs
+            .readdirSync(fullTemplateDir)
+            .filter((name) => name.endsWith(".rs"))
+            .map((name) => fs.readFileSync(path.join(fullTemplateDir, name), "utf8")),
+        );
+      }
+      sourceCache.set(relativePath, parts.join("\n"));
+    } else {
+      sourceCache.set(relativePath, fs.readFileSync(path.join(root, relativePath), "utf8"));
+    }
   }
   return sourceCache.get(relativePath);
 }
@@ -40,7 +71,7 @@ function matches(relativePath, pattern, note) {
 }
 
 function builder(needle, note) {
-  return contains("src/components/showcase/BuilderShowcase.tsx", needle, note);
+  return contains(builderPath, needle, note);
 }
 
 function outputDock(needle, note) {

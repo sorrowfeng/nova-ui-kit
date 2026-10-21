@@ -5,7 +5,14 @@ import process from "node:process";
 const root = process.cwd();
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
-const runtime = read("src-tauri/src/generated_app_runtime.rs");
+const templateDir = "src-tauri/src/generated_templates";
+const runtime = [
+  read("src-tauri/src/generated_app_runtime.rs"),
+  ...fs
+    .readdirSync(path.join(root, templateDir))
+    .filter((name) => name.endsWith(".rs"))
+    .map((name) => read(`${templateDir}/${name}`)),
+].join("\n");
 const config = read("src-tauri/src/generated_app_config.rs");
 const projectModel = read("src-tauri/src/project_model.rs");
 
@@ -98,6 +105,17 @@ mustContain("Runtime audit requires window controls outside drag regions", runti
 mustContain("Runtime controls expose stable runtime ids", runtime, "data-nova-control-id={item.id}");
 mustContain("Runtime styles expose Nova radius token", runtime, "--nova-runtime-radius");
 mustContain("Runtime styles expose Nova border token", runtime, "--nova-runtime-border");
+mustContain("Runtime controls expose bound event metadata", runtime, "data-nova-events=");
+mustContain("Runtime controls echo prop summary", runtime, "data-nova-props=");
+mustContain("Runtime controls mark slot region", runtime, 'data-nova-slot-region="control"');
+mustContain("Runtime controls expose slot names", runtime, "data-nova-slots=");
+mustContain("Runtime defines container slot contract", runtime, "CONTROL_SLOTS");
+mustContain("Runtime has locale message bundle", runtime, "GENERATED_MESSAGES");
+mustContain("Runtime resolves generated locale", runtime, "resolveGeneratedLocale");
+mustContain("Runtime uses messages for button default", runtime, "messages.buttonDefault");
+mustContain("Runtime frame children are a named slot", runtime, 'data-nova-slot="children"');
+mustContain("Runtime button exposes accessible name", runtime, "aria-label={String(props.label ?? \"Button\")}");
+mustContain("Runtime button marks click command", runtime, "data-nova-event-click=");
 
 mustContain("Runtime window kind follows page overrides", projectModel, 'page.get("windowKind").is_some()');
 mustContain("Runtime titlebar style follows page overrides", projectModel, 'page.get("titlebarStyle").is_some()');

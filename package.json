@@ -15,7 +15,7 @@
   "homepage": "https://github.com/sorrowfeng/nova-ui-kit#readme",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "npm run check:components && npm run check:experience && tsc && vite build",
+    "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && tsc && vite build",
     "check:components": "node scripts/check-component-coverage.mjs",
     "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal",
     "check:goal": "node scripts/check-goal-coverage.mjs",
@@ -29,7 +29,14 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:exe": "tauri build --no-bundle"
+    "tauri:exe": "tauri build --no-bundle",
+    "check:showcase-size": "node scripts/check-showcase-size.mjs",
+    "release:notes": "node scripts/generate-release-notes.mjs",
+    "docs:screenshots": "node scripts/capture-workspace-screenshots.mjs",
+    "check:cpp-ffi": "node scripts/check-cpp-ffi-sample.mjs",
+    "check:project-health": "node scripts/check-project-health.mjs",
+    "check:watch": "node scripts/check-watch.mjs",
+    "check:builder-runtime:design": "node scripts/check-builder-runtime-smoke.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

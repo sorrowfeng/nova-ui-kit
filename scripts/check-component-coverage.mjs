@@ -3,11 +3,39 @@ import path from "node:path";
 import process from "node:process";
 
 const root = process.cwd();
-const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
+const builderModuleDir = "src/components/showcase/builder";
 
-const typesSource = read("src/components/showcase/builder/types.ts");
-const builderSource = read("src/components/showcase/BuilderShowcase.tsx");
-const runtimeSource = read("src-tauri/src/generated_app_runtime.rs");
+function read(relativePath) {
+  return fs.readFileSync(path.join(root, relativePath), "utf8");
+}
+
+function readBuilderSources() {
+  const main = read("src/components/showcase/BuilderShowcase.tsx");
+  const modules = fs
+    .readdirSync(path.join(root, builderModuleDir))
+    .filter((name) => /\.tsx?$/.test(name))
+    .map((name) => read(`${builderModuleDir}/${name}`))
+    .join("\n");
+  return `${main}\n${modules}`;
+}
+
+const typesSource = [
+  "src/components/showcase/builder/types-canvas.ts",
+  "src/components/showcase/builder/types-project.ts",
+  "src/components/showcase/builder/types-release.ts",
+  "src/components/showcase/builder/types.ts",
+]
+  .map((p) => read(p))
+  .join("\n");
+const builderSource = readBuilderSources();
+const templateDir = "src-tauri/src/generated_templates";
+const runtimeSource = [
+  read("src-tauri/src/generated_app_runtime.rs"),
+  ...fs
+    .readdirSync(path.join(root, templateDir))
+    .filter((name) => name.endsWith(".rs"))
+    .map((name) => read(`${templateDir}/${name}`)),
+].join("\n");
 
 function extractRequired(source, pattern, label) {
   const match = source.match(pattern);

@@ -6,9 +6,39 @@ const root = process.cwd();
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
 const sources = new Map();
+const builder = "src/components/showcase/BuilderShowcase.tsx";
+const builderModuleDir = "src/components/showcase/builder";
+
 function source(relativePath) {
   if (!sources.has(relativePath)) {
-    sources.set(relativePath, read(relativePath));
+    if (relativePath === builder) {
+      const main = read(builder);
+      const modules = fs
+        .readdirSync(path.join(root, builderModuleDir))
+        .filter((name) => /\.tsx?$/.test(name))
+        .map((name) => read(path.posix.join(builderModuleDir, name)))
+        .join("\n");
+      sources.set(relativePath, `${main}\n${modules}`);
+    } else if (relativePath === "src/components/showcase/builder/types.ts") {
+      const parts = ["types-canvas.ts", "types-project.ts", "types-release.ts", "types.ts"].map((name) =>
+        read(path.posix.join(builderModuleDir, name)),
+      );
+      sources.set(relativePath, parts.join("\n"));
+    } else if (relativePath === "src-tauri/src/generated_app_runtime.rs") {
+      const templateDir = "src-tauri/src/generated_templates";
+      const parts = [read(relativePath)];
+      if (fs.existsSync(path.join(root, templateDir))) {
+        parts.push(
+          ...fs
+            .readdirSync(path.join(root, templateDir))
+            .filter((name) => name.endsWith(".rs"))
+            .map((name) => read(path.posix.join(templateDir, name))),
+        );
+      }
+      sources.set(relativePath, parts.join("\n"));
+    } else {
+      sources.set(relativePath, read(relativePath));
+    }
   }
   return sources.get(relativePath);
 }
@@ -41,7 +71,6 @@ const topbar = "src/components/layout/Topbar.tsx";
 const windowTitlebar = "src/components/layout/WindowTitlebar.tsx";
 const settings = "src/components/layout/AppSettingsPanel.tsx";
 const statusBar = "src/components/layout/StatusBar.tsx";
-const builder = "src/components/showcase/BuilderShowcase.tsx";
 const editorCommands = "src/lib/editor-commands.ts";
 const designWorkspace = "src/components/showcase/builder/DesignWorkspace.tsx";
 const logicWorkspace = "src/components/showcase/builder/LogicWorkspace.tsx";
@@ -124,7 +153,7 @@ mustContain(topbar, "commandHintsVisible", "Topbar responds to command hint pref
 
 mustContain(builder, 'data-builder-selection-visible="persistent"', "Canvas selection actionbar is always present");
 mustContain(builder, 'data-builder-selection-placement="canvas-top-external"', "Selection actionbar is outside the canvas content plane");
-mustContain(builder, '"pointer-events-auto relative z-10 mx-0 mt-0 flex h-8 shrink-0', "Selection actionbar occupies a low IDE-style external chrome track");
+mustContain(builder, '"pointer-events-auto relative z-10 mx-0 mt-0 flex h-12 shrink-0', "Selection actionbar occupies a low IDE-style external chrome track");
 mustContain(builder, 'data-builder-selection-chrome-style="ide-toolbar"', "Selection actionbar uses IDE toolbar chrome instead of a floating banner");
 mustContain(builder, "selectionActionBarReservedTrack", "Selection actionbar records toolbar state without changing placement");
 mustContain(builder, 'data-builder-selection-track="external-canvas-chrome"', "Selection actionbar exposes its external chrome track");
@@ -337,7 +366,7 @@ mustContain(outputDock, 'backgroundColor: "transparent"', "Minimized output dock
 mustContain(outputDock, "minimizedStripStyle", "Minimized output dock uses a dedicated dock strip style");
 mustContain(outputDock, 'const dockMotionClass = minimized ? "transition-none"', "Minimized output dock disables outer chrome transition");
 mustContain(outputDock, "pointer-events-none overflow-visible rounded-none border border-transparent bg-transparent shadow-none backdrop-blur-0", "Minimized output dock outer shell stays transparent and non-blocking");
-mustContain(outputDock, "pointer-events-auto grid h-full w-full", "Minimized output dock renders only an interactive full-width strip");
+mustContain(outputDock, "pointer-events-auto grid h-9 w-full", "Minimized output dock renders only an interactive full-width strip");
 mustContain(builder, "data-builder-output-dock-minimized-feedback", "Builder passes issue/task/output feedback into the minimized dock");
 mustContain(builder, "data-builder-workspace-no-output-reserved-band", "Builder marks the workspace as not reserving a bottom white band");
 mustContain(builder, "bottomDockLogText", "Builder derives a single full log text source for the output dock");

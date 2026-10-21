@@ -1,0 +1,77 @@
+# 多平台安装包矩阵（F4）
+
+> 2026-07 · 对应 `ReleaseBundleTarget` / `tauri.conf.json` bundle 配置
+
+---
+
+## 1. 支持级别
+
+| 平台 | 目标 | `ReleaseBundleTarget` | 级别 | 验证状态 |
+|------|------|----------------------|------|----------|
+| Windows | app (exe) | `app` | **L1 主路径** | CI `tauri:exe` + 本地 verify:desktop |
+| Windows | NSIS | `nsis` | L1 | `tauri:build` |
+| Windows | MSI | `msi` | L2 | 按需 |
+| Linux | AppImage | `appimage` | L2 | 配置已开；需 Linux 实机 |
+| Linux | deb | `deb` | L2 | 配置已开；需 Linux 实机 |
+| macOS | app + dmg | `dmg` | L2 | 配置已开；需 macOS 实机 + signing |
+
+**L1** = CI/本地常规验证；**L2** = 配置就绪、按需实机验证。
+
+---
+
+## 2. 配置入口
+
+| 文件 | 内容 |
+|------|------|
+| `src-tauri/tauri.conf.json` → `bundle` | targets、icon、linux.deb/appimage、macOS minimumSystemVersion、windows webviewInstallMode |
+| `ProjectReleaseConfig.bundleTargets` | 项目内选择打包目标 |
+| `docs/release-pipeline.md` | 流水线证据与 installer smoke |
+
+---
+
+## 3. 平台命令
+
+```bash
+# Windows
+npm run tauri:exe          # 仅 exe
+npm run tauri:build        # 全量 bundle（nsis/msi/…）
+
+# Linux（在 Linux 主机）
+sudo apt-get install libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+npm run tauri:build        # 产出 AppImage / deb
+
+# macOS（在 macOS 主机，需 Xcode + 证书）
+npm run tauri:build        # 产出 .app / .dmg
+```
+
+---
+
+## 4. 验证矩阵（建议 CI 扩展）
+
+| Job | OS | 命令 | 产物 |
+|-----|-----|------|------|
+| web-build | ubuntu-22.04 | `npm run build` | — |
+| windows-exe | windows-latest | `npm run tauri:exe` | `.exe` |
+| linux-bundle | ubuntu-22.04 | `npm run tauri:build` | `.AppImage` `.deb` |
+| macos-bundle | macos-latest | `npm run tauri:build` | `.app` `.dmg` |
+
+当前 `build.yml` 已有 web + windows-exe。Linux/macOS job 可按仓库权限与证书情况启用。
+
+---
+
+## 5. 安装包冒烟
+
+见 `docs/release-pipeline.md`：artifact-only / write-script / vm-handoff 三档。
+
+```bash
+npm run verify:desktop
+npm run check:desktop-exe
+```
+
+---
+
+## 6. 已知限制
+
+- Linux/macOS 产物需对应主机编译；交叉打包未配置。
+- macOS 未配置签名/公证时 dmg 仅供本地测试。
+- `targets: "all"` 会按宿主 OS 打包可用目标；跨平台请在各 OS 上跑 `tauri:build`。
