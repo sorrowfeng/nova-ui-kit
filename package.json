@@ -17,7 +17,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && tsc && vite build && npm run check:bundle-size",
     "check:components": "node scripts/check-component-coverage.mjs",
-    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check",
+    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle",
     "check:goal": "node scripts/check-goal-coverage.mjs",
     "check:runtime-contract": "node scripts/check-generated-runtime-contract.mjs",
     "check:project-persistence": "node scripts/check-project-persistence-rust.mjs",
@@ -47,7 +47,8 @@
     "check:builder-runtime:functional": "node scripts/check-builder-runtime-functional.mjs",
     "docs:search": "node scripts/docs-search.mjs",
     "docs:site": "node scripts/docs-site.mjs",
-    "check:bundle-size": "node scripts/check-bundle-size.mjs"
+    "check:bundle-size": "node scripts/check-bundle-size.mjs",
+    "check:platform-bundle": "node scripts/check-platform-bundle-config.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

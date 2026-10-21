@@ -46,16 +46,21 @@ npm run tauri:build        # 产出 .app / .dmg
 
 ---
 
-## 4. 验证矩阵（建议 CI 扩展）
+## 4. 验证矩阵
 
-| Job | OS | 命令 | 产物 |
-|-----|-----|------|------|
-| web-build | ubuntu-22.04 | `npm run build` | — |
-| windows-exe | windows-latest | `npm run tauri:exe` | `.exe` |
-| linux-bundle | ubuntu-22.04 | `npm run tauri:build` | `.AppImage` `.deb` |
-| macos-bundle | macos-latest | `npm run tauri:build` | `.app` `.dmg` |
+| Job | OS | 命令 | 产物 | 触发 |
+|-----|-----|------|------|------|
+| web-build | ubuntu-22.04 | `npm run build` | — | push / PR |
+| windows-exe | windows-latest | `npm run tauri:exe` | `.exe` | push / PR |
+| linux-bundle | ubuntu-22.04 | `npm run tauri:build` | `.AppImage` `.deb` | `workflow_dispatch` / tag |
+| macos-bundle | macos-latest | `npm run tauri:build` | `.app` `.dmg` | `workflow_dispatch` / tag |
 
-当前 `build.yml` 已有 web + windows-exe。Linux/macOS job 可按仓库权限与证书情况启用。
+`build.yml` 的 Linux/macOS job 只在手动触发时运行（避免 macOS runner 排队阻塞主门禁）；
+打 tag 时 `release.yml` 一定跑全平台并把产物挂到 GitHub Release。
+
+配置本身由 `npm run check:platform-bundle` 校验（bundle 段、icon.ico/icns/png、
+linux.deb/appimage、macOS minimumSystemVersion、webviewInstallMode），已挂进
+`npm run check:experience`，不需要实机也能拦住配置漂移。
 
 ---
 
