@@ -101,23 +101,35 @@ function sha256(file) {
   return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 }
 
+function findAppBundles(dir) {
+  const found = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name.endsWith(".app")) found.push(full);
+      else found.push(...findAppBundles(full));
+    }
+  }
+  return found;
+}
+
 function checkAppBundle(dir) {
-  const apps = walk(dir).filter((p) => p.endsWith(".app") || p.includes(".app/"));
-  const roots = fs.existsSync(dir)
-    ? fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory() && e.name.endsWith(".app"))
-    : [];
+  const appDirs = findAppBundles(dir);
   const problems = [];
-  for (const root of roots) {
-    const appDir = path.join(dir, root.name);
+  for (const appDir of appDirs) {
+    const label = path.relative(dir, appDir).replace(/\\/g, "/");
     if (!fs.existsSync(path.join(appDir, "Contents", "Info.plist"))) {
-      problems.push(`${root.name}: missing Contents/Info.plist`);
+      problems.push(`${label}: missing Contents/Info.plist`);
     }
     const macosDir = path.join(appDir, "Contents", "MacOS");
     if (!fs.existsSync(macosDir) || fs.readdirSync(macosDir).length === 0) {
-      problems.push(`${root.name}: missing Contents/MacOS binary`);
+      problems.push(`${label}: missing Contents/MacOS binary`);
     }
   }
-  return { apps: roots.map((r) => r.name), problems };
+  return {
+    apps: appDirs.map((appDir) => path.relative(dir, appDir).replace(/\\/g, "/")),
+    problems,
+  };
 }
 
 function main() {
