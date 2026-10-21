@@ -48,7 +48,8 @@
     "docs:search": "node scripts/docs-search.mjs",
     "docs:site": "node scripts/docs-site.mjs",
     "check:bundle-size": "node scripts/check-bundle-size.mjs",
-    "check:platform-bundle": "node scripts/check-platform-bundle-config.mjs"
+    "check:platform-bundle": "node scripts/check-platform-bundle-config.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

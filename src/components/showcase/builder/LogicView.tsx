@@ -1037,7 +1037,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         size="sm"
                         variant="ghost"
                         className="h-6 px-1 text-[0.66rem]"
-                        data-builder-rust-editor-find-prev=""
+                        data-builder-rust-editor-find-prev="" aria-label="上一个查找结果"
                         disabled={rustFindMatches.length === 0}
                         onClick={() => moveRustFindMatch(-1)}
                       >
@@ -1047,7 +1047,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         size="sm"
                         variant="ghost"
                         className="h-6 px-1 text-[0.66rem]"
-                        data-builder-rust-editor-find-next=""
+                        data-builder-rust-editor-find-next="" aria-label="下一个查找结果"
                         disabled={rustFindMatches.length === 0}
                         onClick={() => moveRustFindMatch(1)}
                       >
@@ -2377,7 +2377,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       size="sm"
                       variant="ghost"
                       className="h-8 px-2 text-xs"
-                      data-builder-rust-editor-find-prev=""
+                      data-builder-rust-editor-find-prev="" aria-label="上一个查找结果"
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(-1)}
                     >
@@ -2388,7 +2388,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       size="sm"
                       variant="secondary"
                       className="h-8 px-2 text-xs"
-                      data-builder-rust-editor-find-next=""
+                      data-builder-rust-editor-find-next="" aria-label="下一个查找结果"
                       disabled={rustFindMatches.length === 0}
                       onClick={() => moveRustFindMatch(1)}
                     >

@@ -27150,6 +27150,18 @@ export function BuilderShowcase() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Persistent live region: aria-live only announces reliably when the
+          node exists before its text changes, so keep this mounted and mirror
+          the transient toast into it (checklist 6.x). */}
+      <div
+        data-builder-live-region=""
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {projectJumpFeedback ? `${projectJumpFeedback.title} ${projectJumpFeedback.detail ?? ""}` : ""}
+      </div>
         <div className="grid h-full min-h-0 grid-cols-[72px_minmax(0,1fr)]">
 
               <nav
