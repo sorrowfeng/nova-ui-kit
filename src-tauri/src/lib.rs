@@ -13,6 +13,7 @@ mod generated_bridge;
 mod generated_files;
 mod generated_project_docs;
 mod generated_project_files;
+mod generated_templates;
 mod generated_window_validation;
 mod incremental_io;
 mod installer_smoke;
@@ -31,7 +32,7 @@ mod text_utils;
 use backend_artifact_builder::build_backend_artifact;
 use backend_artifact_inspector::inspect_backend_artifacts;
 use backend_method_runner::test_backend_integration_method;
-use build_pipeline::{build_editor_project, bundle_editor_project, check_editor_project};
+use build_pipeline::{build_editor_project, bundle_editor_project, check_editor_project, preview_generated_web};
 use editor_tasks::{
     cancel_editor_project_task, list_editor_project_tasks, read_editor_project_task,
     start_editor_project_task, EditorTaskState,
@@ -66,7 +67,8 @@ use installer_smoke::{
 use project_dependency_graph::{read_project_dependency_graph, write_project_dependency_graph};
 use project_model::{
     backend_integrations, backend_integrations_need_ffi_loader, cargo_dependencies,
-    is_valid_env_var_name, normalized_checkpoint_created_at, project_name, release_config,
+    is_valid_env_var_name, migrate_project_schema, normalized_checkpoint_created_at,
+    project_name, release_config,
     rust_command_names, rust_module_source, rust_modules, rust_source, safe_file_name,
     sanitize_rust_ident, slugify, GeneratedBackendIntegration, GeneratedBackendMethod,
     GeneratedCargoDependency, GeneratedReleaseConfig, GeneratedRustModule,
@@ -103,7 +105,7 @@ use rust_source_map::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
-use system_process::{open_local_path, run_logged_process, run_process, terminate_process_tree};
+use system_process::{check_toolchain, open_local_path, run_logged_process, run_process, terminate_process_tree};
 use text_utils::{html_text, json_string, json_string_array, to_error};
 
 #[derive(Serialize)]
@@ -366,7 +368,9 @@ pub fn run() {
             read_installer_smoke_result,
             run_installer_smoke_script,
             inspect_windows_certificate_store,
-            create_installer_sandbox_handoff
+            create_installer_sandbox_handoff,
+            check_toolchain,
+            preview_generated_web
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -183,6 +183,13 @@ pub(super) fn generated_window_snapshot_svg(project: &Value) -> String {
     let page = file.get("page").unwrap_or(&Value::Null);
     let page_width = value_number(page, "width", 960.0).max(320.0);
     let page_height = value_number(page, "height", 540.0).max(240.0);
+    let titlebar_style = value_string(page, "titlebarStyle");
+    let window_kind = value_string(page, "windowKind");
+    let titlebar_height = match titlebar_style.as_ref() {
+        "hidden" => 0.0,
+        "native" => 32.0,
+        _ => 40.0,
+    };
     let items = file
         .get("items")
         .and_then(Value::as_array)
@@ -198,10 +205,28 @@ pub(super) fn generated_window_snapshot_svg(project: &Value) -> String {
         h = page_height - 1.0
     ));
 
+    if titlebar_height > 0.0 {
+        let chrome_label = if titlebar_style == "native" {
+            format!("native titlebar · {window_kind}")
+        } else {
+            format!("nova titlebar · {window_kind}")
+        };
+        svg.push_str(&format!(
+            r##"<g data-titlebar-style="{titlebar_style}" data-window-kind="{window_kind}">
+  <rect x="1" y="1" width="{bar_w:.0}" height="{titlebar_height:.0}" rx="17" fill="#f3edf7"/>
+  <text x="18" y="{label_y:.0}" fill="#49454f" font-family="Inter, Segoe UI, sans-serif" font-size="12" font-weight="600">{chrome_label}</text>
+</g>
+"##,
+            bar_w = page_width - 2.0,
+            label_y = titlebar_height * 0.62,
+        ));
+    }
+
     for item in &items {
         let item_type = value_string(item, "type");
         let (fill, stroke) = svg_item_fill(item_type);
-        let (x, y) = absolute_item_position(item, &items);
+        let (x, mut y) = absolute_item_position(item, &items);
+        y += titlebar_height;
         let width = value_number(item, "width", 120.0).max(8.0);
         let height = value_number(item, "height", 48.0).max(8.0);
         let label = html_escape(&item_label(item));
@@ -725,4 +750,69 @@ pub(super) fn validate_generated_window(
         breakpoint_validation_path: breakpoint_validation_output,
         breakpoint_issues,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn sample_project(titlebar_style: &str, window_kind: &str) -> Value {
+        json!({
+            "activeFileId": "file-1",
+            "files": [{
+                "id": "file-1",
+                "name": "Main Window.ui",
+                "page": {
+                    "width": 960,
+                    "height": 540,
+                    "titlebarStyle": titlebar_style,
+                    "windowKind": window_kind
+                },
+                "items": [{
+                    "id": "btn-1",
+                    "type": "button",
+                    "name": "Create",
+                    "x": 40,
+                    "y": 80,
+                    "width": 120,
+                    "height": 40,
+                    "z": 0,
+                    "props": { "label": "Create" }
+                }]
+            }]
+        })
+    }
+
+    #[test]
+    fn snapshot_includes_nova_titlebar_chrome() {
+        let svg = generated_window_snapshot_svg(&sample_project("nova", "main"));
+        assert!(svg.contains("nova titlebar · main"));
+        assert!(svg.contains("data-titlebar-style=\"nova\""));
+        assert!(svg.contains("data-window-kind=\"main\""));
+    }
+
+    #[test]
+    fn snapshot_includes_native_titlebar_chrome() {
+        let svg = generated_window_snapshot_svg(&sample_project("native", "dialog"));
+        assert!(svg.contains("native titlebar · dialog"));
+    }
+
+    #[test]
+    fn snapshot_hides_titlebar_when_hidden() {
+        let svg = generated_window_snapshot_svg(&sample_project("hidden", "frameless"));
+        assert!(!svg.contains("titlebar ·"));
+        assert!(svg.contains("Create"));
+    }
+
+    #[test]
+    fn snapshot_covers_window_kind_matrix() {
+        for window_kind in ["main", "dialog", "tool", "frameless"] {
+            for titlebar in ["nova", "native", "hidden"] {
+                let svg = generated_window_snapshot_svg(&sample_project(titlebar, window_kind));
+                assert!(svg.starts_with("<svg"), "{titlebar}/{window_kind}");
+                assert!(svg.contains("Create"), "{titlebar}/{window_kind}");
+            }
+        }
+    }
 }

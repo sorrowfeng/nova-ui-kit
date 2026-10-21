@@ -1042,18 +1042,55 @@ def write_json(value):
     print(json.dumps(value, separators=(",", ":")))
 
 
+def method_health(_params):
+    return {"ok": True}
+
+
+def method_echo(params):
+    return {"echo": params.get("value", params)}
+
+
+def method_add(params):
+    return {"sum": float(params.get("a", 0)) + float(params.get("b", 0))}
+
+
+METHODS = {
+    "health": method_health,
+    "ping": method_health,
+    "echo": method_echo,
+    "add": method_add,
+}
+
+
 if "--health" in sys.argv:
     write_json({"success": True, "message": "Python sidecar is healthy.", "patch": {}})
     raise SystemExit(0)
 
+if "--methods" in sys.argv:
+    write_json({"success": True, "methods": sorted(METHODS), "patch": {}})
+    raise SystemExit(0)
+
 raw = sys.stdin.read().strip()
 try:
-    request = json.loads(raw) if raw else {}
+    request = json.loads(raw) if raw else {"method": "health"}
+    name = str(request.get("method", "health"))
+    params = request.get("params") or {}
+    handler = METHODS.get(name)
+    if handler is None:
+        write_json({
+            "success": False,
+            "message": "Unknown method: " + name,
+            "patch": {},
+            "id": request.get("id"),
+        })
+        raise SystemExit(1)
+    result = handler(params if isinstance(params, dict) else {"value": params})
     write_json({
         "success": True,
-        "message": "Python sidecar processed the Nova request.",
+        "message": name + " ok",
         "patch": {},
-        "request": request,
+        "result": result,
+        "id": request.get("id"),
     })
 except Exception as error:
     write_json({"success": False, "message": str(error), "patch": {}})

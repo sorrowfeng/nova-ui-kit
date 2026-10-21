@@ -92,3 +92,57 @@ pub fn remove_stale_generated_files_with_keep(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn temp_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("nova-io-test-{name}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn write_bytes_if_changed_skips_identical_content() {
+        let dir = temp_dir("skip");
+        let path = dir.join("a.bin");
+        assert!(write_bytes_if_changed(&path, b"hello").unwrap());
+        assert!(!write_bytes_if_changed(&path, b"hello").unwrap());
+        assert!(write_bytes_if_changed(&path, b"world").unwrap());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn files_have_same_content_detects_mismatch() {
+        let dir = temp_dir("same");
+        let left = dir.join("left.txt");
+        let right = dir.join("right.txt");
+        write_text_if_changed(&left, "abc").unwrap();
+        write_text_if_changed(&right, "abc").unwrap();
+        assert!(files_have_same_content(&left, &right).unwrap());
+        write_text_if_changed(&right, "xyz").unwrap();
+        assert!(!files_have_same_content(&left, &right).unwrap());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn remove_stale_generated_files_keeps_expected_and_keep_list() {
+        let dir = temp_dir("stale");
+        fs::write(dir.join("keep.rs"), "a").unwrap();
+        fs::write(dir.join("expected.rs"), "b").unwrap();
+        fs::write(dir.join("stale.rs"), "c").unwrap();
+        fs::write(dir.join("protected.rs"), "d").unwrap();
+        let expected: BTreeSet<String> = ["expected.rs".to_string()].into();
+        remove_stale_generated_files_with_keep(&dir, &expected, &["protected.rs"]).unwrap();
+        assert!(dir.join("keep.rs").exists() == false);
+        assert!(dir.join("expected.rs").exists());
+        assert!(dir.join("stale.rs").exists() == false);
+        assert!(dir.join("protected.rs").exists());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    use std::path::PathBuf;
+}

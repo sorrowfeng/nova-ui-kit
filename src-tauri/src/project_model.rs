@@ -91,6 +91,40 @@ fn app_message() -> String {
 "#;
 pub(super) const DEFAULT_RUST_COMMAND_NAME: &str = "app_message";
 
+/// Current project schema version written by this build.
+pub(super) const PROJECT_SCHEMA_VERSION: u64 = 1;
+
+/// Migrate a project payload to the current schema version.
+/// v0 (no `schemaVersion`) is accepted and upgraded in place.
+pub(super) fn migrate_project_schema(mut project: Value) -> Result<Value, String> {
+    let Some(object) = project.as_object_mut() else {
+        return Err("project payload must be a JSON object".to_string());
+    };
+    let current = object
+        .get("schemaVersion")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
+    if current > PROJECT_SCHEMA_VERSION {
+        return Err(format!(
+            "project schemaVersion {current} is newer than supported {PROJECT_SCHEMA_VERSION}"
+        ));
+    }
+    if current < 1 {
+        // v0 → v1: ensure required containers exist.
+        if !object.contains_key("files") {
+            object.insert("files".to_string(), Value::Array(Vec::new()));
+        }
+        if !object.contains_key("rustCommands") {
+            object.insert("rustCommands".to_string(), Value::Array(Vec::new()));
+        }
+    }
+    object.insert(
+        "schemaVersion".to_string(),
+        Value::from(PROJECT_SCHEMA_VERSION),
+    );
+    Ok(project)
+}
+
 pub(super) fn project_name(project: &Value) -> String {
     project
         .get("name")
@@ -982,6 +1016,23 @@ pub(super) fn slugify(value: &str) -> String {
     slug
 }
 
+#[cfg(test)]
+mod slugify_tests {
+    use super::slugify;
+
+    #[test]
+    fn slugify_lowercases_and_joins() {
+        assert_eq!(slugify("My App"), "my-app");
+        assert_eq!(slugify("Hello_World 2"), "hello-world-2");
+    }
+
+    #[test]
+    fn slugify_falls_back_when_empty() {
+        assert_eq!(slugify("!!!"), "nova-generated-app");
+        assert_eq!(slugify(""), "nova-generated-app");
+    }
+}
+
 pub(super) fn rust_source(rust_logic: &str) -> String {
     if rust_logic.trim().is_empty() {
         DEFAULT_RUST_LOGIC.to_string()
@@ -997,5 +1048,44 @@ pub(super) fn rust_module_source(source: &str) -> String {
         source.to_string()
     } else {
         format!("{source}\n")
+    }
+}
+
+#[cfg(test)]
+mod migrate_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn migrate_upgrades_v0_and_fills_containers() {
+        let project = json!({ "name": "Demo" });
+        let migrated = migrate_project_schema(project).unwrap();
+        assert_eq!(migrated["schemaVersion"], 1);
+        assert!(migrated["files"].is_array());
+        assert!(migrated["rustCommands"].is_array());
+    }
+
+    #[test]
+    fn migrate_keeps_existing_version_one() {
+        let project = json!({
+            "schemaVersion": 1,
+            "name": "Demo",
+            "files": [{ "id": "f1" }],
+            "rustCommands": []
+        });
+        let migrated = migrate_project_schema(project).unwrap();
+        assert_eq!(migrated["schemaVersion"], 1);
+        assert_eq!(migrated["files"].as_array().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn migrate_rejects_newer_schema() {
+        let project = json!({ "schemaVersion": 99, "name": "Future" });
+        assert!(migrate_project_schema(project).is_err());
+    }
+
+    #[test]
+    fn migrate_rejects_non_object() {
+        assert!(migrate_project_schema(json!([1, 2, 3])).is_err());
     }
 }

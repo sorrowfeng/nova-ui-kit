@@ -227,3 +227,92 @@ fn text_line_count(value: &str) -> usize {
         value.lines().count().max(1)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_preview_relative_path_uses_forward_slashes() {
+        assert_eq!(normalize_preview_relative_path("a\\b\\c.rs"), "a/b/c.rs");
+        assert_eq!(normalize_preview_relative_path("a/b.rs"), "a/b.rs");
+    }
+
+    #[test]
+    fn preview_text_truncates_long_content() {
+        let short = "ok";
+        assert_eq!(preview_text(short), "ok");
+        let long = "x".repeat(5000);
+        let preview = preview_text(&long);
+        assert!(preview.ends_with("... [preview truncated]"));
+        assert!(preview.len() < long.len());
+    }
+
+    #[test]
+    fn text_line_count_handles_empty_and_multiline() {
+        assert_eq!(text_line_count(""), 1);
+        assert_eq!(text_line_count("a"), 1);
+        assert_eq!(text_line_count("a\nb\nc"), 3);
+    }
+
+    #[test]
+    fn summarize_generated_file_entries_counts_statuses() {
+        let entries = vec![
+            GeneratedFilePreviewEntry {
+                path: "a".into(),
+                relative_path: "a".into(),
+                kind: "code".into(),
+                status: "create".into(),
+                changed: true,
+                exists: false,
+                size_bytes: 1,
+                line_count: 1,
+                preview: String::new(),
+                summary: String::new(),
+            },
+            GeneratedFilePreviewEntry {
+                path: "b".into(),
+                relative_path: "b".into(),
+                kind: "asset".into(),
+                status: "copy".into(),
+                changed: true,
+                exists: false,
+                size_bytes: 1,
+                line_count: 1,
+                preview: String::new(),
+                summary: String::new(),
+            },
+            GeneratedFilePreviewEntry {
+                path: "c".into(),
+                relative_path: "c".into(),
+                kind: "code".into(),
+                status: "update".into(),
+                changed: true,
+                exists: true,
+                size_bytes: 1,
+                line_count: 1,
+                preview: String::new(),
+                summary: String::new(),
+            },
+            GeneratedFilePreviewEntry {
+                path: "d".into(),
+                relative_path: "d".into(),
+                kind: "code".into(),
+                status: "unchanged".into(),
+                changed: false,
+                exists: true,
+                size_bytes: 1,
+                line_count: 1,
+                preview: String::new(),
+                summary: String::new(),
+            },
+        ];
+        let summary = summarize_generated_file_entries(&entries);
+        assert_eq!(summary.total_count, 4);
+        assert_eq!(summary.created_count, 2);
+        assert_eq!(summary.updated_count, 1);
+        assert_eq!(summary.unchanged_count, 1);
+        assert_eq!(summary.asset_count, 1);
+        assert_eq!(summary.changed_count, 3);
+    }
+}

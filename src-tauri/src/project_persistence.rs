@@ -1,5 +1,6 @@
 use crate::{
-    managed_project_root, managed_projects_dir, normalized_checkpoint_created_at,
+    managed_project_root, managed_projects_dir, migrate_project_schema,
+    normalized_checkpoint_created_at,
     project_checkpoints_dir, project_editor_state_path, project_name, project_paths,
     project_paths_for_project, project_root_from_project, project_with_root_path, read_json_file,
     safe_file_name, save_project_files, slugify, to_error, write_readme, EditorProjectPaths,
@@ -44,10 +45,8 @@ pub(super) fn read_editor_project(root_path: String) -> Result<Value, String> {
     let root = PathBuf::from(root_path);
     let manifest_path = root.join("nova.project.json");
     let content = fs::read_to_string(manifest_path).map_err(to_error)?;
-    let project = merge_project_editor_state_metadata(
-        serde_json::from_str(&content).map_err(to_error)?,
-        &root,
-    );
+    let project = migrate_project_schema(serde_json::from_str(&content).map_err(to_error)?)?;
+    let project = merge_project_editor_state_metadata(project, &root);
     Ok(project_with_root_path(project, &root))
 }
 

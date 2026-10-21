@@ -104,3 +104,64 @@ pub(super) fn run_logged_process(
         }
     }
 }
+
+#[derive(serde::Serialize)]
+pub(super) struct ToolchainStatus {
+    pub node: bool,
+    pub npm: bool,
+    pub cargo: bool,
+    pub rustc: bool,
+    pub node_version: String,
+    pub npm_version: String,
+    pub cargo_version: String,
+    pub rustc_version: String,
+    pub missing: Vec<String>,
+}
+
+fn probe_version(program: &str, args: &[&str]) -> (bool, String) {
+    let executable = if cfg!(target_os = "windows") && program == "npm" {
+        "npm.cmd"
+    } else {
+        program
+    };
+    match Command::new(executable).args(args).output() {
+        Ok(output) if output.status.success() => {
+            let text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            (true, text.lines().next().unwrap_or("").to_string())
+        }
+        _ => (false, String::new()),
+    }
+}
+
+#[tauri::command]
+pub(super) fn check_toolchain() -> ToolchainStatus {
+    let (node, node_version) = probe_version("node", &["--version"]);
+    let (npm, npm_version) = probe_version("npm", &["--version"]);
+    let (cargo, cargo_version) = probe_version("cargo", &["--version"]);
+    let (rustc, rustc_version) = probe_version("rustc", &["--version"]);
+    let mut missing = Vec::new();
+    if !node {
+        missing.push("node".to_string());
+    }
+    if !npm {
+        missing.push("npm".to_string());
+    }
+    if !cargo {
+        missing.push("cargo".to_string());
+    }
+    if !rustc {
+        missing.push("rustc".to_string());
+    }
+    ToolchainStatus {
+        node,
+        npm,
+        cargo,
+        rustc,
+        node_version,
+        npm_version,
+        cargo_version,
+        rustc_version,
+        missing,
+    }
+}
+
