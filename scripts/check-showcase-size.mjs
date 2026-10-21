@@ -3,7 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const target = path.join(root, "src", "components", "showcase", "BuilderShowcase.tsx");
-const MAX_LINES = 54500; // raised after ToolchainBanner/P0-P2 features; extract further before growing again
+const MAX_LINES = 37000; // lowered after extracting Project/Logic/Build views + item preview (P2-9); extract further before growing again
 
 if (!fs.existsSync(target)) {
   console.error("check-showcase-size: missing BuilderShowcase.tsx");
