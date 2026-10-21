@@ -36,9 +36,10 @@
     "check:cpp-ffi": "node scripts/check-cpp-ffi-sample.mjs",
     "check:project-health": "node scripts/check-project-health.mjs",
     "check:watch": "node scripts/check-watch.mjs",
-    "check:builder-runtime:design": "node scripts/check-builder-runtime-smoke.mjs",
+    "check:builder-runtime:design": "node scripts/check-builder-runtime-design.mjs",
     "check:builder-runtime:full": "node scripts/check-builder-runtime-smoke.mjs",
-    "check:builder-runtime:layout": "node scripts/check-builder-runtime-smoke.mjs",
+    "check:builder-runtime:layout": "node scripts/check-builder-runtime-layout.mjs",
+    "check:builder-runtime:functional": "node scripts/check-builder-runtime-functional.mjs",
     "docs:search": "node scripts/docs-search.mjs",
     "docs:site": "node scripts/docs-site.mjs"
   },

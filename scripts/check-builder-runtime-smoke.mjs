@@ -4424,6 +4424,145 @@ async function runLogicRustChecks(send, verified) {
   verified.goToSlotRuntime = true;
 }
 
+/**
+ * Standalone layout/pixel suite (P2-10).
+ * Runs only geometry assertions — heights, widths, clipping, clearance —
+ * and is dispatched on its own in `NOVA_SMOKE_MODE=layout` so layout
+ * regressions never ride along with the functional gate.
+ */
+async function runLayoutPixelChecks(send, verified) {
+  log("checking layout pixel suite");
+
+  // Establish a selection so the actionbar is mounted; fall back to the
+  // empty-state strip when the canvas has no nodes yet.
+  await evaluate(
+    send,
+    `(() => {
+      const node = document.querySelector("[data-builder-node-id]");
+      if (node) {
+        node.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        node.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      }
+      return true;
+    })()`,
+  );
+  await delay(180);
+
+  // Selection actionbar (or empty-state starter strip) must stay within its
+  // chrome budget and never swallow the canvas viewport.
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const canvas = document.querySelector("[data-builder-canvas]")?.getBoundingClientRect();
+      if (!canvas) {
+        return { passed: false, detail: "canvas missing" };
+      }
+      const actionbar = document.querySelector("[data-builder-selection-actionbar]");
+      const emptyStrip = document.querySelector('[data-builder-empty-state-density="compact-strip"]');
+      const target = actionbar || emptyStrip;
+      if (!target) {
+        return { passed: false, detail: "neither selection actionbar nor empty-state strip mounted" };
+      }
+      const rect = target.getBoundingClientRect();
+      const viewport = document.querySelector("[data-builder-canvas-viewport]")?.getBoundingClientRect();
+      const fitsHeight = rect.height > 0 && rect.height <= 92;
+      const fitsWidth = rect.width <= canvas.width * 0.82;
+      const unclipped =
+        rect.left >= -1 && rect.top >= -1 && rect.right <= window.innerWidth + 1 && rect.bottom <= window.innerHeight + 1;
+      return {
+        passed: fitsHeight && fitsWidth && unclipped,
+        detail: \`subject=\${actionbar ? "actionbar" : "empty-strip"}, \${Math.round(rect.width)}x\${Math.round(rect.height)} at \${Math.round(rect.left)},\${Math.round(rect.top)}, canvas=\${Math.round(canvas.width)}x\${Math.round(canvas.height)}, viewport=\${viewport ? Math.round(viewport.top) + ".." + Math.round(viewport.bottom) : "n/a"}\`,
+      };
+    })()`,
+    "selection actionbar pixel budget",
+  );
+  verified.layoutActionbarPixelBudgetRuntime = true;
+
+  // Canvas controls must have a real hit target and stay fully inside the
+  // window viewport (they float above the canvas, so only clipping matters).
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const controls = document.querySelector("[data-builder-canvas-controls]");
+      if (!controls) {
+        return { passed: false, detail: "canvas controls missing" };
+      }
+      const rect = controls.getBoundingClientRect();
+      const clickable = rect.width > 24 && rect.height > 18;
+      const unclipped =
+        rect.left >= -1 &&
+        rect.top >= -1 &&
+        rect.right <= window.innerWidth + 1 &&
+        rect.bottom <= window.innerHeight + 1;
+      return {
+        passed: clickable && unclipped,
+        detail: \`controls=\${Math.round(rect.width)}x\${Math.round(rect.height)} at \${Math.round(rect.left)},\${Math.round(rect.top)}..\${Math.round(rect.right)},\${Math.round(rect.bottom)}, viewport=\${window.innerWidth}x\${window.innerHeight}, density=\${controls.getAttribute("data-builder-canvas-controls-density") || "missing"}\`,
+      };
+    })()`,
+    "canvas controls pixel placement",
+  );
+  verified.layoutCanvasControlsPixelRuntime = true;
+
+  // Docked panels must not clip past the viewport edges.
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const shell = document.querySelector("[data-editor-shell]") || document.body;
+      const panels = Array.from(
+        shell.querySelectorAll(
+          "[data-builder-output-dock], [data-builder-readable-workbench], [data-builder-design-left-dock], [data-builder-mode-rail], [data-builder-left-run-controls], footer, [data-builder-selection-actionbar]",
+        ),
+      );
+      const offenders = panels
+        .map((panel) => {
+          const rect = panel.getBoundingClientRect();
+          const clipped =
+            rect.left < -1 || rect.top < -1 || rect.right > window.innerWidth + 1 || rect.bottom > window.innerHeight + 1;
+          return {
+            tag: panel.tagName.toLowerCase(),
+            label:
+              panel.getAttribute("data-builder-output-dock") !== null
+                ? "output-dock"
+                : panel.getAttribute("data-builder-readable-workbench") !== null
+                  ? "inspector"
+                  : panel.getAttribute("data-builder-mode-rail") !== null
+                    ? "mode-rail"
+                    : panel.tagName.toLowerCase(),
+            clipped,
+            rect: [rect.left, rect.top, rect.right, rect.bottom].map(Math.round).join(","),
+          };
+        })
+        .filter((entry) => entry.clipped);
+      return {
+        passed: panels.length > 0 && offenders.length === 0,
+        detail: \`panels=\${panels.length}, clipped=\${JSON.stringify(offenders)}\`,
+      };
+    })()`,
+    "docked panels stay inside the viewport",
+  );
+  verified.layoutDockClipRuntime = true;
+
+  // Status bar and output strip must clear each other vertically.
+  await assertRuntimeCheck(
+    send,
+    `(() => {
+      const dock = document.querySelector("[data-builder-output-dock]")?.getBoundingClientRect();
+      const statusBar = document.querySelector("footer")?.getBoundingClientRect();
+      if (!dock) {
+        return { passed: false, detail: "output dock missing" };
+      }
+      const clearance = statusBar ? Math.round(statusBar.top - dock.bottom) : 0;
+      return {
+        passed: clearance >= -1,
+        detail: \`dockBottom=\${Math.round(dock.bottom)}, statusTop=\${statusBar ? Math.round(statusBar.top) : "n/a"}, clearance=\${clearance}px\`,
+      };
+    })()`,
+    "output dock clears the status bar",
+  );
+  verified.layoutDockStatusBarClearanceRuntime = true;
+}
+
 async function runOutputDockLayoutChecks(send, verified) {
   log("checking output dock layout");
   await evaluate(
@@ -6154,6 +6293,15 @@ try {
   await waitFor(send, "Boolean(document.querySelector('[data-builder-mode-rail=\"qt-creator-left\"]'))", "builder mode rail");
   await waitFor(send, "Boolean(document.querySelector('[data-builder-left-run-controls-layout=\"qt-creator-kit\"]'))", "left run kit");
 
+  // P2-10: suite selection. `layout` runs the pixel suite standalone;
+  // `functional` runs workflows without pixel assertions so the two gates
+  // never block each other.
+  const smokeMode = process.env.NOVA_SMOKE_MODE || "full";
+  const smokeScope = process.env.NOVA_SMOKE_SCOPE || "all";
+  const layoutOnly = smokeMode === "layout";
+  const functionalOnly = smokeMode === "functional";
+  const designScope = smokeScope === "design";
+
   const checks = [
     ["project", "[data-builder-project-workspace-tree]", "project workspace tree"],
     ["design", "[data-builder-canvas][data-builder-canvas-selected-count]", "design canvas"],
@@ -6260,33 +6408,60 @@ try {
     leftRunBuildConfigRouteRuntime: false,
   };
 
-  await runModeContractChecks(send, verified);
-  await runDesignDockDefaultChecks(send, verified);
-  await runShellCommandPlacementChecks(send, verified);
-  await runAppSettingsRuntimeChecks(send, verified);
+  if (layoutOnly) {
+    // Standalone pixel gate: geometry only, no workflow assertions.
+    log("layout suite: pixel assertions only");
+    await evaluate(send, `document.querySelector('[data-builder-mode-button="design"]')?.click(); true`);
+    await waitFor(
+      send,
+      `Boolean(document.querySelector("[data-builder-canvas]"))`,
+      "design canvas for layout suite",
+    );
+    await runOutputDockLayoutChecks(send, verified);
+    await runLayoutPixelChecks(send, verified);
+  } else {
+    if (!functionalOnly && !designScope) {
+      await runModeContractChecks(send, verified);
+      await runDesignDockDefaultChecks(send, verified);
+      await runShellCommandPlacementChecks(send, verified);
+      await runAppSettingsRuntimeChecks(send, verified);
+    }
 
-  for (const [mode, selector, label] of checks) {
-    log(`checking ${label}`);
-    await evaluate(send, `document.querySelector('[data-builder-mode-button="${mode}"]')?.click(); true`);
-    await waitFor(send, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, label);
-    if (label === "project workspace tree") verified.projectTree = true;
-    if (label === "design canvas") verified.canvas = true;
-    if (label === "logic workbench") verified.logicWorkbench = true;
-    if (label === "logic command impact panel") verified.logicImpact = true;
-    if (label === "desktop runtime workbench") verified.runtimeWorkbench = true;
-    if (label === "project workspace tree") {
-      await runProjectWorkspaceChecks(send, verified);
+    for (const [mode, selector, label] of checks) {
+      if (designScope && label !== "design canvas") {
+        continue;
+      }
+      log(`checking ${label}`);
+      await evaluate(send, `document.querySelector('[data-builder-mode-button="${mode}"]')?.click(); true`);
+      await waitFor(send, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, label);
+      if (label === "project workspace tree") verified.projectTree = true;
+      if (label === "design canvas") verified.canvas = true;
+      if (label === "logic workbench") verified.logicWorkbench = true;
+      if (label === "logic command impact panel") verified.logicImpact = true;
+      if (label === "desktop runtime workbench") verified.runtimeWorkbench = true;
+      if (label === "project workspace tree") {
+        await runProjectWorkspaceChecks(send, verified);
+      }
+      if (label === "design canvas") {
+        await runDesignInteractionChecks(send, verified);
+        await runWindowShellEditorChecks(send, verified);
+        await runComponentPaletteRuntimeChecks(send, verified);
+      }
+      if (label === "logic command impact panel") {
+        await runLogicRustChecks(send, verified);
+      }
+      if (label === "desktop runtime workbench" && !functionalOnly) {
+        // Dock geometry belongs to the layout gate (P2-10).
+        await runOutputDockLayoutChecks(send, verified);
+      }
     }
-    if (label === "design canvas") {
-      await runDesignInteractionChecks(send, verified);
-      await runWindowShellEditorChecks(send, verified);
-      await runComponentPaletteRuntimeChecks(send, verified);
-    }
-    if (label === "logic command impact panel") {
-      await runLogicRustChecks(send, verified);
-    }
-    if (label === "desktop runtime workbench") {
-      await runOutputDockLayoutChecks(send, verified);
+
+    if (!functionalOnly && !designScope) {
+      // Pixel assertions run with the full suite, never with the
+      // functional gate, so the two fail independently.
+      await evaluate(send, `document.querySelector('[data-builder-mode-button="design"]')?.click(); true`);
+      await waitFor(send, `Boolean(document.querySelector("[data-builder-canvas]"))`, "design canvas for layout suite");
+      await runLayoutPixelChecks(send, verified);
     }
   }
 
@@ -6302,7 +6477,7 @@ try {
   socket.close();
   clearTimeout(smokeTimeout);
   console.log(
-      `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteCategoryDisclosureRuntime=${verified.componentPaletteCategoryDisclosureRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicRustToolbarCompactRuntime=${verified.logicRustToolbarCompactRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, desktopRuntimeConsoleCollapsedRuntime=${verified.desktopRuntimeConsoleCollapsedRuntime}, buildLogCollapsedRuntime=${verified.buildLogCollapsedRuntime}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
+      `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, layoutActionbarPixelBudget=${verified.layoutActionbarPixelBudgetRuntime}, layoutCanvasControlsPixel=${verified.layoutCanvasControlsPixelRuntime}, layoutDockClip=${verified.layoutDockClipRuntime}, layoutDockStatusBarClearance=${verified.layoutDockStatusBarClearanceRuntime}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteCategoryDisclosureRuntime=${verified.componentPaletteCategoryDisclosureRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicRustToolbarCompactRuntime=${verified.logicRustToolbarCompactRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, desktopRuntimeConsoleCollapsedRuntime=${verified.desktopRuntimeConsoleCollapsedRuntime}, buildLogCollapsedRuntime=${verified.buildLogCollapsedRuntime}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
   );
   passed = true;
 } catch (error) {
@@ -6321,6 +6496,7 @@ const layoutRe = /dock|details|collapsed|expanded|console|plan|parity|readiness|
 if (passed) {
   process.exit(0);
 } else if (mode === "functional" && lastError && layoutRe.test(lastError)) {
+  // Functional gate never fails on layout-only geometry (P2-10).
   console.log(`[builder-smoke] layout-only issue ignored in functional mode: ${lastError}`);
   process.exit(0);
 } else {
