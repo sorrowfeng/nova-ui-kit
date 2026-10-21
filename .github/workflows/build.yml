@@ -107,6 +107,34 @@ jobs:
           cp src-tauri/target/release/bundle/appimage/*.AppImage artifacts/linux/
           cp src-tauri/target/release/bundle/deb/*.deb artifacts/linux/
           cp src-tauri/target/release/bundle/SHA256SUMS.txt artifacts/linux/
+      - name: Install the .deb and launch it
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          sudo dpkg -i artifacts/linux/*.deb || sudo apt-get install -f -y -qq
+          BIN="$(command -v nova-ui-kit)"
+          echo "installed binary: $BIN"
+          file "$BIN"
+          ldd "$BIN" | tee /tmp/ldd.txt
+          if grep -q "not found" /tmp/ldd.txt; then
+            echo "the installed binary has unresolved shared libraries"
+            exit 1
+          fi
+          chmod +x artifacts/linux/*.AppImage
+          file artifacts/linux/*.AppImage
+          echo "--- launch under a virtual display ---"
+          xvfb-run -a "$BIN" > /tmp/nova-launch.log 2>&1 &
+          APP_PID=$!
+          sleep 10
+          if ! kill -0 "$APP_PID" 2>/dev/null; then
+            echo "the app exited during startup"
+            cat /tmp/nova-launch.log
+            exit 1
+          fi
+          echo "nova-ui-kit still running after 10s (pid $APP_PID)"
+          kill "$APP_PID" 2>/dev/null || true
+          wait "$APP_PID" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         with:
           name: nova-ui-kit-linux-bundles
@@ -132,6 +160,41 @@ jobs:
           cp src-tauri/target/release/bundle/dmg/*.dmg artifacts/macos/
           cp -R src-tauri/target/release/bundle/macos/*.app artifacts/macos/
           cp src-tauri/target/release/bundle/SHA256SUMS.txt artifacts/macos/
+      - name: Mount the dmg and launch the app
+        run: |
+          set -e
+          DMG=(artifacts/macos/*.dmg)
+          echo "dmg: ${DMG[0]}"
+          MOUNT="$(hdiutil attach "${DMG[0]}" -nobrowse -readonly | tail -1 | awk -F'\t' '{print $NF}')"
+          echo "mounted at: $MOUNT"
+          APP="$(find "$MOUNT" -maxdepth 2 -name '*.app' | head -1)"
+          echo "app bundle: $APP"
+          test -n "$APP"
+          test -f "$APP/Contents/Info.plist"
+          BIN_NAME="$(defaults read "$APP/Contents/Info.plist" CFBundleExecutable)"
+          BIN="$APP/Contents/MacOS/$BIN_NAME"
+          echo "executable: $BIN"
+          test -x "$BIN"
+          file "$BIN"
+          otool -L "$BIN" | head -25
+          if otool -L "$BIN" | grep -q "not found"; then
+            echo "the app binary has unresolved dylibs"
+            exit 1
+          fi
+          echo "--- launch ---"
+          "$BIN" > /tmp/nova-launch.log 2>&1 &
+          APP_PID=$!
+          sleep 10
+          if ! kill -0 "$APP_PID" 2>/dev/null; then
+            echo "the app exited during startup"
+            cat /tmp/nova-launch.log
+            hdiutil detach "$MOUNT" -quiet
+            exit 1
+          fi
+          echo "Nova UI Editor still running after 10s (pid $APP_PID)"
+          kill "$APP_PID" 2>/dev/null || true
+          wait "$APP_PID" 2>/dev/null || true
+          hdiutil detach "$MOUNT" -quiet
       - uses: actions/upload-artifact@v4
         with:
           name: nova-ui-kit-macos-bundle

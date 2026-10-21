@@ -76,6 +76,35 @@ if (fs.existsSync(iconDir)) {
   problems.push("src-tauri/icons directory is missing");
 }
 
+// `frontendDist` is resolved against src-tauri/, while `npm run build` writes
+// wherever vite's outDir points at the project root. If the two disagree the
+// bundle silently picks up nothing (or a stale copy of dist), and the breakage
+// only shows up on a clean checkout.
+{
+  const viteConfigPath = path.join(root, "vite.config.ts");
+  let viteOutDir = "dist";
+  if (fs.existsSync(viteConfigPath)) {
+    const viteText = fs.readFileSync(viteConfigPath, "utf8");
+    const match = viteText.match(/\boutDir\s*:\s*["']([^"']+)["']/);
+    if (match) viteOutDir = match[1];
+  }
+  const frontendDist = conf.build?.frontendDist;
+  require(Boolean(frontendDist), "build.frontendDist is missing");
+  if (frontendDist) {
+    const resolved = path.resolve(root, "src-tauri", frontendDist);
+    const expected = path.resolve(root, viteOutDir);
+    require(
+      resolved === expected,
+      `build.frontendDist ("${frontendDist}" -> ${resolved}) must point at the vite output directory (${expected})`,
+    );
+  }
+  const stale = path.join(root, "src-tauri", "dist");
+  require(
+    !fs.existsSync(stale),
+    "src-tauri/dist exists; a stale web build there hides a wrong build.frontendDist — delete it",
+  );
+}
+
 if (problems.length > 0) {
   for (const problem of problems) {
     console.error(`check-platform-bundle-config: ${problem}`);

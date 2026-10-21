@@ -27,3 +27,6 @@ docs-site/
 # scratch output from local check scripts
 scripts/.test-out/
 scripts/.extract-out/
+
+# a stale web build here hides a wrong build.frontendDist
+src-tauri/dist/
