@@ -39,7 +39,8 @@
     "check:builder-runtime:design": "node scripts/check-builder-runtime-smoke.mjs",
     "check:builder-runtime:full": "node scripts/check-builder-runtime-smoke.mjs",
     "check:builder-runtime:layout": "node scripts/check-builder-runtime-smoke.mjs",
-    "docs:search": "node scripts/docs-search.mjs"
+    "docs:search": "node scripts/docs-search.mjs",
+    "docs:site": "node scripts/docs-site.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

@@ -149,6 +149,7 @@ import { useCanvasViewportInteraction } from "./builder/useCanvasViewportInterac
 import { useCanvasItemDrag } from "./builder/useCanvasItemDrag";
 import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
 import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
+import { ConflictMergeEditor, type ConflictFile } from "./builder/ConflictMergeEditor";
 import { PreviewDock } from "./builder/PreviewDock";
 import { ToolchainBanner } from "./builder/ToolchainBanner";
 import { palette, getDefinition, type ComponentDefinition } from "./builder/component-palette";
@@ -13812,6 +13813,7 @@ export function BuilderShowcase() {
   const [previewAutoRefresh, setPreviewAutoRefresh] = useState(true);
   const [previewVersion, setPreviewVersion] = useState(0);
   const [projectGitStatus, setProjectGitStatus] = useState<{ clean: boolean; conflicted: string[]; changed: string[] } | null>(null);
+  const [conflictFile, setConflictFile] = useState<ConflictFile | null>(null);
   const [canvasFindQuery, setCanvasFindQuery] = useState("");
   const canvasFindInputRef = useRef<HTMLInputElement | null>(null);
   const [workflowRuntimeSession, setWorkflowRuntimeSession] = useState<WorkflowRuntimeSession | null>(null);
@@ -46888,6 +46890,26 @@ export function BuilderShowcase() {
               />
 
                         <ToolchainBanner status={toolchainStatus} />
+              {conflictFile ? (
+                <ConflictMergeEditor
+                  file={conflictFile}
+                  onClose={() => setConflictFile(null)}
+                  onResolve={(resolution) => {
+                    void invokeIfAvailable<string>("resolve_git_conflict", {
+                      rootPath: activeProject.rootPath ?? "",
+                      filePath: conflictFile.path,
+                      resolution,
+                    }).then(() => {
+                      setConflictFile(null);
+                      void invokeIfAvailable<{ clean: boolean; conflicted: string[]; changed: string[] }>(
+                        "git_project_status",
+                        { rootPath: activeProject.rootPath ?? "" },
+                      ).then(setProjectGitStatus);
+                      showProjectJumpFeedback("success", "冲突已解决", conflictFile.path);
+                    });
+                  }}
+                />
+              ) : null}
               <SelectionActionBar
                 hasCanvasSelection={hasCanvasSelection}
                 selectionAnchorId={selectionAnchorId}

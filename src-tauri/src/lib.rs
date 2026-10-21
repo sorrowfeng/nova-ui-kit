@@ -105,7 +105,7 @@ use rust_source_map::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
-use system_process::{check_toolchain, git_project_status, init_project_git, open_local_path, run_logged_process, run_process, terminate_process_tree};
+use system_process::{check_toolchain, git_project_status, init_project_git, read_git_conflict, resolve_git_conflict, open_local_path, run_logged_process, run_process, terminate_process_tree};
 use text_utils::{html_text, json_string, json_string_array, to_error};
 
 #[derive(Serialize)]
@@ -371,6 +371,8 @@ pub fn run() {
             create_installer_sandbox_handoff,
             check_toolchain,
             git_project_status,
+            read_git_conflict,
+            resolve_git_conflict,
             init_project_git,
             preview_generated_web
         ])

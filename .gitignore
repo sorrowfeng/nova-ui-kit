@@ -21,3 +21,5 @@ examples/**/*.exe
 examples/**/*.dll
 examples/**/*.lib
 examples/**/*.exp
+
+docs-site/
