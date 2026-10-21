@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   CheckCircle2,
@@ -17,7 +17,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { CommandPalette, type CommandPaletteAction } from "@/components/layout/CommandPalette";
 import { OnboardingGuide, isOnboardingCompleted, resetOnboarding } from "@/components/layout/OnboardingGuide";
 import { KeyboardShortcutsOverlay } from "@/components/layout/KeyboardShortcutsOverlay";
-import { ShowcasePage } from "@/components/showcase/ShowcasePage";
+const ShowcasePage = React.lazy(() => import("@/components/showcase/ShowcasePage").then((m) => ({ default: m.ShowcasePage })));
 import {
   Toast,
   ToastClose,
@@ -541,7 +541,9 @@ function App() {
           onSaveProject={() => runEditorCommand("save-project")}
           onToast={showToast}
         >
-          <ShowcasePage item={activeItem} onOpenCommand={() => setCommandOpen(true)} onToast={showToast} />
+          <Suspense fallback={null}>
+            <ShowcasePage item={activeItem} onOpenCommand={() => setCommandOpen(true)} onToast={showToast} />
+          </Suspense>
         </AppShell>
 
         <AppSettingsPanel

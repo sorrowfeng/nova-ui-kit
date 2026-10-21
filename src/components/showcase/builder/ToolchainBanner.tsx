@@ -28,6 +28,16 @@ export function ToolchainBanner({ status }: { status: ToolchainStatus | null }) 
           <p className="mt-0.5 font-mono text-[0.62rem] text-on-surface-variant">
             node {status.nodeVersion || "—"} · npm {status.npmVersion || "—"} · cargo {status.cargoVersion || "—"}
           </p>
+          <details className="mt-1">
+            <summary className="cursor-pointer text-[0.66rem] text-primary">安装指引</summary>
+            <pre className="mt-1 overflow-x-auto rounded-lg bg-surface-container p-2 text-[0.6rem] text-on-surface-variant">
+              winget install OpenJS.NodeJS.LTS
+            </pre>
+            <pre className="mt-1 overflow-x-auto rounded-lg bg-surface-container p-2 text-[0.6rem] text-on-surface-variant">
+              winget install Rustlang.Rustup{"\n"}rustup default stable
+            </pre>
+            <p className="mt-1 text-[0.62rem] text-on-surface-variant">详见 docs/troubleshooting.md</p>
+          </details>
         </div>
       </div>
     </div>

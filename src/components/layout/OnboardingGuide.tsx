@@ -117,10 +117,13 @@ export function OnboardingGuide({
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
           <div className="flex gap-2">
             {onOpenSample ? (
-              <Button size="sm" variant="secondary" onClick={() => { finish(); onOpenSample(); }}>
+              <Button size="sm" variant="secondary" data-onboarding-template="sample" onClick={() => { finish(); onOpenSample(); }}>
                 打开示例
               </Button>
             ) : null}
+            <Button size="sm" variant="ghost" data-onboarding-template="blank" onClick={finish}>
+              空白项目
+            </Button>
             {onShowShortcuts ? (
               <Button size="sm" variant="ghost" onClick={() => { finish(); onShowShortcuts(); }}>
                 <Keyboard aria-hidden className="size-4" />

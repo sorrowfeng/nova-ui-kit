@@ -12,6 +12,9 @@ export function PreviewDock({
   onOpenExternal,
   onGenerate,
   busy,
+  autoRefresh,
+  onToggleAutoRefresh,
+  previewVersion,
 }: {
   previewUrl: string | null;
   distDir: string | null;
@@ -19,6 +22,9 @@ export function PreviewDock({
   onOpenExternal: () => void;
   onGenerate: () => void;
   busy?: boolean;
+  autoRefresh?: boolean;
+  onToggleAutoRefresh?: () => void;
+  previewVersion?: number;
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col" data-builder-preview-dock="">
@@ -31,6 +37,17 @@ export function PreviewDock({
         <Button size="sm" variant="secondary" className="h-7 px-2 text-[0.68rem]" onClick={onGenerate} disabled={busy} data-builder-preview-dock-generate="">
           {busy ? "编译中…" : "生成预览"}
         </Button>
+        <Button
+          size="icon-sm"
+          variant={autoRefresh ? "secondary" : "ghost"}
+          className="size-7"
+          aria-label="自动刷新"
+          title={autoRefresh ? "自动刷新已开（生成后自动更新）" : "自动刷新已关"}
+          data-builder-preview-dock-auto=""
+          onClick={onToggleAutoRefresh}
+        >
+          <RefreshCw aria-hidden className={autoRefresh ? "size-3.5 text-primary" : "size-3.5"} />
+        </Button>
         <Button size="icon-sm" variant="ghost" className="size-7" aria-label="刷新预览" title="刷新预览" onClick={onRefresh} disabled={!previewUrl}>
           <RefreshCw aria-hidden className="size-3.5" />
         </Button>
@@ -42,7 +59,7 @@ export function PreviewDock({
         {previewUrl ? (
           <iframe
             key={previewUrl}
-            src={previewUrl}
+            src={previewUrl + (previewVersion ? "#v=" + previewVersion : "")}
             title="生成应用预览"
             className="h-full w-full border-0"
             data-builder-preview-dock-frame=""
