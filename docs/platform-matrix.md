@@ -64,7 +64,8 @@ linux.deb/appimage、macOS minimumSystemVersion、webviewInstallMode），已挂
 
 产物本身由 `node scripts/verify-release-artifacts.mjs --dir <bundle目录> --platform <linux|macos|windows>`
 判定：目标格式必须齐、体积过下限、文件头/尾魔数正确（`.deb` = ar 头、`.AppImage` = ELF、
-`.dmg` = UDIF `koly` 尾、`.exe` = `MZ`、`.app` 需含 `Contents/Info.plist` 与 `Contents/MacOS/`），
+`.dmg` = UDIF `koly` 尾块（512 字节 trailer 的**首** 4 字节，位于 `fileSize-512`）、
+`.exe` = `MZ`、`.app` 需含 `Contents/Info.plist` 与 `Contents/MacOS/`），
 并写出 `SHA256SUMS.txt`。`build.yml` 与 `release.yml` 的各平台 job 在上传前都会跑这一步，
 `release.yml` 发布时还会逐平台点名校验并开启 `fail_on_unmatched_files`，产物缺失不再静默通过。
 

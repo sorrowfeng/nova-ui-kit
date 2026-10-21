@@ -17,7 +17,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && tsc && vite build && npm run check:bundle-size",
     "check:components": "node scripts/check-component-coverage.mjs",
-    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:project-file-models",
+    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:release-artifact-magic && npm run check:project-file-models",
     "check:goal": "node scripts/check-goal-coverage.mjs",
     "check:runtime-contract": "node scripts/check-generated-runtime-contract.mjs",
     "check:project-persistence": "node scripts/check-project-persistence-rust.mjs",
@@ -50,6 +50,7 @@
     "docs:site": "node scripts/docs-site.mjs",
     "check:bundle-size": "node scripts/check-bundle-size.mjs",
     "check:platform-bundle": "node scripts/check-platform-bundle-config.mjs",
+    "check:release-artifact-magic": "node scripts/check-release-artifact-magic.mjs",
     "check:a11y": "node scripts/check-a11y.mjs",
     "check:project-file-models": "node scripts/check-project-file-models.mjs"
   },

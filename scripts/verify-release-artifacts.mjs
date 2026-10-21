@@ -70,11 +70,11 @@ function headBytes(file, count) {
   }
 }
 
-function tailBytes(file, count, fileSize) {
+function bytesAt(file, offset, count) {
   const fd = fs.openSync(file, "r");
   try {
     const buffer = Buffer.alloc(count);
-    const read = fs.readSync(fd, buffer, 0, count, Math.max(0, fileSize - count));
+    const read = fs.readSync(fd, buffer, 0, count, Math.max(0, offset));
     return buffer.subarray(0, read);
   } finally {
     fs.closeSync(fd);
@@ -92,7 +92,12 @@ function checkMagic(file, ext, size) {
     return headBytes(file, 4).equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])) ? null : "missing ELF header";
   }
   if (ext === ".dmg") {
-    return tailBytes(file, 4, size).equals(DMG_TRAILER) ? null : "missing UDIF koly trailer";
+    // UDIF puts a 512-byte trailer at the end of the file, and its first four
+    // bytes are the signature — so the check is at size-512, not size-4.
+    if (size < 512) return "too small to hold a UDIF trailer";
+    return bytesAt(file, size - 512, 4).equals(DMG_TRAILER)
+      ? null
+      : "missing UDIF koly trailer at fileSize-512";
   }
   return null;
 }
