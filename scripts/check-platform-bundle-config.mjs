@@ -114,5 +114,5 @@ if (problems.length > 0) {
 
 console.log("check-platform-bundle-config ok: windows/linux/macOS bundle sections and icons are complete.");
 console.log(
-  "check-platform-bundle-config note: actual .deb/.AppImage/.dmg output still needs the matching host; see docs/platform-matrix.md.",
+  "check-platform-bundle-config note: this only checks config. Real .deb/.AppImage/.dmg output is proven by the linux-bundle / macos-bundle jobs in build.yml, which also install and launch; see docs/platform-matrix.md.",
 );
