@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useDialogFocus } from "@/lib/dialog-focus";
 import { cn } from "@/lib/utils";
 
 type ShortcutGroup = {
@@ -61,6 +62,7 @@ export function KeyboardShortcutsOverlay({
   onOpenChange: (open: boolean) => void;
 }) {
   const [query, setQuery] = useState("");
+  const dialogRef = useDialogFocus(open);
 
   useEffect(() => {
     if (open) setQuery("");
@@ -84,7 +86,9 @@ export function KeyboardShortcutsOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-[135] flex items-start justify-center bg-scrim/40 p-4 pt-[8vh]"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="focus-ring fixed inset-0 z-[135] flex items-start justify-center bg-scrim/40 p-4 pt-[8vh]"
       data-builder-shortcuts-overlay=""
       role="dialog"
       aria-modal="true"

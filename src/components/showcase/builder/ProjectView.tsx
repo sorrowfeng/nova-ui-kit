@@ -1110,7 +1110,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             </button>
                             <button
                               type="button"
-                              className="grid min-h-7 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1.5 rounded-md py-0.5 pr-1 text-left"
+                              className="focus-ring grid min-h-7 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1.5 rounded-md py-0.5 pr-1 text-left"
                               onClick={() => handleProjectExplorerNode(node)}
                             >
                               <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-md", selected ? "bg-secondary-container text-secondary-container-foreground" : "text-primary")}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Keyboard, MousePointer2, Play, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogFocus } from "@/lib/dialog-focus";
 import { cn } from "@/lib/utils";
 import { projectTemplates, type ProjectTemplateId } from "@/components/showcase/builder/project-templates";
 
@@ -58,6 +59,7 @@ export function OnboardingGuide({
   onShowShortcuts?: () => void;
 }) {
   const [step, setStep] = useState(0);
+  const dialogRef = useDialogFocus(open);
 
   useEffect(() => {
     if (open) setStep(0);
@@ -83,7 +85,9 @@ export function OnboardingGuide({
 
   return (
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center bg-scrim/45 p-4"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="focus-ring fixed inset-0 z-[140] flex items-center justify-center bg-scrim/45 p-4"
       data-builder-onboarding=""
       role="dialog"
       aria-modal="true"

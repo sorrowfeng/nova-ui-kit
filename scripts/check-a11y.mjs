@@ -8,6 +8,10 @@ import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import {
+  findReservedDocumentedShortcuts,
+  findReservedShortcutConflicts,
+} from "./a11y/reserved-shortcuts.mjs";
 
 const root = process.cwd();
 const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -65,6 +69,56 @@ async function clickCenter(selector) {
   await delay(150);
 }
 
+const KEY_VK = {
+  Tab: 9,
+  Escape: 27,
+  F1: 112,
+};
+
+async function pressKey(key) {
+  const code = key.length === 1 ? `Key${key.toUpperCase()}` : key;
+  const vk = KEY_VK[key] ?? 0;
+  const base = { key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk };
+  await send("Input.dispatchKeyEvent", { type: "keyDown", ...base });
+  await send("Input.dispatchKeyEvent", { type: "keyUp", ...base });
+  await delay(250);
+}
+
+async function focusElement(selector) {
+  const ok = await evalJs(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) return false;
+    el.focus();
+    return document.activeElement === el || el.contains(document.activeElement);
+  })()`);
+  if (!ok) throw new Error(`cannot focus ${selector}`);
+  await delay(120);
+}
+
+/** Where the keyboard focus currently sits, as a comparable marker. */
+async function focusMarker() {
+  return evalJs(`(() => {
+    const el = document.activeElement;
+    if (!el || el === document.body) return { tag: "body" };
+    const data = Array.from(el.attributes)
+      .filter((a) => a.name.startsWith("data-"))
+      .map((a) => a.name + "=" + String(a.value))
+      .sort()
+      .join("|");
+    return { tag: el.tagName.toLowerCase(), data, aria: el.getAttribute("aria-label") || "" };
+  })()`);
+}
+
+/** Name + focus-ring assertions that every audited surface must clear. */
+function checkSurface(report, label) {
+  check(report.unnamedCount === 0, `${label}: every interactive control has a name (checklist 3.5 / 4.x)`, report.unnamed.slice(0, 5).join(", "));
+  check(
+    report.noFocusRingCount === 0,
+    `${label}: interactive controls carry a focus-ring affordance (checklist 1.2)`,
+    report.noFocusRingCount ? `${report.noFocusRingCount} e.g. ${report.noFocusRing.slice(0, 5).join(", ")}` : "",
+  );
+}
+
 /** Accessible-name + focusability audit over the whole document. */
 const DOM_AUDIT = `(() => {
   const describe = (el) => {
@@ -72,7 +126,9 @@ const DOM_AUDIT = `(() => {
     const data = Array.from(el.attributes)
       .filter((a) => a.name.startsWith('data-'))
       .map((a) => a.name + '=' + String(a.value).slice(0, 40));
-    return el.tagName.toLowerCase() + id + (data.length ? '[' + data.join(',') + ']' : '');
+    const label = el.getAttribute('aria-label') || (el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 24);
+    const cls = String(el.className || '').split(/\\s+/).filter(Boolean).slice(0, 6).join('.');
+    return el.tagName.toLowerCase() + id + (data.length ? '[' + data.join(',') + ']' : '') + (label ? '{' + label + '}' : '') + (cls ? '.' + cls : '');
   };
   const nameOf = (el) => {
     const label = el.getAttribute('aria-label');
@@ -166,6 +222,20 @@ const DOM_AUDIT = `(() => {
 })()`;
 
 async function main() {
+  console.log("[a11y] section 0 — global shortcut reservations (checklist 3.3)");
+  const reservedHits = findReservedShortcutConflicts(root);
+  check(
+    reservedHits.length === 0,
+    "no global shortcut captures a chord the shell reserves",
+    reservedHits.map((h) => `${h.file}:${h.line} ${h.chord} (${h.why})`).join("; "),
+  );
+  const documentedHits = findReservedDocumentedShortcuts(root);
+  check(
+    documentedHits.length === 0,
+    "the shortcut overlay does not advertise reserved chords",
+    documentedHits.map((h) => `${h.chord} (${h.why})`).join("; "),
+  );
+
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "nova-a11y-"));
   const vite = spawn(npmBin, ["run", "dev", "--", "--port", String(vitePort)], {
     cwd: root,
@@ -272,7 +342,7 @@ async function main() {
     await clickCenter('[data-builder-mode-button="design"]');
     await delay(1500);
     const design = await evalJs(DOM_AUDIT);
-    check(design.unnamedCount === 0, "design mode: every interactive control has a name (checklist 4.1 / 4.3)", design.unnamed.slice(0, 5).join(", "));
+    checkSurface(design, "design mode");
     check(
       design.persistentLiveRegion,
       "builder keeps a persistent live region for action feedback (checklist 6.6)",
@@ -283,7 +353,7 @@ async function main() {
     await clickCenter('[data-builder-mode-button="project"]');
     await delay(1500);
     const project = await evalJs(DOM_AUDIT);
-    check(project.unnamedCount === 0, "project mode: every interactive control has a name (checklist 4.x)", project.unnamed.slice(0, 5).join(", "));
+    checkSurface(project, "project mode");
 
     console.log("[a11y] section 5 — logic and build");
     for (const mode of ["logic", "build"]) {
@@ -305,8 +375,69 @@ async function main() {
     await clickCenter('[data-builder-mode-button="project"]');
     await delay(1200);
     const compact = await evalJs(DOM_AUDIT);
-    check(compact.unnamedCount === 0, "compact viewport: every interactive control has a name", compact.unnamed.slice(0, 5).join(", "));
+    checkSurface(compact, "compact viewport 1100x720");
     check(compact.total > 20, "compact viewport still exposes the main controls", `total=${compact.total}`);
+
+    // Checklists 1.4 / 2.7 — a modal must take focus on open and hand it back
+    // on close. Without the restore step keyboard users land on document.body.
+    console.log("[a11y] section 7 — dialog focus entry and return (checklist 1.4 / 2.7)");
+    await send("Emulation.setDeviceMetricsOverride", {
+      width: 1440,
+      height: 960,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await delay(800);
+    await focusElement('[data-builder-mode-button="design"]');
+    const opener = await focusMarker();
+
+    await pressKey("F1");
+    await delay(400);
+    const overlayOpen = await evalJs(`Boolean(document.querySelector("[data-builder-shortcuts-overlay]"))`);
+    check(overlayOpen, "F1 opens the keyboard shortcut dialog (checklist 3.1)");
+    const insideDialog = await evalJs(`(() => {
+      const dialog = document.querySelector("[data-builder-shortcuts-overlay]");
+      return Boolean(dialog && document.activeElement && dialog.contains(document.activeElement));
+    })()`);
+    check(insideDialog, "opening a dialog moves focus inside it (checklist 1.4)");
+
+    await pressKey("Escape");
+    await delay(400);
+    const overlayClosed = await evalJs(`Boolean(document.querySelector("[data-builder-shortcuts-overlay]"))`);
+    check(!overlayClosed, "Escape closes the dialog (checklist 3.4)");
+    const restored = await focusMarker();
+    check(
+      JSON.stringify(restored) === JSON.stringify(opener),
+      "closing a dialog returns focus to its trigger (checklist 1.4)",
+      `before=${JSON.stringify(opener)} after=${JSON.stringify(restored)}`,
+    );
+    const stranded = await evalJs(`(() => {
+      const el = document.activeElement;
+      return !el || el === document.body || !el.isConnected;
+    })()`);
+    check(!stranded, "focus is never stranded on a detached node (checklist 2.7)");
+
+    const tabbedAway = await evalJs(`(() => {
+      const start = document.activeElement;
+      return Boolean(start && start !== document.body && start.tabIndex >= 0);
+    })()`);
+    check(tabbedAway, "a shell control can hold focus so Tab can move on (checklist 2.7)");
+
+    // Checklist 7.3 — 200% system scaling is approximated by halving the CSS
+    // viewport and doubling the device pixel ratio.
+    console.log("[a11y] section 8 — 200% scaling approximation (checklist 7.3)");
+    await send("Emulation.setDeviceMetricsOverride", {
+      width: 720,
+      height: 480,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    await delay(1200);
+    await clickCenter('[data-builder-mode-button="project"]');
+    await delay(1200);
+    const scaled = await evalJs(DOM_AUDIT);
+    checkSurface(scaled, "200% scaling");
+    check(scaled.total > 20, "200% scaling still exposes the main controls", `total=${scaled.total}`);
   } finally {
     try { ws?.close(); } catch { /* ignore */ }
     try { spawnSync("taskkill", ["/PID", String(browserProc.pid), "/T", "/F"], { stdio: "ignore" }); } catch { /* ignore */ }

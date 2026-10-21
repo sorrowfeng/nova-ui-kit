@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Check, GitMerge, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDialogFocus } from "@/lib/dialog-focus";
 
 export type ConflictHunk = {
   ours: string;
@@ -53,6 +54,8 @@ export function ConflictMergeEditor({
   const [choices, setChoices] = useState<Record<number, ConflictResolution>>({});
   const [activeHunk, setActiveHunk] = useState(0);
   const hunkRefs = useRef<Array<HTMLElement | null>>([]);
+  // Mounted and unmounted by the parent, so treat mount as "open".
+  const dialogRef = useDialogFocus(true);
 
   const resolutions = useMemo<ConflictResolution[]>(
     () =>
@@ -94,7 +97,9 @@ export function ConflictMergeEditor({
 
   return (
     <div
-      className="fixed inset-0 z-[140] flex items-start justify-center bg-scrim/40 p-4 pt-[6vh]"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="focus-ring fixed inset-0 z-[140] flex items-start justify-center bg-scrim/40 p-4 pt-[6vh]"
       data-builder-conflict-merge=""
       role="dialog"
       aria-modal="true"
