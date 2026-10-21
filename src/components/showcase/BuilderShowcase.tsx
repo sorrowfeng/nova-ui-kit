@@ -152,6 +152,7 @@ import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
 import { ConflictMergeEditor, type ConflictFile } from "./builder/ConflictMergeEditor";
 import { GeneratedDiffView } from "./builder/GeneratedDiffView";
 import { PreviewDock } from "./builder/PreviewDock";
+import { useDebouncedPreviewReload } from "./builder/useDebouncedPreviewReload";
 import { ToolchainBanner } from "./builder/ToolchainBanner";
 import { palette, getDefinition, type ComponentDefinition } from "./builder/component-palette";
 import { AlignGuideOverlay } from "./builder/AlignGuideOverlay";
@@ -5143,6 +5144,17 @@ function projectSettingsContentFingerprint(project: DesignerProject) {
 
 function workspaceProjectSettingsContentFingerprints(workspace: DesignerWorkspace) {
   return Object.fromEntries(workspace.projects.map((project) => [project.id, projectSettingsContentFingerprint(project)]));
+}
+
+/** Design inputs the generated web preview is built from (P1-7 hot reload). */
+function projectDesignContentFingerprint(project: DesignerProject) {
+  return JSON.stringify({
+    files: project.files.map((file) => ({ id: file.id, page: file.page, items: file.items })),
+    assets: project.assets,
+    stateVariables: project.stateVariables,
+    rustCommands: project.rustCommands,
+    rustLogic: project.rustLogic,
+  });
 }
 
 function getSelectionBounds(items: BuilderItem[]) {
@@ -20132,11 +20144,13 @@ export function BuilderShowcase() {
     showProjectJumpFeedback("success", "画布搜索已打开", "输入控件名称或类型定位，Esc 关闭。");
   };
 
-  const createSampleProjectFromTemplate = () => {
-    const seed = createProjectTemplateSeed("dashboard", projectTemplateSeedOptions());
+  /** Load a project template into the active file (P1-8: multi-template wizard). */
+  const loadProjectTemplate = (templateId: ProjectTemplateId) => {
+    const template = projectTemplateById(templateId);
+    const seed = createProjectTemplateSeed(templateId, projectTemplateSeedOptions());
     const sample = seed.files[0];
     if (!sample) {
-      showProjectJumpFeedback("warning", "示例不可用", "模板未提供默认文件。");
+      showProjectJumpFeedback("warning", "模板不可用", `${template.title} 未提供默认文件。`);
       return;
     }
     updateActiveFile((file) => ({
@@ -20152,8 +20166,10 @@ export function BuilderShowcase() {
       }));
     }
     switchEditorMode("design");
-    showProjectJumpFeedback("success", "示例项目已载入", "仪表盘模板包含表格与命令绑定，可直接预览或生成。");
+    showProjectJumpFeedback("success", "模板已载入", `${template.title} · ${template.description}`);
   };
+
+  const createSampleProjectFromTemplate = () => loadProjectTemplate("dashboard");
 
   const { startMove, startResize } = useCanvasItemDrag({
     mode,
@@ -31196,6 +31212,23 @@ export function BuilderShowcase() {
     }
   };
 
+  // P1-7: design edits regenerate the live preview after a quiet period.
+  const designSignature = useMemo(
+    () => projectDesignContentFingerprint(activeProject),
+    [activeProject],
+  );
+  useDebouncedPreviewReload({
+    enabled: previewAutoRefresh,
+    signature: designSignature,
+    hasPreview: Boolean(previewWebPath),
+    onReload: () => void previewGeneratedWeb(),
+  });
+
+  const refreshPreviewFrame = () => {
+    // Bump the iframe key so the existing preview reloads without a rebuild.
+    setPreviewVersion((v) => v + 1);
+  };
+
   const retryLastFailedTask = () => {
     const failed = activeProjectTasks.find((task) => task.status === "failed");
     if (!failed) {
@@ -31631,7 +31664,8 @@ export function BuilderShowcase() {
 
   useEffect(() => {
     const handleEditorCommand = (event: Event) => {
-      const command = (event as CustomEvent<NovaEditorCommandEventDetail>).detail?.command;
+      const detail = (event as CustomEvent<NovaEditorCommandEventDetail>).detail;
+      const command = detail?.command;
       if (!command) {
         return;
       }
@@ -31725,6 +31759,18 @@ export function BuilderShowcase() {
       }
       if (command === "open-sample") {
         createSampleProjectFromTemplate();
+        return;
+      }
+      if (command === "open-template") {
+        const requested = detail?.templateId;
+        const templateId = (["blank", "dashboard", "settings", "dialog", "data-tool"] as const).find(
+          (id) => id === requested,
+        );
+        if (!templateId) {
+          showProjectJumpFeedback("warning", "未知模板", `没有名为 ${requested ?? "(空)"} 的模板。`);
+          return;
+        }
+        loadProjectTemplate(templateId);
         return;
       }
       if (command === "show-shortcuts" || command === "show-onboarding") {
@@ -33173,15 +33219,14 @@ export function BuilderShowcase() {
                 <PreviewDock
                   previewUrl={previewWebPath ? convertFileSrc(previewWebPath) : null}
                   distDir={previewWebPath ? previewWebPath.replace(/[\\/]index\.html$/, "") : null}
-                  onRefresh={() => {
-                    if (previewWebPath) {
-                      void openLocalPath(previewWebPath);
-                    }
-                  }}
+                  onRefresh={refreshPreviewFrame}
                   onOpenExternal={() => {
                     if (previewWebPath) void openLocalPath(previewWebPath);
                   }}
                   onGenerate={() => void previewGeneratedWeb()}
+                  autoRefresh={previewAutoRefresh}
+                  onToggleAutoRefresh={() => setPreviewAutoRefresh((value) => !value)}
+                  previewVersion={previewVersion}
                 />
               ) : bottomDockTab === "issues" ? (
                         <span className="block truncate text-on-surface-variant">

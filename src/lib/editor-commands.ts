@@ -23,6 +23,7 @@ export type NovaEditorCommand =
   | "help-guide"
   | "project-templates"
   | "open-sample"
+  | "open-template"
   | "show-shortcuts"
   | "show-onboarding"
   | "canvas-find"
@@ -30,11 +31,17 @@ export type NovaEditorCommand =
 
 export type NovaEditorCommandEventDetail = {
   command: NovaEditorCommand;
+  /** Template id for `open-template` (see builder/project-templates.ts). */
+  templateId?: string;
 };
 
-export function dispatchNovaEditorCommand(command: NovaEditorCommand) {
+export function dispatchNovaEditorCommand(command: NovaEditorCommand, templateId?: string) {
   if (typeof window === "undefined") {
     return;
   }
-  window.dispatchEvent(new CustomEvent<NovaEditorCommandEventDetail>(NOVA_EDITOR_COMMAND_EVENT, { detail: { command } }));
+  window.dispatchEvent(
+    new CustomEvent<NovaEditorCommandEventDetail>(NOVA_EDITOR_COMMAND_EVENT, {
+      detail: templateId ? { command, templateId } : { command },
+    }),
+  );
 }

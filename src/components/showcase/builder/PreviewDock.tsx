@@ -42,13 +42,17 @@ export function PreviewDock({
           variant={autoRefresh ? "secondary" : "ghost"}
           className="size-7"
           aria-label="自动刷新"
-          title={autoRefresh ? "自动刷新已开（生成后自动更新）" : "自动刷新已关"}
-          data-builder-preview-dock-auto=""
+          title={
+            autoRefresh
+              ? "自动刷新已开（设计改动约 1.2 秒后重新生成预览）"
+              : "自动刷新已关（设计改动后需手动点「生成预览」）"
+          }
+          data-builder-preview-dock-auto={autoRefresh ? "on" : "off"}
           onClick={onToggleAutoRefresh}
         >
           <RefreshCw aria-hidden className={autoRefresh ? "size-3.5 text-primary" : "size-3.5"} />
         </Button>
-        <Button size="icon-sm" variant="ghost" className="size-7" aria-label="刷新预览" title="刷新预览" onClick={onRefresh} disabled={!previewUrl}>
+        <Button size="icon-sm" variant="ghost" className="size-7" aria-label="重新载入预览" title="重新载入预览（不重新生成）" onClick={onRefresh} disabled={!previewUrl}>
           <RefreshCw aria-hidden className="size-3.5" />
         </Button>
         <Button size="icon-sm" variant="ghost" className="size-7" aria-label="在浏览器打开" title="在浏览器打开" onClick={onOpenExternal} disabled={!previewUrl}>
@@ -58,7 +62,7 @@ export function PreviewDock({
       <div className="min-h-0 flex-1 bg-white">
         {previewUrl ? (
           <iframe
-            key={previewUrl}
+            key={`${previewUrl}#v=${previewVersion ?? 0}`}
             src={previewUrl + (previewVersion ? "#v=" + previewVersion : "")}
             title="生成应用预览"
             className="h-full w-full border-0"

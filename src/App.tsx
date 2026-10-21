@@ -583,6 +583,7 @@ function App() {
           open={onboardingOpen}
           onOpenChange={setOnboardingOpen}
           onOpenSample={() => runEditorCommand("open-sample")}
+          onOpenTemplate={(templateId) => dispatchNovaEditorCommand("open-template", templateId)}
           onShowShortcuts={() => setShortcutsOpen(true)}
         />
         <KeyboardShortcutsOverlay open={shortcutsOpen} onOpenChange={setShortcutsOpen} />

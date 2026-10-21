@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Keyboard, MousePointer2, Play, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { projectTemplates, type ProjectTemplateId } from "@/components/showcase/builder/project-templates";
 
 const STORAGE_KEY = "nova-onboarding-done";
 
@@ -47,11 +48,13 @@ export function OnboardingGuide({
   open,
   onOpenChange,
   onOpenSample,
+  onOpenTemplate,
   onShowShortcuts,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenSample?: () => void;
+  onOpenTemplate?: (templateId: ProjectTemplateId) => void;
   onShowShortcuts?: () => void;
 }) {
   const [step, setStep] = useState(0);
@@ -71,6 +74,11 @@ export function OnboardingGuide({
       window.localStorage.setItem(STORAGE_KEY, "1");
     }
     onOpenChange(false);
+  };
+
+  const startFromTemplate = (templateId: ProjectTemplateId) => {
+    finish();
+    onOpenTemplate?.(templateId);
   };
 
   return (
@@ -104,6 +112,39 @@ export function OnboardingGuide({
           {current.hint}
         </div>
 
+        {onOpenTemplate ? (
+          <div className="mx-6 mt-4">
+            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
+              从模板开始
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+              {projectTemplates.map((template) => {
+                const TemplateIcon = template.icon;
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    data-onboarding-template={template.id}
+                    className="focus-ring flex min-w-0 flex-col items-start gap-1 rounded-xl border border-outline-variant bg-surface-container-low px-2.5 py-2 text-left transition hover:border-primary hover:bg-primary/8"
+                    title={template.description}
+                    onClick={() => startFromTemplate(template.id)}
+                  >
+                    <span className="flex w-full items-center gap-1.5">
+                      <TemplateIcon aria-hidden className="size-3.5 shrink-0 text-primary" />
+                      <span className="min-w-0 flex-1 truncate text-[0.72rem] font-medium text-on-surface">
+                        {template.title}
+                      </span>
+                    </span>
+                    <span className="line-clamp-2 text-[0.62rem] leading-4 text-on-surface-variant">
+                      {template.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
         <div className="flex items-center gap-1.5 px-6 pt-4">
           {STEPS.map((s, index) => (
             <span
@@ -116,14 +157,16 @@ export function OnboardingGuide({
 
         <div className="flex flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
           <div className="flex gap-2">
-            {onOpenSample ? (
+            {!onOpenTemplate && onOpenSample ? (
               <Button size="sm" variant="secondary" data-onboarding-template="sample" onClick={() => { finish(); onOpenSample(); }}>
                 打开示例
               </Button>
             ) : null}
-            <Button size="sm" variant="ghost" data-onboarding-template="blank" onClick={finish}>
-              空白项目
-            </Button>
+            {!onOpenTemplate ? (
+              <Button size="sm" variant="ghost" data-onboarding-template="blank" onClick={finish}>
+                空白项目
+              </Button>
+            ) : null}
             {onShowShortcuts ? (
               <Button size="sm" variant="ghost" onClick={() => { finish(); onShowShortcuts(); }}>
                 <Keyboard aria-hidden className="size-4" />
