@@ -3,7 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const target = path.join(root, "src", "components", "showcase", "BuilderShowcase.tsx");
-const MAX_LINES = 37000; // lowered after extracting Project/Logic/Build views + item preview (P2-9); extract further before growing again
+const MAX_LINES = 24000; // P2-9: after extracting Project/Logic/Build/Design views, item preview, view-helpers and the module-scope block (52021 -> 23259). Extract the state/event layer before growing again.
 
 if (!fs.existsSync(target)) {
   console.error("check-showcase-size: missing BuilderShowcase.tsx");
