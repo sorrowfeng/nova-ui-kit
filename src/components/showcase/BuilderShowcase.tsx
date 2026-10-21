@@ -1324,9 +1324,9 @@ export function BuilderShowcase() {
       {
         id: "topology-rust",
         title: "Rust 后端逻辑",
-        detail: "UI 信号最终绑定到这里的 commands、模块和 Cargo 依赖。",
+        detail: "UI 信号最终绑定到这里的命令、模块和 Cargo 依赖。",
         path: projectPath("rust", "logic.rs"),
-        metric: `${activeProject.rustCommands.length} commands · ${activeProject.rustModules.length} modules`,
+        metric: `${activeProject.rustCommands.length} 个命令 · ${activeProject.rustModules.length} 个模块`,
         scope: "source",
         icon: Braces,
         filter: "rust",

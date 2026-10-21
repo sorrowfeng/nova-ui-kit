@@ -304,7 +304,7 @@ export function buildProjectSourceOverviewRows(input: ProjectSourceOverviewInput
       id: "source-rust-logic-overview",
       title: "logic.rs",
       kind: "Rust 逻辑",
-      detail: `${activeProject.rustCommands.length} commands · ${activeProject.rustModules.length} modules · ${activeProject.cargoDependencies.length} deps`,
+      detail: `${activeProject.rustCommands.length} 个命令 · ${activeProject.rustModules.length} 个模块 · ${activeProject.cargoDependencies.length} 个依赖`,
       path: projectPath("rust", "logic.rs"),
       relativePath: projectRelativePath("rust", "logic.rs"),
       scope: "source" as const,

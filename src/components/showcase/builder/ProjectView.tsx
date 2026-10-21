@@ -2176,7 +2176,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       <div className="mt-3 grid gap-2 text-xs md:grid-cols-2">
                         <PathRow label="manifest" value={projectDiskPath(activeProject.rootPath, "nova.project.json") || "保存后生成"} />
                         <PathRow label="workspace" value={projectDiskPath(activeProject.rootPath, ".nova", "workspace.json") || ".nova/workspace.json"} />
-                        <PathRow label="editor state" value={projectDiskPath(activeProject.rootPath, ".nova", "editor-state.json") || ".nova/editor-state.json"} />
+                        <PathRow label="编辑器状态" value={projectDiskPath(activeProject.rootPath, ".nova", "editor-state.json") || ".nova/editor-state.json"} />
                         <PathRow label="checkpoints" value={`${diskCheckpoints.length} 个磁盘版本`} />
                       </div>
                     </section>

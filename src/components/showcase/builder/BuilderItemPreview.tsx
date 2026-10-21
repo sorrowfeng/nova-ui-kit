@@ -2828,7 +2828,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
             <h3 className="truncate text-sm font-semibold">{props.title || "断点"}</h3>
             <p className="truncate text-[0.68rem] text-on-surface-variant">{props.description}</p>
           </div>
-          <Badge variant="secondary" className="shrink-0 text-[0.66rem]">{props.helper || `${rows.length} enabled`}</Badge>
+          <Badge variant="secondary" className="shrink-0 text-[0.66rem]">{props.helper || `${rows.length} 项已启用`}</Badge>
         </header>
         <div className="min-h-0 flex-1 overflow-hidden p-2">
           {rows.map((row, index) => {

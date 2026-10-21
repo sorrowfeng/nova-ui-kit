@@ -9,6 +9,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
+  auditAccessibilityTree,
+  CHINESE_UI_AUDIT,
+} from "./a11y/accessibility-tree.mjs";
+import { COLOR_ONLY_AUDIT } from "./a11y/color-only-state.mjs";
+import {
   findReservedDocumentedShortcuts,
   findReservedShortcutConflicts,
 } from "./a11y/reserved-shortcuts.mjs";
@@ -438,6 +443,69 @@ async function main() {
     const scaled = await evalJs(DOM_AUDIT);
     checkSurface(scaled, "200% scaling");
     check(scaled.total > 20, "200% scaling still exposes the main controls", `total=${scaled.total}`);
+
+    // Checklist 1.6 — Windows High Contrast / forced-colors replaces the whole
+    // palette. Anything that only spoke through a colour chip goes silent.
+    console.log("[a11y] section 9 — forced colours and high contrast (checklist 1.6)");
+    await send("Emulation.setEmulatedMedia", {
+      features: [
+        { name: "forced-colors", value: "active" },
+        { name: "prefers-contrast", value: "more" },
+        { name: "prefers-reduced-transparency", value: "reduce" },
+      ],
+    });
+    await delay(1000);
+    const forced = await evalJs(DOM_AUDIT);
+    checkSurface(forced, "forced-colors");
+    check(forced.total > 20, "forced-colors still exposes the main controls", `total=${forced.total}`);
+    const colorOnly = await evalJs(COLOR_ONLY_AUDIT);
+    check(
+      colorOnly.colorOnlyCount === 0,
+      "no control signals state through colour alone (checklist 1.6)",
+      colorOnly.colorOnlyCount
+        ? `${colorOnly.colorOnlyCount} e.g. ${colorOnly.colorOnly.slice(0, 5).join(", ")}`
+        : "",
+    );
+    check(
+      colorOnly.hasForcedColorsRules,
+      "stylesheet declares forced-colors / high-contrast handling (checklist 1.6)",
+      "no forced-colors, prefers-contrast or high-contrast rule found in the loaded stylesheets",
+    );
+    await send("Emulation.setEmulatedMedia", { features: [] });
+    await delay(400);
+
+    // Checklist 6.x — a screen reader reads the accessibility tree, not the
+    // DOM. That tree is inspectable, so the wording contract is checkable.
+    console.log("[a11y] section 10 — accessibility tree wording (checklist 6.x)");
+    await send("Accessibility.enable");
+    await delay(600);
+    const treeResponse = await send("Accessibility.getFullAXTree");
+    const ax = auditAccessibilityTree(treeResponse.result?.nodes ?? []);
+    check(
+      ax.interactiveCount > 20,
+      "accessibility tree exposes the interactive controls (checklist 6.x)",
+      `interactive=${ax.interactiveCount}`,
+    );
+    check(
+      ax.unnamedInteractiveCount === 0,
+      "every interactive node has a name a screen reader can speak (checklist 6.1-6.5)",
+      ax.unnamedInteractiveCount
+        ? `${ax.unnamedInteractiveCount} e.g. ${ax.unnamedInteractive.slice(0, 5).join(" | ")}`
+        : "",
+    );
+    check(
+      ax.liveRegionCount > 0,
+      "accessibility tree exposes a live region for status announcements (checklist 6.4 / 6.6)",
+      `live=${ax.liveRegionCount}`,
+    );
+    const phrasing = await evalJs(CHINESE_UI_AUDIT);
+    check(
+      phrasing.leftoverCount === 0,
+      "Chinese UI has no untranslated English labels (checklist 6.7)",
+      phrasing.leftoverCount
+        ? `${phrasing.leftoverCount} e.g. ${phrasing.leftovers.slice(0, 5).map((l) => l.text).join(" | ")}`
+        : "",
+    );
   } finally {
     try { ws?.close(); } catch { /* ignore */ }
     try { spawnSync("taskkill", ["/PID", String(browserProc.pid), "/T", "/F"], { stdio: "ignore" }); } catch { /* ignore */ }

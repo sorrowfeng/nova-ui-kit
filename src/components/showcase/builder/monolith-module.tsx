@@ -4810,8 +4810,8 @@ export function buildProjectJumpResults(project: DesignerProject, checkpoints: E
       id: `checkpoint-${checkpoint.id}`,
       kind: "checkpoint",
       title: checkpoint.label,
-      subtitle: `${checkpoint.project_name} · ${checkpoint.file_count} UI · ${checkpoint.command_count} commands`,
-      badge: "snapshot",
+      subtitle: `${checkpoint.project_name} · ${checkpoint.file_count} 个 UI 文件 · ${checkpoint.command_count} 个命令`,
+      badge: "快照",
       mode: "build",
       path: checkpoint.path,
       searchable: projectJumpSearchText([checkpoint.label, checkpoint.project_name, checkpoint.path, "checkpoint snapshot restore"]),
@@ -6700,8 +6700,8 @@ export function createValidationHistoryEntry(result: ValidationResult, audit: Wi
     breakpointValidationPath: result.breakpoint_validation_path ?? undefined,
     summary:
       breakpointIssues.length > 0
-        ? `${audit.checkedFiles} files, ${audit.checkedItems} controls, ${breakpointIssues.length} runtime issues`
-        : `${audit.checkedFiles} files, ${audit.checkedItems} controls checked`,
+        ? `${audit.checkedFiles} 个文件，${audit.checkedItems} 个控件，${breakpointIssues.length} 个运行时问题`
+        : `${audit.checkedFiles} 个文件，${audit.checkedItems} 个控件已检查`,
   };
 }
 
@@ -6768,10 +6768,10 @@ export function createBuildHistoryEntry(
     stateCount: project.stateVariables.length,
     assetCount: project.assets.length,
     summary: buildKind === "bundle" && primaryBundlePath
-      ? `${project.files.length} UI files, ${controlCount} controls -> ${fileNameFromPath(primaryBundlePath)}`
+      ? `${project.files.length} 个 UI 文件，${controlCount} 个控件 → ${fileNameFromPath(primaryBundlePath)}`
       : outputExePath
-      ? `${project.files.length} UI files, ${controlCount} controls -> ${fileNameFromPath(outputExePath)}`
-      : `${project.files.length} UI files, ${controlCount} controls -> generated app`,
+      ? `${project.files.length} 个 UI 文件，${controlCount} 个控件 → ${fileNameFromPath(outputExePath)}`
+      : `${project.files.length} 个 UI 文件，${controlCount} 个控件 → 生成应用`,
   };
 }
 
@@ -8497,7 +8497,7 @@ export function buildProjectExplorerModel(
     depth: 1,
     action: rootPath ? "open-path" : "none",
     path: projectDiskPath(rootPath, "ui"),
-    badge: dirtyUiFileCount > 0 ? `${dirtyUiFileCount} dirty` : `${project.files.length}`,
+    badge: dirtyUiFileCount > 0 ? `${dirtyUiFileCount} 个未保存` : `${project.files.length}`,
     dirty: dirtyUiFileCount > 0,
   });
   for (const file of project.files) {
