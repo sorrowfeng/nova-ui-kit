@@ -16,6 +16,10 @@ import {
   isReadoutStateLabel,
   isSignalStateLabel,
 } from "../src/components/showcase/builder/view-labels.ts";
+import {
+  STATUS_LABEL_DOMAINS,
+  UNKNOWN_STATUS_LABEL,
+} from "../src/components/showcase/builder/status-labels.ts";
 
 const failures = [];
 
@@ -151,6 +155,39 @@ check(
 check("zero counts are quiet", isQuietCountLabel("0"));
 check("non-zero counts are not quiet", !isQuietCountLabel("3"));
 check("a name is never mistaken for a zero count", !isQuietCountLabel("源码"));
+
+console.log("\ncheck-ui-density-rules: status label lookups are total");
+
+// A bare `labels[x]` returns undefined for any value the table never saw, and
+// undefined reaches the classifier as a TypeError on `label.trim()` that blanks
+// the whole panel. TypeScript already covers the table missing a key its type
+// declares; what it cannot cover is wire data carrying a status outside the
+// union, or a lookup whose fallback is an empty string. Those two are checked
+// here, and the label wording is pinned so a silent rewording shows up.
+for (const [domainName, { table, label }] of Object.entries(STATUS_LABEL_DOMAINS)) {
+  for (const [key, expected] of Object.entries(table)) {
+    const actual = label(key);
+    check(
+      `${domainName} labels "${key}"`,
+      typeof actual === "string" && actual === expected && actual !== UNKNOWN_STATUS_LABEL && actual.trim() !== "",
+      `expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
+  }
+  // Values outside the table must degrade to something readable, never to
+  // undefined — the wire can always carry a status the table never saw.
+  const stranger = label("not-a-real-severity");
+  check(
+    `${domainName} survives an unknown status`,
+    typeof stranger === "string" && stranger.trim() !== "" && stranger !== UNKNOWN_STATUS_LABEL,
+    `got ${JSON.stringify(stranger)}`,
+  );
+  const blank = label("");
+  check(
+    `${domainName} names a blank status instead of hiding it`,
+    blank === UNKNOWN_STATUS_LABEL,
+    `got ${JSON.stringify(blank)}`,
+  );
+}
 
 if (failures.length > 0) {
   console.error(`\ncheck-ui-density-rules: ${failures.length} failure(s)`);

@@ -49,8 +49,9 @@ export function SignalChip({
   className?: string;
   children?: ReactNode;
 }) {
+  const text = readLabel(label);
   if (!signal) {
-    return <span className="sr-only">{children ?? label}</span>;
+    return <span className="sr-only">{children ?? text}</span>;
   }
   return (
     <span
@@ -60,7 +61,7 @@ export function SignalChip({
         className,
       )}
     >
-      {children ?? label}
+      {children ?? text}
     </span>
   );
 }
@@ -88,6 +89,18 @@ export {
 } from "./view-labels";
 
 /**
+ * Status labels cross from domain data into the classifier, so this is the
+ * validation boundary. A missing label would otherwise reach `label.trim()`
+ * and blank the whole panel with a TypeError — better to name the row that is
+ * actually wrong "未知" than to take the workbench down with it.
+ */
+const UNKNOWN_LABEL = "未知";
+
+function readLabel(label: string): string {
+  return typeof label === "string" && label.trim() !== "" ? label : UNKNOWN_LABEL;
+}
+
+/**
  * Badge wrapper that drops to screen-reader-only text for benign states and
  * for zero counts. Call sites pass the state they have; this decides whether
  * the eye needs to see it.
@@ -112,25 +125,26 @@ export function StateBadge({
   className?: string;
   children?: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>) {
-  const chip = signal === undefined ? isSignalStateLabel(label) : signal;
+  const text = readLabel(label);
+  const chip = signal === undefined ? isSignalStateLabel(text) : signal;
   if (chip) {
     return (
       <Badge variant={variant} className={className} {...rest}>
-        {children ?? label}
+        {children ?? text}
       </Badge>
     );
   }
-  if (signal === false || isQuietStateLabel(label)) {
+  if (signal === false || isQuietStateLabel(text)) {
     return (
       <span className="sr-only" {...rest}>
-        {children ?? label}
+        {children ?? text}
       </span>
     );
   }
   // A readout: a version, a tally, a category. Plain text, not a pill.
   return (
     <span className={cn("text-[0.68rem] text-on-surface-variant", className)} {...rest}>
-      {children ?? label}
+      {children ?? text}
     </span>
   );
 }
@@ -153,11 +167,12 @@ export function CountReadout({
   className?: string;
   children?: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>) {
-  const quiet = count === undefined ? isQuietCountLabel(label) : isQuietCount(count);
+  const text = readLabel(label);
+  const quiet = count === undefined ? isQuietCountLabel(text) : isQuietCount(count);
   if (quiet) {
     return (
       <span className="sr-only" {...rest}>
-        {children ?? label}
+        {children ?? text}
       </span>
     );
   }
@@ -166,7 +181,7 @@ export function CountReadout({
       className={cn("font-mono text-[0.68rem] tabular-nums text-on-surface-variant", className)}
       {...rest}
     >
-      {children ?? label}
+      {children ?? text}
     </span>
   );
 }
@@ -197,23 +212,24 @@ export function StateLabel({
   showQuiet?: boolean;
   children?: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>) {
-  if (isSignalStateLabel(label)) {
+  const text = readLabel(label);
+  if (isSignalStateLabel(text)) {
     return (
       <Badge variant={variant} className={className} {...rest}>
-        {children ?? label}
+        {children ?? text}
       </Badge>
     );
   }
-  if (isQuietStateLabel(label) && !showQuiet) {
+  if (isQuietStateLabel(text) && !showQuiet) {
     return (
       <span className="sr-only" {...rest}>
-        {children ?? label}
+        {children ?? text}
       </span>
     );
   }
   return (
     <span className={cn("text-[0.68rem] text-on-surface-variant", className)} {...rest}>
-      {children ?? label}
+      {children ?? text}
     </span>
   );
 }

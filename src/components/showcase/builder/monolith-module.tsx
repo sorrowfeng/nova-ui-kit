@@ -4281,32 +4281,11 @@ export function projectJumpKindLabel(kind: ProjectJumpKind) {
   return labels[kind];
 }
 
-export function buildReadinessSeverityLabel(severity: BuildReadinessSeverity) {
-  const labels: Record<BuildReadinessSeverity, string> = {
-    ready: "就绪",
-    warning: "警告",
-    error: "错误",
-  };
-  return labels[severity];
-}
-
-export function visualAuditSeverityLabel(severity: WindowVisualAuditSeverity) {
-  const labels: Record<WindowVisualAuditSeverity, string> = {
-    pass: "通过",
-    warning: "警告",
-    error: "错误",
-  };
-  return labels[severity];
-}
-
-export function editorExperienceAuditSeverityLabel(severity: EditorExperienceAuditSeverity) {
-  const labels: Record<EditorExperienceAuditSeverity, string> = {
-    pass: "通过",
-    warning: "提醒",
-    fail: "阻塞",
-  };
-  return labels[severity];
-}
+export {
+  buildReadinessSeverityLabel,
+  editorExperienceAuditSeverityLabel,
+  visualAuditSeverityLabel,
+} from "./status-labels";
 
 export function editorExperienceAuditBadgeVariant(severity: EditorExperienceAuditSeverity) {
   if (severity === "fail") {
