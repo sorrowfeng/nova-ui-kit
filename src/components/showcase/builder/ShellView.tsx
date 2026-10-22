@@ -97,10 +97,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export type ShellViewScope = Record<string, any>;
+import type { ShellViewScope } from "./scope-shell";
 
 export function ShellView(props: { scope: ShellViewScope }): ReactNode {
-  const scope = props.scope ?? {};
+  const scope = props.scope;
   const {
     ArrowRight,
     BuildView,

@@ -133,7 +133,17 @@ useBuilderBuild()  / useBuilderTasks()  / useBuilderDocks()
 
 **2·1 起的实际做法（和原计划不一样，记下来免得重复踩）：** 先把每份 scope 从 `Record<string, any>` 收成**封闭键集**——`{ [K in ProjectViewScopeKey]: any }`，键集由视图自己的解构生成，不手抄。这一步只关门不查值，代价小、见效快：改错一个键名编译当场挂，还带「did you mean」，而以前是编译通过、面板空白。负例已经验过（把 `activeEditorTab` 写成 `activeEditorTabTYPO` 会报 `TS2339`）。
 
-**但只关了一半门，别当它已经安全了。** `ShellView → 各子视图` 那一侧仍然是开的：`ShellView` 手里那四个视图组件是从 scope 袋里拿到的，袋的类型是 `Record<string, any>`，于是 `<ProjectView scope={{…}} />` 等于在调 `any`，prop 根本不查——子视图自己解构写错键名会被抓，`ShellView` 少传一个键不会。要关这一半，得先把四个视图组件在袋边界上标类型——那正是 Phase 2 剩下的正经活。
+**2·2 把另一半也关上了。** `ShellView` 手里那四个视图组件本来是从 scope 袋里拿到的，袋的类型是 `Record<string, any>`，于是 `<ProjectView scope={{…}} />` 等于在调 `any`——子视图自己解构写错键名会被抓，`ShellView` 少传一个键不会。现在 `scope-shell.ts` 在袋边界上给这四个组件标了 `ComponentType<{ scope: XViewScope }>`，袋里其余名字仍然敞开（索引签名为 `any`；**声明过的属性优先于索引签名**，所以这四个不会被 `any` 吞掉）。
+
+三种失败模式都验过能输：
+
+| 写错 | 报什么 |
+|------|--------|
+| 子视图解构写错键名 | `TS2339` … does not exist on type 'ProjectViewScope'（带 did-you-mean） |
+| `ShellView` 少传一个键 | `TS2741` Property 'activeEditorTab' is missing … but required |
+| `ShellView` 多传一个键 | `TS2561` Object literal may only specify known properties |
+
+**这正是 Phase 2 说的那个收益：白屏这个失败模式从机制上没了。** 以前这三种写法全部编译通过，然后面板空白。
 
 ### Phase 3 — 拆胖视图（长期）
 
@@ -172,6 +182,7 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 1 | `editorExperienceAuditItems`（1037 行）搬进 `builder/editor-experience-audit.ts`，依赖数组逐字保留；顺带修好 `check:a11y` 两处「关不掉的门」（见下） | **18802** | **18850** |
 | 2·0 | 清掉没人读的 scope 键：袋里 5 个（含 `name`＝`window.name`）、`ShellView` 四份子视图字面量里 9 个（含 `open`＝Tauri 的 dialog `open`，ShellView 自己还要用，只是子视图不解构）、以及随之变成死代码的 2 个声明。补 `check:builder-file-size` 按文件量棘轮 | **18789** | **18820** |
 | 2·1 | 四个子视图的 scope 全部从 `Record<string, any>` 收成**封闭键集**（Project 108 / Logic 310 / Build 246 / Design 406 键，由各视图自己的解构生成 `builder/scope-*.ts`）。值仍是 `any`，只关门不查值 | **18789** | **18820** |
+| 2·2 | `scope-shell.ts` 在袋边界上给四个视图组件标 `ComponentType<{ scope: XViewScope }>`，`ShellView` 那四份字面量从此也被查。少键、多键、写错键名三种都会编译报错 | **18789** | **18820** |
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
