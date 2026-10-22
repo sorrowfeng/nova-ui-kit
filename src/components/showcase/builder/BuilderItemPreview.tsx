@@ -942,7 +942,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
           }) : <span className="text-[#cac4d0]">{props.placeholder || "输入代码..."}</span>}
         </div>
         <footer className="flex h-8 shrink-0 items-center justify-between gap-2 border-t border-white/10 bg-[#211f26] px-3 text-[0.66rem] text-[#cac4d0]">
-          <span className="truncate">{props.helper || "Ln 1, Col 1"}</span>
+          <span className="truncate">{props.helper || "第 1 行，第 1 列"}</span>
           <span className="truncate">{props.description || "UTF-8 · LF"}</span>
         </footer>
       </section>
@@ -2058,7 +2058,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{row}</span>
-                  <span className="mt-0.5 block truncate text-[0.66rem] opacity-75">{index === 2 ? "Rust module" : "UI resource"} · 已同步</span>
+                  <span className="mt-0.5 block truncate text-[0.66rem] opacity-75">{index === 2 ? "Rust 模块" : "UI 资源"} · 已同步</span>
                 </span>
                 {active ? <Check aria-hidden className="size-4 shrink-0" /> : null}
               </button>
@@ -2148,7 +2148,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
                   {isCode ? <FileText aria-hidden className="size-6" /> : <FileImage aria-hidden className="size-6" />}
                 </span>
                 <span className="w-full truncate text-center font-semibold">{row}</span>
-                <span className="w-full truncate text-center text-[0.64rem] opacity-75">{isCode ? "Rust" : "UI file"}</span>
+                <span className="w-full truncate text-center text-[0.64rem] opacity-75">{isCode ? "Rust" : "UI 文件"}</span>
               </button>
             );
           })}
@@ -2719,16 +2719,16 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
           <circle cx="270" cy="92" r="4" fill="hsl(var(--primary))" />
         </svg>
         <div className="absolute left-[7%] top-[38%] w-[26%] rounded-2xl border border-outline-variant bg-surface-container-lowest p-3 shadow-m3-1">
-          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] text-on-surface-variant">Signal</p>
-          <p className="mt-1 truncate text-xs font-semibold">{nodes[0] ?? "UI Signal"}</p>
+          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] text-on-surface-variant">信号</p>
+          <p className="mt-1 truncate text-xs font-semibold">{nodes[0] ?? "UI 信号"}</p>
         </div>
         <div className={cn("absolute left-[39%] top-[22%] w-[28%] rounded-2xl border p-3 shadow-m3-2", current === nodes[1] ? "border-primary bg-primary-container text-primary" : "border-outline-variant bg-surface-container-lowest")}>
-          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] opacity-75">Command</p>
-          <p className="mt-1 truncate text-xs font-semibold">{nodes[1] ?? "Run command"}</p>
+          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] opacity-75">命令</p>
+          <p className="mt-1 truncate text-xs font-semibold">{nodes[1] ?? "运行命令"}</p>
         </div>
         <div className="absolute right-[7%] top-[54%] w-[26%] rounded-2xl border border-outline-variant bg-surface-container-lowest p-3 shadow-m3-1">
-          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] text-on-surface-variant">Output</p>
-          <p className="mt-1 truncate text-xs font-semibold">{nodes[2] ?? "State patch"}</p>
+          <p className="truncate text-[0.66rem] uppercase tracking-[0.08em] text-on-surface-variant">输出</p>
+          <p className="mt-1 truncate text-xs font-semibold">{nodes[2] ?? "状态补丁"}</p>
         </div>
       </section>
     );
@@ -2925,7 +2925,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
                 <span className="text-center font-mono text-[0.68rem]">#{index}</span>
                 <span className="min-w-0">
                   <span className="block truncate font-mono font-semibold">{row}</span>
-                  <span className="mt-0.5 block truncate text-[0.66rem] opacity-75">{index === 0 ? "UI signal" : index === 1 ? "Rust command" : "State patch"}</span>
+                  <span className="mt-0.5 block truncate text-[0.66rem] opacity-75">{index === 0 ? "UI 信号" : index === 1 ? "Rust 命令" : "状态补丁"}</span>
                 </span>
                 <span className="truncate text-right font-mono text-[0.66rem]">:{index * 24 + 12}</span>
               </button>
@@ -4621,7 +4621,7 @@ export function renderBuilderPreview(item: BuilderItem, mode: BuilderMode, asset
                   index === 1 ? "border-destructive/35 bg-destructive/10 text-destructive" : "border-outline-variant bg-surface-container",
                 )}
               >
-                {index === 0 ? props.value ?? "Nova UI Kit" : index === 1 ? "需要选择目录" : "Windows exe"}
+                {index === 0 ? props.value ?? "Nova UI Kit" : index === 1 ? "需要选择目录" : "Windows 可执行文件"}
               </span>
             </label>
           ))}

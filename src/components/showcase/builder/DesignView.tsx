@@ -3986,7 +3986,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         onOpenChange={() => togglePropertySection("actions")}
                       >
                         {selectedEventName ? (
-                          <Field label="Rust command">
+                          <Field label="Rust 命令">
                             <Select
                               value={
                                 selectedEventCommandId && activeProject.rustCommands.some((command: any) => command.id === selectedEventCommandId)

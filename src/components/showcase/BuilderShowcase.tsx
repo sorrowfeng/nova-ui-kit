@@ -3278,7 +3278,6 @@ export function BuilderShowcase() {
             ? `${getItemSummary(selectedConnectionResultTarget)}.${selectedEventBinding.resultTargetProp}`
             : "目标缺失"
           : "",
-        selectedEventBinding?.applyJsonStatePatch ? "JSON patch" : "",
         selectedEventBinding?.applyJsonStatePatch ? "JSON 补丁" : "",
       ].filter(Boolean).join(" · ") || "无回写"
     : "未配置";
@@ -4403,7 +4402,7 @@ export function BuilderShowcase() {
         },
         {
           id: "command",
-          title: "Rust command",
+          title: "Rust 命令",
           label: logicWorkflowRow.command ? sanitizeRustCommandName(logicWorkflowRow.command.name) : "未绑定 command",
           detail: logicWorkflowRow.command ? logicWorkflowRow.inputSummary : "从连接设置选择或创建命令",
           badge: logicWorkflowRow.command ? "已绑定" : "待绑定",
@@ -4478,7 +4477,7 @@ export function BuilderShowcase() {
         },
         {
           id: "slot-assistant-command",
-          title: "Rust command",
+          title: "Rust 命令",
           detail: logicWorkflowRow.command
             ? `${sanitizeRustCommandName(logicWorkflowRow.command.name)} · ${logicWorkflowRow.commandArgs.length} 参数`
             : "还没有绑定 Rust command",
@@ -4647,7 +4646,7 @@ export function BuilderShowcase() {
       const parameters = rustCommandParameters(command);
       return {
         kind: "command",
-        title: `Rust command · ${commandName}`,
+        title: `Rust 命令 · ${commandName}`,
         detail: `${parameters.length} 参数 · ${commandResultSchema(command).mode} 返回 · ${commandRows.length} 个 UI 调用`,
         location: commandEntry?.line ? `logic.rs:${commandEntry.line}${commandEntry.column ? `:${commandEntry.column}` : ""}` : "源码待生成",
         sourceLine: commandEntry?.line ?? undefined,
@@ -11430,7 +11429,7 @@ export function BuilderShowcase() {
     const responseSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.responseSchema, "响应 schema");
     const requestValidationIssues =
       !payloadResult.error && !requestSchemaResult.error
-        ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, "Sample payload")
+        ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, "示例载荷")
         : [];
     const errors = [payloadResult.error, requestSchemaResult.error, responseSchemaResult.error, ...requestValidationIssues].filter(Boolean) as string[];
     const request = payloadResult.error
@@ -11468,12 +11467,12 @@ export function BuilderShowcase() {
   const testActiveBackendIntegrationMethod = async () => {
     const integration = activeBackendIntegration;
     const method = activeBackendIntegrationMethod;
-    const payloadResult = parseJsonEditorValue(method.samplePayload, "Sample payload");
-    const requestSchemaResult = parseJsonEditorValue(method.requestSchema, "Request schema");
-    const responseSchemaResult = parseJsonEditorValue(method.responseSchema, "Response schema");
+    const payloadResult = parseJsonEditorValue(method.samplePayload, "示例载荷");
+    const requestSchemaResult = parseJsonEditorValue(method.requestSchema, "请求 schema");
+    const responseSchemaResult = parseJsonEditorValue(method.responseSchema, "响应 schema");
     const requestValidationIssues =
       !payloadResult.error && !requestSchemaResult.error
-        ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, "Sample payload")
+        ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, "示例载荷")
         : [];
     const errors = [payloadResult.error, requestSchemaResult.error, responseSchemaResult.error, ...requestValidationIssues].filter(Boolean) as string[];
     const request = payloadResult.error ? method.samplePayload : prettyJson(backendMethodRequestEnvelope(method, payloadResult.value));
@@ -12025,7 +12024,7 @@ export function BuilderShowcase() {
       showProjectJumpFeedback(
         item.severity === "error" ? "warning" : "success",
         `已打开 ${item.title}`,
-        item.itemName ? `${item.itemName} 已为该就绪度条目选中。` : "The related UI file is active.",
+        item.itemName ? `${item.itemName} 已为该就绪度条目选中。` : "相关 UI 文件已激活。",
       );
       return;
     }
@@ -12825,11 +12824,11 @@ export function BuilderShowcase() {
 
   const drainProjectTaskQueue = async () => {
     if (projectTaskQueuePausedRef.current) {
-      setProjectTaskQueueMessage("Queue is paused. Resume it before continuing queued work.");
+      setProjectTaskQueueMessage("队列已暂停。恢复后才能继续排队的任务。");
       return null;
     }
     if (projectTaskRunnerRef.current) {
-      setProjectTaskQueueMessage("Queue runner is already active.");
+      setProjectTaskQueueMessage("队列执行器已在运行。");
       return projectTaskRunnerRef.current;
     }
 
@@ -12883,7 +12882,7 @@ export function BuilderShowcase() {
           };
           setProjectTaskQueueMessage(
             `${finishedTask.title} ${finishedTask.status}. ${
-              projectTaskQueueRef.current.length > 0 ? `${projectTaskQueueRef.current.length} 个任务仍在等待。` : "Queue is clear."
+              projectTaskQueueRef.current.length > 0 ? `${projectTaskQueueRef.current.length} 个任务仍在等待。` : "队列已清空。"
             }`,
           );
           updateProjectTask(task.id, finishedTask);

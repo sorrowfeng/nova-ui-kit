@@ -249,9 +249,9 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
           }),
           item("select", "构建目标", 528, 188, 320, 78, 3, {
             label: "构建目标",
-            value: "Windows exe",
-            optionA: "Windows exe",
-            optionB: "macOS app",
+            value: "Windows 可执行文件",
+            optionA: "Windows 可执行文件",
+            optionB: "macOS 应用",
             optionC: "Linux AppImage",
           }),
           item("switch", "自动保存", 64, 304, 380, 78, 4, {

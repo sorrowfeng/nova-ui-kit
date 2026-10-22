@@ -5218,13 +5218,13 @@ export function projectTemplateSeedOptions() {
   };
 }
 
-export function createBlankFile(name = "Main Window.ui", pagePatch: Partial<PageConfig> = {}): DesignerFile {
+export function createBlankFile(name = "主窗口.ui", pagePatch: Partial<PageConfig> = {}): DesignerFile {
   return createTemplateBlankFile(name, pagePatch, defaultPage);
 }
 export function createProject(name = "未命名项目", templateId: ProjectTemplateId = "blank"): DesignerProject {
   const now = new Date().toISOString();
   const seed = createProjectTemplateSeed(templateId, projectTemplateSeedOptions());
-  const activeFile = seed.files[0] ?? createBlankFile("Main Window.ui");
+  const activeFile = seed.files[0] ?? createBlankFile("主窗口.ui");
   const rustModules = [createRustModule(0)];
   const cargoDependencies = [createCargoDependency(0)];
   const backendIntegrations = [createBackendIntegration(0)];
@@ -5273,7 +5273,7 @@ export function normalizeDesignerFile(value: unknown, index = 0): DesignerFile |
   }
 
   const now = new Date().toISOString();
-  const name = source.name || (index === 0 ? "Main Window.ui" : `Window ${index + 1}.ui`);
+  const name = source.name || (index === 0 ? "主窗口.ui" : `Window ${index + 1}.ui`);
   return {
     id: source.id || createId(),
     name,
@@ -5465,8 +5465,8 @@ export function normalizeDesignerWorkspace(value: unknown): DesignerWorkspace | 
 
       return {
         id: projectSource.id || createId(),
-        name: projectSource.name || (projectIndex === 0 ? "Nova Project" : `Project ${projectIndex + 1}`),
-        description: projectSource.description || "Local Nova UI editor project",
+        name: projectSource.name || (projectIndex === 0 ? "Nova 项目" : `项目 ${projectIndex + 1}`),
+        description: projectSource.description || "本地 Nova UI 编辑器项目",
         rootPath: projectSource.rootPath,
         assets,
         stateVariables,
@@ -5546,10 +5546,10 @@ export function getInitialDesignerWorkspace(): DesignerWorkspace {
 
   const legacyState = loadSavedBuilderState();
   if (legacyState) {
-    const project = createProject("Migrated Nova Project");
+    const project = createProject("迁移的 Nova 项目");
     project.files = [
       {
-        ...createBlankFile(legacyState.page.title ? `${legacyState.page.title}.ui` : "Main Window.ui"),
+        ...createBlankFile(legacyState.page.title ? `${legacyState.page.title}.ui` : "主窗口.ui"),
         page: legacyState.page,
         items: legacyState.items,
       },
@@ -7841,7 +7841,7 @@ export function backendSchemaFieldsFromValues(schema: unknown, sample: unknown):
 }
 
 export function backendSchemaFields(schemaText: string, sampleText: string) {
-  const schemaResult = parseJsonEditorValue(schemaText, "Request schema");
+  const schemaResult = parseJsonEditorValue(schemaText, "请求 schema");
   const sampleResult = parseJsonEditorValue(sampleText, "示例载荷");
   if (schemaResult.error || sampleResult.error) {
     return [];
@@ -7850,7 +7850,7 @@ export function backendSchemaFields(schemaText: string, sampleText: string) {
 }
 
 export function samplePayloadFromBackendSchema(schemaText: string, existingSampleText: string) {
-  const schemaResult = parseJsonEditorValue(schemaText, "Request schema");
+  const schemaResult = parseJsonEditorValue(schemaText, "请求 schema");
   const sampleResult = parseJsonEditorValue(existingSampleText, "示例载荷");
   const existingSample = isPlainRecord(sampleResult.value) ? sampleResult.value : {};
   if (schemaResult.error) {
@@ -7996,7 +7996,7 @@ export function backendPayloadFieldsForEvent(fields: BackendSchemaField[], item:
 }
 
 export function backendResponseSchemaHasPatch(schemaText: string) {
-  const result = parseJsonEditorValue(schemaText, "Response schema");
+  const result = parseJsonEditorValue(schemaText, "响应 schema");
   if (result.error) {
     return false;
   }
