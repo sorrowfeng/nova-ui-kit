@@ -1,16 +1,17 @@
-// What ShellView pulls out of the builder scope bag.
+// The whole builder scope bag, derived instead of re-listed.
 //
-// The bag is still open (see the index signature) — closing all ~1090 keys is
-// the rest of phase 2. What is closed here are the four mode-view components,
-// because that is the half the per-view key sets cannot reach on their own:
-// ShellView receives ProjectView and friends *through* the bag, so without a
-// declared type every `<ProjectView scope={{...}} />` is a call on `any` and
-// the 108-key literal beside it is never checked.
+// Regenerate with:
+//   node scripts/internal/phase2-gen-scope-shell.mjs
 //
-// A declared property wins over the index signature, so these four stay typed
-// while every other name keeps flowing as any. Values stay any for the same
-// reason as in scope-*.ts: closing the keys and typing the values are two
-// jobs, and mixing them makes a failure impossible to attribute.
+// The bag is the intersection of the four per-view key sets plus the names
+// only ShellView reads. That makes it closed over exactly the keys the views
+// and the shell consume — 941 from the views + 146 shell-only = 1087, the size of the
+// literal in BuilderShowcase — so the one place the bag is built is the one
+// place a missing key is caught.
+//
+// An intersection satisfies each of its members, which is what lets ShellView
+// hand `scope` straight to a child and still have that child's closed key set
+// apply. Without this the child literals had to be hand-copied per view.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType } from "react";
 import type { ProjectViewScope } from "./scope-project";
@@ -18,10 +19,164 @@ import type { DesignViewScope } from "./scope-design";
 import type { LogicViewScope } from "./scope-logic";
 import type { BuildViewScope } from "./scope-build";
 
-export type ShellViewScope = {
-  ProjectView: ComponentType<{ scope: ProjectViewScope }>;
-  DesignView: ComponentType<{ scope: DesignViewScope }>;
-  LogicView: ComponentType<{ scope: LogicViewScope }>;
-  BuildView: ComponentType<{ scope: BuildViewScope }>;
-  [key: string]: any;
-};
+/** Names only ShellView reads; the four mode views never see these. */
+export type ShellViewOwnKey =
+  | "ArrowRight"
+  | "ChevronDown"
+  | "FolderOpen"
+  | "Input"
+  | "OutputDock"
+  | "Plus"
+  | "PreviewDock"
+  | "Search"
+  | "Wand2"
+  | "X"
+  | "activateBuilderIssue"
+  | "activeBottomDockHeight"
+  | "activeFileDirty"
+  | "activeModeItem"
+  | "activeWorkflowRuntimeStopId"
+  | "applyPropertyIssueAutoFix"
+  | "beginEditorFileTabDrag"
+  | "bottomDockExpanded"
+  | "bottomDockLogLineCount"
+  | "bottomDockLogLines"
+  | "bottomDockLogMatchCount"
+  | "bottomDockLogSearchQuery"
+  | "bottomDockLogSource"
+  | "bottomDockLogText"
+  | "bottomDockTabs"
+  | "builderIssues"
+  | "canvasContextInsertActiveIndex"
+  | "canvasContextInsertInputRef"
+  | "canvasContextInsertQuery"
+  | "canvasContextInsertSearchResults"
+  | "canvasContextMenu"
+  | "canvasContextMenuCommand"
+  | "canvasContextMenuEventName"
+  | "canvasContextMenuItem"
+  | "canvasContextMenuSelectionEnabled"
+  | "canvasContextMenuSelectionLocked"
+  | "canvasContextMenuSelectionReadOnly"
+  | "canvasContextMenuSelectionVisible"
+  | "canvasContextMenuTextProps"
+  | "canvasContextQuickInsertGroups"
+  | "canvasContextQuickInsertTypes"
+  | "clipboardRef"
+  | "closeCanvasContextMenu"
+  | "closeEditorFileTabsToRight"
+  | "closeProjectExplorerContextMenu"
+  | "confirmDestructiveAction"
+  | "convertFileSrc"
+  | "copiedOutputLog"
+  | "copyBottomDockLog"
+  | "destructiveAction"
+  | "dispatchNovaEditorCommand"
+  | "draggingEditorFileTabId"
+  | "dropEditorFileTab"
+  | "editorWorkflowStepStates"
+  | "feedbackIssueCount"
+  | "feedbackPanelOpen"
+  | "feedbackStripVisible"
+  | "feedbackSummaryDetail"
+  | "feedbackSummaryTitle"
+  | "feedbackSummaryTone"
+  | "feedbackSummaryToneLabel"
+  | "fileSaveStates"
+  | "focusPropertyIssue"
+  | "focusRustDiagnostic"
+  | "handleBottomDockTabChange"
+  | "handleCanvasContextInsertSearchKeyDown"
+  | "insertComponentFromCanvasContext"
+  | "latestRailPreset"
+  | "latestRailPresetStatusLabel"
+  | "latestRailPresetStatusVariant"
+  | "latestRailPresetStepLabel"
+  | "latestRailPresetSummary"
+  | "latestRailPresetTask"
+  | "latestRunSessionRunning"
+  | "leftRunControlsRef"
+  | "leftRunTaskTimelineRows"
+  | "leftRunTaskTimelineSummary"
+  | "loadWorkspace"
+  | "modeBarItems"
+  | "navigateBuilderIssue"
+  | "openEditorFileIds"
+  | "openFeedbackPanel"
+  | "openLocalPath"
+  | "operationMonitorDetail"
+  | "operationMonitorStatus"
+  | "operationMonitorTask"
+  | "operationMonitorTitle"
+  | "operationMonitorVisible"
+  | "outputDockWorkspaceAvoidancePadding"
+  | "outputDockWorkspaceHeight"
+  | "outputDockWorkspacePadding"
+  | "outputDockWorkspaceState"
+  | "outputDockWorkspaceStyle"
+  | "palettePointerDrag"
+  | "parentPathFromPath"
+  | "previewAutoRefresh"
+  | "previewGeneratedWeb"
+  | "previewVersion"
+  | "previewWebPath"
+  | "projectExplorerContextMenu"
+  | "projectExplorerContextNode"
+  | "projectJumpFeedback"
+  | "projectLocatorControl"
+  | "railArtifactStateLabel"
+  | "railBundleTargetLabel"
+  | "railConfigurationLabel"
+  | "railEventTargetLabel"
+  | "railKitLabel"
+  | "railReleaseTargetLabel"
+  | "railTaskStateLabel"
+  | "refreshPreviewFrame"
+  | "requestResetCurrentFile"
+  | "rerunLatestRailPreset"
+  | "retryLastFailedTask"
+  | "runCanvasContextAction"
+  | "runEditorWorkflowStep"
+  | "runSelectedRailActionPreset"
+  | "runWorkflowPrimaryAction"
+  | "selectedBuilderIssue"
+  | "selectedRailKitStepRows"
+  | "selectedSimulatorTraceLogPreview"
+  | "setBottomDockExpandedHeight"
+  | "setBottomDockHeight"
+  | "setBottomDockLogSearchQuery"
+  | "setCanvasContextInsertActiveIndex"
+  | "setCanvasContextInsertQuery"
+  | "setDestructiveAction"
+  | "setDraggingEditorFileTabId"
+  | "setPreviewAutoRefresh"
+  | "setSelectedRailActionPresetId"
+  | "suggestedWorkflowStepId"
+  | "workflowComplete"
+  | "workflowPrimaryActionDisabled"
+  | "workflowPrimaryActionLabel"
+  | "workflowProgressValue"
+  | "workflowRailBadgeLabel"
+  | "workflowRailBadgeVariant"
+  | "workflowRailDetail"
+  | "workflowRailStateLabel"
+  | "workflowRailTitle"
+  | "workflowStepCount"
+  | "workflowStepStatusLabel"
+  ;
+
+type ShellViewOwnScope = { [K in ShellViewOwnKey]: any }
+  & {
+    ProjectView: ComponentType<{ scope: ProjectViewScope }>;
+    DesignView: ComponentType<{ scope: DesignViewScope }>;
+    LogicView: ComponentType<{ scope: LogicViewScope }>;
+    BuildView: ComponentType<{ scope: BuildViewScope }>;
+  };
+
+export type ShellViewScope =
+  & ProjectViewScope
+  & DesignViewScope
+  & LogicViewScope
+  & BuildViewScope
+  & ShellViewOwnScope
+  ;

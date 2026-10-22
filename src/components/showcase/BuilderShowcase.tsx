@@ -18,6 +18,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ComponentType,
   type CSSProperties,
   type DragEvent,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -101,7 +102,12 @@ import {
 // project/logic/build workbenches (P2-11).
 const BuilderItemPreview = lazy(() => import("./builder/BuilderItemPreview").then((m) => ({ default: m.BuilderItemPreview })));
 const DesignView = lazy(() => import("./builder/DesignView").then((m) => ({ default: m.DesignView })));
-const ShellView = lazy(() => import("./builder/ShellView").then((m) => ({ default: m.ShellView })));
+// Typed even though lazy: without the annotation the component is `any` at this
+// call site and the 1087-key bag literal below goes unchecked — which is how a
+// missing key used to compile into a blank panel.
+const ShellView: ComponentType<{ scope: ShellViewScope }> = lazy(() =>
+  import("./builder/ShellView").then((m) => ({ default: m.ShellView })),
+);
 const ProjectView = lazy(() => import("./builder/ProjectView").then((m) => ({ default: m.ProjectView })));
 const LogicView = lazy(() => import("./builder/LogicView").then((m) => ({ default: m.LogicView })));
 const BuildView = lazy(() => import("./builder/BuildView").then((m) => ({ default: m.BuildView })));
@@ -359,6 +365,7 @@ import type {
   ValidationResult,
   WindowsCertificateInspectionResult,
 } from "./builder/types";
+import type { ShellViewScope } from "./builder/scope-shell";
 
 // Module-scope types, constants and pure helpers live in builder/monolith-module.
 import {

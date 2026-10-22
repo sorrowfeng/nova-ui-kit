@@ -145,6 +145,19 @@ useBuilderBuild()  / useBuilderTasks()  / useBuilderDocks()
 
 **这正是 Phase 2 说的那个收益：白屏这个失败模式从机制上没了。** 以前这三种写法全部编译通过，然后面板空白。
 
+**2·4 才是省行数的那一步。** `ShellView` 原来有两份手工抄写：自己那份 1090 行解构（把名字从袋里取出来），加上四份子视图字面量共 1089 行（再抄一遍塞回去）。现在直接 `scope={scope}` 把袋子递给子视图——`ShellViewScope` 是四个键集的**交集**再并上 ShellView 自己那 146 个名字（941+146=1087，正好是父字面量的大小），交集天然满足每一个成员，所以子视图那份封闭键集照样生效，不用再抄一遍。
+
+抄写的那 838 行解构由 `tsc` 点名删掉（全是 `TS6133`），不是靠正则猜「哪些名字是 shell 自己在用」。`ShellView` 5278 → **3365**。
+
+**但发现了一个更隐蔽的漏洞，并且补上了：`ShellView` 自己也是 `lazy()` 出来的。** 也就是说 `BuilderShowcase` 那份 1087 键的袋子字面量之前根本不被检查——组件是 `any`，prop 无从查起。给 lazy 外面加一层 `ComponentType<{ scope: ShellViewScope }>` 标注（不牺牲代码分割）之后，袋子里少一个键就报：
+
+```
+TS2322: Property 'activeEditorTab' is missing in type '{ … 1084 more … }'
+        but required in type 'ProjectViewScope'.
+```
+
+现在整条链上只有两个真正会出错的地方，而两处都在编译器的管辖内：**袋子被造出来的那一次**，和**每个视图解构的那一次**。
+
 ### Phase 3 — 拆胖视图（长期）
 
 `monolith-module` / `DesignView` / `LogicView` / `ShellView` / `BuilderItemPreview` / `BuildView` 按子面板拆。规则只有一条：**渲染结果必须逐字节等价**——同标签、同嵌套、同 `data-builder-*`、同中文文案。
@@ -184,6 +197,7 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 2·1 | 四个子视图的 scope 全部从 `Record<string, any>` 收成**封闭键集**（Project 108 / Logic 310 / Build 246 / Design 406 键，由各视图自己的解构生成 `builder/scope-*.ts`）。值仍是 `any`，只关门不查值 | **18789** | **18820** |
 | 2·2 | `scope-shell.ts` 在袋边界上给四个视图组件标 `ComponentType<{ scope: XViewScope }>`，`ShellView` 那四份字面量从此也被查。少键、多键、写错键名三种都会编译报错 | **18789** | **18820** |
 | 2·3 | 清掉 `checkingTarget`：没有 setter 的 `useState`，18 处读法全是死分支，连同 `BuildView` 那串永远为假的 `disabled` 条件一起删 | **18783** | **18820** |
+| 2·4 | 子视图直接 `scope={scope}` 收袋子，删掉 `ShellView` 里两份手工抄写（1089 行字面量 + 838 行只为转发而存在的解构）。`ShellViewScope` 改由四个键集的交集派生；给 lazy 出来的 `ShellView` 补上类型标注，让袋子字面量本身也被查 | `ShellView` **3365** | **3365** |
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
