@@ -2728,7 +2728,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           className="absolute left-10 top-7 max-w-[16rem] truncate bg-surface-container-lowest/90 px-1 py-0.5 font-mono text-[0.62rem] tabular-nums text-on-surface-variant backdrop-blur"
                           data-builder-canvas-ruler-coordinate-readout=""
                         >
-                          {canvasRulerSelectionProjection ? canvasRulerSelectionProjection.label : `${Math.round(page.width)} x ${Math.round(page.height)} · grid ${page.gridSize}`}
+                          {canvasRulerSelectionProjection ? canvasRulerSelectionProjection.label : `${Math.round(page.width)} x ${Math.round(page.height)} · 网格 ${page.gridSize}`}
                         </div>
                       </div>
                     ) : null}

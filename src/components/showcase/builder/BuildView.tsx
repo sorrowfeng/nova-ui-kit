@@ -568,7 +568,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           releaseTitlebarStyles.find((style: any) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
                         }`}
                       />
-                      <PathRow label="目标" value={activeProject.releaseConfig.bundleTargets} />
+                      <PathRow label="目标" value={releaseBundleTargets.find((target: any) => target.value === activeProject.releaseConfig.bundleTargets)?.label ?? activeProject.releaseConfig.bundleTargets} />
                     </div>
                     <Button
                       size="sm"
@@ -649,7 +649,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           onClick={() => void bumpActiveReleaseVersion(bump)}
                           disabled={diskBusy}
                         >
-                          {bump}
+                          {({ patch: "补丁", minor: "次版本", major: "主版本" } as Record<string, string>)[bump] ?? bump}
                           <span className="ml-1 min-w-0 truncate font-mono text-[0.66rem] text-on-surface-variant">
                             {bumpReleaseVersion(activeProject.releaseConfig.version, bump)}
                           </span>
@@ -1836,17 +1836,17 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         <span className="shrink-0 rounded-full bg-surface/70 px-2 py-0.5 text-[0.62rem] text-on-surface-variant">Build 页只做配置</span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Kit preset</p>
+                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Kit 预设</p>
                         <p className="mt-1 truncate font-medium text-on-surface">{selectedRailActionPreset?.title ?? "未选择 preset"}</p>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{selectedRailActionPresetStepLabel}</p>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Run target</p>
+                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">运行目标</p>
                         <p className="mt-1 truncate font-medium text-on-surface">{railRunTargetLabel}</p>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{railWindowTargetLabel}</p>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Queue</p>
+                        <p className="text-[0.66rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">队列</p>
                         <p className="mt-1 truncate font-medium text-on-surface">{railQueueSummaryLabel}</p>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">左下角运行、构建、停止和打开输出</p>
                       </div>
@@ -2117,7 +2117,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </Select>
                         <Button size="sm" variant="ghost" data-builder-add-preset-step="" onClick={addActionToCustomPresetDraft}>
                           <Plus aria-hidden className="size-4" />
-                          step
+                          步骤
                         </Button>
                       </div>
                     </div>
@@ -3588,7 +3588,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             <div className="min-w-0">
                               <p className="truncate font-medium text-on-surface">{scope.label}</p>
                               <p className="mt-1 text-[0.68rem] text-on-surface-variant">
-                                {scope.changedCount}/{scope.totalCount} changed
+                                {scope.changedCount}/{scope.totalCount} 已变更
                               </p>
                             </div>
                             <StateBadge

@@ -4727,7 +4727,7 @@ export function BuilderShowcase() {
         : "把光标放在 command、state、module、依赖或函数名上查看上下文文档和跳转动作。",
       location: `logic.rs:${rustEditorSelection.line}:${rustEditorSelection.column}`,
       sourceLine: rustEditorSelection.line,
-      badges: [identifierName ? "普通标识符" : "全局", `${rustCurrentIdentifierOccurrences.length} 处`, "hover doc"],
+      badges: [identifierName ? "普通标识符" : "全局", `${rustCurrentIdentifierOccurrences.length} 处`, "悬停文档"],
     };
   }, [
     activeProject.cargoDependencies,
@@ -6556,8 +6556,8 @@ export function BuilderShowcase() {
     setRightDockTab("properties");
     showProjectJumpFeedback(
       "success",
-      "Component inserted",
-      `${definition.title} was added ${parent ? `inside ${getItemSummary(parent)}` : `to ${activeFile.name}`} and selected for editing in Properties.`,
+      "已插入组件",
+      `${definition.title} 已加入${parent ? ` ${getItemSummary(parent)}` : ` ${activeFile.name}`}，并在属性面板中选中可编辑。`,
     );
   };
 

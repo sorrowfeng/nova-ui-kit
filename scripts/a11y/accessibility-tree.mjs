@@ -94,17 +94,40 @@ const ALLOWED_ASCII = new Set([
   "fn", "impl", "mod", "pub", "mut", "let", "const", "type", "struct", "enum",
   // Short editor/key tokens that never carry prose meaning.
   "ln", "col", "esc", "tab", "alt", "ctrl", "shift", "enter", "space", "cmd",
+  // Wire and domain identifiers the UI prints as data: event names, parameter
+  // types, crate and macro vocabulary. These are the thing named, not prose
+  // about it — "click -> text", "serde · derive", "#[tauri::command]".
+  "click", "slot", "text", "result", "event", "value", "command", "invoke",
+  "handler", "derive", "serde", "pid", "assets", "arg", "args", "payload",
+  "state",
 ]);
 
 export const CHINESE_UI_AUDIT = `(() => {
   const ALLOWED = new Set(${JSON.stringify([...ALLOWED_ASCII])});
-  const KBD_OR_CODE = 'kbd, code, pre, samp';
-  // File names, paths and key chords are technical identifiers, not prose.
+  // Source code rendered in the Rust editor is code the way <pre> is: the
+  // words belong to the program the user is writing, not to Nova's chrome.
+  const KBD_OR_CODE =
+    'kbd, code, pre, samp, [data-builder-rust-signature-help], ' +
+    '[data-builder-rust-syntax-token], [data-builder-rust-minimap]';
+  // File names, paths, macros and key chords are technical identifiers, not
+  // prose. A file name can contain a space ("Main Window.ui"), so the
+  // extension test has to look inside the string, not only at the end.
   const isIdentifier = (text) =>
     /[\\\\/]/.test(text) ||
     /\\.[A-Za-z0-9]{1,16}$/.test(text) ||
+    /\\.[A-Za-z0-9]{1,16}(?![A-Za-z0-9])/.test(text) ||
     /\\+/.test(text) ||
+    /[#@]\\S/.test(text) ||
+    /^[\\[{]/.test(text) ||
+    /:[0-9]+$/.test(text) ||
     /^[A-Za-z][A-Za-z0-9]*([._-][A-Za-z0-9]+)+$/.test(text);
+  // A single token can be code without the whole string being code: camelCase
+  // field names, SCREAMING_CASE enum members, and anything carrying digits.
+  const isIdentifierToken = (token) =>
+    /^[a-z]+[A-Z]/.test(token) ||
+    /_/.test(token) ||
+    /^[A-Z0-9]+$/.test(token) ||
+    /[0-9]/.test(token);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const leftovers = [];
   let node;
@@ -114,6 +137,10 @@ export const CHINESE_UI_AUDIT = `(() => {
     const parent = node.parentElement;
     if (!parent) continue;
     if (parent.closest('script, style, ' + KBD_OR_CODE)) continue;
+    // The component palette names the control being inserted. That is a type
+    // name (Spin Box, Elevated Card) the way QPushButton is, not a sentence —
+    // its description is already Chinese.
+    if (parent.closest('[data-builder-palette-type]')) continue;
     const style = getComputedStyle(parent);
     if (style.display === 'none' || style.visibility === 'hidden') continue;
     // Mixed CJK+ASCII is fine — the Chinese carries the meaning and the ASCII
@@ -123,8 +150,9 @@ export const CHINESE_UI_AUDIT = `(() => {
     const tokens = text.split(/[^A-Za-z]+/).filter(Boolean);
     if (tokens.length === 0) continue;
     // A single leftover word is the common leak ("modules", "checkpoints",
-    // "tracked"). Short tokens are initials and key names, not prose.
-    const proseTokens = tokens.filter((t) => t.length >= 3);
+    // "tracked"). Short tokens are initials and key names, not prose; code
+    // shaped tokens (statusText, TEXT, itemId) are identifiers even when long.
+    const proseTokens = tokens.filter((t) => t.length >= 3 && !isIdentifierToken(t));
     if (proseTokens.length === 0) continue;
     if (proseTokens.every((t) => ALLOWED.has(t.toLowerCase()))) continue;
     // Name the call site the way the density histogram does: the nearest

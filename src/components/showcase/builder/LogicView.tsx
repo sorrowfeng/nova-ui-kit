@@ -3063,7 +3063,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
-                          <span className="truncate font-medium text-on-surface">Rust CodeLens</span>
+                          <span className="truncate font-medium text-on-surface">Rust 代码镜头</span>
                           <StateBadge
                             label={activeRustCommandBindingRows.length > 0 ? `${activeRustCommandBindingRows.length} UI 调用` : "待连接"}
                           />
@@ -5366,7 +5366,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           </div>
                           <Button size="sm" variant="secondary" data-builder-sync-backend-method-sample="" onClick={syncActiveBackendMethodSampleFromSchema}>
                             <Wand2 aria-hidden className="size-3.5" />
-                            Sync sample
+                            同步示例
                           </Button>
                         </div>
                         {activeBackendMethodFields.length ? (

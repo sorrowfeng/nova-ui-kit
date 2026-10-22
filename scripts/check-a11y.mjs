@@ -17,6 +17,7 @@ import {
   findReservedDocumentedShortcuts,
   findReservedShortcutConflicts,
 } from "./a11y/reserved-shortcuts.mjs";
+import { EXPAND_DISCLOSURES } from "./usability/ui-density.mjs";
 
 const root = process.cwd();
 const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -112,6 +113,91 @@ async function focusMarker() {
       .join("|");
     return { tag: el.tagName.toLowerCase(), data, aria: el.getAttribute("aria-label") || "" };
   })()`);
+}
+
+/**
+ * Untranslated English, across the states someone actually works in.
+ *
+ * A single snapshot of the default surface cannot see the inspector (it
+ * mounts only when something is selected), the debugger tabs, or anything
+ * inside a closed disclosure — so it reported "no English" while the workbench
+ * was full of it. The density gate already learned this lesson and measures
+ * collapsed / expanded / selected per workbench; wording has to be held to the
+ * same coverage or checklist 6.7 is a claim, not a check.
+ *
+ * The viewport matters as much as the state: this runs after the 200% scaling
+ * approximation, which leaves the page at 720x480 where every `hidden md:flex`
+ * label is display:none and therefore invisible to the walker below. Reset
+ * first, or the audit is a slice of the UI rather than the UI.
+ */
+async function collectChineseLeftovers() {
+  await send("Emulation.setDeviceMetricsOverride", {
+    width: 1440,
+    height: 960,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await delay(600);
+
+  const SELECTABLE =
+    "[data-builder-density-root] [data-builder-node-id], [data-builder-density-root] [data-builder-project-tree-node]";
+  const countSelectable = `(() => {
+    const root = document.querySelector("[data-builder-density-root]");
+    if (!root) return { nodes: 0, treeRows: 0 };
+    return {
+      nodes: root.querySelectorAll("[data-builder-node-id]").length,
+      treeRows: root.querySelectorAll("[data-builder-project-tree-node]").length,
+    };
+  })()`;
+
+  const seen = new Map();
+  for (const mode of ["project", "design", "logic", "build"]) {
+    await clickCenter(`[data-builder-mode-button="${mode}"]`);
+    await delay(1200);
+    const scope = await evalJs(
+      `document.querySelector("[data-builder-density-root]")?.getAttribute("data-builder-density-root")`,
+    );
+    if (scope !== mode) {
+      throw new Error(`chinese-ui audit: density scope is "${scope}" after clicking ${mode}`);
+    }
+
+    for (const state of ["collapsed", "expanded", "selected"]) {
+      if (state !== "collapsed") {
+        await evalJs(EXPAND_DISCLOSURES);
+        await delay(400);
+      }
+      if (state === "selected") {
+        // Same seeding rule as the density gate: a canvas node, else a project
+        // tree row, else one control from the palette — which is what a user
+        // does in the first minute and what mounts the inspector.
+        let selectable = await evalJs(countSelectable);
+        if (!selectable.nodes && !selectable.treeRows) {
+          const canSeed = await evalJs(
+            `Boolean(document.querySelector("[data-builder-density-root] [data-builder-component-kit-insert]"))`,
+          );
+          if (!canSeed) continue;
+          await clickCenter(`[data-builder-density-root] [data-builder-component-kit-insert]`);
+          await delay(800);
+          selectable = await evalJs(countSelectable);
+          if (!selectable.nodes && !selectable.treeRows) continue;
+        }
+        await clickCenter(SELECTABLE);
+        await delay(600);
+        await evalJs(EXPAND_DISCLOSURES);
+        await delay(400);
+      }
+
+      const found = await evalJs(CHINESE_UI_AUDIT);
+      for (const item of found.leftovers ?? []) {
+        const key = item.text + "|" + (item.hook || "");
+        if (!seen.has(key)) seen.set(key, { ...item, where: [] });
+        seen.get(key).where.push(`${mode}/${state}`);
+      }
+    }
+  }
+
+  const leftovers = [...seen.values()];
+  return { leftoverCount: leftovers.length, leftovers };
 }
 
 /** Name + focus-ring assertions that every audited surface must clear. */
@@ -498,13 +584,18 @@ async function main() {
       "accessibility tree exposes a live region for status announcements (checklist 6.4 / 6.6)",
       `live=${ax.liveRegionCount}`,
     );
-    const phrasing = await evalJs(CHINESE_UI_AUDIT);
+    const phrasing = await collectChineseLeftovers();
     check(
       phrasing.leftoverCount === 0,
       "Chinese UI has no untranslated English labels (checklist 6.7)",
       phrasing.leftoverCount
         ? `${phrasing.leftoverCount}:\n` +
-          phrasing.leftovers.map((l) => `      <${l.tag}> ${l.text}${l.hook ? `  @${l.hook}` : ""}`).join("\n")
+          phrasing.leftovers
+            .map(
+              (l) =>
+                `      <${l.tag}> ${l.text}${l.hook ? `  @${l.hook}` : ""}  [${(l.where || []).slice(0, 3).join(", ")}]`,
+            )
+            .join("\n")
         : "",
     );
   } finally {

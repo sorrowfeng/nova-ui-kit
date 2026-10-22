@@ -96,7 +96,7 @@ export function projectTemplateById(id: ProjectTemplateId) {
   return projectTemplates.find((template) => template.id === id) ?? projectTemplates[0];
 }
 
-export function createBlankFile(name = "Main Window.ui", pagePatch: Partial<PageConfig> = {}, defaultPage: PageConfig): DesignerFile {
+export function createBlankFile(name = "主窗口.ui", pagePatch: Partial<PageConfig> = {}, defaultPage: PageConfig): DesignerFile {
   const now = new Date().toISOString();
   const pageTitle = name.replace(/\.ui$/i, "") || "未命名界面";
   return {
@@ -362,6 +362,6 @@ export function createProjectTemplateSeed(templateId: ProjectTemplateId, options
     description: "空白本地 Nova UI 编辑器项目。",
     rustCommands,
     stateVariables,
-    files: [createBlankFile("Main Window.ui", {}, options.defaultPage)],
+    files: [createBlankFile("主窗口.ui", {}, options.defaultPage)],
   };
 }
