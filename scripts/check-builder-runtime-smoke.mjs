@@ -26,6 +26,7 @@ let devtoolsSocket = null;
 let userDataDir = "";
 let shuttingDown = false;
 let viteOutput = "";
+let parityReport = null;
 
 const smokeTimeout = setTimeout(() => {
   fail("timed out after 150 seconds");
@@ -5951,6 +5952,55 @@ async function runShellCommandPlacementChecks(send, verified) {
     `document.querySelector("[data-builder-build-quality-dock]")?.hasAttribute("open") === true`,
     "expanded build quality dock",
   );
+  // Read the product's own Qt Creator parity verdict while the panel is up.
+  // Reported, not asserted: the smoke's job is "does the surface exist", and a
+  // score floor would turn a product backlog into a red build. But a score
+  // nobody prints is a score nobody acts on.
+  // score/total are attributes ON the panel, not on a descendant. severity is
+  // -state. title is the truncate <p> in the middle grid column — row.textContent
+  // concatenates requirement + state label + title + detail into one string.
+  parityReport = await evaluate(
+    send,
+    `(() => {
+      const panel = document.querySelector("[data-builder-qt-creator-parity-panel]");
+      if (!panel) return { missing: true };
+      const rows = Array.from(panel.querySelectorAll("[data-builder-qt-creator-parity-item]"));
+      return {
+        score: panel.getAttribute("data-builder-qt-creator-parity-score") ?? "",
+        total: panel.getAttribute("data-builder-qt-creator-parity-total") ?? "",
+        rows: rows.map((row) => ({
+          requirement: row.getAttribute("data-builder-qt-creator-parity-item") ?? row.querySelector("[data-builder-qt-creator-parity-requirement]")?.textContent?.trim() ?? "",
+          severity: row.getAttribute("data-builder-qt-creator-parity-state") ?? "",
+          title: row.querySelector("p.truncate")?.textContent?.trim() ?? "",
+        })),
+      };
+    })()`,
+  );
+  // A measurement that silently returns empty is a check that cannot lose. The
+  // score floor is reported, not asserted — but the capture itself is asserted.
+  // Checked on the Node side: injecting the report back into a page template
+  // literal would break on a backtick or ${ in the product copy.
+  const parityRows = parityReport?.rows ?? [];
+  const parityBlank = parityRows.filter((row) => !row.requirement || !row.severity || !row.title).length;
+  const parityScore = Number(parityReport?.score);
+  const parityTotal = Number(parityReport?.total);
+  const parityCaptureOk =
+    parityReport != null &&
+    parityReport.missing !== true &&
+    Number.isFinite(parityScore) &&
+    parityScore >= 0 &&
+    parityScore <= 100 &&
+    Number.isInteger(parityTotal) &&
+    parityTotal > 0 &&
+    parityRows.length === parityTotal &&
+    parityBlank === 0;
+  await assertRuntimeCheck(
+    send,
+    `(() => ({ passed: ${parityCaptureOk ? "true" : "false"}, detail: ${JSON.stringify(
+      `score=${parityReport?.score ?? "missing"}, total=${parityReport?.total ?? "missing"}, rows=${parityRows.length}, blank=${parityBlank}`,
+    )} }))()`,
+    "qt creator parity verdict is readable",
+  );
   await assertRuntimeCheck(
     send,
     `(() => {
@@ -6571,6 +6621,20 @@ try {
   console.log(
       `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, layoutActionbarPixelBudget=${verified.layoutActionbarPixelBudgetRuntime}, layoutCanvasControlsPixel=${verified.layoutCanvasControlsPixelRuntime}, layoutDockClip=${verified.layoutDockClipRuntime}, layoutDockStatusBarClearance=${verified.layoutDockStatusBarClearanceRuntime}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteCategoryDisclosureRuntime=${verified.componentPaletteCategoryDisclosureRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicRustToolbarCompactRuntime=${verified.logicRustToolbarCompactRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, desktopRuntimeConsoleCollapsedRuntime=${verified.desktopRuntimeConsoleCollapsedRuntime}, buildLogCollapsedRuntime=${verified.buildLogCollapsedRuntime}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
   );
+  if (parityReport && !parityReport.missing) {
+    console.log(
+      `[builder-smoke] qt-creator parity ${parityReport.score}% of ${parityReport.total}: ` +
+        (parityReport.rows || [])
+          .map((row) => `${row.requirement}:${row.severity || "?"}`)
+          .join(" "),
+    );
+    const notPassing = (parityReport.rows || []).filter((row) => row.severity !== "pass");
+    for (const row of notPassing) {
+      console.log(`[builder-smoke]   parity ${row.requirement} ${row.severity}: ${row.title}`);
+    }
+  } else {
+    console.log(`[builder-smoke] qt-creator parity panel not captured`);
+  }
   // A flag that never got set prints `false` and still left the run green — the
   // same way a density probe reporting "0 chips" once passed for a crashed
   // workbench. Workflow gates must reach the core surfaces. The layout suite is
