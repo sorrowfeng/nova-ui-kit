@@ -32,7 +32,6 @@ const CEILINGS = {
   "BuildView.tsx": 4769,
   "component-palette.ts": 2534,
   "ProjectView.tsx": 2321,
-  "editor-experience-audit.ts": 938,
   "types-project.ts": 923,
   "SelectionActionBar.tsx": 882,
   "change-impact.ts": 820,
