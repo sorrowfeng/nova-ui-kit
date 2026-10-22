@@ -1972,9 +1972,11 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             {logicWorkflowRow.command ? ` -> ${sanitizeRustCommandName(logicWorkflowRow.command.name)}` : " -> Rust command"}
                           </p>
                         </div>
-                        <Badge variant="outline" className="shrink-0">
-                          {logicWorkflowSteps.filter((step: any) => !step.disabled && step.tone !== "muted").length}/{logicWorkflowSteps.length}
-                        </Badge>
+                        <CountReadout
+                          className="shrink-0"
+                          label={`${logicWorkflowSteps.filter((step: any) => !step.disabled && step.tone !== "muted").length}/${logicWorkflowSteps.length}`}
+                          count={logicWorkflowSteps.filter((step: any) => !step.disabled && step.tone !== "muted").length}
+                        />
                       </div>
                       <div className="grid gap-2 lg:grid-cols-4" data-builder-logic-flow-nodes="" role="list" aria-label="当前逻辑链路">
                         {logicWorkflowNodes.map((node: any, index: any) => {
@@ -2557,9 +2559,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-medium text-on-surface">{rustEditorContextTitle}</span>
-                        <Badge variant={rustCursorSignalSlotRow ? "secondary" : "outline"}>
-                          {rustCursorSignalSlotRow ? "UI 槽" : rustCursorOutlineEntry ? "Rust" : "全局"}
-                        </Badge>
+                        <StateLabel label={rustCursorSignalSlotRow ? "UI 槽" : rustCursorOutlineEntry ? "Rust" : "全局"} />
                         <span className="text-[0.68rem] text-on-surface-variant">
                           {activeRustCompletion ? `补全 ${activeRustCompletion.kind}` : "Ctrl+Space"}
                         </span>
@@ -2822,15 +2822,9 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
                           <h3 className="truncate text-sm font-semibold text-on-surface">当前 Rust Command</h3>
-                          <Badge variant="secondary" className="font-mono">
-                            {sanitizeRustCommandName(activeRustCommand.name)}
-                          </Badge>
-                          <Badge variant={activeRustCommandSlotState === "located" ? "outline" : "destructive"}>
-                            {activeRustCommandSlotLocationLabel}
-                          </Badge>
-                          <Badge variant={activeRustCommandBindingRows.length > 0 ? "secondary" : "outline"}>
-                            {activeRustCommandBindingRows.length} UI 调用
-                          </Badge>
+                          <StateLabel className="font-mono" label={sanitizeRustCommandName(activeRustCommand.name)} />
+                          <StateLabel label={activeRustCommandSlotLocationLabel} />
+                          <CountReadout label={`${activeRustCommandBindingRows.length} UI 调用`} count={activeRustCommandBindingRows.length} />
                         </div>
                         <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">
                           {activeRustCommandPrimaryCaller
@@ -2972,12 +2966,12 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <CornerDownRight aria-hidden className="size-4" />
                         </span>
                         <h3 className="truncate text-sm font-semibold text-on-surface">Rust Command 源码检查器</h3>
-                        <Badge variant={activeRustCommandSlotState === "located" ? "secondary" : "destructive"}>
-                          {activeRustCommandSourceRangeLabel}
-                        </Badge>
-                        <Badge variant={activeRustCommandBindingRows.length > 0 ? "outline" : "secondary"} data-builder-rust-command-source-inspector-caller-count="">
-                          {activeRustCommandBindingRows.length} 调用
-                        </Badge>
+                        <StateLabel label={activeRustCommandSourceRangeLabel} />
+                        <CountReadout
+                          label={`${activeRustCommandBindingRows.length} 调用`}
+                          count={activeRustCommandBindingRows.length}
+                          data-builder-rust-command-source-inspector-caller-count=""
+                        />
                       </div>
                       <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">
                         把当前命令的 invoke 名称、logic.rs 位置、UI 调用者和返回回写放在同一个可操作面板里，方便从逻辑页直接完成跳转、运行和映射检查。
@@ -3216,9 +3210,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-medium text-on-surface">{rustEditorHoverDoc.title}</h3>
-                        <Badge variant="outline" className="font-mono" data-builder-rust-hover-location="">
-                          {rustEditorHoverDoc.location}
-                        </Badge>
+                        <StateLabel className="font-mono" label={rustEditorHoverDoc.location} data-builder-rust-hover-location="" />
                       </div>
                       <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{rustEditorHoverDoc.detail}</p>
                       <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
@@ -3302,9 +3294,10 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="flex min-w-0 items-center gap-2">
                       <Search aria-hidden className="size-4 shrink-0 text-primary" />
                       <span className="truncate font-medium text-on-surface">当前符号引用</span>
-                      <Badge variant={rustCurrentIdentifierReferences.length > 1 ? "secondary" : "outline"}>
-                        {rustCurrentIdentifier ? `${rustCurrentIdentifier.name} · ${rustCurrentIdentifierReferences.length} 处` : "未选中"}
-                      </Badge>
+                      <StateBadge
+                        label={rustCurrentIdentifier ? `${rustCurrentIdentifier.name} · ${rustCurrentIdentifierReferences.length} 处` : "未选中"}
+                        signal={!rustCurrentIdentifier}
+                      />
                     </div>
                     <span className="hidden min-w-0 truncate text-[0.68rem] text-on-surface-variant md:block">
                       点击引用可选中源码中的具体标识符
@@ -3370,9 +3363,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="flex min-w-0 items-center gap-2">
                       <Wand2 aria-hidden className="size-4 shrink-0 text-primary" />
                       <span className="truncate font-medium text-on-surface">Rust 快速修复</span>
-                      <Badge variant={missingRustSlotCount > 0 || editableRustDiagnosticQuickFixes.length > 0 ? "outline" : "secondary"}>
-                        {actionableRustQuickFixCount} 项可用
-                      </Badge>
+                      <CountReadout label={`${actionableRustQuickFixCount} 项可用`} count={actionableRustQuickFixCount} />
                     </div>
                     <span className="hidden truncate text-[0.68rem] text-on-surface-variant md:block">
                       槽函数、诊断、格式化和常用代码动作集中处理
@@ -3436,15 +3427,9 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span className="truncate font-mono font-medium text-on-surface">{rustSignatureHelp.signature}</span>
-                        <Badge variant={rustSignatureHelp.source === "cursor-slot" ? "secondary" : "outline"}>
-                          {rustSignatureHelp.source === "cursor-slot" ? "光标槽函数" : "当前命令"}
-                        </Badge>
-                        <Badge variant="outline" data-builder-rust-signature-result="">
-                          {rustSignatureHelp.resultSummary}
-                        </Badge>
-                        <Badge variant={rustSignatureHelp.bindingCount > 0 ? "secondary" : "outline"}>
-                          {rustSignatureHelp.bindingCount} UI 调用
-                        </Badge>
+                        <StateLabel label={rustSignatureHelp.source === "cursor-slot" ? "光标槽函数" : "当前命令"} />
+                        <StateLabel label={rustSignatureHelp.resultSummary} data-builder-rust-signature-result="" />
+                        <CountReadout label={`${rustSignatureHelp.bindingCount} UI 调用`} count={rustSignatureHelp.bindingCount} />
                       </div>
                       <div className="mt-2 flex min-w-0 gap-1.5 overflow-x-auto pb-0.5">
                         {rustSignatureHelp.parameters.length > 0 ? (
@@ -3499,9 +3484,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <div className="flex min-w-0 items-center gap-2 pr-1">
                     <Braces aria-hidden className="size-4 shrink-0 text-primary" />
                     <span className="truncate font-medium text-on-surface">语法高亮</span>
-                    <Badge variant={rustSyntaxHighlightVisible ? "secondary" : "outline"} className="shrink-0">
-                      {rustSyntaxHighlightVisible ? "开启" : "纯文本"}
-                    </Badge>
+                    <StateLabel className="shrink-0" label={rustSyntaxHighlightVisible ? "开启" : "纯文本"} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                     {rustSyntaxLegendItems.map((item: any) => (
@@ -3724,9 +3707,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                       {completion.targetLine ? ` · Ln ${completion.targetLine}` : ""}
                                     </span>
                                   </span>
-                                  <Badge variant={active ? "secondary" : "outline"} className="shrink-0">
-                                    {completion.kind}
-                                  </Badge>
+                                  <StateLabel className="shrink-0" label={completion.kind} />
                                 </button>
                               );
                             })}
@@ -4596,9 +4577,10 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-medium text-on-surface">命令调用关系</h3>
-                        <Badge variant={activeRustCommandBindingRows.length > 0 ? "secondary" : "outline"}>
-                          {activeRustCommandBindingRows.length > 0 ? `${activeRustCommandBindingRows.length} 个 UI 调用` : "未使用"}
-                        </Badge>
+                        <StateBadge
+                          label={activeRustCommandBindingRows.length > 0 ? `${activeRustCommandBindingRows.length} 个 UI 调用` : "未使用"}
+                          signal={activeRustCommandBindingRows.length === 0}
+                        />
                       </div>
                       <p className="mt-1 leading-5 text-on-surface-variant">
                         当前 <span className="font-mono text-on-surface">{sanitizeRustCommandName(activeRustCommand.name)}</span> 会从这些控件事件通过 Tauri invoke 调用。
@@ -5221,9 +5203,11 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     {activeBackendArtifactInspection ? (
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={backendArtifactStatusVariant(activeBackendArtifactInspection)}>
-                            {backendArtifactInspectionStatusLabel(activeBackendArtifactInspection.status)}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            variant={backendArtifactStatusVariant(activeBackendArtifactInspection)}
+                            label={backendArtifactInspectionStatusLabel(activeBackendArtifactInspection.status)}
+                          />
                           <span className="text-on-surface-variant">
                             {activeBackendArtifactInspection.exists
                               ? `${activeBackendArtifactInspection.is_dir ? "文件夹" : "文件"} · ${byteSizeLabel(activeBackendArtifactInspection.size_bytes)}`
@@ -5242,9 +5226,11 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         {activeBackendArtifactBuildResult ? (
                           <div className="rounded-lg border border-outline-variant bg-surface-container-low p-2">
                             <div className="mb-1 flex flex-wrap items-center gap-2">
-                              <Badge variant={activeBackendArtifactBuildResult.success ? "secondary" : "destructive"}>
-                                {activeBackendArtifactBuildResult.status}
-                              </Badge>
+                              <StateLabel
+                                showQuiet
+                                variant={activeBackendArtifactBuildResult.success ? "secondary" : "destructive"}
+                                label={String(activeBackendArtifactBuildResult.status)}
+                              />
                               <span className="text-on-surface-variant">{validationTimeLabel(activeBackendArtifactBuildResult.checked_at)}</span>
                             </div>
                             <p className="leading-5 text-on-surface-variant">{activeBackendArtifactBuildResult.summary}</p>

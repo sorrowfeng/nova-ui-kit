@@ -588,9 +588,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <div className="min-w-0 flex-1">
                             <div className="flex min-w-0 items-center gap-2">
                               <p className="truncate text-xs font-semibold text-on-surface">{selectedProjectExplorerNode.label}</p>
-                              <Badge variant="outline" className="shrink-0">
-                                {projectExplorerActionLabel(selectedProjectExplorerNode.action)}
-                              </Badge>
+                              <StateLabel className="shrink-0" label={projectExplorerActionLabel(selectedProjectExplorerNode.action)} />
                             </div>
                             <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">{selectedProjectExplorerNode.detail}</p>
                           </div>
@@ -1054,7 +1052,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               : "暂无快照，适合在大改前保存"}
                           </p>
                         </div>
-                        <Badge variant={activeProjectSnapshots.length > 0 ? "secondary" : "outline"}>{activeProjectSnapshots.length}</Badge>
+                        <CountReadout label={String(activeProjectSnapshots.length)} count={activeProjectSnapshots.length} />
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <Button size="sm" variant="secondary" data-builder-save-project-snapshot="" onClick={() => pushProjectSnapshot("手动快照")}>
@@ -1083,7 +1081,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             {activeProject.rootPath ? ".nova/checkpoints" : "创建后会自动保存项目目录"}
                           </p>
                         </div>
-                        <Badge variant={diskCheckpoints.length > 0 ? "secondary" : "outline"}>{diskCheckpoints.length}</Badge>
+                        <CountReadout label={String(diskCheckpoints.length)} count={diskCheckpoints.length} />
                       </div>
                       <Input
                         inputSize="sm"
@@ -1154,9 +1152,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <p className="truncate text-xs font-medium text-on-surface">恢复摘要</p>
                               <p className="mt-1 text-[0.68rem] leading-4 text-on-surface-variant">{checkpointDiffSummary(checkpointDiff)}</p>
                             </div>
-                            <Badge variant={checkpointDiff.rust_logic_changed || checkpointDiff.changed_files.length > 0 ? "secondary" : "outline"}>
-                              diff
-                            </Badge>
+                            <StateLabel label="差异" />
                           </div>
                           <div className="mt-3 grid grid-cols-5 gap-1 text-center">
                             {[
@@ -1221,7 +1217,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">项目设置 / 发布</h3>
                         <p className="mt-1 text-xs leading-5 text-on-surface-variant">Build 页只负责运行流水线；发布元数据在这里维护。</p>
                       </div>
-                      <Badge variant="outline">设置</Badge>
+                      <StateLabel label="设置" />
                     </div>
                     <Field label="应用名称">
                       <Input
@@ -1426,7 +1422,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </p>
                         </div>
                       </div>
-                      <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} 个已选</Badge>
+                      <CountReadout label={`${selectedIds.length} 个已选`} count={selectedIds.length} />
                     </div>
 
                     <div className="relative">
@@ -2399,7 +2395,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <Switch className="h-5 w-9 border" checked={page.snapToGrid} onCheckedChange={(snapToGrid: any) => updatePage({ snapToGrid })} />
                     </label>
                     <CountReadout label={`${items.length} 个节点`} count={items.length} />
-                    <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} 个已选</Badge>
+                    <CountReadout label={`${selectedIds.length} 个已选`} count={selectedIds.length} />
                   </div>
                     </div>
                   ) : null}
@@ -2613,15 +2609,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <span className="min-w-0">
                             <span className="flex min-w-0 items-center gap-1.5">
                               <span className="truncate font-semibold">{page.title || activeFile.name}</span>
-                              <Badge variant="outline" className="h-5 max-w-[5.75rem] truncate px-1.5 text-[0.6rem]">
-                                {pageWindowKindMeta?.label ?? page.windowKind}
-                              </Badge>
-                              <Badge
-                                variant={page.titlebarStyle === "nova" ? "secondary" : "outline"}
+                              <StateLabel className="h-5 max-w-[5.75rem] truncate px-1.5 text-[0.6rem]" label={pageWindowKindMeta?.label ?? page.windowKind} />
+                              <StateLabel
                                 className="h-5 max-w-[5.75rem] truncate px-1.5 text-[0.6rem]"
-                              >
-                                {pageTitlebarStyleMeta?.label ?? page.titlebarStyle}
-                              </Badge>
+                                label={pageTitlebarStyleMeta?.label ?? page.titlebarStyle}
+                              />
                             </span>
                             <span className="mt-0.5 hidden max-w-[28rem] truncate text-[0.62rem] text-on-surface-variant lg:block">
                               {page.titlebarStyle === "hidden" ? "运行时内容会占满窗口区域" : page.titlebarSubtitle || pageWindowKindMeta?.description}
@@ -3162,18 +3154,15 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
-                        <Badge variant={selectedPropertyIssues.length > 0 ? "outline" : "secondary"}>
-                          {selectedItem ? `${selectedPropertyIssues.length} 个问题` : "页面"}
-                        </Badge>
+                        <StateBadge
+                          label={selectedItem ? `${selectedPropertyIssues.length} 个问题` : "页面"}
+                          signal={selectedItem ? selectedPropertyIssues.length > 0 : false}
+                        />
                         {selectedItem && selectedEventName ? (
-                          <Badge variant={selectedEventCommand ? "secondary" : "outline"}>
-                            {selectedEventCommand ? "事件已绑定" : "事件就绪"}
-                          </Badge>
+                          <StateLabel showQuiet label={selectedEventCommand ? "事件已绑定" : "事件就绪"} />
                         ) : null}
                         {selectedControlReverseDependency ? (
-                          <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
-                            {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
-                          </Badge>
+                          <StateLabel showQuiet variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)} label={reverseDependencyStatusLabel(selectedControlReverseDependency.status)} />
                         ) : null}
                       </div>
                     </div>
@@ -3194,7 +3183,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">下一步</p>
-                      <Badge variant={selectedEventCommand || selectedItems.length > 1 ? "secondary" : "outline"}>{inspectorWorkflowBadge}</Badge>
+                      <StateLabel showQuiet label={inspectorWorkflowBadge} />
                     </div>
                     <div className="space-y-1.5">
                       {inspectorWorkflowSteps.map((step: any, index: any) => {
@@ -3230,12 +3219,12 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <span className="min-w-0 flex-1">
                               <span className="flex min-w-0 items-center gap-2">
                                 <span className="truncate font-medium">{index + 1}. {step.title}</span>
-                                <Badge
-                                  variant={step.tone === "warning" || step.tone === "danger" ? "destructive" : step.tone === "primary" ? "secondary" : "outline"}
+                                <StateLabel
+                                  showQuiet
+                                  variant={step.tone === "warning" || step.tone === "danger" ? "destructive" : "secondary"}
                                   className="hidden shrink-0 sm:inline-flex"
-                                >
-                                  {step.badge}
-                                </Badge>
+                                  label={step.badge}
+                                />
                               </span>
                               <span className="mt-0.5 line-clamp-3 text-[0.68rem] leading-4 text-on-surface-variant">{step.detail}</span>
                             </span>
@@ -3314,10 +3303,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-sm font-semibold">{getItemSummary(selectedItem)}</h3>
                             <StateLabel label={selectedItem.type} />
-                            {selectedItem.locked ? <Badge variant="outline">已锁定</Badge> : null}
-                            <Badge variant={selectedEventCommand ? "secondary" : selectedEventName ? "outline" : "outline"}>
-                              {selectedEventCommand ? "事件已绑定" : selectedEventName ? "事件就绪" : "无事件"}
-                            </Badge>
+                            {selectedItem.locked ? <StateLabel showQuiet label="已锁定" /> : null}
+                            <StateLabel
+                              showQuiet
+                              label={selectedEventCommand ? "事件已绑定" : selectedEventName ? "事件就绪" : "无事件"}
+                            />
                           </div>
                           <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
                             x {Math.round(selectedItem.x)} y {Math.round(selectedItem.y)} · {Math.round(selectedItem.width)} x {Math.round(selectedItem.height)}
@@ -3370,9 +3360,19 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               这些状态会写入生成 exe：禁用会阻止交互，隐藏只在运行态隐藏，只读用于输入类控件。
                             </p>
                           </div>
-                          <Badge variant={selectedRuntimeState?.visible && selectedRuntimeState.enabled ? "secondary" : "outline"} className="shrink-0">
-                            {selectedRuntimeState?.visible === false ? "隐藏" : selectedRuntimeState?.enabled === false ? "禁用" : selectedRuntimeState?.readOnly ? "只读" : "默认"}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            className="shrink-0"
+                            label={
+                              selectedRuntimeState?.visible === false
+                                ? "隐藏"
+                                : selectedRuntimeState?.enabled === false
+                                  ? "禁用"
+                                  : selectedRuntimeState?.readOnly
+                                    ? "只读"
+                                    : "默认"
+                            }
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <label className="flex min-h-9 items-center justify-between gap-3 rounded-xl bg-surface-container-high px-3 py-2 text-xs" data-builder-runtime-state-visible="">
@@ -3415,9 +3415,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               控制真实桌面表单中按 Tab 键时的焦点移动顺序；-1 表示跳过。
                             </p>
                           </div>
-                          <Badge variant={selectedTabOrderEntry ? "secondary" : selectedCanUseTabOrder ? "outline" : "outline"} className="shrink-0">
-                            {selectedTabOrderEntry ? `#${selectedTabOrderPosition}` : selectedCanUseTabOrder ? "跳过" : "不可聚焦"}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            className="shrink-0"
+                            label={selectedTabOrderEntry ? `#${selectedTabOrderPosition}` : selectedCanUseTabOrder ? "跳过" : "不可聚焦"}
+                          />
                         </div>
                         <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1.5">
                           <Input
@@ -3478,18 +3480,12 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">选择工作流</p>
                             <p className="mt-0.5 text-[0.68rem] leading-4 text-on-surface-variant">{selectionStatusDetail}</p>
                           </div>
-                          <Badge
-                            variant={
-                              selectionStatusTone === "attention"
-                                ? "destructive"
-                                : selectionStatusTone === "interactive" || selectionStatusTone === "ready"
-                                  ? "secondary"
-                                  : "outline"
-                            }
+                          <StateLabel
+                            showQuiet
+                            variant={selectionStatusTone === "attention" ? "destructive" : "secondary"}
                             className="shrink-0"
-                          >
-                            {selectionStatusToneLabel}
-                          </Badge>
+                            label={selectionStatusToneLabel}
+                          />
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {inspectorWorkflowSteps.map((step: any, index: any) => {
@@ -3579,13 +3575,18 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 : "没有匹配字段，可改用字段名、标签、类型或当前值。"
                               : `${selectedPropertySchema.length} 个字段 · ${selectedPropertyIssues.length} 个问题`}
                           </span>
-                          <Badge variant={inspectorPropertyQueryActive ? "secondary" : "outline"} className="shrink-0" data-builder-property-search-count="">
-                            {inspectorPropertyQueryActive
-                              ? `${selectedFilteredPropertySchema.length}/${selectedPropertySchema.length}`
-                              : selectedPropertyIssues.length > 0
-                                ? `${selectedPropertyIssues.length} issues`
-                                : "ready"}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            className="shrink-0"
+                            label={
+                              inspectorPropertyQueryActive
+                                ? `${selectedFilteredPropertySchema.length}/${selectedPropertySchema.length}`
+                                : selectedPropertyIssues.length > 0
+                                  ? `${selectedPropertyIssues.length} 个问题`
+                                  : "就绪"
+                            }
+                            data-builder-property-search-count=""
+                          />
                         </div>
                         {inspectorPropertyQueryActive ? (
                           selectedFilteredPropertySchema.length > 0 ? (
@@ -3927,7 +3928,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             {selectedPropertyAutoFixCount > 0 ? (
                               <Button size="sm" variant="secondary" onClick={applySelectedPropertyAutoFix}>
                                 <Wand2 aria-hidden className="size-4" />
-                                Fix {selectedPropertyAutoFixCount}
+                                修复 {selectedPropertyAutoFixCount}
                               </Button>
                             ) : null}
                           </div>
@@ -4053,9 +4054,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <div className="min-w-0">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
                               <span className="truncate font-medium text-on-surface">当前 UI 窗口外壳</span>
-                              <Badge variant={releaseWindowShellMatchesPage ? "secondary" : "outline"}>
-                                {releaseWindowShellMatchesPage ? "已同步" : "独立配置"}
-                              </Badge>
+                              <StateLabel showQuiet label={releaseWindowShellMatchesPage ? "已同步" : "独立配置"} />
                             </div>
                             <p className="mt-1 truncate text-on-surface-variant">
                               {pageWindowKindMeta?.label ?? page.windowKind} / {pageTitlebarStyleMeta?.label ?? page.titlebarStyle} · {Math.round(page.width)} x {Math.round(page.height)}
@@ -4221,7 +4220,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
-                          <Badge variant={simulatorTrace.length > 0 ? "secondary" : "outline"}>{simulatorTrace.length}</Badge>
+                          <CountReadout label={String(simulatorTrace.length)} count={simulatorTrace.length} />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -4426,9 +4425,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               {selectedBatchLayoutSummary.boundsLabel}
                             </p>
                           </div>
-                          <Badge variant={selectedBatchLayoutSummary.distributeReady ? "secondary" : "outline"} data-builder-multi-select-layout-spacing-state="">
-                            {selectedBatchLayoutSummary.spacingLabel}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            label={selectedBatchLayoutSummary.spacingLabel}
+                            data-builder-multi-select-layout-spacing-state=""
+                          />
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-center text-[0.68rem]" data-builder-multi-select-layout-summary="">
                           {[
@@ -4533,9 +4534,10 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">批量状态</p>
                             <p className="mt-1 truncate text-[0.66rem] text-on-surface-variant">锁定、运行态可见、启用和只读会写入生成 exe。</p>
                           </div>
-                          <Badge variant={selectedBatchRuntimeSummary.lockedCount > 0 ? "outline" : "secondary"}>
-                            {selectedBatchRuntimeSummary.lockedCount} locked
-                          </Badge>
+                          <CountReadout
+                            label={`${selectedBatchRuntimeSummary.lockedCount} 个已锁定`}
+                            count={selectedBatchRuntimeSummary.lockedCount}
+                          />
                         </div>
                         <div className="grid grid-cols-2 gap-2" data-builder-multi-select-locks="">
                           <Button size="sm" variant="secondary" onClick={() => setSelectedLockState(true)}>
@@ -4652,7 +4654,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             {selectedPropertyAutoFixCount > 0 ? (
                               <Button size="sm" variant="secondary" onClick={applySelectedPropertyAutoFix}>
                                 <Wand2 aria-hidden className="size-4" />
-                                Fix {selectedPropertyAutoFixCount}
+                                修复 {selectedPropertyAutoFixCount}
                               </Button>
                             ) : null}
                             <Badge
@@ -4721,9 +4723,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">依赖影响</h4>
-                                <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
-                                  {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
-                                </Badge>
+                                <StateLabel
+                                  showQuiet
+                                  variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}
+                                  label={reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
+                                />
                               </div>
                               <p className="mt-1 text-xs leading-5 text-on-surface-variant">{selectedControlReverseDependency.summary}</p>
                             </div>
@@ -5497,9 +5501,9 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">结果路由</h4>
                               <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionOutputSummary}</p>
                             </div>
-                            <Badge variant={selectedEventBinding?.resultTargetItemId || selectedEventBinding?.resultStateId ? "secondary" : "outline"}>
-                              {selectedEventCommand ? commandResultSchema(selectedEventCommand).mode : "none"}
-                            </Badge>
+                            <StateLabel
+                              label={selectedEventCommand ? commandResultSchema(selectedEventCommand).mode : "none"}
+                            />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <Field label="目标">
