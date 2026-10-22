@@ -75,6 +75,15 @@ linux.deb/appimage、macOS minimumSystemVersion、webviewInstallMode），已挂
 
 见 `docs/release-pipeline.md`：artifact-only / write-script / vm-handoff 三档。
 
+`build.yml` 与 `release.yml` 对三个平台都执行「产出 → 校验 → **装上并启动**」，
+不只验证文件存在：
+
+| 平台 | 安装 | 启动存活判据 |
+|------|------|-------------|
+| Linux | `dpkg -i` 后 `ldd` 无缺库 | `xvfb` 下 10s 后进程仍在 |
+| macOS | `hdiutil attach` 后 `otool -L` 无缺库 | 挂载卷内启动，10s 后仍在 |
+| Windows | `check:desktop-exe`（GUI 子系统、标题、最大化） | `Start-Process` 后 15s 后仍在 |
+
 ```bash
 npm run verify:desktop
 npm run check:desktop-exe

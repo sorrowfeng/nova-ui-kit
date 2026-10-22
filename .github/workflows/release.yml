@@ -95,6 +95,23 @@ jobs:
           mkdir -p artifacts/windows
           cp src-tauri/target/release/nova-ui-kit.exe artifacts/windows/
           node scripts/verify-release-artifacts.mjs --dir artifacts/windows --platform windows
+          npm run check:desktop-exe
+
+      # Linux and macOS publish only after install+launch proved the artifact
+      # runs on the host that built it. Windows gets the same bar.
+      - name: Launch the exe
+        shell: pwsh
+        run: |
+          $exe = "src-tauri/target/release/nova-ui-kit.exe"
+          Write-Host "launching $exe"
+          $proc = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 15
+          if (-not (Get-Process -Id $proc.Id -ErrorAction SilentlyContinue)) {
+            Write-Host "the exe exited during startup"
+            exit 1
+          }
+          Write-Host "nova-ui-kit still running after 15s (pid $($proc.Id))"
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 
       - name: Upload exe
         uses: actions/upload-artifact@v4

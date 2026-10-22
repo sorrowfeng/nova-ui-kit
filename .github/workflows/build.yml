@@ -75,6 +75,28 @@ jobs:
       - name: Build Tauri exe
         run: npm run tauri:exe
 
+      - name: Smoke the exe
+        run: npm run check:desktop-exe
+
+      # The Windows exe is the artifact people actually double-click. Building
+      # it is not the same as proving it opens, so start it and require it to
+      # still be running once the WebView has had time to come up.
+      - name: Launch the exe
+        shell: pwsh
+        run: |
+          $exe = "src-tauri/target/release/nova-ui-kit.exe"
+          if (-not (Test-Path $exe)) { throw "missing $exe" }
+          Write-Host "launching $exe"
+          $proc = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 15
+          $alive = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
+          if (-not $alive) {
+            Write-Host "the exe exited during startup"
+            exit 1
+          }
+          Write-Host "nova-ui-kit still running after 15s (pid $($proc.Id))"
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+
       - name: Rust unit tests (windows)
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
