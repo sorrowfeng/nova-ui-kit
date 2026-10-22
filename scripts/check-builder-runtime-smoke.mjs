@@ -4,6 +4,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { freePort } from "./usable-port.mjs";
 
 const root = process.cwd();
 const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -108,17 +109,8 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function freePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      const port = typeof address === "object" && address ? address.port : 0;
-      server.close(() => resolve(port));
-    });
-  });
-}
+// freePort comes from ./usable-port.mjs — the OS will hand out ports the fetch
+// spec forbids, and those fail as "bad port" against a server that is up.
 
 async function waitForHttp(url, label, timeoutMs = 20000) {
   const start = Date.now();
