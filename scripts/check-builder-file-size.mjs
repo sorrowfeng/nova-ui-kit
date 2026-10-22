@@ -28,6 +28,9 @@ const HOUSE_MAX_LINES = 800; // ~/.claude/rules/common/coding-style.md
  * 8631 -> 8632 seeding a new project's release window shell from its page:
  * one `releaseWindowShellFromPage` import and the createProject call site.
  * The helper itself lives in release.ts — the monolith only pays for the call.
+ * BuildView went 4774 -> 4779 showing the unverified count beside the audit
+ * summary and the parity chips (a fifth summary tile and a fourth chip): the
+ * product now says how many checks could not run, so the tile has to exist.
  *
  * `check:builder-file-size` fails on a missing entry's file and on any file
  * above its ceiling.
@@ -38,7 +41,7 @@ const CEILINGS = {
   "LogicView.tsx": 5713,
   "ShellView.tsx": 3365,
   "BuilderItemPreview.tsx": 4844,
-  "BuildView.tsx": 4774,
+  "BuildView.tsx": 4779,
   "component-palette.ts": 2534,
   "ProjectView.tsx": 2321,
   "types-project.ts": 923,

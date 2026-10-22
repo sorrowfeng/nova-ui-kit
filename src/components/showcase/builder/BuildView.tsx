@@ -1597,7 +1597,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </Button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs" data-builder-experience-audit-summary="">
+                  <div className="grid grid-cols-5 gap-2 text-center text-xs" data-builder-experience-audit-summary="">
                     <div className="rounded-2xl bg-surface-container-high p-2">
                       <p className="font-medium text-on-surface">{editorExperienceAuditStats.score}%</p>
                       <p className="mt-1 text-[0.68rem] text-on-surface-variant">评分</p>
@@ -1605,6 +1605,10 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <div className="rounded-2xl bg-surface-container-high p-2">
                       <p className="font-medium text-primary">{editorExperienceAuditStats.passCount}</p>
                       <p className="mt-1 text-[0.68rem] text-on-surface-variant">通过</p>
+                    </div>
+                    <div className="rounded-2xl bg-surface-container-high p-2" data-builder-experience-audit-unverified="">
+                      <p className="font-medium text-on-surface">{editorExperienceAuditStats.unverifiedCount}</p>
+                      <p className="mt-1 text-[0.68rem] text-on-surface-variant">待验证</p>
                     </div>
                     <div className="rounded-2xl bg-surface-container-high p-2">
                       <p className="font-medium text-on-surface">{editorExperienceAuditStats.warningCount}</p>
@@ -1630,12 +1634,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           </span>
                         </div>
                         <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
-                          把最初 19 条问题逐条映射到当前可验证的编辑器能力，便于继续发现真正薄弱的地方。
+                          把最初 19 条问题逐条映射到可验证的编辑器能力。待验证表示检查条件尚不具备（未选中、光标不在符号内、尚未构建），不是缺口。
                         </p>
                       </div>
-                      <div className="grid grid-cols-3 gap-1 text-center text-[0.68rem]">
+                      <div className="grid grid-cols-4 gap-1 text-center text-[0.68rem]">
                         <span className="rounded-full bg-surface-container-low px-2 py-1 text-primary">{qtCreatorParityStats.passCount} 通过</span>
-                        <span className="rounded-full bg-surface-container-low px-2 py-1 text-on-surface-variant">{qtCreatorParityStats.warningCount} 复核</span>
+                        <span className="rounded-full bg-surface-container-low px-2 py-1 text-on-surface-variant" data-builder-qt-creator-parity-unverified="">{qtCreatorParityStats.unverifiedCount} 待验证</span>
+                        <span className="rounded-full bg-surface-container-low px-2 py-1 text-on-surface-variant">{qtCreatorParityStats.warningCount} 提醒</span>
                         <span className="rounded-full bg-surface-container-low px-2 py-1 text-destructive">{qtCreatorParityStats.failCount} 阻塞</span>
                       </div>
                     </div>

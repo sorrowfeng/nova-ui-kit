@@ -99,7 +99,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "selection-same-type",
       title: "同类控件快速选择",
-      severity: s.items.length > 0 ? "pass" : "warning",
+      severity: s.items.length > 0 ? "pass" : "unverified",
       detail: s.selectedSameTypeAnchor
         ? `当前锚点 ${getDefinition(s.selectedSameTypeAnchor.type).title} 可一键选出 ${s.selectedSameTypeCount} 个同类控件。`
         : "选中一个控件后，可通过 Ctrl+Shift+A、选择栏或右键菜单选出同类型控件。",
@@ -107,7 +107,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "selection-invert",
       title: "反选选择集",
-      severity: s.items.length > 0 ? "pass" : "warning",
+      severity: s.items.length > 0 ? "pass" : "unverified",
       detail:
         s.selectedIds.length > 0
           ? `当前已选 ${s.selectedIds.length} 个控件，可用 Ctrl+I 快速切换到剩余 ${Math.max(0, s.items.length - s.selectedIds.length)} 个控件。`
@@ -116,7 +116,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "multi-select-inspector",
       title: "多选批量检查器",
-      severity: s.selectedItems.length > 1 ? "pass" : "warning",
+      severity: s.selectedItems.length > 1 ? "pass" : "unverified",
       detail:
         s.selectedItems.length > 1
           ? `${s.selectedItems.length} 个控件可批量编辑尺寸、锁定、运行态可见、启用和只读状态。`
@@ -212,7 +212,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "tab-order-editor",
       title: "Tab 顺序编辑",
-      severity: s.focusableTabOrderItems.length > 0 ? "pass" : "warning",
+      severity: s.focusableTabOrderItems.length > 0 ? "pass" : "unverified",
       detail: s.focusableTabOrderItems.length > 0
         ? `${s.focusableTabOrderItems.length} 个可聚焦控件可用覆盖层、右键菜单、属性面板和 Ctrl+Alt+T 管理 Tab 顺序。`
         : "添加按钮、输入框、选择框等交互控件后，可配置桌面表单键盘焦点顺序。",
@@ -220,7 +220,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "runtime-state-editor",
       title: "控件运行状态",
-      severity: s.focusableTabOrderItems.length > 0 ? "pass" : "warning",
+      severity: s.focusableTabOrderItems.length > 0 ? "pass" : "unverified",
       detail: runtimeStateControlCount > 0
         ? `${runtimeStateControlCount} 个控件配置了隐藏、禁用或只读状态，并会同步到生成 exe。`
         : "属性面板可为交互控件设置运行态可见、启用和只读状态。",
@@ -228,7 +228,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "canvas-context-runtime-state",
       title: "右键运行态切换",
-      severity: s.items.length > 0 ? "pass" : "warning",
+      severity: s.items.length > 0 ? "pass" : "unverified",
       detail:
         s.selectedItems.length > 0
           ? `右键菜单可切换 ${s.selectedItems.length} 个选中控件的运行态可见、交互启用和输入只读；当前 ${s.selectedBatchRuntimeSummary.visibleCount}/${s.selectedItems.length} 可见。`
@@ -237,7 +237,7 @@ export function buildSurfaceAuditItems(s: Record<string, any>): EditorExperience
     {
       id: "navigator-visibility-locks",
       title: "对象树可见性与锁定",
-      severity: s.items.length > 0 ? "pass" : "warning",
+      severity: s.items.length > 0 ? "pass" : "unverified",
       detail: navigatorManagedStateCount > 0
         ? `${navigatorManagedStateCount} 个控件在对象树中带有隐藏或锁定状态，可从 Navigator 直接切换。`
         : "Navigator 和对象树行可直接切换运行态可见性与锁定状态，便于找回隐藏控件并保护布局。",

@@ -1250,7 +1250,7 @@ export type EditorWorkflowStep = {
   actions: ProjectJumpActionId[];
 };
 
-export type EditorExperienceAuditSeverity = "pass" | "warning" | "fail";
+export type EditorExperienceAuditSeverity = import("./status-labels").EditorExperienceAuditSeverity;
 export type EditorExperienceAuditFilter = "all" | EditorExperienceAuditSeverity;
 
 export type EditorExperienceAuditItem = {

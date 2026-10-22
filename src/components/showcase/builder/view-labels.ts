@@ -100,8 +100,14 @@ const SIGNAL_STATE_SUFFIXES = ["中"];
  * what a panel says when nobody supplied a status — painting it as a signal
  * would turn a missing label into a red call to act, and the `未` fragment
  * below would otherwise read it as "not yet".
+ *
+ * "待验证" is the same trap with a different fragment: the `待` in
+ * SIGNAL_STATE_FRAGMENTS reads it as unfinished work and the word says the
+ * opposite — the check could not run, so there is nothing to act on yet.
+ * Classifying it as a signal put 19 decoration chips on the build workbench
+ * and failed the density budget for an empty canvas.
  */
-export const READOUT_STATE_LABELS: ReadonlySet<string> = new Set(["未知"]);
+export const READOUT_STATE_LABELS: ReadonlySet<string> = new Set(["未知", "待验证"]);
 
 export function isSignalStateLabel(label: string): boolean {
   const trimmed = label.trim();

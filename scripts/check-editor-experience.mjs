@@ -1558,7 +1558,23 @@ mustContain(builder, 'data-builder-build-assist-dock-density="collapsed-summary"
 mustContain(builder, 'data-builder-build-assist-dock-summary="single-row"', "Build assist dock summary stays one row");
 mustContain(builder, 'data-builder-build-assist-dock-details="deferred"', "Build assist dock defers secondary actions until expanded");
 mustContain(builder, "data-builder-experience-audit-panel", "Build page exposes a persistent editor experience audit panel");
-mustContain(builder, "data-builder-experience-audit-summary", "Experience audit panel summarizes pass, warning, and blocking counts");
+mustContain(builder, "data-builder-experience-audit-summary", "Experience audit panel summarizes pass, unverified, warning, and blocking counts");
+mustContain(builder, "data-builder-experience-audit-unverified", "Experience audit panel exposes how many checks could not run");
+mustContain(
+  builder,
+  'EditorExperienceAuditSeverity = "pass" | "unverified" | "warning" | "fail"',
+  "Audit severity distinguishes a check that could not run from one that fell short",
+);
+mustContain(
+  builder,
+  'severity: s.selectedItems.length > 1 ? "pass" : "unverified"',
+  "An unselected canvas is not reported as a multi-select capability gap",
+);
+mustContain(
+  builder,
+  'severity: logicFlowBoardReady ? (logicFlowBoardComplete ? "pass" : "warning") : "unverified"',
+  "A chain that cannot be inspected is not a broken chain",
+);
 mustContain(builder, "data-builder-experience-audit-item", "Experience audit panel renders concrete quality checks");
 mustContain(builder, "type EditorExperienceAuditFilter", "Experience audit panel models filter state explicitly");
 mustContain(builder, "filteredEditorExperienceAuditItems", "Experience audit panel derives a filtered audit list");
@@ -1574,6 +1590,7 @@ mustContain(builder, "qtCreatorParityItems", "Build page derives a Qt Creator pa
 mustContain(builder, "data-builder-qt-creator-parity-panel", "Experience audit panel exposes the Qt Creator parity matrix");
 mustContain(builder, "data-builder-qt-creator-parity-total", "Qt Creator parity matrix exposes total requirement count");
 mustContain(builder, "data-builder-qt-creator-parity-score", "Qt Creator parity matrix exposes aggregate score");
+mustContain(builder, "data-builder-qt-creator-parity-unverified", "Qt Creator parity matrix separates unverified requirements from weak ones");
 mustContain(builder, "data-builder-qt-creator-parity-item", "Qt Creator parity matrix renders each original requirement");
 mustContain(builder, "data-builder-qt-creator-parity-requirement", "Qt Creator parity rows expose requirement numbers");
 mustContain(builder, "data-builder-qt-creator-parity-evidence-id", "Qt Creator parity rows expose linked audit evidence ids");

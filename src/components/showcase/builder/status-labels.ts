@@ -9,7 +9,14 @@
 
 export type BuildReadinessSeverity = "ready" | "warning" | "error";
 export type WindowVisualAuditSeverity = "pass" | "warning" | "error";
-export type EditorExperienceAuditSeverity = "pass" | "warning" | "fail";
+/**
+ * "unverified" is not a softer "pass". It means the check that would decide
+ * could not run because its precondition is absent — nothing is selected, the
+ * caret is outside a symbol, nothing has been built yet. Collapsing it into
+ * either "pass" or "warning" is what made the Qt Creator matrix report a
+ * product gap for an empty canvas.
+ */
+export type EditorExperienceAuditSeverity = "pass" | "unverified" | "warning" | "fail";
 export type SimulatorTraceStatus = "success" | "error";
 export type FrameLayoutMode = "free" | "row" | "column" | "grid";
 export type ResponsiveBreakpointId = "desktop" | "tablet" | "mobile";
@@ -32,6 +39,7 @@ const WINDOW_VISUAL_AUDIT_SEVERITY_LABELS: Record<WindowVisualAuditSeverity, str
 
 const EDITOR_EXPERIENCE_AUDIT_SEVERITY_LABELS: Record<EditorExperienceAuditSeverity, string> = {
   pass: "通过",
+  unverified: "待验证",
   warning: "提醒",
   fail: "阻塞",
 };

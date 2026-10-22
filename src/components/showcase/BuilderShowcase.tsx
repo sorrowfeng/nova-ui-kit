@@ -680,6 +680,7 @@ import {
 import {
   buildEditorExperienceAuditItems,
   formatCanvasZoom,
+  worstAuditSeverity,
 } from "./builder/editor-experience-audit";
 import {
   buildProjectFileRouteGroups,
@@ -16629,10 +16630,14 @@ export function BuilderShowcase() {
   ]);
   const editorExperienceAuditStats = useMemo(() => {
     const passCount = editorExperienceAuditItems.filter((item) => item.severity === "pass").length;
+    const unverifiedCount = editorExperienceAuditItems.filter((item) => item.severity === "unverified").length;
     const warningCount = editorExperienceAuditItems.filter((item) => item.severity === "warning").length;
     const failCount = editorExperienceAuditItems.filter((item) => item.severity === "fail").length;
-    const score = Math.round(((passCount + warningCount * 0.5) / Math.max(1, editorExperienceAuditItems.length)) * 100);
-    return { passCount, warningCount, failCount, score, total: editorExperienceAuditItems.length };
+    // Half credit for a check that could not run, full for one that passed, none
+    // for one that ran and fell short. Unverified is not a soft pass — it is the
+    // reason the score alone can never be the whole verdict.
+    const score = Math.round(((passCount + unverifiedCount * 0.5) / Math.max(1, editorExperienceAuditItems.length)) * 100);
+    return { passCount, unverifiedCount, warningCount, failCount, score, total: editorExperienceAuditItems.length };
   }, [editorExperienceAuditItems]);
   const filteredEditorExperienceAuditItems = useMemo(
     () =>
@@ -16655,16 +16660,8 @@ export function BuilderShowcase() {
         : "已通过";
   const qtCreatorParityItems = useMemo<QtCreatorParityItem[]>(() => {
     const auditById = new Map(editorExperienceAuditItems.map((item) => [item.id, item]));
-    const severityForEvidence = (evidenceIds: string[]): EditorExperienceAuditSeverity => {
-      const severities = evidenceIds.map((id) => auditById.get(id)?.severity ?? "warning");
-      if (severities.includes("fail")) {
-        return "fail";
-      }
-      if (severities.includes("warning")) {
-        return "warning";
-      }
-      return "pass";
-    };
+    const severityForEvidence = (evidenceIds: string[]): EditorExperienceAuditSeverity =>
+      worstAuditSeverity(evidenceIds, (id) => auditById.get(id)?.severity);
     const item = (requirement: number, title: string, detail: string, evidenceIds: string[]): QtCreatorParityItem => ({
       requirement,
       title,
@@ -16697,10 +16694,11 @@ export function BuilderShowcase() {
   }, [editorExperienceAuditItems]);
   const qtCreatorParityStats = useMemo(() => {
     const passCount = qtCreatorParityItems.filter((item) => item.severity === "pass").length;
+    const unverifiedCount = qtCreatorParityItems.filter((item) => item.severity === "unverified").length;
     const warningCount = qtCreatorParityItems.filter((item) => item.severity === "warning").length;
     const failCount = qtCreatorParityItems.filter((item) => item.severity === "fail").length;
-    const score = Math.round(((passCount + warningCount * 0.5) / Math.max(1, qtCreatorParityItems.length)) * 100);
-    return { passCount, warningCount, failCount, score, total: qtCreatorParityItems.length };
+    const score = Math.round(((passCount + unverifiedCount * 0.5) / Math.max(1, qtCreatorParityItems.length)) * 100);
+    return { passCount, unverifiedCount, warningCount, failCount, score, total: qtCreatorParityItems.length };
   }, [qtCreatorParityItems]);
   const focusEditorExperienceAuditEvidence = (evidenceId: string) => {
     const evidence = editorExperienceAuditItems.find((item) => item.id === evidenceId);

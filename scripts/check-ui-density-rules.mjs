@@ -165,6 +165,19 @@ check(
   isReadoutStateLabel("未知") && !isSignalStateLabel("未知") && !isQuietStateLabel("未知"),
 );
 
+// "待验证" says a check could not run — no selection, no caret in a symbol, no
+// build yet. The `待` fragment reads it as unfinished work and paints a chip,
+// which is how an empty canvas spent 19 decoration chips and failed this gate.
+// Same rule as 未知: a gap in verification is not a job for the user.
+check(
+  "待验证 is a readout, not a signal",
+  isReadoutStateLabel("待验证") && !isSignalStateLabel("待验证") && !isQuietStateLabel("待验证"),
+);
+check(
+  "a sibling severity still signals",
+  isSignalStateLabel("阻塞") && isSignalStateLabel("待构建") && !isReadoutStateLabel("阻塞"),
+);
+
 // The density gate treats a 未知 chip as a defect regardless of budget. Pin the
 // judgement itself so a quiet verdict cannot come from a check that never
 // compares anything.

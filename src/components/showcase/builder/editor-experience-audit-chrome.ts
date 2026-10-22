@@ -55,7 +55,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "left-rail-kit-preset",
       title: "左侧 Kit 预设选择",
-      severity: s.selectedRailActionPreset && s.allProjectActionPresets.length > 0 ? "pass" : "warning",
+      severity: s.selectedRailActionPreset && s.allProjectActionPresets.length > 0 ? "pass" : "unverified",
       detail: s.selectedRailActionPreset
         ? `${s.selectedRailActionPreset.title} 包含 ${s.selectedRailActionPreset.actions.length} 个流水线步骤，可从左下角直接运行。`
         : "左下角运行区需要可选择设计预检、发布 exe、安装包和自定义流水线。",
@@ -63,7 +63,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "left-rail-kit-plan",
       title: "左侧 Kit 运行计划",
-      severity: s.selectedRailKitPlanStats.total > 0 ? "pass" : "warning",
+      severity: s.selectedRailKitPlanStats.total > 0 ? "pass" : "unverified",
       detail: s.selectedRailKitPlanStats.nextStep
         ? `${s.selectedRailActionPreset?.title ?? "当前 Kit"}：${s.selectedRailKitPlanStats.summary}，下一步 ${s.selectedRailKitPlanStats.nextStep.index + 1} 是 ${s.selectedRailKitPlanStats.nextStep.title}。`
         : "左侧 Kit 需要显示当前 preset 的步骤进度、下一步和失败/等待状态。",
@@ -71,7 +71,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "compact-topbar",
       title: "顶部工具栏收敛",
-      severity: s.modeBarItems.length === 4 ? "pass" : "warning",
+      severity: s.modeBarItems.length === 4 ? "pass" : "unverified",
       detail: "顶部只保留状态、定位器和 Run Kit 归属提示；打开文件入口交给项目页/侧边栏，构建、运行、输出和任务入口集中在模式栏、左侧运行区与底部 Dock。",
     },
     {
@@ -103,7 +103,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "inline-edit-context-menu",
       title: "画布文本快编与右键菜单",
-      severity: textEditableControlCount > 0 ? "pass" : "warning",
+      severity: textEditableControlCount > 0 ? "pass" : "unverified",
       detail: `${textEditableControlCount} 个控件有可快速编辑文本属性。`,
     },
     {
@@ -127,13 +127,13 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "inline-text-keyboard-edit",
       title: "键盘触发文本快编",
-      severity: textEditableControlCount > 0 ? "pass" : "warning",
+      severity: textEditableControlCount > 0 ? "pass" : "unverified",
       detail: "单选文本类控件后可按 F2 或 Enter 直接进入内联编辑；Enter 保存，Esc 取消，多文本字段可在浮层内切换。",
     },
     {
       id: "inline-text-field-switcher",
       title: "快编字段切换",
-      severity: textEditableControlCount > 0 ? "pass" : "warning",
+      severity: textEditableControlCount > 0 ? "pass" : "unverified",
       detail: "内联编辑器会列出当前控件所有可快编文本字段，切换字段前自动保存当前输入，减少反复打开属性面板。",
     },
     {
@@ -161,7 +161,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "desktop-runtime-workbench",
       title: "桌面运行工作台",
-      severity: s.workflowRuntimeActive || s.activeProject.outputExePath || s.latestValidationRun ? "pass" : "warning",
+      severity: s.workflowRuntimeActive || s.activeProject.outputExePath || s.latestValidationRun ? "pass" : "unverified",
       detail: s.latestValidationRun
         ? `${s.desktopRuntimeStatusLabel}；最近窗口验证 ${s.latestValidationRun.status} · ${s.latestValidationRun.score}%。`
         : `${s.desktopRuntimeStatusLabel}；Build 页首屏提供构建、运行、停止、验证和运行控制台入口。`,
@@ -181,7 +181,7 @@ export function buildChromeAuditItems(s: Record<string, any>): EditorExperienceA
     {
       id: "component-palette-collections",
       title: "控件工具箱常用与最近使用",
-      severity: s.componentPaletteFavoriteTypes.length > 0 && s.componentPaletteRecentTypes.length > 0 ? "pass" : "warning",
+      severity: s.componentPaletteFavoriteTypes.length > 0 && s.componentPaletteRecentTypes.length > 0 ? "pass" : "unverified",
       detail: `${s.componentPaletteFavoriteTypes.length} 个收藏控件，${s.componentPaletteRecentTypes.length} 个最近使用控件；插入控件后会自动更新最近使用区。`,
     },
     {
