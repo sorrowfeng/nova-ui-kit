@@ -120,7 +120,12 @@ export const CHINESE_UI_AUDIT = `(() => {
     /[#@]\\S/.test(text) ||
     /^[\\[{]/.test(text) ||
     /:[0-9]+$/.test(text) ||
-    /^[A-Za-z][A-Za-z0-9]*([._-][A-Za-z0-9]+)+$/.test(text);
+    /^[A-Za-z][A-Za-z0-9]*([._-][A-Za-z0-9]+)+$/.test(text) ||
+    // A single run of letters and digits carrying at least one digit is data —
+    // a hash, a version, an id ("bacc90dc", "v1.2"). Splitting on non-letters
+    // first turns it into "bacc" + "dc", and "bacc" reads as an English word,
+    // so the check has to look at the whole string before it tokenizes.
+    (/^[A-Za-z0-9]+$/.test(text) && /[0-9]/.test(text));
   // A single token can be code without the whole string being code: camelCase
   // field names, SCREAMING_CASE enum members, and anything carrying digits.
   const isIdentifierToken = (token) =>

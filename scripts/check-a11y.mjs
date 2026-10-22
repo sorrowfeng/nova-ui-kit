@@ -75,6 +75,34 @@ async function clickCenter(selector) {
   await delay(150);
 }
 
+/**
+ * Wait for a selector to exist before acting on it.
+ *
+ * A fixed sleep is not a wait: on a slow machine the shell is still mounting
+ * when it expires and the gate reports "no element" for a control that is about
+ * to appear. Polling is the honest tool — and it still loses when the element
+ * never arrives, because it fails with the selector named rather than
+ * silently proceeding to measure the wrong surface.
+ */
+async function waitFor(selector, { timeoutMs = 15000, absent = false } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const present = await evalJs(`Boolean(document.querySelector(${JSON.stringify(selector)}))`);
+    if (present === !absent) return true;
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `timed out after ${timeoutMs}ms waiting for ${selector} to ${absent ? "leave the DOM" : "appear"}`,
+      );
+    }
+    await delay(150);
+  }
+}
+
+async function clickWhen(selector, timeoutMs = 15000) {
+  await waitFor(selector, { timeoutMs });
+  await clickCenter(selector);
+}
+
 const KEY_VK = {
   Tab: 9,
   Escape: 27,
@@ -152,7 +180,7 @@ async function collectChineseLeftovers() {
 
   const seen = new Map();
   for (const mode of ["project", "design", "logic", "build"]) {
-    await clickCenter(`[data-builder-mode-button="${mode}"]`);
+    await clickWhen(`[data-builder-mode-button="${mode}"]`);
     await delay(1200);
     const scope = await evalJs(
       `document.querySelector("[data-builder-density-root]")?.getAttribute("data-builder-density-root")`,
@@ -208,6 +236,28 @@ function checkSurface(report, label) {
     `${label}: interactive controls carry a focus-ring affordance (checklist 1.2)`,
     report.noFocusRingCount ? `${report.noFocusRingCount} e.g. ${report.noFocusRing.slice(0, 5).join(", ")}` : "",
   );
+}
+
+/**
+ * Collapsed disclosures, from every mode.
+ *
+ * Same coverage argument as the Chinese-UI audit: a single snapshot of the
+ * default surface sees none of the panels in the other three modes, and a loop
+ * over zero found disclosures asserts nothing at all. That is how checklist 5.1
+ * stayed green while untested — the gate could not lose. Walk the modes, and
+ * fail the walk itself when it turns up empty.
+ */
+async function collectDisclosures() {
+  const all = [];
+  for (const mode of ["project", "design", "logic", "build"]) {
+    await clickWhen(`[data-builder-mode-button="${mode}"]`);
+    await delay(1200);
+    const report = await evalJs(DOM_AUDIT);
+    for (const d of report.disclosures) {
+      all.push({ ...d, mode });
+    }
+  }
+  return all;
 }
 
 /** Accessible-name + focusability audit over the whole document. */
@@ -383,12 +433,17 @@ async function main() {
       mobile: false,
     });
     await send("Page.navigate", { url: `http://127.0.0.1:${vitePort}/` });
-    await delay(5000);
+    // The shell's mode bar is the readiness signal for the whole app — wait for
+    // it rather than for a stopwatch to run out.
+    await waitFor('[data-builder-mode-button="design"]', { timeoutMs: 30000 });
 
     console.log("[a11y] dismissing onboarding");
     if (await evalJs(`Boolean(document.querySelector("[data-builder-onboarding]"))`)) {
-      await clickCenter('[data-builder-onboarding-skip]');
-      await delay(400);
+      await clickWhen('[data-builder-onboarding-skip]');
+      await waitFor('[data-builder-onboarding]', { absent: true, timeoutMs: 5000 }).catch(() => {
+        // Onboarding is modal chrome; if it does not dismiss the mode bar is
+        // still in the DOM and every later assertion reports the real surface.
+      });
     }
 
     console.log("[a11y] section 1/2 — focusability and accessible names (shell)");
@@ -415,22 +470,30 @@ async function main() {
       shell.noFocusRingCount ? `${shell.noFocusRingCount} e.g. ${shell.noFocusRing.slice(0, 5).join(", ")}` : "",
     );
 
-    // Section 5 — collapsed disclosures keep their content out of tab order.
-    for (const d of shell.disclosures) {
+    // Section 5 — collapsed disclosures keep their content out of tab order
+    // (checklist 5.1), across every mode so the assertion is never vacuous.
+    console.log("[a11y] section 5 — collapsed disclosures per mode (checklist 5.1)");
+    const disclosures = await collectDisclosures();
+    check(
+      disclosures.length > 0,
+      "the workbench exposes disclosure panels to audit (checklist 5.1)",
+      "no <details> found in any mode — the disclosure assertions below would assert nothing",
+    );
+    for (const d of disclosures) {
       check(
         d.summaryNamed,
-        `disclosure summary is named: ${d.target}`,
+        `disclosure summary is named [${d.mode}]: ${d.target}`,
         d.summaryNamed ? "" : "summary has no accessible name",
       );
       check(
         d.open || !d.contentReachableWhenClosed,
-        `collapsed disclosure is not reachable: ${d.target}`,
+        `collapsed disclosure is not reachable [${d.mode}]: ${d.target}`,
         "content inside a closed details is still hit-testable",
       );
     }
 
     console.log("[a11y] section 3 — design canvas");
-    await clickCenter('[data-builder-mode-button="design"]');
+    await clickWhen('[data-builder-mode-button="design"]');
     await delay(1500);
     const design = await evalJs(DOM_AUDIT);
     checkSurface(design, "design mode");
@@ -441,14 +504,14 @@ async function main() {
     );
 
     console.log("[a11y] section 4 — project workspace");
-    await clickCenter('[data-builder-mode-button="project"]');
+    await clickWhen('[data-builder-mode-button="project"]');
     await delay(1500);
     const project = await evalJs(DOM_AUDIT);
     checkSurface(project, "project mode");
 
-    console.log("[a11y] section 5 — logic and build");
+    console.log("[a11y] section 5b — logic and build naming (checklist 4.x)");
     for (const mode of ["logic", "build"]) {
-      await clickCenter(`[data-builder-mode-button="${mode}"]`);
+      await clickWhen(`[data-builder-mode-button="${mode}"]`);
       await delay(1500);
       const report = await evalJs(DOM_AUDIT);
       check(report.unnamedCount === 0, `${mode} mode: every interactive control has a name (checklist 4.x)`, report.unnamed.slice(0, 5).join(", "));
@@ -463,7 +526,7 @@ async function main() {
       mobile: false,
     });
     await delay(1200);
-    await clickCenter('[data-builder-mode-button="project"]');
+    await clickWhen('[data-builder-mode-button="project"]');
     await delay(1200);
     const compact = await evalJs(DOM_AUDIT);
     checkSurface(compact, "compact viewport 1100x720");
@@ -524,7 +587,7 @@ async function main() {
       mobile: false,
     });
     await delay(1200);
-    await clickCenter('[data-builder-mode-button="project"]');
+    await clickWhen('[data-builder-mode-button="project"]');
     await delay(1200);
     const scaled = await evalJs(DOM_AUDIT);
     checkSurface(scaled, "200% scaling");

@@ -3351,7 +3351,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               this panel is open; repeating it here said the same
                               thing twice on one screen. */}
                           <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">增量影响</h3>
-                          <span className="font-mono text-[0.66rem] text-on-surface-variant">{projectChangeImpact.currentSnapshotHash}</span>
+                          <span className="font-mono text-[0.66rem] text-on-surface-variant">基线 {projectChangeImpact.currentSnapshotHash}</span>
                         </div>
                         <p className="mt-2 text-xs leading-5 text-on-surface-variant">{projectChangeImpact.summary}</p>
                         {projectChangeImpact.previewSnapshotHash ? (
