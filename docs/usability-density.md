@@ -129,4 +129,4 @@ npm run check:english-prose-rules # 上面这个检测器自己的回归测试
 - `待生成` 在 project 展开态出现 3 次，是来源表里三行各自的状态列取值——那是用户来读的数据，不是重复的装饰。折叠次要行会把待办藏起来，方向反了。
 - 工作台与跳转面板的裸 `<Badge>` 已经清零，全部走 `StateLabel` / `StateBadge` / `CountReadout`。对话框（冲突合并等）里还有少量原生 `Badge`，属对话框自己的密度，不在工作台预算内。
 - 逻辑工作区没有「选中」概念，`selected` 态暂无测量值；若日后加入节点选中，需给 `SELECTED_BUDGETS.logic` 补预算，否则门禁会以「量到了没得判」为由失败——这是故意的。
-- `check:showcase-size` 现在 19940/20000 行，只剩六十行余量，再往 `BuilderShowcase.tsx` 加东西就会顶到上限。
+- `check:showcase-size` 现在 19938/20000 行，只剩 62 行余量，再往 `BuilderShowcase.tsx` 加东西就会顶到上限。上限本身也该拧——比抽取达成的低点 19858 还高 141 行，等于给每次功能提交发白条。债的结构和分期方案记在 [monolith-decomposition.md](./monolith-decomposition.md)。
