@@ -228,5 +228,6 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
   | 只有 `ShellView` 读（从不下发） | 148 |
 
   共读的 103 个塞不进任何单一领域切片——真按领域切，要么一个名字出现在两个切片里（那就不是切片了），要么逼着视图改用 `scope.project.foo` 这种限定名去点每一个使用点。**按视图切**和代码现在的组织一致，也正好是 Phase 3 拆胖视图的边界。共读的那 103 个进共享袋，谁都不许藏。
-- scope 袋的类型在 Phase 2 之前是 `Record<string, any>`，`tsc` 全程查不出漏键。Phase 0/1 期间靠 `check:experience` 的 110 项冒烟兜底。
+- **`noUnusedLocals` 查不出死 export——导出本身就是一次「使用」。** Phase 0 清的是未用的局部变量和 import 绑定，所以这类东西全躲过去了。按「整个 `src/` 里标识符只出现一次（就是它自己那行定义）」扫一遍，抓到 12 个，其中 3 个被 check 脚本读着（`workflowStepStatusClassName`、`DEFAULT_RUST_LOGIC`、`STATUS_LABEL_DOMAINS`），另外 9 个躺在 5 个**没有任何文件 import 过的模块**里，已删（388 行）。`CanvasContextMenu.tsx` 最典型：它不是没用的组件，是**孤儿副本**——真正的右键菜单写在 `ShellView` 里，那些 `data-builder-canvas-context-*` 钩子也在那儿；冒烟 110 项能测到行为，所以这份没人接线的副本一直没人发现。
+  教训：**「冒烟全绿」不等于「没有死代码」**，冒烟测的是行为在不在，不是代码有没有人用。这两件事各有各的测法。
 - `check-goal-coverage` 有 97 条断言钉在冒烟脚本的字面量上。改冒烟脚本时这些会跟着挂——那是故意的，它们测的是「冒烟真的在断言」。
