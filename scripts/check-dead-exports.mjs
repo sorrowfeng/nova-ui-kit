@@ -36,7 +36,7 @@ const SRC_DIR = path.join(root, "src");
 const SCAN_DIR = path.join(SRC_DIR, "components", "showcase");
 // "@/" -> "<root>/src/", the one alias in tsconfig.json's paths.
 const ALIASES = [{ prefix: "@/", target: SRC_DIR + path.sep }];
-const CEILING = 197; // measured 2026-10-23. Lower it whenever an export is stripped.
+const CEILING = 194; // measured 2026-10-23. Lower it whenever an export is stripped.
 
 // --- fixture: every shape the classifier must not miss ---
 const FIXTURE_SRC = `src`;
@@ -94,12 +94,21 @@ const EXPECT_ORPHANS = [
   [`${FIXTURE_SHOWCASE}/fixture.ts`, "orphanConst"],
 ];
 
-function listFiles(dir, extensions, out = []) {
+// `includeTests` is false for export scanning — scripts/*.test.ts are suites,
+// not export sources — and true for the word scan, which must see every name a
+// gate can pin. Sharing one filter between the two is how the word scan ended
+// up reading no .test.ts file at all.
+function listFiles(dir, extensions, out = [], includeTests = false) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) listFiles(full, extensions, out);
-    else if (extensions.some((ext) => entry.name.endsWith(ext)) && !/\.test\.ts$/.test(entry.name)) out.push(full);
+    if (entry.isDirectory()) {
+      listFiles(full, extensions, out, includeTests);
+      continue;
+    }
+    if (!extensions.some((ext) => entry.name.endsWith(ext))) continue;
+    if (!includeTests && /\.test\.ts$/.test(entry.name)) continue;
+    out.push(full);
   }
   return out;
 }
@@ -229,7 +238,8 @@ function runScan(srcDir, scanRel, aliases, readText, extraConsumedWords = new Se
   for (const file of exportFiles) {
     exported.set(file, exportNames(parse(file, readText(file))));
   }
-  for (const file of listFiles(srcDir, [".ts", ".tsx"])) {
+  // Consumers include test files: a suite that imports an export keeps it live.
+  for (const file of listFiles(srcDir, [".ts", ".tsx"], [], true)) {
     const sf = parse(file, readText(file));
     for (const name of consumedNames(sf)) consumed.add(name);
     for (const specifier of dynamicImportSpecifiers(sf)) {
@@ -255,12 +265,30 @@ function reportOrphans(orphans, fromDir) {
   return orphans.map((o) => ({ file: path.relative(fromDir, o.file).split(path.sep).join("/"), name: o.name }));
 }
 
-// Check scripts reference a few symbols by name in assertions; that counts as
-// use. STATUS_LABEL_DOMAINS is the known one — check-ui-density-rules.mjs reads
-// it by name to walk the label tables.
+// Check scripts and their test suites reference a few symbols by name in
+// assertions; that counts as use. STATUS_LABEL_DOMAINS is the known one —
+// check-ui-density-rules.mjs reads it by name to walk the label tables. The
+// extension list must cover every place a name can be pinned: .mjs gates and
+// .test.ts suites run under check:ts-tests. A filter that silently matched
+// nothing is how STATUS_LABEL_DOMAINS was briefly reported orphaned.
+//
+// The guard below is structural on purpose. A name sentinel cannot work: the
+// guard's own source contains the sentinel, so the check that "a name is
+// present in the scan" is satisfied by the check script itself.
+const scriptFiles = listFiles(path.join(root, "scripts"), [".mjs", ".test.ts"], [], true);
+for (const ext of [".mjs", ".test.ts"]) {
+  if (!scriptFiles.some((file) => file.endsWith(ext))) {
+    console.error(`check-dead-exports: script word scan matched no ${ext} file — the extension filter is blind`);
+    process.exit(1);
+  }
+}
 const scriptWords = new Set();
-for (const file of listFiles(path.join(root, "scripts"), [".mjs"])) {
+for (const file of scriptFiles) {
   for (const match of fs.readFileSync(file, "utf8").matchAll(/[A-Za-z_$][\w$]*/g)) scriptWords.add(match[0]);
+}
+if (scriptWords.size < 100) {
+  console.error(`check-dead-exports: script word scan produced only ${scriptWords.size} tokens — refusing to trust it`);
+  process.exit(1);
 }
 
 // --- self-check: runScan on a fixture whose answer is known exactly ---
