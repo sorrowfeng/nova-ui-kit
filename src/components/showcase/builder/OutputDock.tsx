@@ -217,7 +217,7 @@ export function OutputDock<T extends string>({
       data-builder-output-dock-transparent-shell=""
       data-builder-output-dock-no-background-shield=""
       data-builder-output-dock-content-clip="scroll-panels"
-      aria-label="Editor output dock"
+      aria-label="编辑器输出 Dock"
     >
       {minimized ? (
         <div

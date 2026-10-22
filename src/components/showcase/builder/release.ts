@@ -19,6 +19,14 @@ export const releaseBundleTargets: { value: ReleaseBundleTarget; label: string }
   { value: "dmg", label: "DMG 镜像" },
 ];
 
+export function releaseBundleTargetLabel(value: ReleaseBundleTarget): string {
+  return releaseBundleTargets.find((target) => target.value === value)?.label ?? String(value);
+}
+
+export function releaseSigningModeLabel(value: ReleaseSigningMode): string {
+  return releaseSigningModes.find((mode) => mode.value === value)?.label ?? String(value);
+}
+
 export const releaseSigningModes: { value: ReleaseSigningMode; label: string; description: string }[] = [
   { value: "unsigned", label: "未签名", description: "本地测试和内部构建，不写入签名配置。" },
   { value: "windows-certificate", label: "Windows 证书", description: "使用证书 thumbprint 和时间戳服务签名 Windows 安装包。" },

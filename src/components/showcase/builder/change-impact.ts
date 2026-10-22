@@ -6,6 +6,7 @@ import type {
   ProjectDependencySourceReference,
 } from "./types";
 import type { ProjectJumpActionId } from "./task-center";
+import { releaseBundleTargetLabel, releaseSigningModeLabel } from "./release";
 
 export type ProjectChangeImpactStatus = "needs-plan" | "stale" | "dirty" | "clean";
 
@@ -670,7 +671,7 @@ function sourceRefsForScope(
       id: "release-config",
       kind: "release-config",
       label: `${project.releaseConfig.appName} v${project.releaseConfig.version}`,
-      detail: `${project.releaseConfig.bundleTargets} · ${project.releaseConfig.signingMode}`,
+      detail: `${releaseBundleTargetLabel(project.releaseConfig.bundleTargets)} · ${releaseSigningModeLabel(project.releaseConfig.signingMode)}`,
       affectedPaths: fallbackPaths,
     });
   }

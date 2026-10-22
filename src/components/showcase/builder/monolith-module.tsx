@@ -2738,7 +2738,7 @@ export function normalizeProjectDependencyGraphScope(value: unknown): ProjectDep
     sourceRefs: Array.isArray(source.sourceRefs)
       ? source.sourceRefs.map(normalizeProjectDependencySourceReference).filter((ref): ref is ProjectDependencySourceReference => Boolean(ref))
       : [],
-    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "Dependency scope status.",
+    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "依赖范围状态。",
   };
 }
 
@@ -2756,7 +2756,7 @@ export function normalizeProjectDependencySourceReference(value: unknown): Proje
     id,
     kind,
     label: typeof source.label === "string" && source.label.trim() ? source.label : id,
-    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail : "Dependency source",
+    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail : "依赖来源",
     affectedPaths: Array.isArray(source.affectedPaths)
       ? source.affectedPaths.filter((path): path is string => typeof path === "string" && path.trim().length > 0)
       : [],
@@ -2786,9 +2786,9 @@ export function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDepe
   const source = value as Partial<ProjectDependencyGraphPlan>;
   return {
     id: typeof source.id === "string" && source.id.trim() ? source.id : "dependency-plan",
-    title: typeof source.title === "string" && source.title.trim() ? source.title : "Dependency plan",
-    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail : "Persisted dependency graph plan.",
-    badge: typeof source.badge === "string" && source.badge.trim() ? source.badge : "graph",
+    title: typeof source.title === "string" && source.title.trim() ? source.title : "依赖计划",
+    detail: typeof source.detail === "string" && source.detail.trim() ? source.detail : "已保存的依赖图计划。",
+    badge: typeof source.badge === "string" && source.badge.trim() ? source.badge : "图谱",
     actions: Array.isArray(source.actions) ? source.actions.filter((action): action is string => typeof action === "string" && action.trim().length > 0) : [],
     scopeIds: Array.isArray(source.scopeIds) ? source.scopeIds.filter((scope): scope is string => typeof scope === "string" && scope.trim().length > 0) : [],
     ready: Boolean(source.ready),
@@ -2882,7 +2882,7 @@ export function normalizeProjectDependencyGraphRecord(value: unknown): ProjectDe
     recordPath: typeof source.recordPath === "string" && source.recordPath.trim() ? source.recordPath : undefined,
     recordWrittenAt: typeof source.recordWrittenAt === "string" && source.recordWrittenAt.trim() ? source.recordWrittenAt : undefined,
     updatedAt: typeof source.updatedAt === "string" && source.updatedAt.trim() ? source.updatedAt : new Date().toISOString(),
-    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "Persisted project dependency graph.",
+    summary: typeof source.summary === "string" && source.summary.trim() ? source.summary : "已保存的项目依赖图。",
   };
 }
 
@@ -3027,10 +3027,10 @@ export function normalizeBreakpointValidationIssues(value: unknown): BreakpointV
         id: String(issue.id ?? raw.id ?? `breakpoint-issue-${index}`),
         breakpoint: normalizeBreakpoint(String(issue.breakpoint ?? raw.breakpoint ?? "desktop")),
         severity,
-        title: String(issue.title ?? raw.title ?? "Breakpoint runtime issue"),
+        title: String(issue.title ?? raw.title ?? "断点运行问题"),
         detail: String(issue.detail ?? raw.detail ?? "没有提供详情。"),
         fileId,
-        fileName: String(issue.fileName ?? raw.file_name ?? "UI file"),
+        fileName: String(issue.fileName ?? raw.file_name ?? "UI 文件"),
         itemId: typeof issue.itemId === "string" ? issue.itemId : typeof raw.item_id === "string" ? raw.item_id : undefined,
         itemName: typeof issue.itemName === "string" ? issue.itemName : typeof raw.item_name === "string" ? raw.item_name : undefined,
         itemType: typeof issue.itemType === "string" ? issue.itemType : typeof raw.item_type === "string" ? raw.item_type : undefined,
@@ -4208,7 +4208,7 @@ export function propertyIssuesForItem(file: DesignerFile, item: BuilderItem): Bu
     if (options.length === 0) {
       pushIssue({ prop: "optionA", label: "选项" }, "error", "该控件至少需要一个候选项。", "empty-options");
     } else if (value && !options.includes(value)) {
-      pushIssue({ prop: "value", label: "Value" }, "warning", `当前值不在候选项中：${options.join(", ")}。`, "value-option");
+      pushIssue({ prop: "value", label: "值" }, "warning", `当前值不在候选项中：${options.join(", ")}。`, "value-option");
     }
   }
 
@@ -5909,14 +5909,14 @@ export function buildReadiness(
   addItem(
     tauriRuntimeAvailable ? "ready" : "warning",
     "tauri-runtime",
-    "Desktop runtime",
+    "桌面运行",
     tauriRuntimeAvailable ? "当前运行在 Tauri 桌面环境，可写入磁盘并触发构建。" : "当前是浏览器模式，只能保存本地状态；构建 exe 需要桌面 app。",
   );
 
   addItem(
     project.rustCommands.length > 0 ? "ready" : "error",
     "rust-command-registry",
-    "Rust command registry",
+    "Rust command 注册表",
     project.rustCommands.length > 0 ? `${project.rustCommands.length} 个 command 会注册到生成 app。` : "至少需要一个 Rust command。",
   );
 
@@ -5924,7 +5924,7 @@ export function buildReadiness(
     addItem(
       "error",
       "duplicate-rust-command-names",
-      "Duplicate command names",
+      "命令名称重复",
       `这些 command 名称生成后重复：${Array.from(new Set(duplicateCommandNames)).join(", ")}。`,
     );
   } else {
@@ -5935,11 +5935,11 @@ export function buildReadiness(
     addItem(
       "error",
       "missing-rust-functions",
-      "Rust source sync",
+      "Rust 源码同步",
       `Rust 逻辑缺少同名 #[tauri::command] 函数：${missingRustFunctions.join(", ")}。`,
     );
   } else {
-    addItem("ready", "rust-source-sync", "Rust source sync", "Rust 逻辑与 command registry 已对齐。");
+    addItem("ready", "rust-source-sync", "Rust 源码同步", "Rust 逻辑与 command registry 已对齐。");
   }
 
   addItem(
@@ -5978,7 +5978,7 @@ export function buildReadiness(
   addItem(
     incompleteBackendResources.length > 0 ? "warning" : inspectedMissingBackendArtifacts.length > 0 ? "error" : "ready",
     "backend-resource-bundle",
-    "Backend resources",
+    "后端资源",
     incompleteBackendResources.length > 0
       ? `${incompleteBackendResources.length} 个启用打包的后端集成缺少 artifactPath 或 resourcePath；生成 app 会保留计划，但不会可靠地包含该后端产物。`
       : inspectedMissingBackendArtifacts.length > 0
@@ -5996,7 +5996,7 @@ export function buildReadiness(
   addItem(
     starterBackendsNeedingBuildAttention.length > 0 ? "warning" : "ready",
     "backend-starter-artifacts",
-    "Backend starter artifacts",
+    "后端起始产物",
     starterBackendsNeedingBuildAttention.length > 0
       ? `${starterBackendsNeedingBuildAttention.length} 个非 Rust 后端使用生成 starter。请先应用生成文件、运行 starter build、确认 artifactPath 可被打包，并通过 method test；${backendIntegrationStarterHint(starterBackendsNeedingBuildAttention[0])}`
       : starterBackendIntegrations.length > 0
@@ -6007,7 +6007,7 @@ export function buildReadiness(
   addItem(
     missingBackendHealthChecks.length > 0 ? "warning" : "ready",
     "backend-health-checks",
-    "Backend health checks",
+    "后端健康检查",
     missingBackendHealthChecks.length > 0
       ? `${missingBackendHealthChecks.length} 个 sidecar/local-service 没有 health check 命令；生成 app 会显示 skipped，运行异常需要人工判断。`
       : probeableBackendIntegrations.length > 0
@@ -6018,7 +6018,7 @@ export function buildReadiness(
   addItem(
     invalidBackendCommands.length > 0 || invalidBackendMethodCommands.length > 0 ? "warning" : "ready",
     "backend-command-presets",
-    "Backend command presets",
+    "后端命令预设",
     invalidBackendCommands.length > 0
       ? `${invalidBackendCommands.length} 个 Rust command 绑定到不存在或禁用的 backend integration；重新生成或启用对应 integration。`
       : invalidBackendMethodCommands.length > 0
@@ -6029,7 +6029,7 @@ export function buildReadiness(
   addItem(
     invalidBackendMethodContracts.length > 0 ? "warning" : "ready",
     "backend-method-contracts",
-    "Backend method contracts",
+    "后端方法契约",
     invalidBackendMethodContracts.length > 0
       ? `${invalidBackendMethodContracts.length} 个 backend method sample/schema 不是合法 JSON；先在 Method test bench 修正再发布。`
       : "Backend method sample payload、request schema 和 response schema 都可解析并通过基础类型校验。",
@@ -6038,7 +6038,7 @@ export function buildReadiness(
   addItem(
     backendMethodsNeedingPassingTest.length > 0 ? "warning" : "ready",
     "backend-method-tests",
-    "Backend method tests",
+    "后端方法测试",
     backendMethodsNeedingPassingTest.length > 0
       ? `${backendMethodsNeedingPassingTest.length} 个 backend method 最近一次测试失败或响应不符合 schema。`
       : "Backend method test bench 没有记录失败的 method 调用。",
@@ -6055,7 +6055,7 @@ export function buildReadiness(
     addItem(
       "error",
       "broken-parent-links",
-      "Frame hierarchy",
+      "Frame 层级",
       `${brokenParentItems.length} 个控件引用了不存在或无效的父 Frame。`,
       brokenParentItems[0].file.name,
       {
@@ -6065,7 +6065,7 @@ export function buildReadiness(
       },
     );
   } else {
-    addItem("ready", "frame-hierarchy", "Frame hierarchy", "父子层级可以被保存并生成。");
+    addItem("ready", "frame-hierarchy", "Frame 层级", "父子层级可以被保存并生成。");
   }
 
   const missingAssetItems = projectItems.filter(({ item }) => item.type === "image" && item.props.assetId && !assetIds.has(item.props.assetId));
@@ -6074,7 +6074,7 @@ export function buildReadiness(
     addItem(
       "error",
       "missing-image-assets",
-      "Image assets",
+      "图片资源",
       `${missingAssetItems.length} 个 Image 控件绑定了不存在的项目资源。`,
       missingAssetItems[0].file.name,
       {
@@ -6087,7 +6087,7 @@ export function buildReadiness(
     addItem(
       "warning",
       "unbound-image-assets",
-      "Image assets",
+      "图片资源",
       `${unboundImages.length} 个 Image 控件尚未绑定资源，生成窗口会显示占位内容。`,
       unboundImages[0].file.name,
       {
@@ -6097,7 +6097,7 @@ export function buildReadiness(
       },
     );
   } else {
-    addItem("ready", "image-assets", "Image assets", "图片资源绑定可以被复制到生成 app。");
+    addItem("ready", "image-assets", "图片资源", "图片资源绑定可以被复制到生成 app。");
   }
 
   const brokenStateBindings = projectItems.filter(({ item }) =>
@@ -6139,7 +6139,7 @@ export function buildReadiness(
     addItem(
       "error",
       "missing-event-commands",
-      "Event bindings",
+      "事件绑定",
       `${missingEventCommands.length} 个控件事件绑定了不存在的 Rust command。`,
       missingEventCommands[0].file.name,
       {
@@ -6158,7 +6158,7 @@ export function buildReadiness(
     addItem(
       "warning",
       "unbound-buttons",
-      "Button actions",
+      "按钮动作",
       `${unboundButtons.length} 个按钮尚未绑定 click command。`,
       unboundButtons[0].file.name,
       {
@@ -6181,7 +6181,7 @@ export function buildReadiness(
     addItem(
       "error",
       "broken-result-targets",
-      "Result targets",
+      "结果目标",
       `${brokenResultTargets.length} 个 Rust 结果写回目标无效。`,
       brokenResultTargets[0].file.name,
       {
@@ -6205,7 +6205,7 @@ export function buildReadiness(
     addItem(
       "warning",
       "text-result-json-patches",
-      "JSON state patches",
+      "JSON 状态补丁",
       `${textPatchBindings.length} 个绑定启用了 JSON patch，但 command schema 仍是 Text result。`,
       textPatchBindings[0].file.name,
       {

@@ -284,6 +284,7 @@ import {
   normalizeReleaseVersion,
   normalizeReleaseWindowKind,
   releaseBundleTargets,
+  releaseBundleTargetLabel,
   releaseDigestAlgorithms,
   releaseInstallerSmokeModes,
   releaseInstallerSmokeRunnerModes,
@@ -4174,10 +4175,10 @@ export function BuilderShowcase() {
     activeRustCommandResultSchema.mode,
   ]);
   const rustDebuggerTabs: Array<{ id: RustDebuggerPanelId; label: string; count: number }> = [
-    { id: "problems", label: "Problems", count: rustDebuggerProblemRows.length },
-    { id: "breakpoints", label: "Breakpoints", count: rustDebuggerBreakpointRows.length },
-    { id: "watch", label: "Watch", count: rustDebuggerWatchRows.length },
-    { id: "call-stack", label: "Call Stack", count: rustDebuggerCallStackRows.length },
+    { id: "problems", label: "问题", count: rustDebuggerProblemRows.length },
+    { id: "breakpoints", label: "断点", count: rustDebuggerBreakpointRows.length },
+    { id: "watch", label: "监视", count: rustDebuggerWatchRows.length },
+    { id: "call-stack", label: "调用栈", count: rustDebuggerCallStackRows.length },
   ];
   const recentSlotNavigationEntries = useMemo(
     () =>
@@ -4836,35 +4837,35 @@ export function BuilderShowcase() {
     () => [
       {
         id: "commands",
-        label: "Tauri Commands",
+        label: "Tauri 命令",
         detail: `${activeProject.rustCommands.length} 个命令 · ${logicSignalSlotBoundCount} 个 UI 绑定`,
         badge: activeProject.rustCommands.length,
         tone: activeProject.rustCommands.length > 0 ? "ready" : "empty",
       },
       {
         id: "modules",
-        label: "Rust Modules",
+        label: "Rust 模块",
         detail: `${activeProject.rustModules.filter((module) => module.enabled).length}/${activeProject.rustModules.length} 启用`,
         badge: activeProject.rustModules.filter((module) => module.enabled).length,
         tone: activeProject.rustModules.some((module) => module.enabled) ? "ready" : "muted",
       },
       {
         id: "dependencies",
-        label: "Cargo Dependencies",
+        label: "Cargo 依赖",
         detail: `${activeProject.cargoDependencies.filter((dependency) => dependency.enabled).length}/${activeProject.cargoDependencies.length} 写入 Cargo.toml`,
         badge: activeProject.cargoDependencies.filter((dependency) => dependency.enabled).length,
         tone: activeProject.cargoDependencies.some((dependency) => dependency.enabled) ? "ready" : "muted",
       },
       {
         id: "integrations",
-        label: "External Backends",
+        label: "外部后端",
         detail: `${activeProject.backendIntegrations.filter((integration) => integration.enabled).length}/${activeProject.backendIntegrations.length} 集成 · C++/sidecar/service 边界`,
         badge: activeProject.backendIntegrations.filter((integration) => integration.enabled).length,
         tone: activeProject.backendIntegrations.some((integration) => integration.enabled) ? "ready" : "muted",
       },
       {
         id: "state",
-        label: "State Store",
+        label: "状态存储",
         detail: `${activeProject.stateVariables.length} 个共享状态 · 可被 UI 与槽函数复用`,
         badge: activeProject.stateVariables.length,
         tone: activeProject.stateVariables.length > 0 ? "ready" : "empty",
@@ -7238,8 +7239,8 @@ export function BuilderShowcase() {
     setOpenPropertySections((current) => ({ ...current, state: true, content: true }));
     showProjectJumpFeedback(
       "success",
-      "Property fixes applied",
-      `${fixedCount} propert${fixedCount === 1 ? "y" : "ies"} repaired on ${getItemSummary(selectedItem)}${patchedLabels.length ? `: ${patchedLabels.join(", ")}` : ""}. ${Math.max(0, issueCount - fixedCount)} issue(s) may still need review.`,
+      "属性已修复",
+      `${getItemSummary(selectedItem)} 上修复了 ${fixedCount} 个属性${patchedLabels.length ? `：${patchedLabels.join("、")}` : ""}。${Math.max(0, issueCount - fixedCount)} 个问题可能仍需复核。`,
     );
   };
 
@@ -9037,7 +9038,7 @@ export function BuilderShowcase() {
       return;
     }
     if (!isTauriRuntime()) {
-      setBuildError("Backend artifact builds require the Nova desktop app runtime.");
+      setBuildError("后端产物构建需要 Nova 桌面 app 运行时。");
       return;
     }
 
@@ -9058,7 +9059,7 @@ export function BuilderShowcase() {
 
   const buildProjectBackendArtifacts = async (): Promise<ProjectTaskRunResult> => {
     if (!isTauriRuntime()) {
-      return { status: "skipped", summary: "Backend artifact builds require the Nova desktop app runtime." };
+      return { status: "skipped", summary: "后端产物构建需要 Nova 桌面 app 运行时。" };
     }
     const projectSnapshot = activeProject;
     const buildableIntegrations = projectSnapshot.backendIntegrations.filter(backendArtifactStarterBuildAvailable);
@@ -9161,7 +9162,7 @@ export function BuilderShowcase() {
     setDiskBusy(true);
     setBuildError("");
     try {
-      const label = checkpointLabel.trim() || "Manual checkpoint";
+      const label = checkpointLabel.trim() || "手动检查点";
       const result = await persistDiskCheckpoint(label);
       if (!result) {
         setBuildError("磁盘版本历史需要在 Tauri 桌面 app 中运行。");
@@ -9459,7 +9460,7 @@ export function BuilderShowcase() {
         title: "选择图片资源",
         filters: [
           {
-            name: "Images",
+            name: "图片",
             extensions: ["png", "jpg", "jpeg", "webp", "gif", "svg"],
           },
         ],
@@ -9491,7 +9492,7 @@ export function BuilderShowcase() {
         title: "选择 PFX/P12 签名证书",
         filters: [
           {
-            name: "Signing certificates",
+            name: "签名证书",
             extensions: ["pfx", "p12"],
           },
         ],
@@ -11455,7 +11456,7 @@ export function BuilderShowcase() {
         lastTest: backendMethodLocalValidationRecord(
           activeBackendIntegration,
           errors.length ? "failed" : "passed",
-          errors.length ? `${errors.length} JSON contract issue(s).` : "Sample payload and method schemas are valid JSON.",
+          errors.length ? `${errors.length} 个 JSON 契约问题。` : "示例载荷与方法 schema 都是合法 JSON。",
           request,
           response,
           errors[0],
@@ -11483,7 +11484,7 @@ export function BuilderShowcase() {
         lastTest: backendMethodLocalValidationRecord(
           integration,
           "failed",
-          `${errors.length} JSON contract issue(s). Fix them before running the backend method.`,
+          `${errors.length} 个 JSON 契约问题，运行后端方法前请先修复。`,
           request,
           errors.join("\n"),
           errors[0],
@@ -11498,7 +11499,7 @@ export function BuilderShowcase() {
         lastTest: backendMethodLocalValidationRecord(
           integration,
           "skipped",
-          "Backend method calls require the Nova desktop app runtime.",
+          "后端方法调用需要 Nova 桌面 app 运行时。",
           request,
           "请打开 Tauri 桌面构建，才能针对本地进程或 HTTP endpoint 运行这个方法。",
         ),
@@ -11520,7 +11521,7 @@ export function BuilderShowcase() {
           lastTest: backendMethodLocalValidationRecord(
             integration,
             "skipped",
-            "Backend method calls require the Nova desktop app runtime.",
+            "后端方法调用需要 Nova 桌面 app 运行时。",
             request,
             "没有返回 Tauri invoke 结果。",
           ),
@@ -11535,7 +11536,7 @@ export function BuilderShowcase() {
         id: createId(),
         testedAt: new Date().toISOString(),
         status,
-        summary: validationIssues.length ? `${result.summary} · ${validationIssues.length} response schema issue(s).` : result.summary,
+        summary: validationIssues.length ? `${result.summary} · ${validationIssues.length} 个响应 schema 问题。` : result.summary,
         durationMs: result.duration_ms,
         transport: result.transport,
         request: prettyJson(result.request),
@@ -12130,7 +12131,7 @@ export function BuilderShowcase() {
         applyReleasePipelineRecordWriteResult(entry.id, result);
       }
     } catch (error) {
-      setBuildError(`Release pipeline record write failed: ${String(error)}`);
+      setBuildError(`发布流水线记录写入失败：${String(error)}`);
     }
   };
 
@@ -12163,7 +12164,7 @@ export function BuilderShowcase() {
         ),
       }));
     } catch (error) {
-      setBuildError(`Release pipeline history refresh failed: ${String(error)}`);
+      setBuildError(`发布流水线历史刷新失败：${String(error)}`);
     } finally {
       setRefreshingPipelineRecords(false);
     }
@@ -12196,7 +12197,7 @@ export function BuilderShowcase() {
         applyProjectDependencyGraphWriteResult(result);
       }
     } catch (error) {
-      setBuildError(`Dependency graph write failed: ${String(error)}`);
+      setBuildError(`依赖图写入失败：${String(error)}`);
     } finally {
       setWritingDependencyGraph(false);
     }
@@ -12229,7 +12230,7 @@ export function BuilderShowcase() {
       const graph = normalizeProjectDependencyGraphRecord(result.graph);
       setProjectDependencyGraph(graph);
     } catch (error) {
-      setBuildError(`Dependency graph refresh failed: ${String(error)}`);
+      setBuildError(`依赖图刷新失败：${String(error)}`);
     } finally {
       setRefreshingDependencyGraph(false);
     }
@@ -13045,7 +13046,7 @@ export function BuilderShowcase() {
       return;
     }
     if (invalidActionIds.length > 0) {
-      setBuildError(`Skipped unsupported pipeline action(s): ${invalidActionIds.join(", ")}`);
+      setBuildError(`已跳过不支持的流水线动作：${invalidActionIds.join(", ")}`);
     }
     if (revealReadinessGateForActions(validActionIds, preset.title)) {
       return;
@@ -13192,7 +13193,7 @@ export function BuilderShowcase() {
           ...task,
           status: "canceled",
           finishedAt: new Date().toISOString(),
-          summary: "Canceled while waiting in the editor queue.",
+          summary: "在编辑器队列中等待时已取消。",
         }),
       );
     setProjectTasks((current) =>
@@ -13202,7 +13203,7 @@ export function BuilderShowcase() {
               ...task,
               status: "canceled",
               finishedAt: new Date().toISOString(),
-              summary: "Canceled while waiting in the editor queue.",
+              summary: "在编辑器队列中等待时已取消。",
             }
           : task,
       ),
@@ -13377,14 +13378,14 @@ export function BuilderShowcase() {
         ...task,
         status: "canceled",
         finishedAt: new Date().toISOString(),
-        summary: "Canceled before the task started.",
+        summary: "任务开始前已取消。",
       };
       updateProjectTask(task.id, {
         status: canceledTask.status,
         finishedAt: canceledTask.finishedAt,
         summary: canceledTask.summary,
       });
-      setProjectTaskQueueMessage(`Canceled ${task.title} before it started.`);
+      setProjectTaskQueueMessage(`${task.title} 在开始前已取消。`);
       recordReleasePipelineTaskUpdate(canceledTask);
       return;
     }
@@ -13401,14 +13402,14 @@ export function BuilderShowcase() {
             logPath: canceled.log_path,
             artifactPath: canceled.root_path,
           });
-          setProjectTaskQueueMessage(`Cancellation requested for ${task.title}.`);
+          setProjectTaskQueueMessage(`已请求取消 ${task.title}。`);
         }
       } catch (error) {
         updateProjectTask(task.id, {
           error: String(error),
-          summary: "Failed to request backend task cancellation.",
+          summary: "请求后端任务取消失败。",
         });
-        setProjectTaskQueueMessage(`Failed to cancel ${task.title}: ${String(error)}`);
+        setProjectTaskQueueMessage(`取消 ${task.title} 失败：${String(error)}`);
       }
     }
   };
@@ -13630,7 +13631,7 @@ export function BuilderShowcase() {
       if (!targetFile) {
         const message = `找不到 ${result.title} 对应的 UI 文件。`;
         setBuildError(message);
-        showProjectJumpFeedback("error", "Result target missing", message);
+        showProjectJumpFeedback("error", "结果目标缺失", message);
         return;
       }
       updateActiveProject((project) => ({
@@ -13984,8 +13985,8 @@ export function BuilderShowcase() {
       feedback: true,
       leftDockTab: "navigator",
       selectedId: selectedDuplicateId ?? nextFile.items[0]?.id ?? "",
-      title: "UI file duplicated",
-      detail: `${nextFile.name} opened with ${formatControlCount(nextFile.items.length)} and remapped layer links.`,
+      title: "UI 文件已复制",
+      detail: `${nextFile.name} 已打开，含 ${formatControlCount(nextFile.items.length)}，图层链接已重映射。`,
     });
     return nextFile;
   };
@@ -16647,11 +16648,11 @@ export function BuilderShowcase() {
           : "待构建";
   const railRunTargetLabel = activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : activeProject.releaseConfig.appName || activeProject.name;
   const railEventTargetLabel = selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : selectedEventName ? "待绑定" : "无事件";
-  const railKitLabel = activeProject.releaseConfig.bundleTargets === "all" ? "桌面" : activeProject.releaseConfig.bundleTargets;
+  const railKitLabel = activeProject.releaseConfig.bundleTargets === "all" ? "桌面" : releaseBundleTargetLabel(activeProject.releaseConfig.bundleTargets);
   const railConfigurationLabel = `${activeProject.releaseConfig.appName || activeProject.name} ${activeProject.releaseConfig.version}`;
   const railWindowTargetLabel = `${pageWindowKindMeta?.label ?? page.windowKind} / ${pageTitlebarStyleMeta?.label ?? page.titlebarStyle}`;
   const railReleaseTargetLabel = `${releaseWindowKindMeta?.label ?? activeProject.releaseConfig.windowKind} / ${releaseTitlebarStyleMeta?.label ?? activeProject.releaseConfig.titlebarStyle}`;
-  const railBundleTargetLabel = activeProject.releaseConfig.bundleTargets === "all" ? "exe + installers" : activeProject.releaseConfig.bundleTargets;
+  const railBundleTargetLabel = activeProject.releaseConfig.bundleTargets === "all" ? "exe + 安装包" : releaseBundleTargetLabel(activeProject.releaseConfig.bundleTargets);
   const railArtifactStateLabel = workflowRuntimeActive
     ? `pid ${activeWorkflowRuntimeSession?.pid}`
     : activeProject.outputExePath

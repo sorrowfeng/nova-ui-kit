@@ -561,7 +561,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                   <div className="mt-2 border-t border-outline-variant pt-2" data-builder-release-settings-shortcut-details="deferred">
                     <div className="rounded-md bg-surface-container-low px-2 py-1.5 text-xs" data-builder-release-settings-shortcut-fields="compact-property-list">
                       <PathRow label="应用" value={activeProject.releaseConfig.appName} />
-                      <PathRow label="Bundle" value={activeProject.releaseConfig.bundleIdentifier} />
+                      <PathRow label="应用标识" value={activeProject.releaseConfig.bundleIdentifier} />
                       <PathRow
                         label="窗口"
                         value={`${releaseWindowKinds.find((kind: any) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
@@ -947,7 +947,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </SelectContent>
                       </Select>
                     </Field>
-                    <Field label="Smoke runner">
+                    <Field label="Smoke 运行器">
                       <Select
                         value={activeProject.releaseConfig.installerSmokeRunnerMode}
                         onValueChange={(installerSmokeRunnerMode: any) => updateReleaseConfig({ installerSmokeRunnerMode: installerSmokeRunnerMode as ReleaseInstallerSmokeRunnerMode })}

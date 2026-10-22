@@ -164,7 +164,7 @@ function parseCargoJsonDiagnostics(log = "", sourceMap: GeneratedRustSourceMap |
     const codeRecord = isPlainRecord(message.code) ? message.code : null;
     const diagnostic: BuildDiagnostic = {
       severity: level,
-      message: stringFromRecord(message, "message") ?? "Cargo diagnostic",
+      message: stringFromRecord(message, "message") ?? "Cargo 诊断",
       code: codeRecord ? stringFromRecord(codeRecord, "code") : undefined,
       file: primarySpan ? stringFromRecord(primarySpan, "file_name") : undefined,
       line: primarySpan ? numberFromRecord(primarySpan, "line_start") : undefined,

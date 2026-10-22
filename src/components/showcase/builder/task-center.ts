@@ -646,7 +646,7 @@ function readableCargoDiagnostic(line: string) {
   }
 
   const level = taskLogString(message, "level") ?? "diagnostic";
-  const summary = taskLogString(message, "message") ?? "Cargo diagnostic";
+  const summary = taskLogString(message, "message") ?? "Cargo 诊断";
   const code = cargoDiagnosticCode(message);
   const location = cargoDiagnosticLocation(message);
   return [

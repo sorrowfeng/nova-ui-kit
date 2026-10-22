@@ -2306,8 +2306,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       onValueChange={(value: any) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                       options={[
                         { value: "desktop", label: "桌面" },
-                        { value: "tablet", label: "Tablet" },
-                        { value: "mobile", label: "Mobile" },
+                        { value: "tablet", label: "平板" },
+                        { value: "mobile", label: "手机" },
                       ]}
                     />
                     <NumberBox
@@ -3873,9 +3873,9 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       <PropertySection
                         icon={ToggleLeft}
-                        title="State"
+                        title="状态"
                         description="项目状态绑定、默认值和属性校验。"
-                        badge={selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} issue(s)` : "ready"}
+                        badge={selectedPropertyIssues.length > 0 ? `${selectedPropertyIssues.length} 个问题` : "就绪"}
                         open={openPropertySections.state}
                         onOpenChange={() => togglePropertySection("state")}
                       >
@@ -3937,7 +3937,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       <PropertySection
                         icon={Settings2}
-                        title="Appearance"
+                        title="外观"
                         description="视觉变体和控件尺寸。"
                         open={openPropertySections.appearance}
                         onOpenChange={() => togglePropertySection("appearance")}
@@ -3979,9 +3979,9 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       <PropertySection
                         icon={Braces}
-                        title="Actions"
+                        title="动作"
                         description={selectedEventName ? `事件 ${selectedEventName} 绑定和常用图层动作。` : "当前控件没有可绑定事件。"}
-                        badge={selectedEventCommand ? "bound" : selectedEventName ? "ready" : "none"}
+                        badge={selectedEventCommand ? "已绑定" : selectedEventName ? "待绑定" : "无"}
                         open={openPropertySections.actions}
                         onOpenChange={() => togglePropertySection("actions")}
                       >
@@ -5660,7 +5660,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     <PanelTitle icon={Monitor} title="响应式" description="查看当前断点、画布尺寸和选中控件的响应式状态。" />
                     <div className="space-y-3 rounded-[22px] bg-surface-container-low p-3">
                       <SegmentedControl
-                        aria-label="Inspector responsive breakpoint"
+                        aria-label="检查器响应式断点"
                         value={activeBreakpoint}
                         onValueChange={(value: any) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                         options={[
@@ -5733,8 +5733,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </div>
                       )}
                       <div className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
-                        <PathRow label="Tracked" value={`${reverseDependencySummaries.length} source(s)`} />
-                        <PathRow label="Graph" value={projectDependencyGraph ? "loaded" : "not loaded"} />
+                        <PathRow label="已跟踪" value={`${reverseDependencySummaries.length} 个来源`} />
+                        <PathRow label="依赖图" value={projectDependencyGraph ? "已加载" : "未加载"} />
                       </div>
                     </div>
                   </section>
