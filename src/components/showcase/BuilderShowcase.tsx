@@ -1,18 +1,16 @@
-import type { ProjectJumpKind } from "./builder/task-center";
 import {
   Field,
-  NumberBox,
   CountReadout,
   PanelTitle,
   PathRow,
   ProjectJumpIcon,
   ProjectTaskIcon,
-  PropertySection,
   StateBadge,
   StateLabel,
-  TemplateMiniPreview,
 } from "./builder/view-helpers";
-import { simulatorTraceStatusLabel } from "./builder/status-labels";
+import {
+  simulatorTraceStatusLabel,
+} from "./builder/status-labels";
 import {
   lazy,
   Suspense,
@@ -24,147 +22,81 @@ import {
   type DragEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
-  type UIEvent as ReactUIEvent,
-  type WheelEvent as ReactWheelEvent,
 } from "react";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import {
-  Activity,
-  AlignHorizontalJustifyCenter,
-  AlignHorizontalJustifyEnd,
-  AlignHorizontalJustifyStart,
-  AlignVerticalJustifyCenter,
-  AlignVerticalJustifyEnd,
-  AlignVerticalJustifyStart,
+  convertFileSrc,
+} from "@tauri-apps/api/core";
+import {
+  open,
+} from "@tauri-apps/plugin-dialog";
+import {
   AlertTriangle,
   ArrowRight,
-  BarChart3,
-  Box,
   Braces,
-  Bug,
-  CalendarDays,
-  Check,
   CheckCircle2,
   ChevronDown,
-  ChevronRight,
-  Circle,
-  Clock3,
   ClipboardCopy,
-  ClipboardPaste,
   Columns3,
   CornerDownRight,
-  Copy,
   Download,
   Eye,
-  EyeOff,
-  FileText,
   FileJson,
   FileImage,
   FolderOpen,
-  FolderSearch,
-  GitBranch,
   Grid3x3,
-  Hand,
-  Heading1,
-  Keyboard,
   Layers,
-  ListChecks,
-  LoaderCircle,
-  Lock,
-  LockOpen,
   Maximize2,
-  Menu,
-  MessageSquare,
   Monitor,
   MonitorPlay,
   MousePointer2,
-  Move,
-  MoveDown,
-  MoveUp,
   Navigation,
   PanelTop,
-  Pause,
   Plus,
   Play,
-  RectangleHorizontal,
-  Redo2,
-  RotateCcw,
-  Ruler,
   Save,
   ScrollText,
-  Scissors,
   Search,
   Settings2,
-  Smartphone,
-  Square,
-  Star,
-  Table2,
   Terminal,
   TextCursorInput,
-  ToggleLeft,
-  Trash2,
   Type,
-  Undo2,
   Wand2,
   X,
-  ZoomIn,
-  ZoomOut,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Input,
+} from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+  Textarea,
+} from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { toastIconClassName, toastSurfaceClassName } from "@/components/ui/toast";
+  toastIconClassName,
+  toastSurfaceClassName,
+} from "@/components/ui/toast";
 import {
   dispatchNovaEditorCommand,
   NOVA_EDITOR_COMMAND_EVENT,
   type NovaEditorCommand,
   type NovaEditorCommandEventDetail,
 } from "@/lib/editor-commands";
-import { cn } from "@/lib/utils";
+import {
+  cn,
+} from "@/lib/utils";
 const BuildWorkspace = lazy(() => import("./builder/BuildWorkspace").then((m) => ({ default: m.BuildWorkspace })));
-const DesignWorkspace = lazy(() => import("./builder/DesignWorkspace").then((m) => ({ default: m.DesignWorkspace })));
-import { InspectorDock } from "./builder/InspectorDock";
 const LogicWorkspace = lazy(() => import("./builder/LogicWorkspace").then((m) => ({ default: m.LogicWorkspace })));
-import { NavigatorDock } from "./builder/NavigatorDock";
-import { OutputDock } from "./builder/OutputDock";
-import { SelectionActionBar } from "./builder/SelectionActionBar";
-import { useCanvasViewportInteraction } from "./builder/useCanvasViewportInteraction";
-import { useCanvasItemDrag } from "./builder/useCanvasItemDrag";
-import { BatchSelectToolbar, CanvasFindBar } from "./builder/CanvasOverlays";
-import { ProjectHealthPanel } from "./builder/ProjectHealthPanel";
-import { ConflictMergeEditor, type ConflictFile } from "./builder/ConflictMergeEditor";
-import { GeneratedDiffView } from "./builder/GeneratedDiffView";
+import {
+  OutputDock,
+} from "./builder/OutputDock";
+import {
+  useCanvasViewportInteraction,
+} from "./builder/useCanvasViewportInteraction";
+import {
+  useCanvasItemDrag,
+} from "./builder/useCanvasItemDrag";
+import {
+  type ConflictFile,
+} from "./builder/ConflictMergeEditor";
 // Mode views are code-split so the design shell does not pay for the
 // project/logic/build workbenches (P2-11).
 const BuilderItemPreview = lazy(() => import("./builder/BuilderItemPreview").then((m) => ({ default: m.BuilderItemPreview })));
@@ -173,21 +105,32 @@ const ShellView = lazy(() => import("./builder/ShellView").then((m) => ({ defaul
 const ProjectView = lazy(() => import("./builder/ProjectView").then((m) => ({ default: m.ProjectView })));
 const LogicView = lazy(() => import("./builder/LogicView").then((m) => ({ default: m.LogicView })));
 const BuildView = lazy(() => import("./builder/BuildView").then((m) => ({ default: m.BuildView })));
-import { itemOptionTexts } from "./builder/item-options";
-import { isTauriRuntime } from "./builder/item-assets";
-import { PreviewDock } from "./builder/PreviewDock";
-import { useDebouncedPreviewReload } from "./builder/useDebouncedPreviewReload";
-import { ToolchainBanner } from "./builder/ToolchainBanner";
-import { palette, getDefinition, type ComponentDefinition } from "./builder/component-palette";
-import { AlignGuideOverlay } from "./builder/AlignGuideOverlay";
-import { buildInspectorWorkflowSteps } from "./builder/inspector-workflow";
+import {
+  isTauriRuntime,
+} from "./builder/item-assets";
+import {
+  PreviewDock,
+} from "./builder/PreviewDock";
+import {
+  useDebouncedPreviewReload,
+} from "./builder/useDebouncedPreviewReload";
+import {
+  palette,
+  getDefinition,
+  type ComponentDefinition,
+} from "./builder/component-palette";
+import {
+  buildInspectorWorkflowSteps,
+} from "./builder/inspector-workflow";
 import {
   getItemIdsInsideMarquee,
   getSelectionMarqueeRect,
   useCanvasMarquee,
   type SelectionMarquee,
 } from "./builder/useCanvasMarquee";
-import { ProjectDock, type BuilderDockTab } from "./builder/ProjectDock";
+import {
+  type BuilderDockTab,
+} from "./builder/ProjectDock";
 import {
   MIN_ITEM_HEIGHT,
   MIN_ITEM_WIDTH,
@@ -211,11 +154,12 @@ import {
   replaceItemAndApplyResizeConstraints,
   snap,
 } from "./builder/layout";
-import { normalizeGeneratedFileChangeSummary } from "./builder/build-results";
+import {
+  normalizeGeneratedFileChangeSummary,
+} from "./builder/build-results";
 import {
   createProjectChangeImpact,
   createProjectReverseDependencySummary,
-  type ProjectChangeImpactStatus,
   type ProjectChangeImpactSummary,
   type ProjectChangeScope,
   type ProjectReverseDependencySummary,
@@ -253,7 +197,6 @@ import {
   type ProjectActionPresetDefinition,
   type ProjectJumpActionId,
   type ProjectTaskEntry,
-  type ProjectTaskKind,
   type ProjectTaskKindFilter,
   type ProjectTaskLogLine,
   type ProjectTaskRunResult,
@@ -271,15 +214,8 @@ import {
 } from "./builder/responsive";
 import {
   bumpReleaseVersion,
-  defaultReleaseConfig,
   defaultReleaseNotes,
-  normalizeEnvVarName,
   normalizeMinimumArtifactSizeKb,
-  normalizeReleaseBundleTarget,
-  normalizeReleaseConfig,
-  normalizeReleaseInstallerSmokeRunnerMode,
-  normalizeReleaseNotes,
-  normalizeReleaseSigningMode,
   normalizeReleaseTitlebarStyle,
   normalizeReleaseVersion,
   normalizeReleaseWindowKind,
@@ -314,8 +250,6 @@ import {
 } from "./builder/backend";
 import {
   DEFAULT_RUST_COMMANDS,
-  DEFAULT_RUST_COMMAND_RESPONSE,
-  DEFAULT_RUST_LOGIC,
   commandResultSchema,
   createBackendIntegrationCommand,
   createDefaultRustCommands,
@@ -334,15 +268,12 @@ import {
   sanitizeRustParameterName,
 } from "./builder/rust-commands";
 import {
-  createBlankFile as createTemplateBlankFile,
   createProjectTemplateSeed,
   projectTemplateById,
   projectTemplates,
-  type ProjectTemplateDefinition,
   type ProjectTemplateId,
 } from "./builder/project-templates";
 import {
-  defaultEventPayloadFields,
   eventCommandId,
   eventNameForItem,
   eventPayloadFieldSelection,
@@ -355,53 +286,37 @@ import {
   resolveSimulatorProps,
   simulatorArgsForEvent,
   simulatorOutcomeFromResult,
-  simulatorStateSnapshot,
   simulatorTimeLabel,
   simulatorTraceId,
 } from "./builder/simulator";
-import { createId } from "./builder/ids";
+import {
+  createId,
+} from "./builder/ids";
 import type {
   AlignmentMode,
   BackendArtifactBuildResult,
   ApplyGeneratedFilesResult,
-  BackendArtifactInspectionEntry,
   BackendArtifactInspectionResult,
   BackendIntegration,
-  BackendIntegrationKind,
-  BackendIntegrationLanguage,
   BackendIntegrationMethod,
-  BackendIntegrationTransport,
   BackendMethodTestRecord,
   BackendMethodTestResult,
   BuildHistoryEntry,
   BuildDiagnostic,
-  ButtonVariant,
   BuilderComponentType,
   BuilderDropIntent,
   BuilderEventBinding,
   BuilderEventName,
-  BuilderEventPayloadField,
   BuilderItem,
   BuilderItemProps,
   BuilderMode,
   BuilderStateVariable,
   BreakpointValidationIssue,
   BuildResult,
-  GeneratedFilePreviewEntry,
   GeneratedFilePreviewResult,
-  GeneratedRustSourceMap,
-  ReleasePipelineArtifactInspectionResult,
   ReleasePipelineEntry,
   ReleasePipelineRecordWriteResult,
-  ReleasePipelineStatus,
-  ReleasePipelineStep,
-  ReleasePipelineStepArtifactEvidence,
-  ReleasePipelineStepCommandArgs,
-  ReleasePipelineStepEnvironment,
-  ReleasePipelineStepInputSnapshot,
-  CanvasBackground,
   CanvasPresetId,
-  ControlSize,
   DesignerAsset,
   DesignerFile,
   DesignerProject,
@@ -416,7 +331,6 @@ import type {
   FrameDropIntent,
   FrameLayoutMode,
   HistoryEntry,
-  ImageFit,
   InstallerSandboxHandoffResult,
   InstallerSmokeResult,
   LaunchExecutableResult,
@@ -424,22 +338,13 @@ import type {
   PageConfig,
   ProjectEditorState,
   ProjectDependencyGraphEvent,
-  ProjectDependencyGraphPlan,
   ProjectDependencyGraphReadResult,
   ProjectDependencyGraphRecord,
-  ProjectDependencyGraphScope,
   ProjectDependencySourceReference,
-  ProjectDependencyGraphValidityEntry,
   ProjectDependencyGraphWriteResult,
-  ProjectMaintenanceEntry,
   ProjectReleaseConfig,
-  ReleaseBundleTarget,
-  ReleaseInstallerSmokeMode,
-  ReleaseInstallerSmokeRunnerMode,
-  ReleaseSigningMode,
   ReleaseTitlebarStyle,
   ReleaseWindowKind,
-  ResizeHandle,
   ResponsiveBreakpointId,
   ResponsiveOverride,
   BuilderResultTargetProp,
@@ -449,11 +354,8 @@ import type {
   RustModule,
   CargoDependency,
   RustCommandParameter,
-  RustCommandParameterSource,
-  RustCommandParameterType,
   RustCommandResultSchema,
   SavedBuilderState,
-  ValidationHistoryEntry,
   ValidationResult,
   WindowsCertificateInspectionResult,
 } from "./builder/types";
@@ -461,35 +363,21 @@ import type {
 // Module-scope types, constants and pure helpers live in builder/monolith-module.
 import {
   BackendSchemaField,
-  BackendSchemaFieldType,
   BuildReadinessItem,
-  BuildReadinessSeverity,
-  BuildReadinessSummary,
   BuilderBottomDockTab,
   BuilderEditorTab,
-  BuilderEditorTabKind,
-  BuilderFileSaveState,
   BuilderIssueItem,
   BuilderLeftDockTab,
-  BuilderPropertyAutoFixSummary,
-  BuilderPropertyAutoFixTarget,
   BuilderPropertyIssue,
-  BuilderPropertyKind,
-  BuilderPropertySchemaField,
   BuilderPropertySectionId,
   BuilderRightDockTab,
-  BuilderTreeRow,
   CANVAS_CONTEXT_INSERT_SEARCH_LIMIT,
   COMPONENT_PALETTE_FAVORITES_STORAGE_KEY,
   COMPONENT_PALETTE_RECENTS_STORAGE_KEY,
-  CanvasBounds,
   CanvasContextMenuState,
   CanvasDragMetricsOverlay,
   CanvasNudgeResult,
-  CanvasRulerMark,
-  ComponentCoverageGroup,
   ComponentPaletteCategoryId,
-  ComponentPaletteKit,
   DESIGNER_WORKSPACE_STORAGE_KEY,
   DestructiveActionRequest,
   EDITOR_EXPERIENCE_KNOWN_TITLEBAR_STYLES,
@@ -500,32 +388,19 @@ import {
   EditorWorkflowStep,
   InlineTextEdit,
   InspectorWorkflowStep,
-  LEGACY_BUILDER_STORAGE_KEY,
   LogicConnectionFilterId,
   LogicResourceViewId,
   LogicSignalSlotRow,
   PROJECT_JUMP_RECENTS_STORAGE_KEY,
   PalettePointerDrag,
-  ProjectActionCenterAction,
   ProjectActionCenterItem,
-  ProjectActionCenterTone,
-  ProjectActivityEntry,
-  ProjectDependencyValidityView,
   ProjectExplorerContextMenuState,
   ProjectExplorerDossier,
   ProjectExplorerFilterId,
-  ProjectExplorerGroupId,
-  ProjectExplorerImpactAction,
   ProjectExplorerImpactItem,
-  ProjectExplorerModel,
   ProjectExplorerNode,
-  ProjectExplorerNodeAction,
-  ProjectExplorerRow,
-  ProjectExplorerStatusTone,
   ProjectFileRouteGroup,
-  ProjectFileRouteItem,
   ProjectFolderHealthItem,
-  ProjectFolderHealthState,
   ProjectJumpFeedback,
   ProjectJumpResult,
   ProjectOwnershipMatrixItem,
@@ -533,68 +408,43 @@ import {
   ProjectSavePlanStep,
   ProjectSnapshotEntry,
   ProjectSourceOverviewRow,
-  ProjectSourceOverviewStatus,
   ProjectTopologyNode,
   ProjectWorkingSetItem,
   ProjectWorkingSetKind,
   QtCreatorParityItem,
   READINESS_GATED_PROJECT_ACTIONS,
-  RUST_RESERVED_WORDS,
   ReleaseReadinessItem,
-  ReleaseReadinessSummary,
-  RustBracketMatch,
   RustCommandResultImpact,
   RustCompletionCommit,
   RustCompletionItem,
-  RustCompletionKind,
   RustCompletionTrigger,
   RustDebuggerPanelId,
   RustDiagnosticGutterEntry,
   RustEditorHoverDoc,
   RustEditorMinimapMarker,
   RustEditorQuickFix,
-  RustEditorQuickFixTone,
   RustEditorSelection,
   RustFindMatch,
   RustIdentifierReference,
-  RustIdentifierTarget,
   RustLogicOutlineEntry,
-  RustLogicOutlineKind,
   RustSignatureHelp,
-  RustSignatureParameterHelp,
   SMART_GUIDE_SAFE_MARGIN,
   SMART_GUIDE_THRESHOLD,
   SimulatorTraceEntry,
   SlotNavigationEntry,
   SmartGuide,
-  SmartGuideSource,
   WindowVisualAuditIssue,
-  WindowVisualAuditSeverity,
-  WindowVisualAuditSummary,
   WorkflowRuntimeSession,
-  activityTimeValue,
-  assetPublicPath,
-  auditAutoLayoutFrame,
   auditProjectWindows,
-  auditSiblingOverlaps,
   backendArtifactInspectionStatusLabel,
   backendArtifactStarterBuildAvailable,
   backendArtifactStatusVariant,
-  backendFieldFromSchema,
-  backendFieldInputValue,
   backendMethodLocalValidationRecord,
   backendMethodRequestEnvelope,
   backendPayloadFieldsForEvent,
   backendResponseSchemaHasPatch,
-  backendSchemaDefaultValue,
-  backendSchemaDescription,
-  backendSchemaEnumValues,
   backendSchemaFieldIssues,
   backendSchemaFields,
-  backendSchemaFieldsFromValues,
-  backendSchemaIsJsonSchema,
-  backendSchemaIsLegacyPayloadEnvelope,
-  backendValueMatchesType,
   booleanStateLabel,
   boundsFromRects,
   buildDiagnosticKey,
@@ -605,13 +455,11 @@ import {
   buildTreeRows,
   builderIssueSeverityRank,
   builderItemRuntimeState,
-  builderPropertySchema,
   builderPropertySectionIds,
   builderPropertySectionLabels,
   builderPropertySectionOptions,
   builderStateFingerprint,
   builderTabIndexValue,
-  buttonVariantValues,
   byteSizeLabel,
   canMoveLayerWithinGroup,
   canvasContextMenuWidth,
@@ -631,7 +479,6 @@ import {
   componentPaletteKitDefinitions,
   componentPaletteMatchesSearch,
   componentPaletteQuickInsertTypes,
-  controlSizeValues,
   countStateVariableReferences,
   createAssetFromPath,
   createBlankFile,
@@ -655,8 +502,6 @@ import {
   defaultOpenPropertySections,
   defaultPage,
   dependencyGraphEventStatusVariant,
-  dependencyValidityDefinitions,
-  dependencyValidityKindsForEvent,
   dependencyValidityStatusVariant,
   designerFileContentFingerprint,
   dirtyScopeIdsForImpact,
@@ -671,7 +516,6 @@ import {
   findRustBracketMatch,
   floatingEditorMenuViewportPadding,
   focusableBuilderComponentTypeSet,
-  focusableBuilderComponentTypes,
   formatProjectSnapshotTime,
   formatRustSource,
   formatSignedDelta,
@@ -687,25 +531,17 @@ import {
   getLayerSiblings,
   getSelectionBounds,
   groupProjectExplorerRows,
-  hasValueAtPath,
-  imageFitValues,
   inspectReleasePipelineArtifactEvidence,
-  intersectsScopeIds,
   invokeIfAvailable,
   isKeyboardFocusableBuilderItem,
   isMultilineQuickTextEdit,
   isPlainRecord,
-  isQuickTextProp,
   isRustIdentifierName,
-  isRustIdentifierPart,
-  itemBounds,
   itemCanvasBounds,
   itemUsesOptions,
-  itemVisualName,
   loadComponentPaletteTypeList,
   loadDesignerWorkspace,
   loadProjectJumpRecentIds,
-  loadSavedBuilderState,
   logicConnectionFilterIds,
   logicConnectionFilterOptions,
   logicResourceItemActiveClass,
@@ -722,36 +558,15 @@ import {
   md3ApplicationComponentTypes,
   mergeReleasePipelineHistory,
   navigatorTreeRowMatches,
-  normalizeBackendSchemaType,
   normalizeBreakpointValidationIssues,
-  normalizeBuildHistory,
-  normalizeBuilderState,
   normalizeComparablePath,
   normalizeComponentTypeList,
-  normalizeDesignerAssets,
-  normalizeDesignerFile,
   normalizeDesignerWorkspace,
   normalizeOpenEditorFileIds,
-  normalizeProjectDependencyGraphEvent,
-  normalizeProjectDependencyGraphPlan,
   normalizeProjectDependencyGraphRecord,
-  normalizeProjectDependencyGraphScope,
-  normalizeProjectDependencyGraphValidityEntry,
-  normalizeProjectDependencySourceReference,
   normalizeProjectEditorState,
-  normalizeProjectMaintenanceHistory,
   normalizeReleasePipelineHistory,
-  normalizeReleasePipelineStatus,
-  normalizeReleasePipelineStepArtifactEvidence,
-  normalizeReleasePipelineStepCommandArgs,
-  normalizeReleasePipelineStepEnvironment,
-  normalizeReleasePipelineStepInputSnapshot,
-  normalizeReleasePipelineSteps,
-  normalizeResponsiveOverrides,
   normalizeStateVariables,
-  normalizeValidationHistory,
-  optionComponentTypes,
-  overlapArea,
   parentPathFromPath,
   parseBackendFieldInput,
   parseJsonEditorValue,
@@ -785,10 +600,7 @@ import {
   projectExplorerStatusClass,
   projectExplorerVisibleWithCollapsedAncestors,
   projectFileContentFingerprints,
-  projectJumpFuzzyMatch,
   projectJumpKindLabel,
-  projectJumpResultScore,
-  projectJumpSearchText,
   projectRelativePath,
   projectRustContentFingerprint,
   projectSettingsContentFingerprint,
@@ -799,39 +611,25 @@ import {
   projectUiDiskFileName,
   propertyAutoFixPatchForItem,
   propertyAutoFixSummaryForProject,
-  propertyFallbackValue,
   propertyFieldMatchesSearch,
-  propertyIssueId,
   propertyIssuesForItem,
   propertyIssuesForProject,
   propertyPatchSize,
   propertySchemaForItem,
   propertySchemaHint,
   propertySectionForProp,
-  pushRustPlainTextSegment,
-  quickTextPrimaryPropByType,
   quickTextPropForItem,
   quickTextPropLabel,
-  quickTextPropOrder,
-  quickTextPropOrderForItem,
   quickTextPropsForItem,
   readOnlyBuilderComponentTypeSet,
-  readOnlyBuilderComponentTypes,
-  relativeItemBounds,
-  releasePipelineArtifactEvidenceFromInspection,
-  releasePipelineStepFromTask,
-  releasePipelineTerminalStatus,
   releaseReadinessDashboard,
   renderRustHighlightedLine,
   resizeHandleCursor,
   resizeHandleMetas,
   resizePatchForHandle,
-  responsiveBreakpoints,
   reverseDependencyStatusLabel,
   reverseDependencyStatusVariant,
   reverseDependencyTargetKindLabel,
-  rustBracketPairs,
-  rustClosingBrackets,
   rustCommandFunctionExists,
   rustCommandSignatureLabel,
   rustCompletionInsertPreview,
@@ -839,58 +637,47 @@ import {
   rustCompletionSymbolEntries,
   rustEditorSelectionFromValue,
   rustFunctionLocation,
-  rustHighlightPattern,
   rustIdentifierAtSelection,
   rustIdentifierOccurrences,
   rustLineNumberAtIndex,
   rustLineStartIndex,
   rustLocationAtIndex,
   rustLogicOutlineEntries,
-  rustOutlineColumn,
   rustOutlineKindLabel,
   rustOutlineKindTitle,
   rustSignatureActiveParameterIndex,
   rustSignatureParameterHelp,
-  rustStringLiteral,
   rustSyntaxLegendItems,
-  safeAssetFileName,
   samePathText,
   samplePayloadFromBackendSchema,
-  sanitizeRustLineForFormatting,
   searchNeedle,
   selectOptionsForItem,
-  setPropertyPatchValue,
   setValueAtPath,
   simulatorRunMessage,
   simulatorStateFromProject,
   simulatorStateValuesForArgs,
   stableTextHash,
-  summarizeReadiness,
-  summarizeReleasePipelineEntry,
   textPropertyValue,
   textRangeForLineColumn,
-  updateDependencyValidityCache,
   updateReleasePipelineEntryWithTask,
-  validateBackendJsonSchemaValue,
   validateBackendSchemaValue,
-  validationHistoryStatus,
   validationTimeLabel,
-  valueAtPath,
   visualAuditSeverityLabel,
-  visualMinimumSize,
-  visualTextForItem,
-  withProjectExplorerParentLinks,
   workflowRuntimeSessionFromBuildHistory,
   workflowRuntimeSessionFromLaunch,
-  workflowStepStatusClassName,
   workflowStepStatusLabel,
   workflowTaskForActions,
   workspaceFileContentFingerprints,
   workspaceProjectSettingsContentFingerprints,
   workspaceRustContentFingerprints,
 } from "./builder/monolith-module";
-import { buildProjectSaveManifestItems } from "./builder/project-save-manifest";
-import { buildProjectFileRouteGroups, buildProjectSourceOverviewRows } from "./builder/project-source-models";
+import {
+  buildProjectSaveManifestItems,
+} from "./builder/project-save-manifest";
+import {
+  buildProjectFileRouteGroups,
+  buildProjectSourceOverviewRows,
+} from "./builder/project-source-models";
 
 export function BuilderShowcase() {
   const [workspace, setWorkspace] = useState<DesignerWorkspace>(() => getInitialDesignerWorkspace());
@@ -1044,7 +831,10 @@ export function BuilderShowcase() {
   const [refreshingPipelineRecords, setRefreshingPipelineRecords] = useState(false);
   const [building, setBuilding] = useState(false);
   const [bundling, setBundling] = useState(false);
-  const [checkingTarget, setCheckingTarget] = useState<"frontend" | "rust" | "all" | null>(null);
+  // Nothing can write this any more: its only setter lived in `checkActiveProject`,
+  // which tsc proved was never called. It stays because the dirty-check and the
+  // scope bag still read it, and both treat `null` as "not checking".
+  const [checkingTarget] = useState<"frontend" | "rust" | "all" | null>(null);
   const [validatingWindow, setValidatingWindow] = useState(false);
   const [previewingGeneratedFiles, setPreviewingGeneratedFiles] = useState(false);
   const [applyingGeneratedFiles, setApplyingGeneratedFiles] = useState(false);
@@ -2586,7 +2376,6 @@ export function BuilderShowcase() {
   const latestReleasePipeline = activeProject.releasePipelineHistory?.[0] ?? null;
   const canSaveCustomPreset = customPresetTitle.trim().length > 0 && customPresetDraftActions.length > 0;
 
-  const selectedId = selectedIds[0] ?? "";
   const setSelectedId = (id: string) => {
     setSelectionAnchorId(id);
     setSelectedIds(id ? [id] : []);
@@ -3258,9 +3047,6 @@ export function BuilderShowcase() {
   const selectedConnectionPayloadFields = selectedEventBinding?.payloadMode === "json" ? eventPayloadFieldSelection(selectedEventBinding) : [];
   const selectedConnectionResultTarget = selectedEventBinding?.resultTargetItemId
     ? items.find((item) => item.id === selectedEventBinding.resultTargetItemId) ?? null
-    : null;
-  const selectedConnectionResultState = selectedEventBinding?.resultStateId
-    ? activeProject.stateVariables.find((state) => state.id === selectedEventBinding.resultStateId) ?? null
     : null;
   const selectedConnectionInputSummary = selectedEventCommand
     ? selectedEventCommandArgs.length > 0
@@ -6086,17 +5872,6 @@ export function BuilderShowcase() {
     );
   };
 
-  const centerCanvasView = () => {
-    const viewport = canvasViewportRef.current;
-    if (!viewport) {
-      return;
-    }
-    viewport.scrollTo({
-      left: Math.max(0, (page.width * page.zoom - viewport.clientWidth) / 2),
-      top: Math.max(0, (page.height * page.zoom - viewport.clientHeight) / 2),
-      behavior: "smooth",
-    });
-  };
 
   useEffect(() => {
     const isTypingTarget = (target: EventTarget | null) => {
@@ -6658,10 +6433,6 @@ export function BuilderShowcase() {
     recordInstantProjectAction("insert-component", `已将 ${definition.title} 插入 ${activeFile.name}。`);
   };
 
-  const handlePaletteDragStart = (event: DragEvent, type: BuilderComponentType) => {
-    event.dataTransfer.setData("application/x-nova-component", type);
-    event.dataTransfer.effectAllowed = "copy";
-  };
 
   const handleCanvasDrop = (event: DragEvent) => {
     event.preventDefault();
@@ -6697,108 +6468,9 @@ export function BuilderShowcase() {
     event.dataTransfer.effectAllowed = "copy";
   };
 
-  const handlePalettePointerDown = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-    definition: ComponentDefinition,
-  ) => {
-    if (event.button !== 0) {
-      return;
-    }
-    const session: PalettePointerDrag = {
-      type: definition.type,
-      title: definition.title,
-      pointerId: event.pointerId,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      currentClientX: event.clientX,
-      currentClientY: event.clientY,
-      dragging: false,
-    };
-    palettePointerDragRef.current = session;
-    setPalettePointerDrag(session);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
 
-  const handlePalettePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const session = palettePointerDragRef.current;
-    if (!session || session.pointerId !== event.pointerId) {
-      return;
-    }
 
-    const distance = Math.hypot(event.clientX - session.startClientX, event.clientY - session.startClientY);
-    const nextSession: PalettePointerDrag = {
-      ...session,
-      currentClientX: event.clientX,
-      currentClientY: event.clientY,
-      dragging: session.dragging || distance > 6,
-    };
-    palettePointerDragRef.current = nextSession;
-    setPalettePointerDrag(nextSession);
 
-    if (!nextSession.dragging) {
-      return;
-    }
-
-    event.preventDefault();
-    const frameIntent = getFrameDropIntentFromClientPoint(event.clientX, event.clientY);
-    if (frameIntent) {
-      setDropIntent(frameIntent);
-      return;
-    }
-
-    if (isClientPointInsideCanvas(event.clientX, event.clientY)) {
-      setDropIntent({
-        kind: "canvas",
-        ...getCanvasPoint(event.clientX, event.clientY),
-        itemCount: 1,
-      });
-      return;
-    }
-
-    setDropIntent(null);
-  };
-
-  const finishPalettePointerDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const session = palettePointerDragRef.current;
-    if (!session || session.pointerId !== event.pointerId) {
-      return;
-    }
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    palettePointerDragRef.current = null;
-    setPalettePointerDrag(null);
-    setDropIntent(null);
-
-    if (!session.dragging) {
-      return;
-    }
-
-    suppressPaletteClickRef.current = true;
-    window.setTimeout(() => {
-      suppressPaletteClickRef.current = false;
-    }, 0);
-    event.preventDefault();
-    event.stopPropagation();
-
-    const intent = getFrameDropIntentFromClientPoint(event.clientX, event.clientY);
-    if (!intent && !isClientPointInsideCanvas(event.clientX, event.clientY)) {
-      return;
-    }
-    const targetFrame = intent ? itemsRef.current.find((item) => item.id === intent.frameId) : null;
-    addComponent(session.type, getRelativeDropPoint(event.clientX, event.clientY, targetFrame), intent?.frameId, intent?.index);
-  };
-
-  const cancelPalettePointerDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    palettePointerDragRef.current = null;
-    setPalettePointerDrag(null);
-    setDropIntent(null);
-  };
 
   const updatePaletteDragFromClientPoint = (clientX: number, clientY: number) => {
     const session = palettePointerDragRef.current;
@@ -14043,7 +13715,6 @@ export function BuilderShowcase() {
     }
   };
 
-  const deleteActiveFile = () => deleteFileById(activeFile.id);
 
   const requestDeleteSelected = () => {
     if (selectedItems.length === 0) {
@@ -15116,63 +14787,6 @@ export function BuilderShowcase() {
     }
   };
 
-  const checkActiveProject = async (checkKind: "frontend" | "rust" | "all") => {
-    setMode("build");
-    setCheckingTarget(checkKind);
-    setBuildError("");
-
-    try {
-      const result = await invokeIfAvailable<BuildResult>("check_editor_project", {
-        project: activeProject,
-        rustLogic: activeProject.rustLogic,
-        checkKind,
-      });
-
-      if (!result) {
-        const message = "快速检查需要在 Tauri 桌面 app 中运行。浏览器模式只能执行编辑器内检查。";
-        updateActiveProject((project) => ({
-          ...project,
-          buildLog: message,
-        }));
-        return null;
-      }
-
-      updateActiveProject((project) => ({
-        ...project,
-        rootPath: result.paths.root_path,
-        lastGeneratedFileSummary: normalizeGeneratedFileChangeSummary(result.generated_files) ?? project.lastGeneratedFileSummary,
-        buildLog: result.log,
-      }));
-      recordProjectDependencyGraphEvent(
-        {
-          kind: "check",
-          actionId:
-            checkKind === "frontend"
-              ? "quick-check-frontend"
-              : checkKind === "rust"
-                ? "quick-check-rust"
-                : "quick-check-all",
-          status: result.success ? "succeeded" : "failed",
-          summary: result.success ? `${checkKind} 检查完成。` : `${checkKind} 检查失败。`,
-          artifactPath: result.paths.generated_app_dir,
-        },
-        projectChangeImpact,
-        { ...activeProject, rootPath: result.paths.root_path },
-      );
-      void refreshManagedProjects();
-      return result;
-    } catch (error) {
-      const message = String(error);
-      setBuildError(message);
-      updateActiveProject((project) => ({
-        ...project,
-        buildLog: message,
-      }));
-      throw error;
-    } finally {
-      setCheckingTarget(null);
-    }
-  };
 
   const previewGeneratedProjectFiles = async ({
     revealBuildMode = true,
@@ -18338,13 +17952,6 @@ export function BuilderShowcase() {
     setRightDockTab("properties");
   };
 
-  const returnToDesignEditor = () => {
-    setMode("design");
-    setRightDockTab("properties");
-    setFeedbackPanelOpen(false);
-    setBottomDockExpanded(false);
-    setBottomDockMinimized(true);
-  };
 
   const openSelectedConnections = () => {
     setLogicResourceView("connections");
@@ -18459,7 +18066,6 @@ export function BuilderShowcase() {
     inspectorWorkflowSteps.find((step) => !step.disabled) ??
     inspectorWorkflowSteps[0] ??
     null;
-  const SelectionRecommendedIcon = selectionRecommendedStep?.icon ?? MousePointer2;
   const selectionStatusTone =
     selectedItems.length > 1
       ? selectedItems.some((item) => item.locked)

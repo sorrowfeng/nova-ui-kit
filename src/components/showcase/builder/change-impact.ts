@@ -5,8 +5,13 @@ import type {
   GeneratedFilePreviewResult,
   ProjectDependencySourceReference,
 } from "./types";
-import type { ProjectJumpActionId } from "./task-center";
-import { releaseBundleTargetLabel, releaseSigningModeLabel } from "./release";
+import type {
+  ProjectJumpActionId,
+} from "./task-center";
+import {
+  releaseBundleTargetLabel,
+  releaseSigningModeLabel,
+} from "./release";
 
 export type ProjectChangeImpactStatus = "needs-plan" | "stale" | "dirty" | "clean";
 
@@ -386,7 +391,6 @@ function scopeIsDirty(scopes: ProjectChangeScope[], id: ProjectChangeScopeId) {
 }
 
 function createExecutionPlan(
-  project: DesignerProject,
   status: ProjectChangeImpactStatus,
   dirtyScopes: ProjectChangeScope[],
   changedCount: number,
@@ -787,7 +791,7 @@ export function createProjectChangeImpact(
               ...dirtyScopes.flatMap((scope) => scope.nextActions.filter((action) => action !== "apply-generated-changes")),
             ]).slice(0, 6)
         : ["quick-check-all", "validate-window", "build-exe"];
-  const executionPlan = createExecutionPlan(project, status, dirtyScopes, changedEntries.length);
+  const executionPlan = createExecutionPlan(status, dirtyScopes, changedEntries.length);
 
   const summary =
     status === "needs-plan"

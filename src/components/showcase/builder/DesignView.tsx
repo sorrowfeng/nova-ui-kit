@@ -3,10 +3,8 @@
 // BuilderShowcase still owns the state; this module only renders it.
 
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { AlertTriangle, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignHorizontalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, AlignVerticalJustifyStart, ArrowRight, Braces, CheckCircle2, ChevronDown, ChevronRight, ClipboardCopy, ClipboardPaste, Columns3, Copy, CornerDownRight, Eye, EyeOff, FileImage, FileJson, FolderOpen, Grid3x3, Hand, Keyboard, Layers, Lock, LockOpen, Maximize2, Monitor, MousePointer2, Move, MoveDown, MoveUp, PanelTop, Play, Plus, Redo2, RotateCcw, Ruler, Save, Search, Settings2, Star, Terminal, ToggleLeft, Trash2, Type, Undo2, Wand2, X, ZoomIn, ZoomOut } from "lucide-react";
 import { AlignGuideOverlay } from "./AlignGuideOverlay";
-import { Badge } from "@/components/ui/badge";
 import { BatchSelectToolbar, CanvasFindBar } from "./CanvasOverlays";
 import { BuilderResultTargetProp, ButtonVariant, CanvasBackground, CanvasPresetId, ControlSize, FrameLayoutMode, ImageFit, ReleaseBundleTarget, ReleaseTitlebarStyle, ReleaseWindowKind, ResponsiveBreakpointId } from "./types";
 import { Button } from "@/components/ui/button";
@@ -21,15 +19,42 @@ import { NavigatorDock } from "./NavigatorDock";
 import { ProjectDock } from "./ProjectDock";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SelectionActionBar } from "./SelectionActionBar";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { ToolchainBanner } from "./ToolchainBanner";
+import {
+  SelectionActionBar,
+} from "./SelectionActionBar";
+import {
+  Switch,
+} from "@/components/ui/switch";
+import {
+  Textarea,
+} from "@/components/ui/textarea";
+import {
+  ToolchainBanner,
+} from "./ToolchainBanner";
 
-import { DesignWorkspace } from "./DesignWorkspace";
-import { projectExplorerBadgeLabel } from "./monolith-module";
-import { frameLayoutModeLabel, responsiveBreakpointLabel, simulatorTraceStatusLabel } from "./status-labels";
-import { CountReadout, Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, StateBadge, StateLabel, TemplateMiniPreview } from "./view-helpers";
+import {
+  DesignWorkspace,
+} from "./DesignWorkspace";
+import {
+  projectExplorerBadgeLabel,
+} from "./monolith-module";
+import {
+  frameLayoutModeLabel,
+  responsiveBreakpointLabel,
+  simulatorTraceStatusLabel,
+} from "./status-labels";
+import {
+  CountReadout,
+  Field,
+  NumberBox,
+  PanelTitle,
+  PathRow,
+  PropertySection,
+  SignalChip,
+  StateBadge,
+  StateLabel,
+  TemplateMiniPreview,
+} from "./view-helpers";
 
 export type DesignViewScope = Record<string, any>;
 
@@ -203,7 +228,6 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
     normalizeReleaseTitlebarStyle,
     normalizeTabOrderForFocusableItems,
     numberFromInput,
-    open,
     openCanvasContextMenu,
     openEditorTab,
     openEditorTabs,
@@ -416,7 +440,6 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
     toggleSelectedLock,
     toggleSelectedRuntimeVisibility,
     toolchainStatus,
-    top,
     topLevelItems,
     treeRows,
     ungroupSelectedFrames,
@@ -442,7 +465,6 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
     visibleNavigatorTreeRows,
     visibleProjectExplorerNodes,
     visibleProjectExplorerRows,
-    window,
     workspace,
     zoomCanvasBy,
   } = scope;

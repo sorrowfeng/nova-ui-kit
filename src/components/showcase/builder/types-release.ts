@@ -1,6 +1,5 @@
 // Domain-split types. Re-exported from types.ts for compatibility.
 
-import type { CanvasPresetId, ResponsiveBreakpointId } from "./types-canvas";
 
 export type ReleaseBundleTarget = "all" | "app" | "nsis" | "msi" | "appimage" | "deb" | "dmg";
 

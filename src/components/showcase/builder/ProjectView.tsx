@@ -3,12 +3,15 @@
 // BuilderShowcase still owns the state; this module only renders it.
 
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { ArrowRight, Braces, ChevronDown, ChevronRight, ClipboardCopy, Columns3, Copy, Download, Eye, FileImage, FileJson, FileText, FolderOpen, FolderSearch, Layers, ListChecks, Menu, MousePointer2, Play, Plus, Save, Search, TextCursorInput, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+import {
+  Input,
+} from "@/components/ui/input";
+import {
+  Progress,
+} from "@/components/ui/progress";
 import {
   SignalChip,
   CountReadout,
@@ -19,8 +22,12 @@ import {
   isReadoutStateLabel,
   isSignalStateLabel,
 } from "./view-helpers";
-import { projectSourceScopeLabel } from "./project-source-models";
-import { projectExplorerBadgeLabel } from "./monolith-module";
+import {
+  projectSourceScopeLabel,
+} from "./project-source-models";
+import {
+  projectExplorerBadgeLabel,
+} from "./monolith-module";
 
 export type ProjectViewScope = Record<string, any>;
 
@@ -62,7 +69,6 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
     isTauriRuntime,
     latestFailedProjectTask,
     missingRustSlotCount,
-    mode,
     normalizeReleaseVersion,
     openEditorTab,
     openEditorTabCountLabel,

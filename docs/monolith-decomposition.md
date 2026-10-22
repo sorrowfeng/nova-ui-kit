@@ -21,7 +21,7 @@
 
 `Record<string, any>` 意味着 `tsc` 一个键都查不出来：漏接就是运行时 `undefined`。`BuildView.tsx:12-14` 那条注释记着它已经把整个工作台炸白过一次——「the scope bag needs the same symbol wired through BuilderShowcase and ShellView, which is how "X is not a function" once blanked this whole workbench」。
 
-现在还留着约 20 个死接线（`outputExePath`、`confirmLabel`、`pipelinePresetTitle` 解构了却从不作为裸标识符使用，实际走的是 `activeProject.outputExePath` 这类嵌套访问）。这是无类型手抄名单的病征，不是崩溃。
+名单里还混着没人读的名字。`outputExePath`、`confirmLabel`、`pipelinePresetTitle`、`railNextStepLabel` 解构了却从不作为裸标识符使用（实际走的是 `activeProject.outputExePath` 这类嵌套访问），甚至还有 `div`、`span`、`nav`、`h1`、`p`、`map`、`length` 这种占着解构位、遮蔽掉同名全局的键。这是无类型手抄名单的病征，不是崩溃。
 
 ### ② 复利债：棘轮没拧
 
@@ -39,7 +39,9 @@
 
 ### ③ 肿块债
 
-`editorExperienceAuditItems` 一个 `useMemo` 就是 1037 行。另有 11 个 import 进来却一次没用（`InspectorDock`、`NavigatorDock`、`SelectionActionBar`、`BatchSelectToolbar`、`CanvasFindBar`、`ProjectHealthPanel`、`ConflictMergeEditor`、`GeneratedDiffView`、`ToolchainBanner`、`AlignGuideOverlay`、`ProjectDock`）。
+`editorExperienceAuditItems` 一个 `useMemo` 就是 1037 行。
+
+死重比一开始估的多得多。用 `tsc --noUnusedLocals --noUnusedParameters` 量才是准的——**569 个未用符号，100% 落在 showcase 树**，项目其余部分干净。其中 491 个是 import 绑定、82 个是解构出来的死键、16 条 import 整条未用，剩下 13 个是没人调用过的函数（`checkActiveProject`、`centerCanvasView`、整套 `handlePalette*` 指针拖拽……）。`tsconfig` 里根本没有 `noUnusedLocals`，这就是它们能攒下来的原因。
 
 `builder/` 顶层 11 个文件超过 800 行上限：`monolith-module` 8890、`DesignView` 5745、`LogicView` 5691、`ShellView` 5271、`BuilderItemPreview` 4843、`BuildView` 4746、`component-palette` 2533、`ProjectView` 2314、`types-project` 922、`SelectionActionBar` 872、`change-impact` 815。
 
@@ -81,17 +83,27 @@
 
 | 期 | 动作 | `BuilderShowcase` | `MAX_LINES` 收到 | 风险 |
 |----|------|------------------:|-----------------:|------|
-| 现状 | | 19938 | 20000 | 余量 62 |
-| **0** | 死 import + 死接线 + `window` 出袋 | ≈19900 | 19910 | 零 |
-| **1** | 抽纯数据块 | ≈18430 | 18450 | 低 |
-| **2** | 收 scope 袋为类型切片 | ≈17340 | 17360 | 中 |
+| 开工前 | | 19938 | 20000 | 余量 62 |
+| **0** | 死重清扫 + 拧棘轮 | **19544** | **19600** | 零 |
+| **1** | 抽纯数据块 | ≈18100 | 18120 | 低 |
+| **2** | 收 scope 袋为类型切片 | ≈17000 | 17020 | 中 |
 | **3** | 拆胖视图 | 不变 | 不变 | 高 |
 
-### Phase 0 — 止血（零风险）
+### Phase 0 — 止血（已完成）
 
-清 11 个死 import、约 20 个死接线、`ShellView` 袋里的 `window`。**然后拧棘轮**。
+清死重，然后把棘轮拧到实测值旁边。**这一期的真正产出不是省下的 394 行，是「加一行就得抽一行」重新生效，而且死代码再也攒不回来。**
 
-这一期的真正产出不是省下的 30 行，是「加一行就得抽一行」重新生效。
+做法是让 `tsc` 当裁判，不用自己写正则猜。启发式有两个已经踩过的坑：`from "./x/Name"` 里的路径包含符号名，数原始文本会漏判；整文件懒匹配又会把中间所有 import 一起吞掉，把每个图标都报成死的。改成读 `TS6133`/`TS6196`/`TS6192` 的报告、只删它点名的绑定，就不可能和编译器对不上。
+
+删的时候也有两处差点删坏，都是「改完立刻被 `tsc` 抓住」：
+
+- 正则忘了 `{` 这个前缀，`import { A, B }` 删 A 会变成 `import {, B }`。改成按子句列表拆、按本地名删（`KeyboardEvent as ReactKeyboardEvent` 要删的是 `as` 后面那个，因为 tsc 报的就是本地名）。
+- `dropBinding` 找不到名字时也会顺手把语句重排一遍，返回值变了就被误判成「已删」，于是从待删集合里划掉，后面的语句全部空转。**找不到就原样返回**。
+
+最后拧两道棘轮：
+
+1. `check-showcase-size` 的 `MAX_LINES` 20000 → **19600**（实测 19544，余量 56）。
+2. `tsconfig.json` 打开 `noUnusedLocals` + `noUnusedParameters`。这才是防回潮的那道——以后再写一个没人调的函数，`tsc` 当场报，不用等谁记得去看。
 
 ### Phase 1 — 抽纯数据块（约 -1470 行）
 
@@ -128,7 +140,7 @@ useBuilderBuild()  / useBuilderTasks()  / useBuilderDocks()
 ## 怎么验
 
 ```bash
-npx tsc --noEmit
+npx tsc --noEmit        # 现在自带 noUnusedLocals / noUnusedParameters
 npm run check:experience          # 含 full 冒烟 110 项
 npm run check:showcase-size
 
@@ -137,6 +149,8 @@ npm run check:ui-density          # chip 数不许动
 npm run check:a11y                # 47 项，含中文界面无英文
 npm run check:builder-runtime:full
 ```
+
+Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函数、再解构一个没人读的键，编译当场挂——不用等谁记得回头数。
 
 ## 不做什么
 
@@ -149,12 +163,14 @@ npm run check:builder-runtime:full
 
 | 期 | 改动 | 实测 | 上限 |
 |----|------|-----:|-----:|
-| — | 尚未开工 | 19938 | 20000 |
+| 0 | 死重清扫：491 个未用 import 绑定、16 条整条未用的 import、82 个解构死键、13 个没人调用过的函数；DOM 全局 `window` 出袋。`tsconfig` 打开 `noUnusedLocals`/`noUnusedParameters`，`MAX_LINES` 拧到实测旁边 | **19544** | **19600** |
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
 ## 已知残留
 
+- **「快速检查」这功能在 UI 上根本进不去。** Phase 0 删掉的 `checkActiveProject`（57 行，调 `check_editor_project`）是 `checkingTarget` 的唯一写入者，而 tsc 证明它从来没被调用过。现在 `checkingTarget` 永远是 `null`，`dirty` 那一项永远不为真，Build 面上「正在检查」的分支是死的。删它是对的（删除前后行为完全一致），但**功能缺失是真的**——要么接回 UI，要么把这堆状态一起清掉。不是 Phase 0 的事，记在这里免得忘。
+- **`window` 这个名字在项目里有两个意思。** Phase 0 把 DOM 全局从 scope 袋里拿掉了：它被当普通键传过三层，`DesignView` 里 `window.prompt(...)` 实际拿到的是袋子里那个。今天袋子里没人供给 `window`，所以它回落到全局、侥幸能跑；而项目自己有「窗口壳」这个领域概念（`page.windowKind`、`releaseWindowKinds`、`data-builder-page-window-kind`），哪天谁加一个叫 `window` 的项目域对象，批量改标签那个弹窗当场就炸。**名字遮蔽比死代码危险**：死代码顶多占地，遮蔽会在别的文件里悄悄改行为。
 - `check:showcase-size` 只量 `BuilderShowcase.tsx`。`builder/` 里那 11 个超 800 行的文件不在它管辖内，靠 Phase 3 和代码评审约束。若要强制，需另开一条按文件量的门禁。
 - scope 袋的类型在 Phase 2 之前是 `Record<string, any>`，`tsc` 全程查不出漏键。Phase 0/1 期间靠 `check:experience` 的 110 项冒烟兜底。
 - `check-goal-coverage` 有 97 条断言钉在冒烟脚本的字面量上。改冒烟脚本时这些会跟着挂——那是故意的，它们测的是「冒烟真的在断言」。

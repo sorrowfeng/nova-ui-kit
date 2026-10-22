@@ -3,7 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const target = path.join(root, "src", "components", "showcase", "BuilderShowcase.tsx");
-const MAX_LINES = 20000; // P2-9 target: 2万 lines. 52021 -> 19859 after extracting the five mode views, item preview, view-helpers, module scope, the shell chrome and three pure project-file builders. What remains is the state/event layer.
+const MAX_LINES = 19600; // P2-9 target: 2万 lines. 52021 -> 19859 after extracting the five mode views, item preview, view-helpers, module scope, the shell chrome and three pure project-file builders. What remains is the state/event layer. Phase 0 of docs/monolith-decomposition.md then dropped the dead weight (unused imports, unused scope keys, unreachable handlers): 19938 -> 19544. The limit sits just above the achieved value on purpose — a modest feature addition still fits, a large one has to pay for itself by extracting.
 
 if (!fs.existsSync(target)) {
   console.error("check-showcase-size: missing BuilderShowcase.tsx");

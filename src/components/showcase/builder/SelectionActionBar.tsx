@@ -32,8 +32,9 @@ import {
   Type,
   X,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+} from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +43,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import type { BuilderComponentType, BuilderItem } from "./types";
-import { CountReadout, StateBadge, StateLabel } from "./view-helpers";
+import {
+  cn,
+} from "@/lib/utils";
+import type {
+  BuilderComponentType,
+  BuilderItem,
+} from "./types";
+import {
+  CountReadout,
+  StateBadge,
+  StateLabel,
+} from "./view-helpers";
 
 export type SelectionActionBarState = "idle" | "single" | "multi";
 
@@ -247,7 +257,6 @@ export function SelectionActionBar({
   openComponentsDock,
   fitCanvasToViewport,
   canvasItemCount,
-  onAlignPreview,
 }: SelectionActionBarProps) {
   const SelectionRecommendedIcon = selectionRecommendedStep?.icon ?? MousePointer2;
   const previewAlign = (label: string) => {

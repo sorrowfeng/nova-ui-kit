@@ -3,9 +3,7 @@
 // BuilderShowcase still owns the state; this module only renders it.
 
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { AlertTriangle, ArrowRight, Box, Braces, CheckCircle2, ChevronDown, ChevronRight, ClipboardCopy, Clock3, CornerDownRight, Download, FileImage, FileJson, FolderOpen, GitBranch, ListChecks, Menu, Monitor, MousePointer2, MoveDown, MoveUp, Pause, Play, Plus, RotateCcw, Save, Search, Settings2, Square, Terminal, Wand2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { projectChangeScopeLabel } from "./change-impact";
 import { CountReadout, StateBadge, StateLabel, isQuietCount, isQuietStateLabel, isSignalStateLabel } from "./view-helpers";
@@ -18,14 +16,40 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { GeneratedDiffView } from "./GeneratedDiffView";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { ProjectHealthPanel } from "./ProjectHealthPanel";
-import { ProjectJumpActionId, ProjectTaskKindFilter, ProjectTaskStatus, ProjectTaskStatusFilter } from "./task-center";
-import { ReleaseBundleTarget, ReleaseInstallerSmokeMode, ReleaseInstallerSmokeRunnerMode, ReleaseSigningMode } from "./types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Label,
+} from "@/components/ui/label";
+import {
+  Progress,
+} from "@/components/ui/progress";
+import {
+  ProjectHealthPanel,
+} from "./ProjectHealthPanel";
+import {
+  ProjectJumpActionId,
+  ProjectTaskKindFilter,
+  ProjectTaskStatus,
+  ProjectTaskStatusFilter,
+} from "./task-center";
+import {
+  ReleaseBundleTarget,
+  ReleaseInstallerSmokeMode,
+  ReleaseInstallerSmokeRunnerMode,
+  ReleaseSigningMode,
+} from "./types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Switch,
+} from "@/components/ui/switch";
+import {
+  Textarea,
+} from "@/components/ui/textarea";
 
 export type BuildViewScope = Record<string, any>;
 
@@ -148,7 +172,6 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     normalizeMinimumArtifactSizeKb,
     normalizeReleaseVersion,
     numberFromInput,
-    open,
     openBottomDock,
     openBuildDiagnostic,
     openBuildReadinessItem,
@@ -270,7 +293,6 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     taskQueueStateTitle,
     taskQueueStateTone,
     toggleGeneratedPreviewPath,
-    toolbar,
     updateReleaseConfig,
     validatingWindow,
     validationTimeLabel,

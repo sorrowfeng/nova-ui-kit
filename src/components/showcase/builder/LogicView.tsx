@@ -3,21 +3,47 @@
 // BuilderShowcase still owns the state; this module only renders it.
 
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { Activity, AlertTriangle, ArrowRight, Box, Braces, Bug, CheckCircle2, ChevronRight, ClipboardCopy, Clock3, Copy, CornerDownRight, FileJson, FolderOpen, ListChecks, MessageSquare, MousePointer2, MoveDown, MoveUp, Navigation, Play, Plus, RotateCcw, Save, ScrollText, Search, Settings2, Terminal, TextCursorInput, ToggleLeft, Trash2, Wand2 } from "lucide-react";
 import { BackendIntegrationKind, BackendIntegrationLanguage, BackendIntegrationTransport, RustCommandParameterSource, RustCommandParameterType, RustCommandResultSchema } from "./types";
-import { Badge } from "@/components/ui/badge";
-import { projectChangeScopeLabel } from "./change-impact";
-import { projectExplorerBadgeLabel } from "./monolith-module";
-import { simulatorTraceStatusLabel } from "./status-labels";
-import { CountReadout, StateBadge, StateLabel } from "./view-helpers";
-import { Button } from "@/components/ui/button";
-import { DEFAULT_RUST_COMMAND_RESPONSE } from "./rust-commands";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  projectChangeScopeLabel,
+} from "./change-impact";
+import {
+  projectExplorerBadgeLabel,
+} from "./monolith-module";
+import {
+  simulatorTraceStatusLabel,
+} from "./status-labels";
+import {
+  CountReadout,
+  StateBadge,
+  StateLabel,
+} from "./view-helpers";
+import {
+  Button,
+} from "@/components/ui/button";
+import {
+  DEFAULT_RUST_COMMAND_RESPONSE,
+} from "./rust-commands";
+import {
+  Input,
+} from "@/components/ui/input";
+import {
+  Label,
+} from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Switch,
+} from "@/components/ui/switch";
+import {
+  Textarea,
+} from "@/components/ui/textarea";
 
 export type LogicViewScope = Record<string, any>;
 
@@ -89,7 +115,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
     buildActiveBackendArtifact,
     buildDiagnostics,
     builderIssueCount,
-    builderIssueErrorCount,
     buildingBackendArtifactId,
     byteSizeLabel,
     checkingBackendArtifacts,
@@ -117,7 +142,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
     deleteRustCommandParameter,
     diskBusy,
     duplicateRustSelectionOrLine,
-    editableRustDiagnosticQuickFixes,
     enqueueProjectTask,
     fileNameFromPath,
     filteredBackendIntegrations,
@@ -182,7 +206,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
     moveRustFindMatch,
     moveRustSelectionLines,
     numberFromInput,
-    open,
     openActiveRustCommandPrimaryMapping,
     openActiveRustCommandSlot,
     openBottomDock,
@@ -320,7 +343,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
     testingBackendMethodId,
     toggleRustEditorWordWrap,
     toggleRustLineComment,
-    top,
     unboundLogicSignalSlotRows,
     updateActiveBackendMethodSampleField,
     updateBackendIntegration,
@@ -338,7 +360,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
     validateActiveBackendMethodContract,
     validationTimeLabel,
     visibleRustLogicOutline,
-    window,
   } = scope;
 
   return (
