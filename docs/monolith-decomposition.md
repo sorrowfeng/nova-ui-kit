@@ -205,6 +205,8 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 2·5 | 删掉 5 个没有任何文件 import 过的模块（388 行），含 `CanvasContextMenu.tsx` 这份孤儿副本 | `builder/` **50326** | — |
 | 3·0 | 审计表按域切成 4 片（surface/code/project/chrome + composer），39 个 flag 零共读才动手 | `editor-experience-audit.ts` **938 → 4 片全 <800** | 棘轮表划掉一行 |
 | 3·1 | 删掉 5 个没人 invoke 的 Tauri 命令（`check/build/bundle_editor_project`、`create_editor_project`，连同永远跑不到的两个函数半边、随之孤儿的 `project_paths`/`write_readme`）；`applyBackendBuildResult` 补上一直漏写的 3 个 bundle 产物字段；`building`/`bundling` 改由后台任务驱动；Git 冲突编辑器接上（换项目/快照后重读状态，冲突可点开）；新增 `check:command-reachability` 两个方向把这类东西钉死 | `BuilderShowcase` **18726** | **18760** |
+| 3·2 | 新项目的 exe 窗口跟自己的设计画布对上：页面和发布配置各自由 `defaultPage` / `defaultReleaseConfig` 播种，六个壳字段里四个不一致（标题、副标题、宽、高），于是每个项目一出生就是「需同步」，做出来的 exe 是 1200×800 而画布是 1440×900。`createProject` 改为用 `releaseWindowShellFromPage` 从页面播种发布壳；只有壳跟走，签名/打包/安装器设置原样保留。顺带把 TS 测试跑手从「只跑一个写死的入口」换成 `check:ts-tests` 跑 `scripts/*.test.ts`，新域不用借邻居的文件名 | Qt Creator 对齐 **74% → 79%**，第 6/7 条转 pass | — |
+| 3·3 | 空画布被报成 8 个能力缺口：19 条里 8 条标「复核」，其实一条缺口都没有——检查根本没跑（没选中、光标不在符号里、还没构建）。新增第四种严重度 `unverified`（待验证），49 处「前提不存在就报 warning」翻过来；聚合逻辑抽成 `worstAuditSeverity` 并钉测试。**待验证不是软 pass**：未知证据 id 仍算 warning，混着真失败仍是 fail | 对齐 **11 pass / 8 unverified / 0 warning / 0 fail** | — |
 
 **接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
 
@@ -237,12 +239,20 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 - **`noUnusedLocals` 查不出死 export——导出本身就是一次「使用」。** Phase 0 清的是未用的局部变量和 import 绑定，所以这类东西全躲过去了。按「整个 `src/` 里标识符只出现一次（就是它自己那行定义）」扫一遍，抓到 12 个，其中 3 个被 check 脚本读着（`workflowStepStatusClassName`、`DEFAULT_RUST_LOGIC`、`STATUS_LABEL_DOMAINS`），另外 9 个躺在 5 个**没有任何文件 import 过的模块**里，已删（388 行）。`CanvasContextMenu.tsx` 最典型：它不是没用的组件，是**孤儿副本**——真正的右键菜单写在 `ShellView` 里，那些 `data-builder-canvas-context-*` 钩子也在那儿；冒烟 110 项能测到行为，所以这份没人接线的副本一直没人发现。
   教训：**「冒烟全绿」不等于「没有死代码」**，冒烟测的是行为在不在，不是代码有没有人用。这两件事各有各的测法。
 - `check-goal-coverage` 有 97 条断言钉在冒烟脚本的字面量上。改冒烟脚本时这些会跟着挂——那是故意的，它们测的是「冒烟真的在断言」。
+- **读数比代码更容易骗人，尤其是产品自己算出来的那个分。** Qt Creator 对齐矩阵一直在算分，冒烟一直只断言「面板在不在」，从没读过那个分。读出来是 79%、8 条「复核」——看着像产品还差八块能力，实际一条都不差，是八个检查没跑到前提。**分数没人打印，就等于分数没人负责。** 现在冒烟每次都打出来，并且把每行连到它的审计证据上（只看行级分数找不到病根：它只说「第 5 条是 warning」就停了）。
+  顺着这条又抓到两个同类的：
+  1. **测量属性名打错，空值照样打印。** 第一版抽取打出来是 `parity % of : 1:? 2:? …`——`score`/`total` 是挂在面板自己身上的属性，却去子孙节点上找；严重度属性叫 `-state` 不叫 `-severity`；标题取了整行的 `textContent`。空值照样 `console.log`，看起来像「产品没数据」。现在捕获本身有断言（行数对不对得上 total、每条证据能不能解析出已知严重度）。
+  2. **读数是产品文案的时候，别把结果注回页面模板。** 自检那段第一版把报告 `JSON.stringify` 后塞回页面里的模板字符串，中文文案里一个反引号或 `${` 就把脚本截断了。改成在 Node 侧算好，只把布尔值注回去。
+- **标签分类错了，装饰就会冒充信号。** 给 `unverified` 起名「待验证」之后，build 工作台的 status chip 从 10 个涨到 29 个，密度门当场红。原因是 `SIGNAL_STATE_FRAGMENTS` 里有「待」，`isSignalStateLabel("待验证")` 为真，于是每个待验证都画成徽章——而这个词说的是「没得可做」。和 `view-labels.ts` 开头写的那种病一模一样：**没分类的日常标签被画成 chip 就是纯装饰。** 已归入 `READOUT_STATE_LABELS` 并在 `check-ui-density-rules` 钉住。
+- **同一个类型写两份，加成员的那次就会分叉。** `EditorExperienceAuditSeverity` 同时声明在 `status-labels.ts` 和 `monolith-module.tsx`，这次要加第四种严重度，两份当场对不上。单体那份改成 `import("./status-labels").…` 的别名，不再手抄。**别名是一行，分叉是一个下午。**
 
 ## 没做完的
 
 按「现在不动手会怎样」排，不是按大小排。每条都写清楚**它卡在哪、动它之前要先拿到什么**，免得下次开工先花半小时重新摸一遍。
 
 ### 0. 发布物落后于代码（一行命令，但先做完再发）
+
+**产品自己的 Qt Creator 对齐矩阵现在是 11 pass / 8 unverified / 0 warning / 0 fail**——19 条需求没有已知能力缺口，剩下 8 条只是空会话里跑不到前提（没选中、光标不在符号里、还没构建）。所以用户能看到的差距就剩这一条：发布物。剩下两条（拆胖文件、查值）是代码健康，不影响用户。
 
 `src-tauri\target\release\nova-ui-kit.exe` 上一次构建是 2026-10-22 23:41（本地），早于 `9d7cde84`（删掉 5 个没人 import 的模块）。**行为没变**（那些模块本来就没被接线，冒烟 110/110 已在删除后复跑过），但产物和源码不同源。发之前跑一次：
 
@@ -256,11 +266,11 @@ npm run tauri:exe && npm run check:desktop-exe
 
 | 文件 | 现在 | 备注 |
 |------|-----:|------|
-| `monolith-module.tsx` | 8631 | 杂物间，纯函数/常量/类型混在一起，最该按域拆 |
+| `monolith-module.tsx` | 8632 | 杂物间，纯函数/常量/类型混在一起，最该按域拆 |
 | `DesignView.tsx` | 5768 | |
 | `LogicView.tsx` | 5713 | |
 | `BuilderItemPreview.tsx` | 4844 | |
-| `BuildView.tsx` | 4774 | 接上 Git 冲突编辑器时涨了 6 行，棘轮上限一并抬到 4774 并写清是哪几行 |
+| `BuildView.tsx` | 4779 | Git 冲突编辑器 +6（棘轮 4774），unverified 计数块 +5（棘轮 4779），两次都写清了是哪几行 |
 | `ShellView.tsx` | 3365 | Phase 2·4 之后已经掉了 1913 行 |
 | `component-palette.ts` | 2534 | |
 | `ProjectView.tsx` | 2321 | |
