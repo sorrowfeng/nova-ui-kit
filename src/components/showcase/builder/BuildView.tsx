@@ -464,9 +464,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             pid {latestRunSessionEntry.launchedPid} · {latestRunSessionEntry.runStatus ?? "已启动"}
                           </p>
                         </div>
-                        <Badge variant={latestRunSessionEntry.runStatus === "running" ? "secondary" : "outline"}>
-                          {latestRunSessionEntry.runStatus ?? "未知"}
-                        </Badge>
+                        <StateLabel
+                          showQuiet
+                          variant={latestRunSessionEntry.runStatus === "running" ? "secondary" : "outline"}
+                          label={latestRunSessionEntry.runStatus ?? "未知"}
+                        />
                       </div>
                       <p className="mt-2 line-clamp-2 text-[0.68rem] leading-4 text-on-surface-variant">
                         {latestRunSessionEntry.runSummary || latestRunSessionEntry.launchSummary}
@@ -1292,13 +1294,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             <div className="space-y-1 border-t border-outline-variant pt-2" data-builder-maintenance-history="">
                               <div className="flex items-center justify-between gap-3">
                                 <h5 className="text-xs font-medium text-on-surface">修复历史</h5>
-                                <Badge variant="outline">{activeProject.maintenanceHistory.length}</Badge>
+                                <CountReadout label={`${activeProject.maintenanceHistory.length} 项`} count={activeProject.maintenanceHistory.length} />
                               </div>
                               {activeProject.maintenanceHistory.slice(0, 4).map((entry: any) => (
                                 <div key={entry.id} className="rounded-md bg-surface-container-low px-2 py-1.5 text-xs">
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="min-w-0 truncate font-medium text-on-surface">{entry.title}</span>
-                                    <Badge variant={entry.status === "partial" ? "outline" : "secondary"}>{entry.status}</Badge>
+                                    <StateLabel showQuiet variant={entry.status === "partial" ? "outline" : "secondary"} label={entry.status} />
                                   </div>
                                   <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
                                     {validationTimeLabel(entry.createdAt)} · {entry.fileCount} 文件 · {entry.itemCount} 控件 · {entry.propertyCount} 属性
@@ -1367,10 +1369,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 </span>
                               </span>
                               <span className="flex shrink-0 items-center gap-1.5">
-                                <StateBadge
+                                {/* The icon on the left already carries severity.
+                                    The word is a column value — readable text, and
+                                    only an error earns a pill on top. */}
+                                <StateLabel
+                                  showQuiet
                                   variant={item.severity === "error" ? "destructive" : item.severity === "warning" ? "outline" : "secondary"}
                                   label={buildReadinessSeverityLabel(item.severity)}
-                                  signal={item.severity !== "ready"}
                                 />
                                 {isActionableReadinessItem ? (
                                   <span className="hidden text-[0.66rem] text-on-surface-variant 2xl:inline">
@@ -1465,9 +1470,9 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <article key={`${diagnostic.message}-${index}`} className="rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs">
                             <div className="mb-1 flex items-start justify-between gap-2">
                               <div className="flex min-w-0 items-center gap-2">
-                                <Badge variant={diagnostic.severity === "error" ? "destructive" : "outline"}>{diagnostic.severity}</Badge>
-                                {diagnostic.code ? <Badge variant="outline">{diagnostic.code}</Badge> : null}
-                                {diagnostic.origin ? <Badge variant="outline">{diagnostic.origin}</Badge> : null}
+                                <StateLabel showQuiet variant={diagnostic.severity === "error" ? "destructive" : "outline"} label={diagnostic.severity} />
+                                {diagnostic.code ? <span className="font-mono text-[0.66rem] text-on-surface-variant">{diagnostic.code}</span> : null}
+                                {diagnostic.origin ? <span className="text-[0.66rem] text-on-surface-variant">{diagnostic.origin}</span> : null}
                                 {diagnostic.file ? (
                                   <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">
                                     {diagnostic.file}:{diagnostic.line}:{diagnostic.column}
@@ -1610,11 +1615,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             >
                               {item.requirement}
                             </span>
-                            <StateBadge
+                            <StateLabel
+                              showQuiet
                               className="md:mt-2"
                               variant={editorExperienceAuditBadgeVariant(item.severity)}
                               label={editorExperienceAuditSeverityLabel(item.severity)}
-                              signal={item.severity !== "pass"}
                             />
                           </div>
                           <div className="min-w-0">
@@ -1720,11 +1725,14 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <div className="min-w-0 flex-1">
                             <div className="flex min-w-0 items-center justify-between gap-2">
                               <p className="truncate font-medium text-on-surface">{item.title}</p>
-                              <StateBadge
+                              {/* Severity is a column value the icon already
+                                  encodes. Only a blocker earns a pill; 23 "提醒"
+                                  chips turned the audit list into a wall. */}
+                              <StateLabel
+                                showQuiet
                                 className="shrink-0"
                                 variant={editorExperienceAuditBadgeVariant(item.severity)}
                                 label={editorExperienceAuditSeverityLabel(item.severity)}
-                                signal={item.severity !== "pass"}
                               />
                             </div>
                             <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{item.detail}</p>
@@ -2160,7 +2168,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             <p className="truncate font-medium text-on-surface">{preset.title}</p>
                             <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{preset.detail}</p>
                           </div>
-                          <Badge variant="outline">{preset.badge}</Badge>
+                          <span className="text-[0.66rem] text-on-surface-variant">{preset.badge}</span>
                         </div>
                         <p className="mt-2 truncate font-mono text-[0.68rem] text-on-surface-variant">
                           {preset.actions.map((actionId: any) => projectTaskDefinitions[actionId].title).join(" -> ")}
@@ -2559,7 +2567,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <p className="truncate font-medium text-on-surface">{entry.presetTitle}</p>
-                                <Badge variant="outline">{entry.presetBadge}</Badge>
+                                <span className="text-[0.66rem] text-on-surface-variant">{entry.presetBadge}</span>
                                 <StateLabel showQuiet variant={projectTaskStatusVariant(entry.status as ProjectTaskStatus)} label={projectTaskStatusLabel(entry.status)} />
                               </div>
                               <p className="mt-1 text-[0.68rem] text-on-surface-variant">
@@ -3114,10 +3122,12 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </span>
                       <div className="flex min-w-0 items-center gap-1.5" data-builder-generated-plan-status-detail="compact-inline">
                         <h2 className="shrink-0 text-xs font-semibold text-on-surface">生成文件计划</h2>
-                        <StateBadge
-                          variant={projectChangeImpactStatusVariant(projectChangeImpact.status)}
-                          label={projectChangeImpactStatusLabel(projectChangeImpact.status)}
-                        />
+                        {/* The prose next to this already states the plan's state,
+                            and the 增量影响 section below carries the status chip —
+                            chipping it here said the same fact twice on one screen. */}
+                        <span className="text-[0.68rem] text-on-surface-variant">
+                          {projectChangeImpactStatusLabel(projectChangeImpact.status)}
+                        </span>
                         {generatedFilePreview ? (
                           <CountReadout label={`${projectChangeImpact.totalCount} 文件`} count={projectChangeImpact.totalCount} />
                         ) : null}
@@ -3357,7 +3367,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 dependencyGraphEventStatusVariant(projectDependencyGraph.lastEvent.status) === "destructive"
                               }
                             />
-                            {writingDependencyGraph ? <Badge variant="outline">写入中</Badge> : null}
+                            {writingDependencyGraph ? <StateLabel variant="outline" label="写入中" /> : null}
                           </div>
                           <p className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">
                             {projectDependencyGraph
@@ -3426,7 +3436,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   <p className="truncate font-medium text-on-surface">{entry.label}</p>
                                   <p className="mt-1 truncate font-mono text-[0.68rem] text-on-surface-variant">{entry.snapshotHash}</p>
                                 </div>
-                                <Badge variant={dependencyValidityStatusVariant(entry.validityStatus)}>{entry.validityStatus}</Badge>
+                                <StateLabel showQuiet variant={dependencyValidityStatusVariant(entry.validityStatus)} label={entry.validityStatus} />
                               </div>
                               <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{entry.statusSummary}</p>
                               <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
@@ -3780,7 +3790,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </span>
                       <span className="flex min-w-0 items-center gap-1.5" data-builder-release-readiness-summary-detail="compact-inline">
                         <span className="shrink-0 font-semibold text-on-surface">发布就绪度</span>
-                        <Badge
+                        <StateLabel
+                          showQuiet
                           variant={
                             releaseReadinessSummary.status === "error"
                               ? "destructive"
@@ -3788,9 +3799,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 ? "outline"
                                 : "secondary"
                           }
-                        >
-                          {releaseReadinessSummary.status === "error" ? "阻塞" : buildReadinessSeverityLabel(releaseReadinessSummary.status)}
-                        </Badge>
+                          label={releaseReadinessSummary.status === "error" ? "阻塞" : buildReadinessSeverityLabel(releaseReadinessSummary.status)}
+                        />
                         <span className="min-w-0 truncate text-[0.68rem] text-on-surface-variant">
                           {releaseReadinessSummary.score}% · {releaseReadinessSummary.blockers} 阻塞 · {releaseReadinessSummary.warnings} 警告 · {releaseReadinessActionItems.length || "无"} 待处理
                         </span>
@@ -3991,7 +4001,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               />
                               <span className="truncate font-medium">{issue.title}</span>
                             </div>
-                            <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{visualAuditSeverityLabel(issue.severity)}</Badge>
+                            {/* Severity is the column value; the icon beside it
+                                already carries the weight. */}
+                            <StateLabel
+                              showQuiet
+                              variant={issue.severity === "error" ? "destructive" : "outline"}
+                              label={visualAuditSeverityLabel(issue.severity)}
+                            />
                           </div>
                           <p className="leading-5 text-on-surface-variant">{issue.detail}</p>
                           <p className="mt-2 truncate font-mono text-[0.68rem] text-on-surface-variant">
@@ -4147,7 +4163,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   />
                                   <span className="truncate font-medium">{issue.title}</span>
                                 </div>
-                                <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.breakpoint}</Badge>
+                                <span className="font-mono text-[0.66rem] text-on-surface-variant">{issue.breakpoint}</span>
                               </div>
                               <p className="leading-5 text-on-surface-variant">{issue.detail}</p>
                               <p className="mt-2 truncate font-mono text-[0.68rem] text-on-surface-variant">
@@ -4205,7 +4221,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <h3 className="font-medium">验证历史</h3>
                           <p className="mt-1 text-on-surface-variant">最近 {activeProject.validationHistory.length} 次窗口验证。</p>
                         </div>
-                        <Badge variant="outline">{activeProject.validationHistory[0].status}</Badge>
+                        <StateLabel showQuiet variant="outline" label={activeProject.validationHistory[0].status} />
                       </div>
                       <div className="space-y-2">
                         {activeProject.validationHistory.slice(0, 6).map((entry: any) => (
@@ -4423,7 +4439,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               <p className="truncate font-medium">{entry.label}</p>
                               <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{validationTimeLabel(entry.createdAt)}</p>
                             </div>
-                            <Badge variant="secondary">{entry.buildKind}</Badge>
+                            <span className="text-[0.66rem] text-on-surface-variant">{entry.buildKind}</span>
                           </div>
                           <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{entry.summary}</p>
                           <div className="mt-2 flex flex-wrap gap-2 text-[0.68rem]">
@@ -4662,9 +4678,14 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         <Terminal aria-hidden className="size-3.5" />
                       </span>
                       <h2 className="truncate text-sm font-medium">构建日志</h2>
-                      <Badge variant={buildArtifactReady ? "secondary" : "outline"} className="h-5 shrink-0 px-1.5 text-[0.65rem]">
-                        {buildArtifactStatusLabel}
-                      </Badge>
+                      {/* In-flight work chips; "exe 就绪" and "空闲" are routine
+                          and must not spend the same visual budget. */}
+                      <StateLabel
+                        showQuiet
+                        variant={buildArtifactReady ? "secondary" : "outline"}
+                        className="h-5 shrink-0 px-1.5 text-[0.65rem]"
+                        label={buildArtifactStatusLabel}
+                      />
                       <span className="hidden min-w-0 truncate text-[0.68rem] text-on-surface-variant md:inline">
                         详细输出在底部 Output Dock
                       </span>
@@ -4676,11 +4697,10 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       {/* The open body never restates the line count, so this
                           must survive the disclosure — `group-open:hidden`
                           would drop it from the accessibility tree too. */}
-                      <StateBadge
-                        variant="outline"
+                      <CountReadout
                         className="h-5 px-1.5 text-[0.65rem]"
-                        label={buildLogLineCount > 0 ? `${buildLogLineCount} 行` : "未开始"}
-                        signal={buildLogLineCount > 0}
+                        label={`${buildLogLineCount} 行`}
+                        count={buildLogLineCount}
                       />
                     </div>
                   </summary>

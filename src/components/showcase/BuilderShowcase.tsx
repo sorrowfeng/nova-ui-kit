@@ -1628,7 +1628,10 @@ export function BuilderShowcase() {
         kind: "build",
         label: "构建与运行",
         detail: activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "尚未生成 exe",
-        badge: activeProject.outputExePath ? "exe" : "待构建",
+        // A tab badge names what the tab holds. Its `detail` already says whether
+        // an exe exists, and chipping the same "待构建" here put the fact on screen
+        // once per panel that mentions the build.
+        badge: "构建",
         path: activeProject.outputExePath || projectDiskPath(activeProject.rootPath, "app") || projectRelativePath("app"),
         relativePath:
           activeProject.rootPath && activeProject.outputExePath?.startsWith(activeProject.rootPath)
@@ -3686,7 +3689,8 @@ export function BuilderShowcase() {
         ? `${fileNameFromPath(activeProject.outputExePath)} 已作为项目产物挂到文件树和运行证据。`
         : `${activeProject.releaseConfig.appName} 还没有 release exe，可从左下 Run Kit 或 Build 页生成。`,
       meta: activeProject.outputExePath || buildSourceRow?.relativePath || "app/",
-      badge: activeProject.outputExePath ? "exe" : "待构建",
+      // Kind marker; `tone` and `title` already carry whether it is ready.
+      badge: activeProject.outputExePath ? "exe" : "构建",
       actionLabel: activeProject.outputExePath ? "定位" : "构建",
       tone: activeProject.outputExePath ? "success" : "warning",
       icon: Download,

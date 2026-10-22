@@ -147,7 +147,10 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "target release",
           filter: "build",
           nodeId: activeProject.outputExePath ? "app-release-exe" : "app-folder",
-          badge: activeProject.outputExePath ? "exe" : "待构建",
+          // The badge column names the artifact this route points at. Whether
+          // one exists is already in the row's detail, and chipping "待构建"
+          // here repeated the source-overview summary on the same screen.
+          badge: "exe",
           icon: Download,
         },
         {
