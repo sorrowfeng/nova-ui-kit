@@ -9,8 +9,10 @@ import {
   ProjectTaskIcon,
   PropertySection,
   StateBadge,
+  StateLabel,
   TemplateMiniPreview,
 } from "./builder/view-helpers";
+import { simulatorTraceStatusLabel } from "./builder/status-labels";
 import {
   lazy,
   Suspense,
@@ -111,7 +113,6 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -1992,7 +1993,7 @@ export function BuilderShowcase() {
               : groupId === "app"
                 ? activeProject.outputExePath
                   ? fileNameFromPath(activeProject.outputExePath)
-                  : "等待构建"
+                  : "待构建"
                 : groupId === "meta"
                   ? `${diskCheckpoints.length} 检查点`
                   : projectExplorerModel.summary;
@@ -3232,7 +3233,10 @@ export function BuilderShowcase() {
           tone: selectedLatestSimulatorTrace.status,
           title: selectedLatestSimulatorTrace.status === "success" ? "最近事件成功" : "最近事件失败",
           detail: `${selectedLatestSimulatorTrace.commandName}: ${selectedLatestSimulatorTrace.message}`,
-          badge: selectedLatestSimulatorTrace.status,
+          // The status is a wire enum ("success" / "error"). The selection bar
+          // paints this string, so it has to be translated before it leaves the
+          // domain — DesignView and LogicView already do this for the same field.
+          badge: simulatorTraceStatusLabel(selectedLatestSimulatorTrace.status),
         }
         : selectedEventName
           ? selectedEventCommand
@@ -4257,7 +4261,7 @@ export function BuilderShowcase() {
             : logicWorkflowRow.command
               ? "按命令名定位源码"
               : "需要先创建槽函数",
-          badge: logicWorkflowOutlineEntry?.line ? `Ln ${logicWorkflowOutlineEntry.line}` : logicWorkflowRow.command ? "搜索" : "阻塞",
+          badge: logicWorkflowOutlineEntry?.line ? `第 ${logicWorkflowOutlineEntry.line} 行` : logicWorkflowRow.command ? "搜索" : "阻塞",
           icon: Braces,
           actionLabel: "定位",
           tone: logicWorkflowOutlineEntry?.line ? "primary" : logicWorkflowRow.command ? "ready" : "muted",
@@ -16152,9 +16156,9 @@ export function BuilderShowcase() {
             className="pointer-events-none absolute right-1.5 top-1.5 z-30 flex max-w-[calc(100%-0.75rem)] flex-wrap justify-end gap-1"
             data-builder-runtime-state-badge=""
           >
-            {!runtimeState.visible ? <Badge variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]">隐藏</Badge> : null}
-            {!runtimeState.enabled ? <Badge variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]">禁用</Badge> : null}
-            {runtimeState.readOnly ? <Badge variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]">只读</Badge> : null}
+            {!runtimeState.visible ? <StateBadge signal variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]" label="隐藏" /> : null}
+            {!runtimeState.enabled ? <StateBadge signal variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]" label="禁用" /> : null}
+            {runtimeState.readOnly ? <StateBadge signal variant="outline" className="bg-surface-container-lowest/90 px-1.5 text-[0.56rem]" label="只读" /> : null}
           </div>
         ) : null}
 
@@ -16239,9 +16243,7 @@ export function BuilderShowcase() {
                 }}
               />
             )}
-            <Badge variant="secondary" className={cn("shrink-0", inlineEditMultiline && "self-start")}>
-              {quickTextPropLabel(activeInlineTextEdit.prop)}
-            </Badge>
+            <StateLabel className={cn("shrink-0", inlineEditMultiline && "self-start")} label={quickTextPropLabel(activeInlineTextEdit.prop)} />
           </div>
         ) : null}
 
@@ -16689,7 +16691,9 @@ export function BuilderShowcase() {
         ? "正在构建 exe"
         : desktopRuntimeState === "ready"
           ? "exe 已就绪"
-          : "等待构建";
+          // One phrase for "no exe yet" across the build surface. Two words for
+          // one fact ("待构建" / "等待构建") read as two different states.
+          : "待构建";
   const desktopRuntimeBadgeVariant =
     desktopRuntimeState === "running" || desktopRuntimeState === "ready"
       ? "secondary"
@@ -18784,9 +18788,7 @@ export function BuilderShowcase() {
                 <span className="min-w-0 flex-1">
                   <span className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium text-on-surface">{result.title}</span>
-                    <Badge variant="outline" className="shrink-0">
-                      {result.badge}
-                    </Badge>
+                    <StateLabel className="shrink-0" label={result.badge} />
                   </span>
                   <span className="mt-1 block truncate text-on-surface-variant">{result.subtitle}</span>
                 </span>

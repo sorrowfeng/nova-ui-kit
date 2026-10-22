@@ -338,13 +338,16 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     </span>
                     <div className="min-w-0">
                       <h3 className="truncate text-xs font-semibold text-on-surface">构建输出</h3>
+                      {/* The name, not a second copy of the status. The toolbar
+                          chip right above already says "无 exe"; repeating it
+                          here put one fact on screen twice within one card. */}
                       <p className="truncate text-[0.64rem] leading-3 text-on-surface-variant">
-                        {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "等待 exe"}
+                        {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : activeProject.releaseConfig.appName || activeProject.name}
                       </p>
                     </div>
                   </div>
-                  <StateBadge variant={activeProject.outputExePath ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.64rem]"
-                    label={activeProject.outputExePath ? "就绪" : "待构建"} signal={!activeProject.outputExePath} />
+                  <StateBadge variant="outline" className="h-6 shrink-0 px-2 text-[0.64rem]"
+                    label={activeProject.outputExePath ? "就绪" : "待构建"} signal={false} />
                 </div>
                 <div className="space-y-1.5 text-xs" data-builder-build-output-evidence="collapsed-default">
                   <details
@@ -355,7 +358,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <summary className="focus-ring flex h-7 cursor-pointer list-none items-center justify-between gap-2 rounded-md px-1 text-xs font-medium text-on-surface transition hover:bg-surface-container-high">
                       <span className="truncate">输出路径</span>
                       <span className="flex shrink-0 items-center gap-1.5 text-[0.66rem] text-on-surface-variant">
-                        <span>{activeProject.outputExePath ? "exe 已生成" : "等待构建"}</span>
+                        <span>{activeProject.outputExePath ? "exe 已生成" : "待构建"}</span>
                         <ChevronDown aria-hidden className="size-3.5 transition-transform group-open:rotate-180" />
                       </span>
                     </summary>
