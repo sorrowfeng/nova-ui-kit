@@ -326,7 +326,7 @@ export function PropertySection({
           </div>
         </span>
         <span className="flex shrink-0 items-center gap-1.5">
-          {badge ? <Badge variant="outline" className="shrink-0">{badge}</Badge> : null}
+          {badge ? <StateLabel className="shrink-0" label={String(badge)} /> : null}
           <ChevronDown aria-hidden className={cn("size-4 text-on-surface-variant transition-transform", open && "rotate-180")} />
         </span>
       </button>

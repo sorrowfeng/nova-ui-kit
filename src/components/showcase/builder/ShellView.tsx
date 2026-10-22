@@ -2256,12 +2256,12 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           <span className="min-w-0 flex-1">
                             <span className="flex min-w-0 items-center gap-2">
                               <span className="truncate font-medium">{index + 1}. {step.title}</span>
-                              <Badge
-                                variant={status === "failed" ? "destructive" : status === "succeeded" ? "secondary" : "outline"}
+                              <StateLabel
+                                showQuiet
+                                variant={status === "failed" ? "destructive" : "secondary"}
                                 className="h-5 shrink-0 px-1.5 py-0 text-[0.56rem]"
-                              >
-                                {suggested && status === "idle" ? "下一步" : workflowStepStatusLabel(status)}
-                              </Badge>
+                                label={suggested && status === "idle" ? "下一步" : workflowStepStatusLabel(status)}
+                              />
                             </span>
                             <span className="mt-0.5 block truncate text-[0.66rem] text-on-surface-variant">{step.detail}</span>
                           </span>
@@ -2400,7 +2400,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     data-builder-feedback-strip=""
                     data-builder-feedback-strip-mode="expanded-only"
                   >
-                    <Badge
+                    <StateLabel
+                      showQuiet
                       variant={
                         feedbackSummaryTone === "attention"
                           ? "destructive"
@@ -2408,9 +2409,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             ? "secondary"
                             : "outline"
                       }
-                    >
-                      {feedbackSummaryToneLabel}
-                    </Badge>
+                      label={feedbackSummaryToneLabel}
+                    />
                     <span className="max-w-[18rem] truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
                     <button
                       type="button"
@@ -3670,7 +3670,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     >
                       <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
                         <span className="truncate font-medium">{feedbackSummaryTitle}</span>
-                        <Badge
+                        <StateLabel
+                          showQuiet
                           variant={
                             feedbackSummaryTone === "attention"
                               ? "destructive"
@@ -3678,9 +3679,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                 ? "secondary"
                                 : "outline"
                           }
-                        >
-                          {feedbackSummaryToneLabel}
-                        </Badge>
+                          label={feedbackSummaryToneLabel}
+                        />
                       </div>
                       <p className="line-clamp-2 leading-5 text-on-surface-variant">{feedbackSummaryDetail}</p>
                     </div>

@@ -1433,24 +1433,20 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-medium text-on-surface">槽函数路径助手</h3>
-                        <Badge
-                          variant={
-                            logicSlotAssistantState === "ready"
-                              ? "secondary"
-                              : logicSlotAssistantState === "missing-slot" || logicSlotAssistantState === "unbound"
-                                ? "outline"
-                                : "outline"
-                          }
+                        <StateLabel
+                          showQuiet
+                          variant={logicSlotAssistantState === "ready" ? "secondary" : "outline"}
                           data-builder-logic-slot-assistant-state-badge=""
-                        >
-                          {logicSlotAssistantState === "ready"
-                            ? "可运行"
-                            : logicSlotAssistantState === "missing-slot"
-                              ? "缺槽"
-                              : logicSlotAssistantState === "unbound"
-                                ? "待绑定"
-                                : "等待信号"}
-                        </Badge>
+                          label={
+                            logicSlotAssistantState === "ready"
+                              ? "可运行"
+                              : logicSlotAssistantState === "missing-slot"
+                                ? "缺槽"
+                                : logicSlotAssistantState === "unbound"
+                                  ? "待绑定"
+                                  : "等待信号"
+                          }
+                        />
                         {logicWorkflowRow ? <StateLabel label={logicWorkflowRow.eventName} /> : null}
                       </div>
                       <p className="mt-1 leading-5 text-on-surface-variant">
@@ -2388,13 +2384,16 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       className="h-8 min-w-0 border-0 bg-transparent px-0 font-mono text-xs shadow-none focus-visible:border-transparent"
                       spellCheck={false}
                     />
-                    <Badge variant={rustFindMatches.length > 0 ? "secondary" : rustFindQuery ? "outline" : "outline"} className="shrink-0">
-                      {rustFindQuery
-                        ? rustFindMatches.length > 0
-                          ? `${clamp(rustFindActiveIndex, 0, Math.max(0, rustFindMatches.length - 1)) + 1}/${rustFindMatches.length}`
-                          : "无匹配"
-                        : "查找"}
-                    </Badge>
+                    <StateLabel
+                      className="shrink-0"
+                      label={
+                        rustFindQuery
+                          ? rustFindMatches.length > 0
+                            ? `${clamp(rustFindActiveIndex, 0, Math.max(0, rustFindMatches.length - 1)) + 1}/${rustFindMatches.length}`
+                            : "无匹配"
+                          : "查找"
+                      }
+                    />
                   </div>
                   <div className="flex min-w-0 items-center gap-2 rounded-xl bg-surface-container-highest px-2">
                     <TextCursorInput aria-hidden className="size-4 shrink-0 text-on-surface-variant" />
@@ -5459,13 +5458,9 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <div className="flex flex-wrap items-center gap-1">
                               <span className="text-on-surface-variant">已选控件载荷：</span>
                               {activeBackendPayloadMapping.map((field: any) => (
-                                <Badge key={field} variant="outline">
-                                  {field}
-                                </Badge>
+                                <StateLabel key={field} label={String(field)} />
                               ))}
-                              <Badge variant={activeBackendResponsePatchEnabled ? "secondary" : "outline"}>
-                                {activeBackendResponsePatchEnabled ? "已启用 patch" : "消息目标"}
-                              </Badge>
+                              <StateLabel showQuiet label={activeBackendResponsePatchEnabled ? "已启用 patch" : "消息目标"} />
                             </div>
                           </div>
                         ) : null}
@@ -5506,7 +5501,8 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         {activeBackendIntegrationMethod.lastTest ? (
                           <div className="grid gap-2 text-xs">
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge
+                              <StateLabel
+                                showQuiet
                                 variant={
                                   activeBackendIntegrationMethod.lastTest.status === "passed"
                                     ? "secondary"
@@ -5514,9 +5510,16 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                       ? "outline"
                                       : "destructive"
                                 }
-                              >
-                                {activeBackendIntegrationMethod.lastTest.status}
-                              </Badge>
+                                label={
+                                  activeBackendIntegrationMethod.lastTest.status === "passed"
+                                    ? "通过"
+                                    : activeBackendIntegrationMethod.lastTest.status === "skipped"
+                                      ? "已跳过"
+                                      : activeBackendIntegrationMethod.lastTest.status === "failed"
+                                        ? "失败"
+                                        : "未知"
+                                }
+                              />
                               <span className="truncate text-on-surface-variant">
                                 {activeBackendIntegrationMethod.lastTest.durationMs !== undefined
                                   ? `${activeBackendIntegrationMethod.lastTest.durationMs} ms`

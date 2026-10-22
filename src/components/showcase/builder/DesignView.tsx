@@ -4657,7 +4657,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 修复 {selectedPropertyAutoFixCount}
                               </Button>
                             ) : null}
-                            <Badge
+                            <StateLabel
+                              showQuiet
                               variant={
                                 selectedPropertyIssues.some((issue: any) => issue.severity === "error")
                                   ? "destructive"
@@ -4665,13 +4666,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                     ? "outline"
                                     : "secondary"
                               }
-                            >
-                              {selectedPropertyIssues.some((issue: any) => issue.severity === "error")
-                                ? "error"
-                                : selectedPropertyIssues.length > 0
-                                  ? "warning"
-                                  : "ready"}
-                            </Badge>
+                              label={
+                                selectedPropertyIssues.some((issue: any) => issue.severity === "error")
+                                  ? "错误"
+                                  : selectedPropertyIssues.length > 0
+                                    ? "警告"
+                                    : "就绪"
+                              }
+                            />
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -5704,15 +5706,15 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <p className="truncate text-sm font-medium">{selectedControlReverseDependency.target?.label ?? "所选控件"}</p>
                               <p className="mt-1 text-xs leading-5 text-on-surface-variant">{selectedControlReverseDependency.summary}</p>
                             </div>
-                            <Badge variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}>
-                              {reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
-                            </Badge>
+                            <StateLabel
+                              showQuiet
+                              variant={reverseDependencyStatusVariant(selectedControlReverseDependency.status)}
+                              label={reverseDependencyStatusLabel(selectedControlReverseDependency.status)}
+                            />
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId: any) => (
-                              <Badge key={scopeId} variant="outline">
-                                {scopeId}
-                              </Badge>
+                              <StateLabel key={scopeId} label={String(scopeId)} />
                             ))}
                           </div>
                           <Button

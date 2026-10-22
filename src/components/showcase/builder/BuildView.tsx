@@ -4232,9 +4232,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 <p className="truncate font-medium">{validationTimeLabel(entry.createdAt)}</p>
                                 <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{entry.summary}</p>
                               </div>
-                              <Badge variant={entry.status === "failed" ? "destructive" : entry.status === "warning" ? "outline" : "secondary"}>
-                                {entry.score}%
-                              </Badge>
+                              <StateLabel label={`${entry.score}%`} />
                             </div>
                             <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[0.68rem]">
                               <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.errorCount} 错误</span>
@@ -4348,7 +4346,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 <p className="truncate font-medium">{activity.title}</p>
                                 <p className="mt-1 text-[0.68rem] text-on-surface-variant">{validationTimeLabel(activity.time)}</p>
                               </div>
-                              <Badge
+                              <StateLabel
+                                showQuiet
                                 variant={
                                   ["failed", "error", "stale"].includes(activity.status)
                                     ? "destructive"
@@ -4356,9 +4355,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                       ? "outline"
                                       : "secondary"
                                 }
-                              >
-                                {activity.status}
-                              </Badge>
+                                label={projectActivityStatusLabel(activity.status)}
+                              />
                             </div>
                             <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{activity.summary}</p>
                             {activity.path ? (

@@ -377,7 +377,8 @@ export function SelectionActionBar({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <Badge
+                    <StateLabel
+                      showQuiet
                       variant={
                         selectionBarStatusTone === "attention"
                           ? "destructive"
@@ -385,9 +386,8 @@ export function SelectionActionBar({
                             ? "secondary"
                             : "outline"
                       }
-                    >
-                      {selectionBarStatusLabel}
-                    </Badge>
+                      label={selectionBarStatusLabel}
+                    />
                     <span className="min-w-0 truncate font-medium text-on-surface">{selectionBarStatusTitle}</span>
                     <span className="hidden min-w-0 truncate text-on-surface-variant lg:inline">{selectionBarStatusDetail}</span>
                     {selectedItem && selectedEventName ? (
@@ -834,7 +834,7 @@ export function SelectionActionBar({
               </p>
               {selectionModeStrip}
               <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.68rem]">
-                <Badge variant="secondary">选择工具</Badge>
+                <StateLabel label="选择工具" />
                 <span className="min-w-0 font-medium leading-5 text-on-surface">操作栏保持常驻，选中任何控件后都会在这里显示同一套动作。</span>
                 {selectionCapabilityStrip}
               </div>
