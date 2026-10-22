@@ -220,9 +220,16 @@ async function load(url, width, height) {
     localStorage.setItem("nova-language-user-set", "true");
     localStorage.setItem("nova-toolbar-labels-visible", "true");
     localStorage.setItem("nova-command-hints-visible", "true");
-    localStorage.setItem("nova-density", "cozy");`);
+    localStorage.setItem("nova-density", "cozy");
+    // The first-run guide is a modal; leaving it up makes every workspace
+    // screenshot a picture of a dialog instead of the workbench.
+    localStorage.setItem("nova-onboarding-done", "true");`);
   await send("Page.navigate", { url });
   await waitFor(`Boolean(document.querySelector("[data-builder-readable-workbench]"))`, "builder workbench");
+  if (await evaluate(`Boolean(document.querySelector("[data-builder-onboarding]"))`)) {
+    await click("[data-builder-onboarding-skip]");
+    await delay(300);
+  }
   await delay(700);
 }
 

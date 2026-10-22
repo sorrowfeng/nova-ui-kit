@@ -487,7 +487,9 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredLogicConnectionRows.length}</Badge>
+                      {/* The count is what a closed section stands for. Once it
+                          is open the list says it better than a chip does. */}
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredLogicConnectionRows.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>
@@ -618,7 +620,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredRustCommands.length}</Badge>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredRustCommands.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>
@@ -674,7 +676,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredRustModules.length}</Badge>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredRustModules.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>
@@ -732,7 +734,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredCargoDependencies.length}</Badge>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredCargoDependencies.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>
@@ -791,7 +793,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredBackendIntegrations.length}</Badge>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredBackendIntegrations.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>
@@ -849,7 +851,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem]">{filteredStateVariables.length}</Badge>
+                      <Badge variant="outline" className="h-5 px-1.5 text-[0.58rem] group-open:hidden">{filteredStateVariables.length}</Badge>
                       <ChevronRight aria-hidden className="size-3.5 text-on-surface-variant transition-transform group-open:rotate-90" />
                     </span>
                   </summary>

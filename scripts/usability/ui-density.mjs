@@ -174,10 +174,10 @@ export const DENSITY_BUDGETS = {
 };
 
 export const EXPANDED_BUDGETS = {
-  project: { maxChips: 26, maxTextChars: 1300 },
+  project: { maxChips: 24, maxTextChars: 1300 },
   design: { maxChips: 16, maxTextChars: 420 },
-  logic: { maxChips: 33, maxTextChars: 1150 },
-  build: { maxChips: 28, maxTextChars: 1300 },
+  logic: { maxChips: 25, maxTextChars: 1150 },
+  build: { maxChips: 25, maxTextChars: 1300 },
 };
 
 /**
