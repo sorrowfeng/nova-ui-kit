@@ -2059,7 +2059,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         <DropdownMenuItem data-builder-editor-tab-menu-open="" onSelect={() => openEditorTab(tab)}>
                           <ArrowRight aria-hidden className="size-4" />
                           <span className="min-w-0 flex-1 truncate">打开</span>
-                          <Badge variant="outline">{tab.badge}</Badge>
+                          <StateLabel label={tab.badge} />
                         </DropdownMenuItem>
                         <DropdownMenuItem data-builder-editor-tab-menu-reveal="" onSelect={() => revealEditorTabInProject(tab)}>
                           <FolderOpen aria-hidden className="size-4" />
@@ -2095,7 +2095,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             >
                               <CheckCircle2 aria-hidden className="size-4" />
                               <span className="min-w-0 flex-1 truncate">关闭已同步 UI 标签</span>
-                              <Badge variant="outline">{cleanClosableTabCount}</Badge>
+                              <CountReadout label={String(cleanClosableTabCount)} count={cleanClosableTabCount} />
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               data-builder-editor-tab-menu-close-others=""
@@ -2451,7 +2451,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       data-builder-feedback-inline-panel={bottomDockTab}
                     >
                       <div className="flex min-w-0 items-center gap-2">
-                        <Badge variant="secondary">{bottomDockTabs.find((tab: any) => tab.value === bottomDockTab)?.label ?? bottomDockTab}</Badge>
+                        <StateLabel label={bottomDockTabs.find((tab: any) => tab.value === bottomDockTab)?.label ?? bottomDockTab} />
                         <span className="truncate text-on-surface-variant">
                           {bottomDockTab === "issues"
                             ? `${feedbackIssueCount} 个活跃问题`
@@ -3797,9 +3797,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                 }}
                               >
                                 <span className="mb-1 flex min-w-0 items-center gap-2">
-                                  <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity === "error" ? "错误" : "警告"}</Badge>
-                                  <Badge variant="secondary">{issue.sourceLabel}</Badge>
-                                  {issue.fixable ? <Badge variant="outline">可修复</Badge> : null}
+                                  <StateBadge
+                                    signal
+                                    variant={issue.severity === "error" ? "destructive" : "outline"}
+                                    label={issue.severity === "error" ? "错误" : "警告"}
+                                  />
+                                  <StateLabel label={issue.sourceLabel} />
+                                  {issue.fixable ? <StateLabel label="可修复" /> : null}
                                   {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem] text-on-surface-variant">{issue.meta}</span> : null}
                                 </span>
                                 <span className="block truncate font-medium text-on-surface">{issue.title}</span>
@@ -3821,8 +3825,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                 <Badge variant={selectedBuilderIssue.diagnostic.severity === "error" ? "destructive" : "outline"}>
                                   {selectedBuilderIssue.diagnostic.severity}
                                 </Badge>
-                                {selectedBuilderIssue.diagnostic.code ? <Badge variant="outline">{selectedBuilderIssue.diagnostic.code}</Badge> : null}
-                                {selectedBuilderIssue.diagnostic.origin ? <Badge variant="secondary">{selectedBuilderIssue.diagnostic.origin}</Badge> : null}
+                                {selectedBuilderIssue.diagnostic.code ? <StateLabel label={selectedBuilderIssue.diagnostic.code} /> : null}
+                                {selectedBuilderIssue.diagnostic.origin ? <StateLabel label={selectedBuilderIssue.diagnostic.origin} /> : null}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {isEditableRustDiagnostic(selectedBuilderIssue.diagnostic) ? (
@@ -3873,9 +3877,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                <Badge variant={selectedBuilderIssue.severity === "error" ? "destructive" : "outline"}>{selectedBuilderIssue.severity === "error" ? "错误" : "警告"}</Badge>
-                                <Badge variant="secondary">设计</Badge>
-                                {selectedBuilderIssue.fixable ? <Badge variant="outline">安全修复</Badge> : <Badge variant="outline">手动处理</Badge>}
+                                <StateBadge
+                                  signal
+                                  variant={selectedBuilderIssue.severity === "error" ? "destructive" : "outline"}
+                                  label={selectedBuilderIssue.severity === "error" ? "错误" : "警告"}
+                                />
+                                <StateLabel label="设计" />
+                                {selectedBuilderIssue.fixable ? <StateLabel label="安全修复" /> : <StateLabel label="手动处理" />}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 <Button size="sm" variant="secondary" onClick={() => focusPropertyIssue(selectedBuilderIssue.propertyIssue!, { feedback: true })}>
@@ -3936,9 +3944,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             }}
                           >
                             <span className="mb-1 flex min-w-0 items-center gap-2">
-                              <Badge variant={issue.severity === "error" ? "destructive" : "outline"}>{issue.severity === "error" ? "错误" : "警告"}</Badge>
-                              <Badge variant="secondary">{issue.sourceLabel}</Badge>
-                              {issue.fixable ? <Badge variant="outline">可修复</Badge> : null}
+                              <StateBadge
+                                signal
+                                variant={issue.severity === "error" ? "destructive" : "outline"}
+                                label={issue.severity === "error" ? "错误" : "警告"}
+                              />
+                              <StateLabel label={issue.sourceLabel} />
+                              {issue.fixable ? <StateLabel label="可修复" /> : null}
                               {issue.meta ? <span className="min-w-0 truncate font-mono text-[0.68rem]">{issue.meta}</span> : null}
                             </span>
                             <span className="block truncate font-medium text-on-surface">{issue.title}</span>
@@ -3991,7 +4003,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             {activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "等待构建输出"}
                           </p>
                         </div>
-                        <Badge variant={activeProject.outputExePath ? "secondary" : "outline"}>{activeProject.outputExePath ? "exe" : "等待中"}</Badge>
+                        <StateBadge label={activeProject.outputExePath ? "exe" : "等待中"} />
                       </div>
                       {bottomDockExpanded ? (
                         <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">
@@ -4047,7 +4059,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             {activeBundlePath ? fileNameFromPath(activeBundlePath) : activeBundleDir ? fileNameFromPath(activeBundleDir) : "等待安装包输出"}
                           </p>
                         </div>
-                        <Badge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"}>{activeBundlePath ? "安装器" : activeBundleDir ? "文件夹" : "等待中"}</Badge>
+                        <StateBadge label={activeBundlePath ? "安装器" : activeBundleDir ? "文件夹" : "等待中"} />
                       </div>
                       {bottomDockExpanded ? (
                         <p className="mb-3 line-clamp-2 break-all font-mono text-[0.68rem] leading-4 text-on-surface-variant">

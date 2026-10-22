@@ -1449,7 +1449,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 ? "待绑定"
                                 : "等待信号"}
                         </Badge>
-                        {logicWorkflowRow ? <Badge variant="outline">{logicWorkflowRow.eventName}</Badge> : null}
+                        {logicWorkflowRow ? <StateLabel label={logicWorkflowRow.eventName} /> : null}
                       </div>
                       <p className="mt-1 leading-5 text-on-surface-variant">
                         {logicWorkflowRow
@@ -1857,7 +1857,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                               >
                                 <span className="flex min-w-0 flex-wrap items-center gap-1.5">
                                   <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
-                                  <Badge variant={row.selected ? "secondary" : "outline"}>{row.item.type}</Badge>
+                                  <StateLabel label={row.item.type} />
                                 </span>
                                 <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">
                                   {activeFile.name} · x {Math.round(row.item.x)} y {Math.round(row.item.y)}
@@ -2207,7 +2207,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           >
                             <span className="flex min-w-0 flex-wrap items-center gap-1.5">
                               <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
-                              <Badge variant="outline">{row.item.type}</Badge>
+                              <StateLabel label={row.item.type} />
                               {row.selected ? <Badge variant="secondary">选中</Badge> : null}
                             </span>
                             <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">
@@ -3117,7 +3117,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         >
                           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                             <span className="truncate font-medium text-on-surface">{row.title}</span>
-                            <Badge variant={row.state === "bound" ? "secondary" : "outline"}>{row.badge}</Badge>
+                            <StateLabel label={row.badge} />
                           </div>
                           <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{row.detail}</p>
                           <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
@@ -4531,7 +4531,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           >
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                               <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
-                              <Badge variant="outline">{row.eventName}</Badge>
+                              <StateLabel label={row.eventName} />
                             </div>
                             <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
                               {row.inputSummary}
@@ -4618,7 +4618,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         >
                           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                             <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
-                            <Badge variant="outline">{row.item.type}</Badge>
+                            <StateLabel label={row.item.type} />
                             <ArrowRight aria-hidden className="size-3.5 text-on-surface-variant" />
                             <span className="truncate font-mono text-on-surface">{row.eventName}</span>
                           </div>
@@ -4697,7 +4697,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <div className="min-w-0">
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                               <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
-                              <Badge variant="outline">{row.eventName}</Badge>
+                              <StateLabel label={row.eventName} />
                             </div>
                             <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{row.inputSummary} · {row.outputSummary}</p>
                           </div>

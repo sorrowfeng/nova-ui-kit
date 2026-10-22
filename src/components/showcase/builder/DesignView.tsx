@@ -28,6 +28,7 @@ import { ToolchainBanner } from "./ToolchainBanner";
 
 import { DesignWorkspace } from "./DesignWorkspace";
 import { projectExplorerBadgeLabel } from "./monolith-module";
+import { frameLayoutModeLabel, responsiveBreakpointLabel, simulatorTraceStatusLabel } from "./status-labels";
 import { CountReadout, Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, StateBadge, StateLabel, TemplateMiniPreview } from "./view-helpers";
 
 export type DesignViewScope = Record<string, any>;
@@ -1000,7 +1001,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <TemplateIcon aria-hidden className="size-4 shrink-0 text-primary" />
                                 <span className="truncate text-xs font-medium">{template.title}</span>
                               </span>
-                              <Badge variant={selected ? "secondary" : "outline"}>{template.badge}</Badge>
+                              <StateLabel label={template.badge} />
                             </span>
                             <span className="mt-2 block line-clamp-2 text-[0.68rem] leading-4">{template.description}</span>
                             <TemplateMiniPreview template={template} selected={selected} />
@@ -2154,7 +2155,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                 >
                   <div className="flex min-w-0 items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-1.5 overflow-hidden text-xs">
-                      <span className="text-[0.68rem] text-on-surface-variant">{activeBreakpoint}</span>
+                      <span className="text-[0.68rem] text-on-surface-variant">{responsiveBreakpointLabel(activeBreakpoint)}</span>
                       <span className="truncate font-medium text-on-surface">{page.title || activeFile.name}</span>
                       <div
                         className={cn(
@@ -3312,7 +3313,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-sm font-semibold">{getItemSummary(selectedItem)}</h3>
-                            <Badge variant="outline">{selectedItem.type}</Badge>
+                            <StateLabel label={selectedItem.type} />
                             {selectedItem.locked ? <Badge variant="outline">已锁定</Badge> : null}
                             <Badge variant={selectedEventCommand ? "secondary" : selectedEventName ? "outline" : "outline"}>
                               {selectedEventCommand ? "事件已绑定" : selectedEventName ? "事件就绪" : "无事件"}
@@ -4270,7 +4271,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   <p className="truncate font-medium">{`${entry.eventName} -> ${entry.commandName}`}</p>
                                   <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">{entry.itemName} · {entry.time}</p>
                                 </div>
-                                <Badge variant={entry.status === "error" ? "destructive" : "secondary"}>{entry.status}</Badge>
+                                <StateLabel label={simulatorTraceStatusLabel(entry.status)} />
                               </div>
                               {entry.args ? (
                                 <pre className="max-h-24 overflow-auto rounded-xl bg-surface-container-high p-2 font-mono text-[0.68rem] leading-4">
@@ -4491,7 +4492,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">批量尺寸</p>
                             <p className="mt-1 truncate text-[0.66rem] text-on-surface-variant">统一所选控件宽高，或按首个控件匹配。</p>
                           </div>
-                          <Badge variant="outline">{activeBreakpoint}</Badge>
+                          <StateLabel label={responsiveBreakpointLabel(activeBreakpoint)} />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <Field label="宽">
@@ -4624,14 +4625,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <div className="min-w-0">
                           <p className="truncate text-xs font-medium">断点</p>
                           <p className="mt-1 truncate text-[0.68rem] text-on-surface-variant">
-                            {activeBreakpoint === "desktop" ? "Editing base layout" : `Editing ${activeBreakpoint} override`}
+                            {activeBreakpoint === "desktop" ? "正在编辑基础布局" : `正在编辑 ${responsiveBreakpointLabel(activeBreakpoint)} 覆盖`}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={activeBreakpoint === "desktop" ? "outline" : "secondary"}>{activeBreakpoint}</Badge>
+                          <StateLabel label={responsiveBreakpointLabel(activeBreakpoint)} />
                           {activeBreakpoint !== "desktop" ? (
                             <Button size="sm" variant="ghost" onClick={resetSelectedBreakpointOverride} disabled={!selectedBreakpointOverride}>
-                              Reset
+                              重置
                             </Button>
                           ) : null}
                         </div>
@@ -4818,7 +4819,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">约束</h4>
                               <p className="mt-1 text-xs text-on-surface-variant">父级尺寸变化时保持边距或拉伸。</p>
                             </div>
-                            <Badge variant={selectedParentAutoLayout ? "outline" : "secondary"}>{selectedParentAutoLayout ? "layout" : "anchors"}</Badge>
+                            <StateLabel label={selectedParentAutoLayout ? "布局" : "锚点"} />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <Button
@@ -4868,7 +4869,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">Frame 布局</h4>
                               <p className="mt-1 text-xs text-on-surface-variant">控制子控件的排列方式。</p>
                             </div>
-                            <Badge variant={frameLayoutMode(selectedItem) === "free" ? "outline" : "secondary"}>{frameLayoutMode(selectedItem)}</Badge>
+                            <StateLabel label={frameLayoutModeLabel(frameLayoutMode(selectedItem))} />
                           </div>
                           <Field label="布局模式">
                             <SegmentedControl
@@ -5356,7 +5357,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   : `${selectedEventName} 没有 Rust 命令`}
                               </p>
                             </div>
-                            <Badge variant={selectedEventCommand ? "secondary" : "outline"}>{selectedEventCommand ? "已绑定" : "未绑定"}</Badge>
+                            <StateBadge label={selectedEventCommand ? "已绑定" : "未绑定"} />
                           </div>
                           <div className="grid gap-2">
                             <div className="rounded-xl bg-surface-container-high px-3 py-2">
@@ -5374,7 +5375,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <p className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">验证</p>
                                 <p className="mt-1 line-clamp-2 text-xs leading-4 text-on-surface-variant">{selectedConnectionVerificationDetail}</p>
                               </div>
-                              <Badge variant={selectedConnectionVerificationVariant}>{selectedConnectionVerificationLabel}</Badge>
+                              <StateBadge variant={selectedConnectionVerificationVariant} label={selectedConnectionVerificationLabel} />
                             </div>
                             <div className="mt-3 grid grid-cols-3 gap-2">
                               <Button size="sm" variant="secondary" disabled={!selectedEventCommand} onClick={runSelectedEventAndRevealLogs}>
@@ -5412,7 +5413,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                     <p className="truncate font-mono text-on-surface">{arg.name}</p>
                                     <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{arg.source}</p>
                                   </div>
-                                  <Badge variant="outline">{arg.type}</Badge>
+                                  <StateLabel label={arg.type} />
                                 </div>
                               ))}
                               <Button size="sm" variant="ghost" className="w-full" onClick={openSelectedConnectionTarget}>
@@ -5586,7 +5587,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   {selectedLatestSimulatorTrace.itemName} · {selectedLatestSimulatorTrace.eventName} · {selectedLatestSimulatorTrace.time}
                                 </p>
                               </div>
-                              <Badge variant={selectedLatestSimulatorTrace.status === "error" ? "destructive" : "secondary"}>{selectedLatestSimulatorTrace.status}</Badge>
+                              <StateLabel label={simulatorTraceStatusLabel(selectedLatestSimulatorTrace.status)} />
                             </div>
                             <p className="line-clamp-3 text-on-surface-variant">{selectedLatestSimulatorTrace.message}</p>
                           </div>

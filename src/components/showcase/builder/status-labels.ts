@@ -10,6 +10,9 @@
 export type BuildReadinessSeverity = "ready" | "warning" | "error";
 export type WindowVisualAuditSeverity = "pass" | "warning" | "error";
 export type EditorExperienceAuditSeverity = "pass" | "warning" | "fail";
+export type SimulatorTraceStatus = "success" | "error";
+export type FrameLayoutMode = "free" | "row" | "column" | "grid";
+export type ResponsiveBreakpointId = "desktop" | "tablet" | "mobile";
 
 /** Shown when wire data carries a status the table never anticipated. */
 export const UNKNOWN_STATUS_LABEL = "未知";
@@ -32,6 +35,24 @@ const EDITOR_EXPERIENCE_AUDIT_SEVERITY_LABELS: Record<EditorExperienceAuditSever
   fail: "阻塞",
 };
 
+const SIMULATOR_TRACE_STATUS_LABELS: Record<SimulatorTraceStatus, string> = {
+  success: "成功",
+  error: "错误",
+};
+
+const FRAME_LAYOUT_MODE_LABELS: Record<FrameLayoutMode, string> = {
+  free: "自由",
+  row: "行",
+  column: "列",
+  grid: "网格",
+};
+
+const RESPONSIVE_BREAKPOINT_LABELS: Record<ResponsiveBreakpointId, string> = {
+  desktop: "桌面",
+  tablet: "平板",
+  mobile: "手机",
+};
+
 function lookup(table: Record<string, string>, key: string): string {
   return table[key] ?? (typeof key === "string" && key.trim() !== "" ? key : UNKNOWN_STATUS_LABEL);
 }
@@ -48,6 +69,18 @@ export function editorExperienceAuditSeverityLabel(severity: EditorExperienceAud
   return lookup(EDITOR_EXPERIENCE_AUDIT_SEVERITY_LABELS, severity);
 }
 
+export function simulatorTraceStatusLabel(status: SimulatorTraceStatus): string {
+  return lookup(SIMULATOR_TRACE_STATUS_LABELS, status);
+}
+
+export function frameLayoutModeLabel(mode: FrameLayoutMode): string {
+  return lookup(FRAME_LAYOUT_MODE_LABELS, mode);
+}
+
+export function responsiveBreakpointLabel(breakpoint: ResponsiveBreakpointId): string {
+  return lookup(RESPONSIVE_BREAKPOINT_LABELS, breakpoint);
+}
+
 /** Every severity the lookup tables claim to cover — the gate asserts against this. */
 export const STATUS_LABEL_DOMAINS = {
   buildReadiness: {
@@ -61,5 +94,17 @@ export const STATUS_LABEL_DOMAINS = {
   editorExperienceAudit: {
     table: EDITOR_EXPERIENCE_AUDIT_SEVERITY_LABELS,
     label: editorExperienceAuditSeverityLabel,
+  },
+  simulatorTrace: {
+    table: SIMULATOR_TRACE_STATUS_LABELS,
+    label: simulatorTraceStatusLabel,
+  },
+  frameLayoutMode: {
+    table: FRAME_LAYOUT_MODE_LABELS,
+    label: frameLayoutModeLabel,
+  },
+  responsiveBreakpoint: {
+    table: RESPONSIVE_BREAKPOINT_LABELS,
+    label: responsiveBreakpointLabel,
   },
 } as const;
