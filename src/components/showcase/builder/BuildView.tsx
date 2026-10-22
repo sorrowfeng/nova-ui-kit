@@ -302,9 +302,9 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     data-builder-build-toolbar-status-actions=""
                   >
                     <StateBadge variant={activeProject.outputExePath ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.65rem]"
-                      label={activeProject.outputExePath ? "exe 就绪" : "无 exe"} signal={!activeProject.outputExePath} />
+                      label={activeProject.outputExePath ? "就绪" : "待构建"} signal={!activeProject.outputExePath} />
                     <StateBadge variant={activeBundlePath || activeBundleDir ? "secondary" : "outline"} className="h-6 shrink-0 px-2 text-[0.65rem]"
-                      label={activeBundlePath || activeBundleDir ? "包就绪" : "无安装包"} signal={!(activeBundlePath || activeBundleDir)} />
+                      label={activeBundlePath || activeBundleDir ? "就绪" : "待打包"} signal={!(activeBundlePath || activeBundleDir)} />
                     <Button size="icon-sm" variant="ghost" className="size-7 shrink-0" aria-label="打开输出 Dock" title="打开输出 Dock" onClick={() => openBottomDock("output", false)}>
                       <Download aria-hidden className="size-3.5" />
                     </Button>
@@ -2790,7 +2790,12 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                      <StateLabel variant={desktopRuntimeBadgeVariant} label={desktopRuntimeStatusLabel} data-builder-desktop-runtime-status="" />
+                      <StateBadge
+                        variant={desktopRuntimeBadgeVariant}
+                        signal={desktopRuntimeState === "building" || desktopRuntimeState === "running"}
+                        label={desktopRuntimeStatusLabel}
+                        data-builder-desktop-runtime-status=""
+                      />
                       <Button
                         size="sm"
                         variant={workflowRuntimeActive ? "destructive" : "secondary"}
