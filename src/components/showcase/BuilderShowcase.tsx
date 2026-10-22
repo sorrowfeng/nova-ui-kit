@@ -4767,7 +4767,6 @@ export function BuilderShowcase() {
     [builderIssues, selectedBuilderIssueId],
   );
   const builderIssueCount = builderIssues.length;
-  const builderIssueErrorCount = builderIssues.filter((issue) => issue.severity === "error").length;
   const projectJumpResults = useMemo(() => buildProjectJumpResults(activeProject, diskCheckpoints), [activeProject, diskCheckpoints]);
   const visibleProjectJumpResults = useMemo(
     () => filterProjectJumpResults(projectJumpResults, projectJumpQuery),
@@ -16270,13 +16269,6 @@ export function BuilderShowcase() {
       : activeBundlePath
         ? "安装包就绪"
         : "无产物";
-  const railNextStepLabel = workflowRuntimeActive
-    ? "停止运行目标"
-    : workflowComplete
-      ? activeProject.outputExePath
-        ? "运行生成 exe"
-        : "打开构建输出"
-      : nextWorkflowStepState?.step.title ?? "从检查开始";
   const railQueueSummaryLabel = runningProjectTask
     ? runningProjectTask.title
     : queuedProjectTaskCount > 0
@@ -17837,7 +17829,6 @@ export function BuilderShowcase() {
       buildReadinessSeverityLabel,
       buildReadinessSummary,
       builderIssueCount,
-      builderIssueErrorCount,
       builderIssues,
       builderItemRuntimeState,
       builderPropertySectionLabels,
@@ -18010,7 +18001,6 @@ export function BuilderShowcase() {
       duplicateActiveFileFromNavigator,
       duplicateRustSelectionOrLine,
       duplicateSelected,
-      editableRustDiagnosticQuickFixes,
       editorExperienceAuditBadgeVariant,
       editorExperienceAuditFilter,
       editorExperienceAuditItems,
@@ -18153,7 +18143,6 @@ export function BuilderShowcase() {
       leftRunControlsRef,
       leftRunTaskTimelineRows,
       leftRunTaskTimelineSummary,
-      length,
       loadWorkspace,
       localQueuedProjectTasks,
       logicConnectedSlotCount,
@@ -18200,7 +18189,6 @@ export function BuilderShowcase() {
       moveRustSelectionLines,
       moveSelectedLayerStep,
       moveSelectedTabOrder,
-      name,
       navigateBuilderIssue,
       navigatorLayerMessage,
       navigatorQuery,
@@ -18343,7 +18331,6 @@ export function BuilderShowcase() {
       railConfigurationLabel,
       railEventTargetLabel,
       railKitLabel,
-      railNextStepLabel,
       railQueueSummaryLabel,
       railReleaseTargetLabel,
       railRunTargetLabel,

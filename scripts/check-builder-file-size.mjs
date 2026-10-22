@@ -27,7 +27,7 @@ const CEILINGS = {
   "monolith-module.tsx": 8631,
   "DesignView.tsx": 5768,
   "LogicView.tsx": 5713,
-  "ShellView.tsx": 5289,
+  "ShellView.tsx": 5278,
   "BuilderItemPreview.tsx": 4844,
   "BuildView.tsx": 4769,
   "component-palette.ts": 2534,
