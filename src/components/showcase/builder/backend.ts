@@ -16,7 +16,7 @@ type BackendIntegrationConfigFields = Pick<
   "kind" | "language" | "transport" | "entryPath" | "artifactPath" | "resourcePath" | "command" | "healthCheckCommand" | "startupTimeoutMs" | "captureOutput" | "notes" | "bundleResource"
 >;
 
-export type BackendIntegrationPreset = BackendIntegrationConfigFields & {
+type BackendIntegrationPreset = BackendIntegrationConfigFields & {
   starterDirectory: string;
   buildCommand: string;
   summary: string;
@@ -117,7 +117,7 @@ export function sanitizeCargoDependencyName(value: string, index = 0) {
   );
 }
 
-export function normalizeCargoDependencyFeatures(value: unknown) {
+function normalizeCargoDependencyFeatures(value: unknown) {
   return typeof value === "string"
     ? value
         .split(",")
@@ -167,13 +167,13 @@ export function normalizeCargoDependencies(value: unknown): CargoDependency[] {
   return dependencies.length > 0 ? dependencies : [createCargoDependency(0)];
 }
 
-export function sanitizeBackendIntegrationName(value: string, index = 0) {
+function sanitizeBackendIntegrationName(value: string, index = 0) {
   const fallback = index === 0 ? "Rust Tauri 后端" : `后端集成 ${index + 1}`;
   const name = value.trim().replace(/\s+/g, " ");
   return name || fallback;
 }
 
-export function backendIntegrationSlug(value: string, fallback = "backend-service") {
+function backendIntegrationSlug(value: string, fallback = "backend-service") {
   return (
     value
       .trim()
@@ -184,7 +184,7 @@ export function backendIntegrationSlug(value: string, fallback = "backend-servic
   );
 }
 
-export function backendIntegrationRustIdentifier(value: string, fallback = "backend_integration") {
+function backendIntegrationRustIdentifier(value: string, fallback = "backend_integration") {
   let candidate =
     value
       .trim()
@@ -196,15 +196,15 @@ export function backendIntegrationRustIdentifier(value: string, fallback = "back
   return candidate;
 }
 
-export function normalizeBackendIntegrationKind(value: unknown, fallback: BackendIntegrationKind = "rust-native"): BackendIntegrationKind {
+function normalizeBackendIntegrationKind(value: unknown, fallback: BackendIntegrationKind = "rust-native"): BackendIntegrationKind {
   return backendIntegrationKinds.some((kind) => kind.value === value) ? (value as BackendIntegrationKind) : fallback;
 }
 
-export function normalizeBackendIntegrationLanguage(value: unknown, fallback: BackendIntegrationLanguage = "rust"): BackendIntegrationLanguage {
+function normalizeBackendIntegrationLanguage(value: unknown, fallback: BackendIntegrationLanguage = "rust"): BackendIntegrationLanguage {
   return backendIntegrationLanguages.some((language) => language.value === value) ? (value as BackendIntegrationLanguage) : fallback;
 }
 
-export function normalizeBackendIntegrationTransport(value: unknown, fallback: BackendIntegrationTransport = "tauri-invoke"): BackendIntegrationTransport {
+function normalizeBackendIntegrationTransport(value: unknown, fallback: BackendIntegrationTransport = "tauri-invoke"): BackendIntegrationTransport {
   return backendIntegrationTransports.some((transport) => transport.value === value) ? (value as BackendIntegrationTransport) : fallback;
 }
 
@@ -345,27 +345,27 @@ export function backendIntegrationStarterHint(integration: BackendIntegration) {
   return `${preset.summary} Starter：${preset.starterDirectory}${preset.buildCommand ? `，构建：${preset.buildCommand}` : ""}。`;
 }
 
-export function sanitizeBackendMethodName(value: string, index = 0) {
+function sanitizeBackendMethodName(value: string, index = 0) {
   const fallback = index === 0 ? "default_call" : `backend_method_${index + 1}`;
   const name = value.trim().replace(/\s+/g, "_").replace(/[^A-Za-z0-9_./:-]/g, "_");
   return name || fallback;
 }
 
-export function backendMethodSchema(value: unknown, fallback: string) {
+function backendMethodSchema(value: unknown, fallback: string) {
   if (typeof value === "string" && value.trim()) {
     return value;
   }
   return fallback;
 }
 
-export function backendMethodSamplePayload(value: unknown, fallback: string) {
+function backendMethodSamplePayload(value: unknown, fallback: string) {
   if (typeof value === "string" && value.trim()) {
     return value;
   }
   return fallback;
 }
 
-export function normalizeBackendMethodTestRecord(value: unknown, transport: BackendIntegrationTransport): BackendMethodTestRecord | undefined {
+function normalizeBackendMethodTestRecord(value: unknown, transport: BackendIntegrationTransport): BackendMethodTestRecord | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -402,7 +402,7 @@ export function createBackendIntegrationMethod(index = 0): BackendIntegrationMet
   };
 }
 
-export function normalizeBackendIntegrationMethods(value: unknown, transport: BackendIntegrationTransport = "tauri-invoke"): BackendIntegrationMethod[] {
+function normalizeBackendIntegrationMethods(value: unknown, transport: BackendIntegrationTransport = "tauri-invoke"): BackendIntegrationMethod[] {
   if (!Array.isArray(value)) {
     return [createBackendIntegrationMethod(0)];
   }
@@ -439,7 +439,7 @@ export function normalizeBackendIntegrationMethods(value: unknown, transport: Ba
   return methods.length > 0 ? methods : [createBackendIntegrationMethod(0)];
 }
 
-export function backendIntegrationDefaults(
+function backendIntegrationDefaults(
   index = 0,
 ): BackendIntegrationConfigFields {
   if (index === 0) {

@@ -31,12 +31,15 @@ const HOUSE_MAX_LINES = 800; // ~/.claude/rules/common/coding-style.md
  * BuildView went 4774 -> 4779 showing the unverified count beside the audit
  * summary and the parity chips (a fifth summary tile and a fourth chip): the
  * product now says how many checks could not run, so the tile has to exist.
+ * monolith-module went 8632 -> 8613 deleting `workflowStepStatusClassName`,
+ * which nothing had ever called: 18 lines of return values for a class name no
+ * row renders. Shrunk means tighten, so the ceiling came down with it.
  *
  * `check:builder-file-size` fails on a missing entry's file and on any file
  * above its ceiling.
  */
 const CEILINGS = {
-  "monolith-module.tsx": 8632,
+  "monolith-module.tsx": 8613,
   "DesignView.tsx": 5768,
   "LogicView.tsx": 5713,
   "ShellView.tsx": 3365,

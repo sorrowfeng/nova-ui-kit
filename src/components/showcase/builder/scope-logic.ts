@@ -9,7 +9,7 @@
 // values is a separate pass. See docs/monolith-decomposition.md.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type LogicViewScopeKey =
+type LogicViewScopeKey =
   | "Field"
   | "LogicWorkspace"
   | "PanelTitle"

@@ -182,7 +182,7 @@ export type InstallerSmokeResult = {
   output_log?: string;
 };
 
-export type WindowsCertificateStoreEntry = {
+type WindowsCertificateStoreEntry = {
   store: string;
   subject: string;
   issuer: string;

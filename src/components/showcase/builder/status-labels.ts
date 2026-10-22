@@ -7,8 +7,8 @@
 // blanks a panel — and a bare Record lookup cannot tell that apart from a
 // genuinely unknown wire value.
 
-export type BuildReadinessSeverity = "ready" | "warning" | "error";
-export type WindowVisualAuditSeverity = "pass" | "warning" | "error";
+type BuildReadinessSeverity = "ready" | "warning" | "error";
+type WindowVisualAuditSeverity = "pass" | "warning" | "error";
 /**
  * "unverified" is not a softer "pass". It means the check that would decide
  * could not run because its precondition is absent — nothing is selected, the
@@ -17,10 +17,10 @@ export type WindowVisualAuditSeverity = "pass" | "warning" | "error";
  * product gap for an empty canvas.
  */
 export type EditorExperienceAuditSeverity = "pass" | "unverified" | "warning" | "fail";
-export type SimulatorTraceStatus = "success" | "error";
+type SimulatorTraceStatus = "success" | "error";
 export type FrameLayoutMode = "free" | "row" | "column" | "grid";
 export type ResponsiveBreakpointId = "desktop" | "tablet" | "mobile";
-export type BuildDiagnosticSeverity = "error" | "warning";
+type BuildDiagnosticSeverity = "error" | "warning";
 
 /** Shown when wire data carries a status the table never anticipated. */
 export const UNKNOWN_STATUS_LABEL = "未知";

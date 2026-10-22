@@ -45,11 +45,11 @@ export function resolveSimulatorProps(item: BuilderItem, stateValues: Record<str
   return props;
 }
 
-export function simulatorStateSnapshot(project: DesignerProject, stateValues: Record<string, string>) {
+function simulatorStateSnapshot(project: DesignerProject, stateValues: Record<string, string>) {
   return Object.fromEntries(project.stateVariables.map((state) => [state.name || state.id, stateValues[state.id] ?? state.initialValue ?? ""]));
 }
 
-export function simulatorEventPayload(
+function simulatorEventPayload(
   project: DesignerProject,
   item: BuilderItem,
   props: BuilderItemProps,
@@ -78,7 +78,7 @@ export function simulatorEventPayload(
   return payload;
 }
 
-export function simulatorSourceValue(
+function simulatorSourceValue(
   source: RustCommandParameterSource,
   project: DesignerProject,
   item: BuilderItem,
@@ -118,7 +118,7 @@ export function simulatorSourceValue(
   return value;
 }
 
-export function coerceSimulatorArg(type: RustCommandParameterType, value: unknown) {
+function coerceSimulatorArg(type: RustCommandParameterType, value: unknown) {
   if (type === "bool") {
     return typeof value === "boolean" ? value : value === "true" || value === "1" || value === "on";
   }
@@ -167,7 +167,7 @@ export function simulatorArgsForEvent(
   };
 }
 
-export function simulatorStatePatchFromRecord(project: DesignerProject, value: unknown) {
+function simulatorStatePatchFromRecord(project: DesignerProject, value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {};
   }
@@ -183,7 +183,7 @@ export function simulatorStatePatchFromRecord(project: DesignerProject, value: u
   return patch;
 }
 
-export function simulatorValueAtPath(value: unknown, path = "") {
+function simulatorValueAtPath(value: unknown, path = "") {
   if (!path.trim()) {
     return value;
   }
@@ -195,7 +195,7 @@ export function simulatorValueAtPath(value: unknown, path = "") {
   }, value);
 }
 
-export function simulatorStringResult(value: unknown, fallback: string) {
+function simulatorStringResult(value: unknown, fallback: string) {
   if (typeof value === "string") {
     return value;
   }

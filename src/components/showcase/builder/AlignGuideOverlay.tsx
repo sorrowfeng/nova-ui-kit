@@ -1,6 +1,6 @@
 import type { BuilderItem } from "./types";
 
-export type AlignPreviewMode =
+type AlignPreviewMode =
   | "左对齐"
   | "水平居中"
   | "右对齐"

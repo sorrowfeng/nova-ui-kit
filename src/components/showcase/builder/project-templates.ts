@@ -27,14 +27,14 @@ export type ProjectTemplateDefinition = {
   footprint: string;
 };
 
-export type ProjectTemplateSeed = {
+type ProjectTemplateSeed = {
   description: string;
   rustCommands: RustCommand[];
   stateVariables: BuilderStateVariable[];
   files: DesignerFile[];
 };
 
-export type ProjectTemplateSeedOptions = {
+type ProjectTemplateSeedOptions = {
   defaultPage: PageConfig;
   defaultPropsForType: (type: BuilderComponentType) => BuilderItemProps;
 };

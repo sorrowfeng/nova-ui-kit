@@ -11,14 +11,14 @@ import { normalizeReleaseVersion } from "./release";
 import type { DesignerFile, DesignerProject, EditorProjectCheckpoint } from "./types-project";
 
 /** Pure builders for the 项目 page file-route map and source overview. */
-export type ProjectFileSaveState = {
+type ProjectFileSaveState = {
   readonly fileId: string;
   readonly currentFingerprint: string;
   readonly savedFingerprint: string | undefined;
   readonly dirty: boolean;
 };
 
-export type ProjectFileSaveStates = ReadonlyMap<string, ProjectFileSaveState>;
+type ProjectFileSaveStates = ReadonlyMap<string, ProjectFileSaveState>;
 
 export type ProjectFileRouteGroupsInput = {
   readonly activeProject: DesignerProject;

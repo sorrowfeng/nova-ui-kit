@@ -8,7 +8,7 @@ type PanSession = {
   startScrollTop: number;
 };
 
-export type CanvasViewportInteraction = {
+type CanvasViewportInteraction = {
   startCanvasPan: (event: ReactPointerEvent<HTMLDivElement>) => void;
   moveCanvasPan: (event: ReactPointerEvent<HTMLDivElement>) => void;
   stopCanvasPan: (event: ReactPointerEvent<HTMLDivElement>) => void;

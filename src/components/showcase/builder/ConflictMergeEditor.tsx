@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/lib/dialog-focus";
 
-export type ConflictHunk = {
+type ConflictHunk = {
   ours: string;
   theirs: string;
   start_line: number;
@@ -16,7 +16,7 @@ export type ConflictFile = {
 };
 
 /** Per-hunk merge choice. `both` concatenates ours then theirs. */
-export type ConflictResolution = "ours" | "theirs" | "both";
+type ConflictResolution = "ours" | "theirs" | "both";
 
 const RESOLUTIONS: readonly ConflictResolution[] = ["ours", "theirs", "both"];
 

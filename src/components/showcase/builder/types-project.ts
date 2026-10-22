@@ -27,7 +27,7 @@ export type BuilderEventName = "click" | "change";
 
 export type BuilderResultTargetProp = "value" | "label" | "title" | "description" | "helper";
 
-export type BuilderEventPayloadMode = "value" | "json";
+type BuilderEventPayloadMode = "value" | "json";
 
 export type BuilderEventPayloadField = "event" | "itemId" | "itemName" | "value" | "checked" | "state";
 
@@ -35,7 +35,7 @@ export type RustCommandParameterType = "string" | "bool" | "number" | "json";
 
 export type RustCommandParameterSource = "value" | "checked" | "event" | "itemId" | "itemName" | "state" | "payload";
 
-export type RustCommandResultMode = "text" | "json";
+type RustCommandResultMode = "text" | "json";
 
 export type BackendIntegrationKind = "rust-native" | "cpp-ffi" | "sidecar" | "local-service";
 
@@ -220,7 +220,7 @@ export type BackendIntegrationMethod = {
   lastTest?: BackendMethodTestRecord;
 };
 
-export type BackendMethodTestStatus = "passed" | "failed" | "skipped";
+type BackendMethodTestStatus = "passed" | "failed" | "skipped";
 
 export type BackendMethodTestRecord = {
   id: string;
@@ -337,9 +337,9 @@ export type BreakpointValidationIssue = {
   itemType?: string;
 };
 
-export type ProjectMaintenanceAction = "property-schema-repair";
+type ProjectMaintenanceAction = "property-schema-repair";
 
-export type ProjectMaintenanceChange = {
+type ProjectMaintenanceChange = {
   fileId: string;
   fileName: string;
   itemId: string;
@@ -501,7 +501,7 @@ export type EditorProjectCheckpointResult = {
   paths: EditorProjectPaths;
 };
 
-export type EditorProjectCheckpointFileDiff = {
+type EditorProjectCheckpointFileDiff = {
   name: string;
   change: string;
   current_items: number;
@@ -573,7 +573,7 @@ export type EditorBackgroundTaskView = {
   result?: BuildResult | null;
 };
 
-export type LineDiffSummary = { added: number; removed: number; unchanged: number };
+type LineDiffSummary = { added: number; removed: number; unchanged: number };
 
 /** One rendered row of the line-level diff preview (P0-2). */
 export type GeneratedDiffLine = {
@@ -611,7 +611,7 @@ export type GeneratedFilePreviewResult = {
   entries: GeneratedFilePreviewEntry[];
 };
 
-export type ApplyGeneratedFileEntry = {
+type ApplyGeneratedFileEntry = {
   path: string;
   relative_path: string;
   kind: string;
@@ -748,7 +748,7 @@ export type BackendMethodTestResult = {
   error?: string | null;
 };
 
-export type BackendArtifactInspectionStatus = "ready" | "missing" | "not-required" | "not-configured";
+type BackendArtifactInspectionStatus = "ready" | "missing" | "not-required" | "not-configured";
 
 export type BackendArtifactInspectionEntry = {
   integration_id: string;
@@ -849,7 +849,7 @@ export type BuildDiagnostic = {
   sourceMapId?: string;
 };
 
-export type GeneratedRustSourceMapEntry = {
+type GeneratedRustSourceMapEntry = {
   id: string;
   kind: string;
   source_path: string;

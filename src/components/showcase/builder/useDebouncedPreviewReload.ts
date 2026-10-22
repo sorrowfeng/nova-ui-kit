@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export type DebouncedPreviewReloadOptions = {
+type DebouncedPreviewReloadOptions = {
   /** Master switch (the preview dock's auto-refresh toggle). */
   enabled: boolean;
   /** Fingerprint of the design inputs the preview is generated from. */
@@ -13,7 +13,7 @@ export type DebouncedPreviewReloadOptions = {
   onReload: () => void;
 };
 
-export const PREVIEW_RELOAD_DEBOUNCE_MS = 1200;
+const PREVIEW_RELOAD_DEBOUNCE_MS = 1200;
 
 /**
  * Debounced auto-reload for the live preview (P1-7).

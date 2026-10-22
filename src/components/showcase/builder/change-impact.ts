@@ -15,7 +15,7 @@ import {
 
 export type ProjectChangeImpactStatus = "needs-plan" | "stale" | "dirty" | "clean";
 
-export type ProjectChangeScopeId =
+type ProjectChangeScopeId =
   | "project"
   | "ui"
   | "frontend"
@@ -25,7 +25,7 @@ export type ProjectChangeScopeId =
   | "release"
   | "validation";
 
-export type ProjectChangeScopeStatus = "unknown" | "dirty" | "clean";
+type ProjectChangeScopeStatus = "unknown" | "dirty" | "clean";
 
 export type ProjectChangeScope = {
   id: ProjectChangeScopeId;
@@ -55,7 +55,7 @@ export type ProjectChangeImpactSummary = {
   summary: string;
 };
 
-export type ProjectChangeImpactPlan = {
+type ProjectChangeImpactPlan = {
   id: string;
   title: string;
   detail: string;
@@ -65,7 +65,7 @@ export type ProjectChangeImpactPlan = {
   ready: boolean;
 };
 
-export type ProjectReverseDependencyTargetKind =
+type ProjectReverseDependencyTargetKind =
   | "project"
   | "ui-file"
   | "control"
@@ -93,7 +93,7 @@ export type ProjectReverseDependencyTarget = {
   path?: string;
 };
 
-export type ProjectReverseDependencyStatus = "empty" | "tracked" | "persisted" | "projected";
+type ProjectReverseDependencyStatus = "empty" | "tracked" | "persisted" | "projected";
 
 export type ProjectReverseDependencySummary = {
   target: ProjectReverseDependencyTarget | null;

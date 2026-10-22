@@ -138,7 +138,7 @@ export function frameLayoutMetrics(item: BuilderItem) {
   };
 }
 
-export function isAutoLayoutFrame(item: BuilderItem) {
+function isAutoLayoutFrame(item: BuilderItem) {
   return item.type === "frame" && frameLayoutMode(item) !== "free";
 }
 
@@ -205,7 +205,7 @@ export function normalizeItemBoundsInTree(item: BuilderItem, items: BuilderItem[
   };
 }
 
-export function applyConstraintsToItem(item: BuilderItem, oldBounds: { width: number; height: number }, nextBounds: { width: number; height: number }, page: PageConfig) {
+function applyConstraintsToItem(item: BuilderItem, oldBounds: { width: number; height: number }, nextBounds: { width: number; height: number }, page: PageConfig) {
   const constraints = itemConstraints(item);
   const rightMargin = oldBounds.width - item.x - item.width;
   const bottomMargin = oldBounds.height - item.y - item.height;

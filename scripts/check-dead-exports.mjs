@@ -6,10 +6,11 @@
 // — the smoke measures whether behaviour exists, not whether the code that
 // provides it is reachable.
 //
-// This does not delete anything. It pins the current count so the surface
-// cannot grow quietly, the same bargain as check-builder-file-size: a ratchet's
-// job is to make growth visible, not to make growth impossible. Shrinking is
-// the work; not growing is the gate.
+// This does not delete anything. It pins the count at zero: an export that
+// nothing imports must not land. It started as a ratchet at 220, and the
+// bargain then was the same as check-builder-file-size — a ratchet's job is to
+// make growth visible, not to make growth impossible. The stock is now worked
+// down, so the gate is simply "no dead exports".
 //
 // Scoped to src/components/showcase/. src/components/ui/ is the component kit,
 // whose export surface is its API — ButtonProps and buttonVariants are unused
@@ -36,7 +37,7 @@ const SRC_DIR = path.join(root, "src");
 const SCAN_DIR = path.join(SRC_DIR, "components", "showcase");
 // "@/" -> "<root>/src/", the one alias in tsconfig.json's paths.
 const ALIASES = [{ prefix: "@/", target: SRC_DIR + path.sep }];
-const CEILING = 194; // measured 2026-10-23. Lower it whenever an export is stripped.
+const CEILING = 0; // measured 2026-10-23. The stock is worked down; keep it at zero.
 
 // --- fixture: every shape the classifier must not miss ---
 const FIXTURE_SRC = `src`;
@@ -345,7 +346,7 @@ if (orphans.length > CEILING) {
   process.exit(1);
 }
 console.log(
-  `check-dead-exports ok: ${orphans.length} unreferenced export(s) in ${scan.exportFiles.length} file(s) (ceiling ${CEILING} — strip some and lower the ceiling).`,
+  `check-dead-exports ok: ${orphans.length} unreferenced export(s) in ${scan.exportFiles.length} file(s) (ceiling ${CEILING}).`,
 );
 
 if (process.argv.includes("--report")) {

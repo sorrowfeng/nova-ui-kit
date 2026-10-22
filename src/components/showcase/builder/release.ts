@@ -60,7 +60,7 @@ export const releaseInstallerSmokeRunnerModes: { value: ReleaseInstallerSmokeRun
   { value: "vm-handoff", label: "VM 交接", description: "额外生成 VM/沙箱测试交接包，供隔离环境 runner 使用。" },
 ];
 
-export function releaseSlug(value: string) {
+function releaseSlug(value: string) {
   const slug = value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -68,7 +68,7 @@ export function releaseSlug(value: string) {
   return slug || "nova-app";
 }
 
-export function defaultBundleIdentifier(name: string) {
+function defaultBundleIdentifier(name: string) {
   return `com.nova.generated.${releaseSlug(name).replace(/-/g, ".")}`;
 }
 
@@ -90,7 +90,7 @@ export function normalizeReleaseTitlebarStyle(value: unknown, windowKind: Releas
 
 export type ReleaseVersionBump = "patch" | "minor" | "major";
 
-export function releaseVersionParts(value: string) {
+function releaseVersionParts(value: string) {
   const normalized = normalizeReleaseVersion(value);
   const [core] = normalized.split(/[-+]/);
   const [major = "0", minor = "1", patch = "0"] = core.split(".");
@@ -120,7 +120,7 @@ export function normalizeReleaseNotes(value: unknown, version = "0.1.0") {
   return typeof value === "string" && value.trim() ? value : defaultReleaseNotes(version);
 }
 
-export function normalizeBundleIdentifier(value: string, fallbackName: string) {
+function normalizeBundleIdentifier(value: string, fallbackName: string) {
   const identifier = value
     .trim()
     .toLowerCase()
@@ -139,11 +139,11 @@ export function normalizeReleaseSigningMode(value: unknown): ReleaseSigningMode 
   return releaseSigningModes.some((mode) => mode.value === value) ? (value as ReleaseSigningMode) : "unsigned";
 }
 
-export function normalizeDigestAlgorithm(value: unknown) {
+function normalizeDigestAlgorithm(value: unknown) {
   return releaseDigestAlgorithms.some((algorithm) => algorithm === value) ? (value as string) : "sha256";
 }
 
-export function normalizeReleaseInstallerSmokeMode(value: unknown): ReleaseInstallerSmokeMode {
+function normalizeReleaseInstallerSmokeMode(value: unknown): ReleaseInstallerSmokeMode {
   return releaseInstallerSmokeModes.some((mode) => mode.value === value) ? (value as ReleaseInstallerSmokeMode) : "artifact-only";
 }
 

@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StateLabel } from "./view-helpers";
 
-export type ProjectGitStatus = {
+type ProjectGitStatus = {
   clean: boolean;
   conflicted: string[];
   changed: string[];

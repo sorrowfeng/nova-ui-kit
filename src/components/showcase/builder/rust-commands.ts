@@ -10,7 +10,7 @@ import type {
   RustCommandResultSchema,
 } from "./types";
 
-export const DEFAULT_RUST_COMMAND_NAME = "app_message";
+const DEFAULT_RUST_COMMAND_NAME = "app_message";
 export const DEFAULT_RUST_COMMAND_RESPONSE = "来自 Nova 生成 Rust 逻辑的消息";
 export const DEFAULT_RUST_COMMANDS: RustCommand[] = [
   {
@@ -117,7 +117,7 @@ export function createRustCommandParameter(index = 0, source: RustCommandParamet
   };
 }
 
-export function normalizeRustCommandParameters(value: unknown, useLegacyValue = false): RustCommandParameter[] {
+function normalizeRustCommandParameters(value: unknown, useLegacyValue = false): RustCommandParameter[] {
   if (!Array.isArray(value) || value.length === 0) {
     return useLegacyValue
       ? [
@@ -178,7 +178,7 @@ export function rustParameterTypeCode(type: RustCommandParameterType) {
   return "String";
 }
 
-export function normalizeRustCommandResult(value: unknown): RustCommandResultSchema | undefined {
+function normalizeRustCommandResult(value: unknown): RustCommandResultSchema | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -199,7 +199,7 @@ export function commandResultSchema(command: RustCommand): RustCommandResultSche
   return normalizeRustCommandResult(command.result) ?? defaultRustCommandResult;
 }
 
-export function escapeRustStringLiteral(value: string) {
+function escapeRustStringLiteral(value: string) {
   return value
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
@@ -208,7 +208,7 @@ export function escapeRustStringLiteral(value: string) {
     .replace(/\t/g, "\\t");
 }
 
-export function backendIntegrationPayloadExpression(parameters: RustCommandParameter[]) {
+function backendIntegrationPayloadExpression(parameters: RustCommandParameter[]) {
   const jsonPayload = parameters.find((parameter) => parameter.type === "json" && parameter.name === "payload");
   if (jsonPayload) {
     return jsonPayload.name;
@@ -219,7 +219,7 @@ export function backendIntegrationPayloadExpression(parameters: RustCommandParam
   return `serde_json::json!({\n${parameters.map((parameter) => `        "${escapeRustStringLiteral(parameter.name)}": ${parameter.name}`).join(",\n")}\n    })`;
 }
 
-export function createBackendIntegrationRustCommandSource(
+function createBackendIntegrationRustCommandSource(
   commandName: string,
   integration: BackendIntegration,
   method: BackendIntegrationMethod | null,
@@ -280,8 +280,6 @@ export function createRustLogic(commands: RustCommand[], backendIntegrations: Ba
     })
     .join("\n\n")}\n`;
 }
-
-export const DEFAULT_RUST_LOGIC = createRustLogic(DEFAULT_RUST_COMMANDS);
 
 export function createDefaultRustCommands(): RustCommand[] {
   return DEFAULT_RUST_COMMANDS.map((command) => ({

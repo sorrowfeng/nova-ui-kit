@@ -56,9 +56,9 @@ import {
   StateLabel,
 } from "./view-helpers";
 
-export type SelectionActionBarState = "idle" | "single" | "multi";
+type SelectionActionBarState = "idle" | "single" | "multi";
 
-export type SelectionRecommendedStep = {
+type SelectionRecommendedStep = {
   id: string;
   actionLabel: string;
   disabled?: boolean;
@@ -66,9 +66,9 @@ export type SelectionRecommendedStep = {
   onAction: () => void;
 };
 
-export type SelectionRosterItem = BuilderItem;
+type SelectionRosterItem = BuilderItem;
 
-export type SelectionActionBarProps = {
+type SelectionActionBarProps = {
   hasCanvasSelection: boolean;
   selectionAnchorId: string;
   selectionActionBarState: SelectionActionBarState;

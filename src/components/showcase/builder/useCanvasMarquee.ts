@@ -11,7 +11,7 @@ export type SelectionMarquee = {
   baseSelectedIds: string[];
 };
 
-export type CanvasPoint = { x: number; y: number };
+type CanvasPoint = { x: number; y: number };
 
 export function getSelectionMarqueeRect(marquee: SelectionMarquee) {
   const left = Math.min(marquee.originX, marquee.currentX);

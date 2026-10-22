@@ -194,8 +194,7 @@ export const READINESS_GATED_PROJECT_ACTIONS = new Set<ProjectJumpActionId>([
   "bundle-installer",
 ]);
 
-
-export type BackendSchemaFieldType = "string" | "number" | "boolean" | "object" | "array" | "json";
+type BackendSchemaFieldType = "string" | "number" | "boolean" | "object" | "array" | "json";
 
 export type BackendSchemaField = {
   name: string;
@@ -209,9 +208,9 @@ export type BackendSchemaField = {
   depth: number;
 };
 
-export type BuilderPropertyKind = "text" | "number" | "boolean" | "select";
+type BuilderPropertyKind = "text" | "number" | "boolean" | "select";
 
-export type BuilderPropertySchemaField = {
+type BuilderPropertySchemaField = {
   prop: keyof BuilderItemProps;
   label: string;
   kind: BuilderPropertyKind;
@@ -305,7 +304,7 @@ export type BuilderEditorTab = {
   closable?: boolean;
   icon: typeof FileJson;
 };
-export type BuilderFileSaveState = {
+type BuilderFileSaveState = {
   fileId: string;
   currentFingerprint: string;
   savedFingerprint?: string;
@@ -313,7 +312,7 @@ export type BuilderFileSaveState = {
 };
 export type ProjectExplorerFilterId = "all" | "ui" | "rust" | "assets" | "backend" | "build" | "meta";
 
-export type ProjectExplorerNodeAction =
+type ProjectExplorerNodeAction =
   | "open-path"
   | "select-file"
   | "open-logic"
@@ -340,16 +339,16 @@ export type ProjectExplorerNode = {
   dirty?: boolean;
 };
 
-export type ProjectExplorerModel = {
+type ProjectExplorerModel = {
   nodes: ProjectExplorerNode[];
   controlCount: number;
   metadataPath: string;
   summary: string;
 };
 
-export type ProjectExplorerGroupId = "root" | "ui" | "rust" | "backend" | "assets" | "app" | "meta";
+type ProjectExplorerGroupId = "root" | "ui" | "rust" | "backend" | "assets" | "app" | "meta";
 
-export type ProjectExplorerRow =
+type ProjectExplorerRow =
   | {
       kind: "group";
       id: ProjectExplorerGroupId;
@@ -364,7 +363,7 @@ export type ProjectExplorerRow =
       node: ProjectExplorerNode;
     };
 
-export type ProjectExplorerStatusTone = "default" | "success" | "warning" | "muted";
+type ProjectExplorerStatusTone = "default" | "success" | "warning" | "muted";
 
 export type ProjectSaveManifestItem = {
   id: string;
@@ -389,7 +388,7 @@ export type ProjectSavePlanStep = {
   filter: ProjectExplorerFilterId;
 };
 
-export type ProjectFileRouteItem = {
+type ProjectFileRouteItem = {
   id: string;
   title: string;
   detail: string;
@@ -425,7 +424,7 @@ export type ProjectTopologyNode = {
   status: "ready" | "warning" | "pending";
 };
 
-export type ProjectSourceOverviewStatus = "clean" | "dirty" | "pending" | "generated";
+type ProjectSourceOverviewStatus = "clean" | "dirty" | "pending" | "generated";
 
 export type ProjectSourceOverviewRow = {
   id: string;
@@ -445,7 +444,7 @@ export type ProjectSourceOverviewRow = {
   fileId?: string;
 };
 
-export type ProjectFolderHealthState = "ready" | "warning" | "pending";
+type ProjectFolderHealthState = "ready" | "warning" | "pending";
 
 export type ProjectFolderHealthItem = {
   id: "root" | "source" | "generated" | "metadata";
@@ -487,9 +486,9 @@ export type ProjectWorkingSetItem = {
   icon: typeof FileJson;
 };
 
-export type ProjectActionCenterTone = "success" | "ready" | "warning" | "danger" | "running" | "muted";
+type ProjectActionCenterTone = "success" | "ready" | "warning" | "danger" | "running" | "muted";
 
-export type ProjectActionCenterAction =
+type ProjectActionCenterAction =
   | { kind: "task"; taskId: ProjectJumpActionId }
   | { kind: "working-set"; itemId: string }
   | { kind: "source-row"; rowId: string }
@@ -536,7 +535,7 @@ export type ProjectExplorerDossier = {
   taskIds: ProjectJumpActionId[];
 };
 
-export type ProjectExplorerImpactAction =
+type ProjectExplorerImpactAction =
   | { kind: "task"; taskId: ProjectJumpActionId }
   | { kind: "open-node" }
   | { kind: "copy-path" }
@@ -694,7 +693,7 @@ export type RustCompletionTrigger = {
   forced: boolean;
 };
 
-export type RustCompletionKind = "snippet" | "command" | "parameter" | "state" | "module" | "dependency" | "symbol";
+type RustCompletionKind = "snippet" | "command" | "parameter" | "state" | "module" | "dependency" | "symbol";
 
 export type RustCompletionItem = {
   id: string;
@@ -717,7 +716,7 @@ export type RustCompletionCommit = {
   cursor: number;
 };
 
-export type RustSignatureParameterHelp = {
+type RustSignatureParameterHelp = {
   id: string;
   name: string;
   type: string;
@@ -800,7 +799,7 @@ export type RustFindMatch = {
   preview: string;
 };
 
-export type RustIdentifierTarget = {
+type RustIdentifierTarget = {
   name: string;
   start: number;
   end: number;
@@ -847,7 +846,7 @@ export type RustDiagnosticGutterEntry = {
   index: number;
 };
 
-export type RustEditorQuickFixTone = "ready" | "warning" | "danger" | "muted";
+type RustEditorQuickFixTone = "ready" | "warning" | "danger" | "muted";
 
 export type RustEditorQuickFix = {
   id: string;
@@ -868,7 +867,7 @@ export type RustEditorMinimapMarker = {
   severity?: "error" | "warning";
 };
 
-export type CanvasBounds = {
+type CanvasBounds = {
   left: number;
   top: number;
   right: number;
@@ -879,7 +878,7 @@ export type CanvasBounds = {
   height: number;
 };
 
-export type SmartGuideSource = "control" | "canvas" | "safe-margin";
+type SmartGuideSource = "control" | "canvas" | "safe-margin";
 
 export type SmartGuide = {
   id: string;
@@ -1174,7 +1173,7 @@ export function createSmartGuidesForDragSession(
   return [bestX?.guide, bestY?.guide].filter((guide): guide is SmartGuide => Boolean(guide));
 }
 
-export type BuilderPropertyAutoFixTarget = {
+type BuilderPropertyAutoFixTarget = {
   fileId: string;
   fileName: string;
   itemId: string;
@@ -1185,7 +1184,7 @@ export type BuilderPropertyAutoFixTarget = {
   propertyCount: number;
 };
 
-export type BuilderPropertyAutoFixSummary = {
+type BuilderPropertyAutoFixSummary = {
   targets: BuilderPropertyAutoFixTarget[];
   issueCount: number;
   errorCount: number;
@@ -1203,7 +1202,7 @@ export type ProjectSnapshotEntry = {
   project: DesignerProject;
 };
 
-export type ProjectActivityEntry = {
+type ProjectActivityEntry = {
   id: string;
   time: string;
   kind: "pipeline" | "build" | "bundle" | "validation" | "maintenance" | "run" | "runtime-log" | "smoke" | "checkpoint";
@@ -1270,7 +1269,7 @@ export type QtCreatorParityItem = {
 
 export const EDITOR_EXPERIENCE_KNOWN_WINDOW_KINDS: ReleaseWindowKind[] = ["main", "dialog", "tool", "frameless"];
 export const EDITOR_EXPERIENCE_KNOWN_TITLEBAR_STYLES: ReleaseTitlebarStyle[] = ["nova", "native", "hidden"];
-export const RUST_RESERVED_WORDS = new Set([
+const RUST_RESERVED_WORDS = new Set([
   "as",
   "async",
   "await",
@@ -1359,7 +1358,7 @@ export function formatSimulatorTraceLog(trace: SimulatorTraceEntry) {
   ].join("\n");
 }
 
-export type BuildReadinessSeverity = "ready" | "warning" | "error";
+type BuildReadinessSeverity = "ready" | "warning" | "error";
 
 export type BuildReadinessItem = {
   id: string;
@@ -1372,7 +1371,7 @@ export type BuildReadinessItem = {
   itemName?: string;
 };
 
-export type BuildReadinessSummary = {
+type BuildReadinessSummary = {
   items: BuildReadinessItem[];
   readyCount: number;
   warningCount: number;
@@ -1388,7 +1387,7 @@ export type ReleaseReadinessItem = {
   score: number;
 };
 
-export type ReleaseReadinessSummary = {
+type ReleaseReadinessSummary = {
   score: number;
   status: BuildReadinessSeverity;
   blockers: number;
@@ -1397,7 +1396,7 @@ export type ReleaseReadinessSummary = {
   nextActions: string[];
 };
 
-export type WindowVisualAuditSeverity = "pass" | "warning" | "error";
+type WindowVisualAuditSeverity = "pass" | "warning" | "error";
 
 export type WindowVisualAuditIssue = {
   id: string;
@@ -1410,7 +1409,7 @@ export type WindowVisualAuditIssue = {
   itemName?: string;
 };
 
-export type WindowVisualAuditSummary = {
+type WindowVisualAuditSummary = {
   issues: WindowVisualAuditIssue[];
   checkedFiles: number;
   checkedItems: number;
@@ -1419,7 +1418,7 @@ export type WindowVisualAuditSummary = {
   score: number;
 };
 
-export const LEGACY_BUILDER_STORAGE_KEY = "nova-ui-kit-builder-freeform-v2";
+const LEGACY_BUILDER_STORAGE_KEY = "nova-ui-kit-builder-freeform-v2";
 export const DESIGNER_WORKSPACE_STORAGE_KEY = "nova-ui-kit-designer-workspace-v1";
 export const PROJECT_JUMP_RECENTS_STORAGE_KEY = "nova-ui-kit-project-jump-recents-v1";
 export const COMPONENT_PALETTE_RECENTS_STORAGE_KEY = "nova-ui-kit-component-palette-recents-v1";
@@ -1433,7 +1432,7 @@ export const canvasPresets: Array<{ id: CanvasPresetId; title: string; descripti
   { id: "mobile", title: "手机", description: "390 x 844", width: 390, height: 844, icon: Smartphone },
 ];
 
-export const responsiveBreakpoints: Array<{ id: ResponsiveBreakpointId; title: string; width: number; height: number; icon: typeof Monitor }> = [
+const responsiveBreakpoints: Array<{ id: ResponsiveBreakpointId; title: string; width: number; height: number; icon: typeof Monitor }> = [
   { id: "desktop", title: "桌面", width: 1440, height: 900, icon: Monitor },
   { id: "tablet", title: "平板", width: 1024, height: 768, icon: RectangleHorizontal },
   { id: "mobile", title: "手机", width: 390, height: 844, icon: Smartphone },
@@ -1447,9 +1446,9 @@ export const eventResultTargetProps: Array<{ value: BuilderResultTargetProp; lab
   { value: "helper", label: "辅助文本" },
 ];
 
-export const buttonVariantValues = ["default", "secondary", "outline", "ghost", "destructive"] as const satisfies readonly ButtonVariant[];
-export const controlSizeValues = ["sm", "md", "lg"] as const satisfies readonly ControlSize[];
-export const imageFitValues = ["cover", "contain", "fill"] as const satisfies readonly ImageFit[];
+const buttonVariantValues = ["default", "secondary", "outline", "ghost", "destructive"] as const satisfies readonly ButtonVariant[];
+const controlSizeValues = ["sm", "md", "lg"] as const satisfies readonly ControlSize[];
+const imageFitValues = ["cover", "contain", "fill"] as const satisfies readonly ImageFit[];
 export const frameLayoutValues = ["free", "row", "column", "grid"] as const satisfies readonly FrameLayoutMode[];
 export const frameLayoutLabel = (mode: FrameLayoutMode) => {
   if (mode === "row") {
@@ -1610,7 +1609,7 @@ export const readOnlyBuilderComponentTypes = [
 ] as const satisfies readonly BuilderComponentType[];
 export const readOnlyBuilderComponentTypeSet = new Set<BuilderComponentType>(readOnlyBuilderComponentTypes);
 
-export const builderPropertySchema: BuilderPropertySchemaField[] = [
+const builderPropertySchema: BuilderPropertySchemaField[] = [
   { prop: "title", label: "标题", kind: "text", appliesTo: ["heading", "text-browser", "web-view", "media-player", "pdf-viewer", "map-view", "graphics-view", "image-list", "code-editor", "command-link-button", "switch", "card", "section-header", "elevated-card", "filled-card", "outlined-card", "carousel", "empty-state", "empty-panel", "table", "table-view", "kanban-board", "calendar-scheduler", "data-grid", "property-grid", "key-value-list", "inspector-section", "form-layout", "console-panel", "terminal-view", "timeline", "status-indicator", "tabs", "menu-bar", "menu", "context-menu", "list", "list-item", "list-view", "column-view", "icon-view", "command-list", "command-palette", "search-view", "search-suggestion-list", "notification-center", "system-tray", "shortcut-table", "resource-browser", "task-list", "settings-list", "tree-view", "tree-table", "breadcrumb-bar", "pagination", "toolbar", "floating-toolbar", "top-app-bar", "bottom-app-bar", "navigation-bar", "navigation-item", "navigation-suite", "status-bar", "split-view", "splitter", "size-grip", "supporting-pane", "scroll-area", "stacked-pages", "dock-panel", "mdi-area", "navigation", "navigation-drawer", "navigation-rail", "side-sheet", "bottom-sheet", "sheet-drag-handle", "accordion", "tool-box", "dialog", "popover", "stepper", "wizard", "banner", "alert", "tooltip", "snackbar", "toast", "progress", "circular-progress", "progress-list", "avatar-group", "lcd-display", "chart-view", "filter-bar", "problems-panel", "breakpoints-panel", "watch-panel", "call-stack"], required: true, minLength: 1, maxLength: 72 },
   { prop: "title", label: "标题", kind: "text", appliesTo: ["frame", "group-box", "spacer"], recommended: true, maxLength: 72 },
   { prop: "label", label: "标签", kind: "text", appliesTo: ["label", "link-label", "button", "button-group", "dialog-button-box", "command-link-button", "menu-button", "split-button", "tool-button", "toggle-button", "toggle-group", "icon-button", "input", "password-field", "number-field", "spin-box", "double-spin-box", "dial", "textarea", "plain-text-edit", "rich-text-editor", "code-editor", "terminal-view", "search-bar", "search-view", "search-suggestion-list", "filter-bar", "tag-input", "select", "multi-select", "combobox", "autocomplete", "font-combo-box", "date-picker", "date-range-picker", "time-picker", "date-time-picker", "calendar-widget", "calendar-scheduler", "checkbox", "checkbox-group", "radio", "radio-group", "slider", "range-slider", "rating", "scroll-bar", "color-picker", "file-picker", "folder-picker", "shortcut-recorder", "segmented", "chips", "assist-chip", "filter-chip", "input-chip", "suggestion-chip", "notification-center", "system-tray", "breadcrumb-bar", "pagination", "navigation-bar", "navigation-item", "status-bar", "side-sheet", "bottom-sheet", "sheet-drag-handle", "empty-state", "empty-panel", "dialog", "popover", "stepper", "wizard", "banner", "alert", "tooltip", "snackbar", "toast", "fab", "extended-fab", "section-header", "elevated-card", "filled-card", "outlined-card", "stat", "lcd-display", "chart-view", "web-view", "media-player", "pdf-viewer", "map-view", "image-list", "progress", "circular-progress", "progress-list", "avatar", "avatar-group", "badge", "kanban-board", "list-item"], required: true, minLength: 1, maxLength: 64 },
@@ -1667,7 +1666,7 @@ export const componentPaletteCategoryOptions = [
 
 export const componentPaletteQuickInsertTypes = ["button", "search-bar", "search-view", "frame", "top-app-bar", "table"] as const satisfies readonly BuilderComponentType[];
 
-export type ComponentPaletteKit = {
+type ComponentPaletteKit = {
   id: string;
   title: string;
   description: string;
@@ -1757,7 +1756,7 @@ export const md3ApplicationComponentTypes = [
   "progress-list",
 ] as const satisfies readonly BuilderComponentType[];
 
-export type ComponentCoverageGroup = {
+type ComponentCoverageGroup = {
   id: string;
   title: string;
   description: string;
@@ -2066,13 +2065,13 @@ export function fileNameFromPath(path = "") {
   return path.split(/[\\/]/).filter(Boolean).pop() || "asset";
 }
 
-export function safeAssetFileName(name: string, index = 0) {
+function safeAssetFileName(name: string, index = 0) {
   const fallback = `asset-${index + 1}.png`;
   const sanitized = (name || fallback).replace(/[^A-Za-z0-9._-]/g, "-").replace(/-+/g, "-");
   return sanitized || fallback;
 }
 
-export function assetPublicPath(sourcePath: string, index = 0) {
+function assetPublicPath(sourcePath: string, index = 0) {
   return `assets/${safeAssetFileName(fileNameFromPath(sourcePath), index)}`;
 }
 
@@ -2148,7 +2147,7 @@ export function createAssetFromPath(sourcePath: string, index = 0): DesignerAsse
   };
 }
 
-export function normalizeDesignerAssets(value: unknown): DesignerAsset[] {
+function normalizeDesignerAssets(value: unknown): DesignerAsset[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -2175,7 +2174,7 @@ export function normalizeDesignerAssets(value: unknown): DesignerAsset[] {
     .filter((asset): asset is DesignerAsset => Boolean(asset));
 }
 
-export function normalizeValidationHistory(value: unknown): ValidationHistoryEntry[] {
+function normalizeValidationHistory(value: unknown): ValidationHistoryEntry[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -2209,7 +2208,7 @@ export function normalizeValidationHistory(value: unknown): ValidationHistoryEnt
     .slice(0, 12);
 }
 
-export function normalizeProjectMaintenanceHistory(value: unknown): ProjectMaintenanceEntry[] {
+function normalizeProjectMaintenanceHistory(value: unknown): ProjectMaintenanceEntry[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -2267,7 +2266,7 @@ export function normalizeProjectMaintenanceHistory(value: unknown): ProjectMaint
     .slice(0, 12);
 }
 
-export function normalizeBuildHistory(value: unknown): BuildHistoryEntry[] {
+function normalizeBuildHistory(value: unknown): BuildHistoryEntry[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -2357,7 +2356,7 @@ export function normalizeBuildHistory(value: unknown): BuildHistoryEntry[] {
     .slice(0, 12);
 }
 
-export function normalizeReleasePipelineStatus(value: unknown): ReleasePipelineStatus {
+function normalizeReleasePipelineStatus(value: unknown): ReleasePipelineStatus {
   return value === "running" ||
     value === "succeeded" ||
     value === "failed" ||
@@ -2368,7 +2367,7 @@ export function normalizeReleasePipelineStatus(value: unknown): ReleasePipelineS
     : "queued";
 }
 
-export function normalizeReleasePipelineStepInputSnapshot(value: unknown): ReleasePipelineStepInputSnapshot | undefined {
+function normalizeReleasePipelineStepInputSnapshot(value: unknown): ReleasePipelineStepInputSnapshot | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -2396,7 +2395,7 @@ export function normalizeReleasePipelineStepInputSnapshot(value: unknown): Relea
   };
 }
 
-export function normalizeReleasePipelineStepEnvironment(value: unknown): ReleasePipelineStepEnvironment | undefined {
+function normalizeReleasePipelineStepEnvironment(value: unknown): ReleasePipelineStepEnvironment | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -2415,7 +2414,7 @@ export function normalizeReleasePipelineStepEnvironment(value: unknown): Release
   };
 }
 
-export function normalizeReleasePipelineStepCommandArgs(value: unknown): ReleasePipelineStepCommandArgs | undefined {
+function normalizeReleasePipelineStepCommandArgs(value: unknown): ReleasePipelineStepCommandArgs | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -2438,7 +2437,7 @@ export function normalizeReleasePipelineStepCommandArgs(value: unknown): Release
   };
 }
 
-export function normalizeReleasePipelineStepArtifactEvidence(value: unknown): ReleasePipelineStepArtifactEvidence | undefined {
+function normalizeReleasePipelineStepArtifactEvidence(value: unknown): ReleasePipelineStepArtifactEvidence | undefined {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -2460,7 +2459,7 @@ export function normalizeReleasePipelineStepArtifactEvidence(value: unknown): Re
   };
 }
 
-export function normalizeProjectDependencyGraphScope(value: unknown): ProjectDependencyGraphScope | null {
+function normalizeProjectDependencyGraphScope(value: unknown): ProjectDependencyGraphScope | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -2483,7 +2482,7 @@ export function normalizeProjectDependencyGraphScope(value: unknown): ProjectDep
   };
 }
 
-export function normalizeProjectDependencySourceReference(value: unknown): ProjectDependencySourceReference | null {
+function normalizeProjectDependencySourceReference(value: unknown): ProjectDependencySourceReference | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -2512,7 +2511,7 @@ export function normalizeProjectDependencySourceReference(value: unknown): Proje
   };
 }
 
-export function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDependencyGraphPlan {
+function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDependencyGraphPlan {
   if (!value || typeof value !== "object") {
     return {
       id: "dependency-plan",
@@ -2536,7 +2535,7 @@ export function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDepe
   };
 }
 
-export function normalizeProjectDependencyGraphEvent(value: unknown): ProjectDependencyGraphEvent {
+function normalizeProjectDependencyGraphEvent(value: unknown): ProjectDependencyGraphEvent {
   if (!value || typeof value !== "object") {
     return {
       kind: "unknown",
@@ -2556,7 +2555,7 @@ export function normalizeProjectDependencyGraphEvent(value: unknown): ProjectDep
   };
 }
 
-export function normalizeProjectDependencyGraphValidityEntry(value: unknown): ProjectDependencyGraphValidityEntry | null {
+function normalizeProjectDependencyGraphValidityEntry(value: unknown): ProjectDependencyGraphValidityEntry | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -2627,7 +2626,7 @@ export function normalizeProjectDependencyGraphRecord(value: unknown): ProjectDe
   };
 }
 
-export function normalizeReleasePipelineSteps(value: unknown): ReleasePipelineStep[] {
+function normalizeReleasePipelineSteps(value: unknown): ReleasePipelineStep[] {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -2891,7 +2890,7 @@ export function propertyFieldMatchesSearch(field: BuilderPropertySchemaField, it
   ]);
 }
 
-export const quickTextPropOrder: InlineTextEdit["prop"][] = [
+const quickTextPropOrder: InlineTextEdit["prop"][] = [
   "label",
   "title",
   "value",
@@ -2929,7 +2928,7 @@ export const quickTextPrimaryPropByType: Partial<Record<BuilderComponentType, In
   "navigation-item": ["title", "label", "value"],
 };
 
-export function isQuickTextProp(prop: keyof BuilderItemProps): prop is InlineTextEdit["prop"] {
+function isQuickTextProp(prop: keyof BuilderItemProps): prop is InlineTextEdit["prop"] {
   return (quickTextPropOrder as readonly (keyof BuilderItemProps)[]).includes(prop);
 }
 
@@ -3006,10 +3005,10 @@ export function builderItemRuntimeState(item: BuilderItem) {
   };
 }
 
-export const rustHighlightPattern =
+const rustHighlightPattern =
   /(\/\/.*|"(?:\\.|[^"\\])*"|#\[[^\]]+\]|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/g;
 
-export function pushRustPlainTextSegment(
+function pushRustPlainTextSegment(
   parts: ReactNode[],
   line: string,
   lineIndex: number,
@@ -3119,7 +3118,7 @@ export const rustSyntaxLegendItems = [
   { id: "bracket", label: "匹配括号", className: "rounded bg-tertiary/20 px-1 text-tertiary ring-1 ring-tertiary/30" },
 ] as const;
 
-export function rustStringLiteral(value: string) {
+function rustStringLiteral(value: string) {
   return JSON.stringify(value);
 }
 
@@ -3323,7 +3322,7 @@ export function rustCompletionSymbolEntries(rustLogic: string) {
   return entries;
 }
 
-export function rustOutlineColumn(line: string, needle: string) {
+function rustOutlineColumn(line: string, needle: string) {
   const index = line.indexOf(needle);
   return index >= 0 ? index + 1 : Math.max(1, line.search(/\S/) + 1);
 }
@@ -3504,7 +3503,7 @@ export function rustLineStartIndex(source: string, lineNumber: number) {
   return index;
 }
 
-export function isRustIdentifierPart(value: string) {
+function isRustIdentifierPart(value: string) {
   return /^[A-Za-z0-9_]$/.test(value);
 }
 
@@ -3553,13 +3552,13 @@ export function rustIdentifierOccurrences(source: string, name: string) {
   }));
 }
 
-export const rustBracketPairs: Record<string, string> = {
+const rustBracketPairs: Record<string, string> = {
   "(": ")",
   "{": "}",
   "[": "]",
 };
 
-export const rustClosingBrackets = new Map(Object.entries(rustBracketPairs).map(([open, close]) => [close, open]));
+const rustClosingBrackets = new Map(Object.entries(rustBracketPairs).map(([open, close]) => [close, open]));
 
 export function rustLocationAtIndex(source: string, index: number) {
   const selection = rustEditorSelectionFromValue(source, index);
@@ -3648,7 +3647,7 @@ export function rustLineNumberAtIndex(source: string, index: number) {
   return source.slice(0, cursor).split(/\r?\n/).length;
 }
 
-export function sanitizeRustLineForFormatting(line: string) {
+function sanitizeRustLineForFormatting(line: string) {
   return line
     .replace(/"([^"\\]|\\.)*"/g, "\"\"")
     .replace(/'([^'\\]|\\.)*'/g, "''")
@@ -3694,7 +3693,7 @@ export function selectOptionsForItem(item: BuilderItem) {
   return itemOptionTexts(item.props);
 }
 
-export const optionComponentTypes: readonly BuilderComponentType[] = [
+const optionComponentTypes: readonly BuilderComponentType[] = [
   "button-group",
   "dialog-button-box",
   "toggle-group",
@@ -3804,11 +3803,11 @@ export function propertySchemaHint(field: BuilderPropertySchemaField) {
   return hints.join(" | ");
 }
 
-export function propertyIssueId(file: DesignerFile, item: BuilderItem, prop: keyof BuilderItemProps, suffix: string) {
+function propertyIssueId(file: DesignerFile, item: BuilderItem, prop: keyof BuilderItemProps, suffix: string) {
   return `${file.id}-${item.id}-${String(prop)}-${suffix}`;
 }
 
-export function propertyFallbackValue(item: BuilderItem, field: BuilderPropertySchemaField) {
+function propertyFallbackValue(item: BuilderItem, field: BuilderPropertySchemaField) {
   const definition = getDefinition(item.type);
   const defaultValue = definition.defaultProps[field.prop];
   if (defaultValue !== undefined && textPropertyValue(defaultValue).trim()) {
@@ -3832,7 +3831,7 @@ export function propertyFallbackValue(item: BuilderItem, field: BuilderPropertyS
   return "";
 }
 
-export function setPropertyPatchValue(patch: BuilderItemProps, prop: keyof BuilderItemProps, value: BuilderItemProps[keyof BuilderItemProps]) {
+function setPropertyPatchValue(patch: BuilderItemProps, prop: keyof BuilderItemProps, value: BuilderItemProps[keyof BuilderItemProps]) {
   (patch as Record<keyof BuilderItemProps, BuilderItemProps[keyof BuilderItemProps]>)[prop] = value;
 }
 
@@ -4060,11 +4059,11 @@ export function generatedFileStatusLabel(status: string) {
   return labels[status] ?? status;
 }
 
-export function projectJumpSearchText(parts: Array<string | number | undefined | null>) {
+function projectJumpSearchText(parts: Array<string | number | undefined | null>) {
   return parts.filter((part) => part !== undefined && part !== null).join(" ").toLowerCase();
 }
 
-export function projectJumpFuzzyMatch(text: string, token: string) {
+function projectJumpFuzzyMatch(text: string, token: string) {
   if (text.includes(token)) {
     return true;
   }
@@ -4091,7 +4090,7 @@ export function projectJumpFuzzyMatch(text: string, token: string) {
     });
 }
 
-export function projectJumpResultScore(result: ProjectJumpResult, tokens: string[], query: string) {
+function projectJumpResultScore(result: ProjectJumpResult, tokens: string[], query: string) {
   const title = result.title.toLowerCase();
   const subtitle = result.subtitle.toLowerCase();
   const badge = result.badge.toLowerCase();
@@ -4601,24 +4600,6 @@ export function workflowStepStatusLabel(status: ProjectTaskStatus | "idle") {
   return labels[status];
 }
 
-export function workflowStepStatusClassName(status: ProjectTaskStatus | "idle", suggested: boolean) {
-  if (status === "running") {
-    return "border-primary bg-primary/10 text-primary";
-  }
-  if (status === "queued") {
-    return "border-secondary bg-secondary/10 text-secondary-foreground";
-  }
-  if (status === "failed") {
-    return "border-destructive bg-destructive/10 text-destructive";
-  }
-  if (status === "succeeded") {
-    return "border-primary/40 bg-primary/5 text-primary";
-  }
-  if (suggested) {
-    return "border-primary/60 bg-surface-container-high text-on-surface shadow-m3-1";
-  }
-  return "border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-outline hover:bg-surface-container-high hover:text-on-surface";
-}
 
 export function loadProjectJumpRecentIds() {
   if (typeof window === "undefined") {
@@ -4675,7 +4656,7 @@ export function mapLegacyType(type: string): BuilderComponentType | null {
   return legacy[type] ?? null;
 }
 
-export function normalizeResponsiveOverrides(value: unknown, page: PageConfig) {
+function normalizeResponsiveOverrides(value: unknown, page: PageConfig) {
   if (!value || typeof value !== "object") {
     return undefined;
   }
@@ -4709,7 +4690,7 @@ export function normalizeResponsiveOverrides(value: unknown, page: PageConfig) {
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-export function normalizeBuilderState(value: unknown): SavedBuilderState | null {
+function normalizeBuilderState(value: unknown): SavedBuilderState | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -4883,7 +4864,7 @@ export function getSelectionBounds(items: BuilderItem[]) {
   };
 }
 
-export type BuilderTreeRow = { item: BuilderItem; depth: number };
+type BuilderTreeRow = { item: BuilderItem; depth: number };
 
 export function buildTreeRows(items: BuilderItem[]) {
   const rows: BuilderTreeRow[] = [];
@@ -4939,7 +4920,7 @@ export function navigatorTreeRowMatches(row: BuilderTreeRow, query: string) {
     .includes(normalizedQuery);
 }
 
-export function loadSavedBuilderState(): SavedBuilderState | null {
+function loadSavedBuilderState(): SavedBuilderState | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -5002,7 +4983,7 @@ export function createWorkspace(project = createProject("Nova 项目")): Designe
   };
 }
 
-export function normalizeDesignerFile(value: unknown, index = 0): DesignerFile | null {
+function normalizeDesignerFile(value: unknown, index = 0): DesignerFile | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -5409,7 +5390,7 @@ export function rustCommandFunctionExists(rustLogic: string, commandName: string
   return pattern.test(rustLogic);
 }
 
-export function summarizeReadiness(items: BuildReadinessItem[]): BuildReadinessSummary {
+function summarizeReadiness(items: BuildReadinessItem[]): BuildReadinessSummary {
   const readyCount = items.filter((item) => item.severity === "ready").length;
   const warningCount = items.filter((item) => item.severity === "warning").length;
   const errorCount = items.filter((item) => item.severity === "error").length;
@@ -5967,11 +5948,11 @@ export function buildReadiness(
   return summarizeReadiness(items);
 }
 
-export function itemVisualName(item: BuilderItem) {
+function itemVisualName(item: BuilderItem) {
   return getItemSummary(item) || item.name || item.type;
 }
 
-export function itemBounds(item: BuilderItem, items: BuilderItem[]) {
+function itemBounds(item: BuilderItem, items: BuilderItem[]) {
   const position = getAbsolutePosition(item, items);
   return {
     left: position.x,
@@ -5983,7 +5964,7 @@ export function itemBounds(item: BuilderItem, items: BuilderItem[]) {
   };
 }
 
-export function relativeItemBounds(item: BuilderItem) {
+function relativeItemBounds(item: BuilderItem) {
   return {
     left: item.x,
     top: item.y,
@@ -5994,7 +5975,7 @@ export function relativeItemBounds(item: BuilderItem) {
   };
 }
 
-export function overlapArea(
+function overlapArea(
   a: { left: number; top: number; right: number; bottom: number },
   b: { left: number; top: number; right: number; bottom: number },
 ) {
@@ -6003,13 +5984,13 @@ export function overlapArea(
   return width * height;
 }
 
-export function visualTextForItem(item: BuilderItem) {
+function visualTextForItem(item: BuilderItem) {
   return [item.props.title, item.props.label, item.props.value, item.props.placeholder, item.props.description, item.props.helper]
     .filter((value): value is string => Boolean(value))
     .sort((a, b) => b.length - a.length)[0] ?? "";
 }
 
-export function visualMinimumSize(item: BuilderItem) {
+function visualMinimumSize(item: BuilderItem) {
   if (item.type === "button") {
     return { width: 96, height: 36 };
   }
@@ -6040,7 +6021,7 @@ export function visualMinimumSize(item: BuilderItem) {
   return { width: MIN_ITEM_WIDTH, height: MIN_ITEM_HEIGHT };
 }
 
-export function auditAutoLayoutFrame(file: DesignerFile, frame: BuilderItem, items: BuilderItem[], pushIssue: (issue: WindowVisualAuditIssue) => void) {
+function auditAutoLayoutFrame(file: DesignerFile, frame: BuilderItem, items: BuilderItem[], pushIssue: (issue: WindowVisualAuditIssue) => void) {
   const mode = frameLayoutMode(frame);
   if (mode === "free") {
     return;
@@ -6084,7 +6065,7 @@ export function auditAutoLayoutFrame(file: DesignerFile, frame: BuilderItem, ite
   }
 }
 
-export function auditSiblingOverlaps(file: DesignerFile, parentId: string | undefined, items: BuilderItem[], pushIssue: (issue: WindowVisualAuditIssue) => void) {
+function auditSiblingOverlaps(file: DesignerFile, parentId: string | undefined, items: BuilderItem[], pushIssue: (issue: WindowVisualAuditIssue) => void) {
   const parent = parentId ? items.find((item) => item.id === parentId) : null;
   if (parent && frameLayoutMode(parent) !== "free") {
     return;
@@ -6262,7 +6243,7 @@ export function auditProjectWindows(project: DesignerProject): WindowVisualAudit
   };
 }
 
-export function validationHistoryStatus(audit: WindowVisualAuditSummary): ValidationHistoryEntry["status"] {
+function validationHistoryStatus(audit: WindowVisualAuditSummary): ValidationHistoryEntry["status"] {
   if (audit.errorCount > 0) {
     return "failed";
   }
@@ -6540,7 +6521,7 @@ export function createBuildHistoryEntry(
   };
 }
 
-export function releasePipelineTerminalStatus(status: ReleasePipelineStatus) {
+function releasePipelineTerminalStatus(status: ReleasePipelineStatus) {
   return status === "succeeded" || status === "failed" || status === "skipped" || status === "canceled";
 }
 
@@ -6607,7 +6588,7 @@ export function createReleasePipelineCommandArgs(task: ProjectTaskEntry): Releas
   };
 }
 
-export function releasePipelineArtifactEvidenceFromInspection(
+function releasePipelineArtifactEvidenceFromInspection(
   result: ReleasePipelineArtifactInspectionResult,
 ): ReleasePipelineStepArtifactEvidence {
   return {
@@ -6647,13 +6628,13 @@ export async function inspectReleasePipelineArtifactEvidence(path?: string): Pro
   }
 }
 
-export type ProjectDependencyValidityView = ProjectDependencyGraphValidityEntry & {
+type ProjectDependencyValidityView = ProjectDependencyGraphValidityEntry & {
   validityStatus: "valid" | "stale" | "needs-plan" | "failed";
   invalidatedByCurrentScopes: string[];
   statusSummary: string;
 };
 
-export const dependencyValidityDefinitions: Record<
+const dependencyValidityDefinitions: Record<
   string,
   { label: string; scopeIds: string[] }
 > = {
@@ -6687,7 +6668,7 @@ export const dependencyValidityDefinitions: Record<
   },
 };
 
-export function dependencyValidityKindsForEvent(event: ProjectDependencyGraphEvent) {
+function dependencyValidityKindsForEvent(event: ProjectDependencyGraphEvent) {
   if (event.kind === "validation" || event.actionId === "validate-window") {
     return ["validation"];
   }
@@ -6712,7 +6693,7 @@ export function dependencyValidityKindsForEvent(event: ProjectDependencyGraphEve
   return [];
 }
 
-export function intersectsScopeIds(left: string[], right: string[]) {
+function intersectsScopeIds(left: string[], right: string[]) {
   return left.some((scope) => right.includes(scope));
 }
 
@@ -6720,7 +6701,7 @@ export function dirtyScopeIdsForImpact(impact: ProjectChangeImpactSummary) {
   return impact.scopes.filter((scope) => scope.status === "dirty").map((scope) => scope.id);
 }
 
-export function updateDependencyValidityCache(
+function updateDependencyValidityCache(
   previous: ProjectDependencyGraphRecord | null,
   impact: ProjectChangeImpactSummary,
   event: ProjectDependencyGraphEvent,
@@ -6869,7 +6850,7 @@ export function createProjectDependencyGraphRecord(
   };
 }
 
-export function releasePipelineStepFromTask(task: ProjectTaskEntry): ReleasePipelineStep {
+function releasePipelineStepFromTask(task: ProjectTaskEntry): ReleasePipelineStep {
   return {
     id: `step-${(task.pipelineStepIndex ?? 0) + 1}`,
     taskId: task.id,
@@ -6891,7 +6872,7 @@ export function releasePipelineStepFromTask(task: ProjectTaskEntry): ReleasePipe
   };
 }
 
-export function summarizeReleasePipelineEntry(entry: ReleasePipelineEntry, steps: ReleasePipelineStep[]): ReleasePipelineEntry {
+function summarizeReleasePipelineEntry(entry: ReleasePipelineEntry, steps: ReleasePipelineStep[]): ReleasePipelineEntry {
   const succeededCount = steps.filter((step) => step.status === "succeeded").length;
   const failedCount = steps.filter((step) => step.status === "failed").length;
   const skippedCount = steps.filter((step) => step.status === "skipped").length;
@@ -6986,7 +6967,7 @@ export function updateReleasePipelineEntryWithTask(entry: ReleasePipelineEntry, 
   return summarizeReleasePipelineEntry(entry, steps);
 }
 
-export function activityTimeValue(value: string) {
+function activityTimeValue(value: string) {
   const numeric = Number(value);
   if (Number.isFinite(numeric) && numeric > 0) {
     return numeric;
@@ -7315,7 +7296,7 @@ export function isPlainRecord(value: unknown): value is Record<string, unknown> 
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-export function normalizeBackendSchemaType(value: unknown): BackendSchemaFieldType {
+function normalizeBackendSchemaType(value: unknown): BackendSchemaFieldType {
   const type = Array.isArray(value) ? value[0] : value;
   if (typeof type !== "string") {
     if (typeof type === "number") {
@@ -7351,11 +7332,11 @@ export function normalizeBackendSchemaType(value: unknown): BackendSchemaFieldTy
   return "json";
 }
 
-export function backendSchemaIsJsonSchema(schema: unknown) {
+function backendSchemaIsJsonSchema(schema: unknown) {
   return isPlainRecord(schema) && (typeof schema.type === "string" || isPlainRecord(schema.properties) || Array.isArray(schema.required));
 }
 
-export function backendSchemaIsLegacyPayloadEnvelope(schema: unknown) {
+function backendSchemaIsLegacyPayloadEnvelope(schema: unknown) {
   return (
     isPlainRecord(schema) &&
     Object.keys(schema).length === 1 &&
@@ -7363,11 +7344,11 @@ export function backendSchemaIsLegacyPayloadEnvelope(schema: unknown) {
   );
 }
 
-export function backendSchemaDescription(definition: unknown) {
+function backendSchemaDescription(definition: unknown) {
   return isPlainRecord(definition) && typeof definition.description === "string" ? definition.description : "";
 }
 
-export function backendSchemaEnumValues(definition: unknown) {
+function backendSchemaEnumValues(definition: unknown) {
   if (!isPlainRecord(definition) || !Array.isArray(definition.enum)) {
     return undefined;
   }
@@ -7377,7 +7358,7 @@ export function backendSchemaEnumValues(definition: unknown) {
   return values.length ? values : undefined;
 }
 
-export function backendSchemaDefaultValue(type: BackendSchemaFieldType, definition?: unknown): unknown {
+function backendSchemaDefaultValue(type: BackendSchemaFieldType, definition?: unknown): unknown {
   if (isPlainRecord(definition) && Object.prototype.hasOwnProperty.call(definition, "default")) {
     return definition.default;
   }
@@ -7414,7 +7395,7 @@ export function backendSchemaDefaultValue(type: BackendSchemaFieldType, definiti
   return "";
 }
 
-export function backendFieldInputValue(value: unknown, type: BackendSchemaFieldType) {
+function backendFieldInputValue(value: unknown, type: BackendSchemaFieldType) {
   if (value === undefined) {
     return "";
   }
@@ -7442,7 +7423,7 @@ export function parseBackendFieldInput(type: BackendSchemaFieldType, raw: string
   return raw;
 }
 
-export function valueAtPath(value: unknown, path: string[]) {
+function valueAtPath(value: unknown, path: string[]) {
   return path.reduce<unknown>((current, segment) => {
     if (!isPlainRecord(current)) {
       return undefined;
@@ -7451,7 +7432,7 @@ export function valueAtPath(value: unknown, path: string[]) {
   }, value);
 }
 
-export function hasValueAtPath(value: unknown, path: string[]) {
+function hasValueAtPath(value: unknown, path: string[]) {
   let current = value;
   for (const segment of path) {
     if (!isPlainRecord(current) || !Object.prototype.hasOwnProperty.call(current, segment)) {
@@ -7478,7 +7459,7 @@ export function setValueAtPath(value: Record<string, unknown>, path: string[], n
   return clone;
 }
 
-export function backendFieldFromSchema(
+function backendFieldFromSchema(
   path: string[],
   definition: unknown,
   sample: unknown,
@@ -7519,7 +7500,7 @@ export function backendFieldFromSchema(
   ];
 }
 
-export function backendSchemaFieldsFromValues(schema: unknown, sample: unknown): BackendSchemaField[] {
+function backendSchemaFieldsFromValues(schema: unknown, sample: unknown): BackendSchemaField[] {
   const sampleObject = isPlainRecord(sample) ? sample : {};
   if (backendSchemaIsLegacyPayloadEnvelope(schema)) {
     return Object.entries(sampleObject).map(([name, value]) => ({
@@ -7613,7 +7594,7 @@ export function samplePayloadFromBackendSchema(schemaText: string, existingSampl
   return prettyJson(payload);
 }
 
-export function backendValueMatchesType(value: unknown, type: BackendSchemaFieldType) {
+function backendValueMatchesType(value: unknown, type: BackendSchemaFieldType) {
   if (type === "string") {
     return typeof value === "string";
   }
@@ -7632,7 +7613,7 @@ export function backendValueMatchesType(value: unknown, type: BackendSchemaField
   return true;
 }
 
-export function validateBackendJsonSchemaValue(value: unknown, schema: Record<string, unknown>, label: string): string[] {
+function validateBackendJsonSchemaValue(value: unknown, schema: Record<string, unknown>, label: string): string[] {
   const rootType = normalizeBackendSchemaType(schema.type ?? (isPlainRecord(schema.properties) ? "object" : "json"));
   const issues: string[] = [];
   if (!backendValueMatchesType(value, rootType)) {
@@ -8127,7 +8108,7 @@ export function projectExplorerVisibleWithCollapsedAncestors(
   return true;
 }
 
-export type ProjectExplorerNodeStatus = {
+type ProjectExplorerNodeStatus = {
   label: string;
   tone: ProjectExplorerStatusTone;
   /**

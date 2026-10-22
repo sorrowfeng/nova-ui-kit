@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { BuilderItem } from "./types";
 
-export type InspectorWorkflowTone = "primary" | "ready" | "warning" | "danger" | "muted";
+type InspectorWorkflowTone = "primary" | "ready" | "warning" | "danger" | "muted";
 
 export type InspectorWorkflowStep = {
   id: string;
@@ -26,7 +26,7 @@ export type InspectorWorkflowStep = {
   onAction: () => void;
 };
 
-export type InspectorWorkflowInput = {
+type InspectorWorkflowInput = {
   selectedItems: BuilderItem[];
   selectedItem: BuilderItem | null;
   selectedPropertyIssues: Array<{ prop: string }>;

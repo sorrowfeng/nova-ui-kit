@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
-export type ToolchainStatus = {
+type ToolchainStatus = {
   ok: boolean;
   missing: string[];
   nodeVersion: string;

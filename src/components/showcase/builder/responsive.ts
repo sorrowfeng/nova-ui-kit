@@ -5,7 +5,7 @@ import type {
   ResponsiveOverride,
 } from "./types";
 
-export const RESPONSIVE_BREAKPOINT_SIZES: Record<Exclude<ResponsiveBreakpointId, "desktop">, { width: number; height: number }> = {
+const RESPONSIVE_BREAKPOINT_SIZES: Record<Exclude<ResponsiveBreakpointId, "desktop">, { width: number; height: number }> = {
   tablet: { width: 1024, height: 768 },
   mobile: { width: 390, height: 844 },
 };

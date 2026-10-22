@@ -84,7 +84,7 @@ export type ProjectTaskEntry = {
   attempt: number;
 };
 
-export type ProjectTaskPipelineMetadata = {
+type ProjectTaskPipelineMetadata = {
   runId: string;
   presetTitle: string;
   stepIndex: number;
@@ -116,7 +116,7 @@ export type ProjectActionPresetDefinition = {
   custom?: boolean;
 };
 
-export type ProjectTaskQueueStorageState = {
+type ProjectTaskQueueStorageState = {
   paused: boolean;
   tasks: ProjectTaskEntry[];
 };

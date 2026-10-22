@@ -9,7 +9,7 @@
 // values is a separate pass. See docs/monolith-decomposition.md.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type DesignViewScopeKey =
+type DesignViewScopeKey =
   | "SelectedProjectExplorerIcon"
   | "activeBreakpoint"
   | "activeComponentPaletteKit"
