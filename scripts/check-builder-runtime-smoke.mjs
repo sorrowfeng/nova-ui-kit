@@ -348,6 +348,39 @@ async function clickElementCenter(send, elementExpression, label) {
   if (!point || point.failed) {
     fail(`${label} is not clickable${point?.detail ? `: ${point.detail}` : ""}`);
   }
+  // CDP mouse events are hit-tested like real ones, so an overlay in front of
+  // the target silently steals the click and the next wait just times out.
+  // Name the thief instead of reporting an unrelated failure later.
+  const hit = await evaluate(
+    send,
+    `(() => {
+      const element = ${elementExpression};
+      const target = document.elementFromPoint(${point.x}, ${point.y});
+      if (!target || target === element || (element && element.contains(target))) return null;
+      const describe = (el) => {
+        const hooks = Array.from(el.attributes || [])
+          .filter((a) => a.name.startsWith("data-"))
+          .map((a) => a.name + (a.value ? "=" + a.value.slice(0, 24) : ""))
+          .slice(0, 2)
+          .join(" ");
+        const cls = typeof el.className === "string" ? el.className.split(/\\s+/).filter(Boolean).slice(0, 4).join(".") : "";
+        const style = el.getAttribute && el.getAttribute("style");
+        return el.tagName.toLowerCase()
+          + (el.id ? "#" + el.id : "")
+          + (hooks ? " [" + hooks + "]" : "")
+          + (cls ? " ." + cls : "")
+          + (style ? " {style:" + style.slice(0, 60) + "}" : "");
+      };
+      const chain = [describe(target)];
+      for (let host = target.parentElement; host && chain.length < 4; host = host.parentElement) {
+        chain.push(describe(host));
+      }
+      return chain.join(" < ");
+    })()`,
+  );
+  if (hit) {
+    fail(`${label} is not clickable: ${hit} is in front of it`);
+  }
   await send("Input.dispatchMouseEvent", {
     type: "mousePressed",
     x: point.x,
@@ -4477,7 +4510,7 @@ async function runLayoutPixelChecks(send, verified) {
       if (!canvas) {
         return { passed: false, detail: "canvas missing" };
       }
-      const actionbar = document.querySelector("[data-builder-selection-actionbar]");
+      const actionbar = document.querySelector("[data-builder-selection-action-bar]");
       const emptyStrip = document.querySelector('[data-builder-empty-state-density="compact-strip"]');
       const target = actionbar || emptyStrip;
       if (!target) {
@@ -4485,13 +4518,18 @@ async function runLayoutPixelChecks(send, verified) {
       }
       const rect = target.getBoundingClientRect();
       const viewport = document.querySelector("[data-builder-canvas-viewport]")?.getBoundingClientRect();
+      // The bar is canvas-top-external chrome (see data-builder-selection-placement),
+      // not a floating overlay: it docks above the canvas, so its budget is "stay a
+      // thin row in the workbench", not "leave an 18% margin of the canvas free".
       const fitsHeight = rect.height > 0 && rect.height <= 92;
-      const fitsWidth = rect.width <= canvas.width * 0.82;
+      const fitsWidth = rect.width > 0 && rect.width <= window.innerWidth + 1;
       const unclipped =
         rect.left >= -1 && rect.top >= -1 && rect.right <= window.innerWidth + 1 && rect.bottom <= window.innerHeight + 1;
+      // What it must never do is cover the drawing area it serves.
+      const clearsCanvas = rect.bottom <= canvas.top + 1;
       return {
-        passed: fitsHeight && fitsWidth && unclipped,
-        detail: \`subject=\${actionbar ? "actionbar" : "empty-strip"}, \${Math.round(rect.width)}x\${Math.round(rect.height)} at \${Math.round(rect.left)},\${Math.round(rect.top)}, canvas=\${Math.round(canvas.width)}x\${Math.round(canvas.height)}, viewport=\${viewport ? Math.round(viewport.top) + ".." + Math.round(viewport.bottom) : "n/a"}\`,
+        passed: fitsHeight && fitsWidth && unclipped && clearsCanvas,
+        detail: \`subject=\${actionbar ? "actionbar" : "empty-strip"}, \${Math.round(rect.width)}x\${Math.round(rect.height)} at \${Math.round(rect.left)},\${Math.round(rect.top)}, canvas=\${Math.round(canvas.width)}x\${Math.round(canvas.height)}@y\${Math.round(canvas.top)}, viewport=\${viewport ? Math.round(viewport.top) + ".." + Math.round(viewport.bottom) : "n/a"}, clearsCanvas=\${clearsCanvas}\`,
       };
     })()`,
     "selection actionbar pixel budget",
@@ -4530,7 +4568,7 @@ async function runLayoutPixelChecks(send, verified) {
       const shell = document.querySelector("[data-editor-shell]") || document.body;
       const panels = Array.from(
         shell.querySelectorAll(
-          "[data-builder-output-dock], [data-builder-readable-workbench], [data-builder-design-left-dock], [data-builder-mode-rail], [data-builder-left-run-controls], footer, [data-builder-selection-actionbar]",
+          "[data-builder-output-dock], [data-builder-readable-workbench], [data-builder-design-left-dock], [data-builder-mode-rail], [data-builder-left-run-controls], footer, [data-builder-selection-action-bar]",
         ),
       );
       const offenders = panels
@@ -4567,7 +4605,7 @@ async function runLayoutPixelChecks(send, verified) {
     send,
     `(() => {
       const dock = document.querySelector("[data-builder-output-dock]")?.getBoundingClientRect();
-      const statusBar = document.querySelector("footer")?.getBoundingClientRect();
+      const statusBar = document.querySelector("[data-app-status-bar]")?.getBoundingClientRect();
       if (!dock) {
         return { passed: false, detail: "output dock missing" };
       }
@@ -4631,7 +4669,7 @@ async function runOutputDockLayoutChecks(send, verified) {
       const bodyStyle = getComputedStyle(body);
       const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
       const rect = dock.getBoundingClientRect();
-      const statusBarRect = document.querySelector("footer")?.getBoundingClientRect() ?? null;
+      const statusBarRect = document.querySelector("[data-app-status-bar]")?.getBoundingClientRect() ?? null;
       const contentStyle = getComputedStyle(content);
       const bodyRadius = Number.parseFloat(bodyStyle.borderTopLeftRadius || "0");
       const contentRadius = Number.parseFloat(contentStyle.borderTopLeftRadius || "0");
@@ -4709,7 +4747,7 @@ async function runOutputDockLayoutChecks(send, verified) {
       const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
       const workspacePaddingBottom = Number.parseFloat(workspaceStyle?.paddingBottom || "999");
       const bottomGap = Math.round(window.innerHeight - dockRect.bottom);
-      const statusBarRect = document.querySelector("footer")?.getBoundingClientRect() ?? null;
+      const statusBarRect = document.querySelector("[data-app-status-bar]")?.getBoundingClientRect() ?? null;
       const statusBarClearance = statusBarRect ? Math.round(statusBarRect.top - dockRect.bottom) : bottomGap;
       const tabs = Array.from(dock.querySelectorAll('[data-builder-dock-tab-layout="inline"]'));
       const activeTabs = tabs.filter((tab) => tab.getAttribute("data-builder-dock-tab-active") === "true");
@@ -6211,6 +6249,7 @@ async function runAppSettingsRuntimeChecks(send, verified) {
   await waitFor(send, `document.readyState === "complete"`, "reload after clearing language preference", 15000);
   await waitFor(send, `document.documentElement.lang === "zh-CN"`, "Chinese default language", 15000);
   await waitFor(send, `Boolean(document.querySelector('[data-builder-left-run-controls-layout="qt-creator-kit"]'))`, "builder shell after language reload");
+  await waitFor(send, `!document.querySelector("#boot-splash:not([style*='none'])")`, "boot splash retired before interacting");
   await clickElementCenter(send, `document.querySelector('[data-window-control="settings"]')`, "settings titlebar button");
   await waitFor(send, `Boolean(document.querySelector('[data-app-settings-language-switch]'))`, "settings language switcher");
   await assertRuntimeCheck(
@@ -6513,6 +6552,34 @@ try {
   console.log(
       `Builder runtime smoke ok: ${summary.shell} shell, modes ${summary.modes.join("/")}, layoutActionbarPixelBudget=${verified.layoutActionbarPixelBudgetRuntime}, layoutCanvasControlsPixel=${verified.layoutCanvasControlsPixelRuntime}, layoutDockClip=${verified.layoutDockClipRuntime}, layoutDockStatusBarClearance=${verified.layoutDockStatusBarClearanceRuntime}, appSettingsLanguageRuntime=${verified.appSettingsLanguageRuntime}, canvas=${verified.canvas}, projectTree=${verified.projectTree}, projectTreeCompactHeaderRuntime=${verified.projectTreeCompactHeaderRuntime}, projectWorkspaceTree=${verified.projectWorkspaceTree}, projectTopology=${verified.projectTopology}, projectSourceOverview=${verified.projectSourceOverview}, projectActionCenterRuntime=${verified.projectActionCenterRuntime}, projectWorkingSetRuntime=${verified.projectWorkingSetRuntime}, projectOwnership=${verified.projectOwnership}, projectLocatorRuntime=${verified.projectLocatorRuntime}, projectNodeDossier=${verified.projectNodeDossier}, projectNodeActionStripRuntime=${verified.projectNodeActionStripRuntime}, projectNodeDuplicateRuntime=${verified.projectNodeDuplicateRuntime}, projectNodeDeleteDialogRuntime=${verified.projectNodeDeleteDialogRuntime}, projectTreeKeyboardRuntime=${verified.projectTreeKeyboardRuntime}, editorTabsRuntime=${verified.editorTabsRuntime}, projectOpenFilesRuntime=${verified.projectOpenFilesRuntime}, projectOpenFileCloseRuntime=${verified.projectOpenFileCloseRuntime}, projectOpenFileRevealRuntime=${verified.projectOpenFileRevealRuntime}, projectFolderSaveRuntime=${verified.projectFolderSaveRuntime}, previewExportRemovedRuntime=${verified.previewExportRemovedRuntime}, designLeftDockDefaultRuntime=${verified.designLeftDockDefaultRuntime}, componentPaletteRuntime=${verified.componentPaletteRuntime}, componentCoverageRuntime=${verified.componentCoverageRuntime}, componentPaletteCategoryDisclosureRuntime=${verified.componentPaletteCategoryDisclosureRuntime}, componentPaletteKitsRuntime=${verified.componentPaletteKitsRuntime}, componentPaletteKitScaffoldRuntime=${verified.componentPaletteKitScaffoldRuntime}, pageWindowShellRuntime=${verified.pageWindowShellRuntime}, stableActionbar=${verified.stableActionbar}, canvasLayoutStableRuntime=${verified.canvasLayoutStableRuntime}, singleSelection=${verified.singleSelection}, multiSelection=${verified.multiSelection}, multiSelectLayoutRuntime=${verified.multiSelectLayoutRuntime}, marqueeSelection=${verified.marqueeSelection}, contextMenu=${verified.contextMenu}, canvasContextInsertRuntime=${verified.canvasContextInsertRuntime}, canvasContextSelectSameRuntime=${verified.canvasContextSelectSameRuntime}, canvasContextInvertSelectionRuntime=${verified.canvasContextInvertSelectionRuntime}, canvasContextRuntimeStateRuntime=${verified.canvasContextRuntimeStateRuntime}, canvasContextGroupLayoutRuntime=${verified.canvasContextGroupLayoutRuntime}, canvasContextMatchSizeRuntime=${verified.canvasContextMatchSizeRuntime}, canvasContextDistributeRuntime=${verified.canvasContextDistributeRuntime}, canvasContextGoSlotRuntime=${verified.canvasContextGoSlotRuntime}, contextMenuTextEditRuntime=${verified.contextMenuTextEditRuntime}, inlineTextEdit=${verified.inlineTextEdit}, inlineTextEditCommitRuntime=${verified.inlineTextEditCommitRuntime}, inlineTextKeyboardRuntime=${verified.inlineTextKeyboardRuntime}, inlineTextEnterRuntime=${verified.inlineTextEnterRuntime}, actionbarTextEditRuntime=${verified.actionbarTextEditRuntime}, logicWorkbench=${verified.logicWorkbench}, logicResourcePriorityRuntime=${verified.logicResourcePriorityRuntime}, logicRustToolbarCompactRuntime=${verified.logicRustToolbarCompactRuntime}, logicContextRuntime=${verified.logicContextRuntime}, logicCommandCenterRuntime=${verified.logicCommandCenterRuntime}, logicImpact=${verified.logicImpact}, logicConnectionRuntime=${verified.logicConnectionRuntime}, logicFlowRuntime=${verified.logicFlowRuntime}, logicSlotAssistantRuntime=${verified.logicSlotAssistantRuntime}, goToSlotRuntime=${verified.goToSlotRuntime}, rustEditorRuntime=${verified.rustEditorRuntime}, rustCodeLensRuntime=${verified.rustCodeLensRuntime}, rustSyntaxRuntime=${verified.rustSyntaxRuntime}, rustCompletionRuntime=${verified.rustCompletionRuntime}, rustCompletionCommitRuntime=${verified.rustCompletionCommitRuntime}, rustSignatureRuntime=${verified.rustSignatureRuntime}, rustQuickFixRuntime=${verified.rustQuickFixRuntime}, rustMinimapRuntime=${verified.rustMinimapRuntime}, rustFormatRuntime=${verified.rustFormatRuntime}, rustFindRuntime=${verified.rustFindRuntime}, rustReplaceRuntime=${verified.rustReplaceRuntime}, rustGotoLineRuntime=${verified.rustGotoLineRuntime}, rustSymbolSelectionRuntime=${verified.rustSymbolSelectionRuntime}, rustRenameRuntime=${verified.rustRenameRuntime}, rustWordWrapRuntime=${verified.rustWordWrapRuntime}, rustDebugWorkbenchRuntime=${verified.rustDebugWorkbenchRuntime}, runtimeWorkbench=${verified.runtimeWorkbench}, desktopRuntimeConsoleCollapsedRuntime=${verified.desktopRuntimeConsoleCollapsedRuntime}, buildLogCollapsedRuntime=${verified.buildLogCollapsedRuntime}, outputDockLayout=${verified.outputDockLayout}, outputDockContentRuntime=${verified.outputDockContentRuntime}, outputDockNoClipRuntime=${verified.outputDockNoClipRuntime}, outputDockLogSearchRuntime=${verified.outputDockLogSearchRuntime}, readableWorkbenchRuntime=${verified.readableWorkbenchRuntime}, builderToolbarPolicy=${verified.builderToolbarPolicy}, builderTopbarOmitted=${verified.builderTopbarOmitted}, titlebarDragRuntime=${verified.titlebarDragRuntime}, titlebarOverflowRuntime=${verified.titlebarOverflowRuntime}, titlebarBuildMenuRuntime=${verified.titlebarBuildMenuRuntime}, titlebarBuildActionRuntime=${verified.titlebarBuildActionRuntime}, leftRunKitRuntime=${verified.leftRunKitRuntime}, leftRunPresetChangeRuntime=${verified.leftRunPresetChangeRuntime}, leftRunOperationRuntime=${verified.leftRunOperationRuntime}, leftRunCommandMenuRuntime=${verified.leftRunCommandMenuRuntime}, leftRunBuildConfigRouteRuntime=${verified.leftRunBuildConfigRouteRuntime}.`,
   );
+  // A flag that never got set prints `false` and still left the run green — the
+  // same way a density probe reporting "0 chips" once passed for a crashed
+  // workbench. Workflow gates must reach the core surfaces. The layout suite is
+  // geometry-only and legitimately exercises none of them.
+  if (!layoutOnly) {
+    const CORE_SURFACES = [
+      "projectTree",
+      "projectWorkspaceTree",
+      "canvas",
+      "singleSelection",
+      "contextMenu",
+      "inlineTextEdit",
+      "logicWorkbench",
+      "runtimeWorkbench",
+    ];
+    const missed = CORE_SURFACES.filter((name) => !verified[name]);
+    if (missed.length > 0) {
+      fail(`core workflow surfaces never verified: ${missed.join(", ")}`);
+    }
+    const allNames = Object.keys(verified);
+    const skipped = allNames.filter((name) => !verified[name]);
+    console.log(
+      `[builder-smoke] verified ${allNames.length - skipped.length}/${allNames.length} checks` +
+        (skipped.length
+          ? `; not exercised in "${smokeMode}" mode: ${skipped.join(", ")}`
+          : ""),
+    );
+  }
   passed = true;
 } catch (error) {
   lastError = String(error?.message || error);

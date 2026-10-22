@@ -88,9 +88,10 @@ npm run check:ui-density-rules    # 门禁判定逻辑自身的回归测试
 | 8 | readiness/`就绪`/零计数/路径药丸按规则收；类别与读数改正文 | build expanded 122 → 76，装饰比 79% → 28% |
 | 9 | working-set 状态与类别拆开；选中行改用底色；门禁判定补回归测试 | project expanded 71 → 64 |
 | 10 | 代码审查：修 `signal` 反了（「待生成」被静音）、wire 英文泄露、`group-open:hidden` 摘掉无障碍内容 | build 74 / project 65，中文界面无未翻译英文 |
+| 11 | 门禁自查：冒烟的 `verified.*` 只打印不断言；点击不命中测试；`querySelector("footer")` 抓到画布里组件预览的 footer | full 冒烟从失败到 110/110 全验，并接进 `check:experience` |
 
 ## 还能往哪推
 
 - build 展开态仍有 `提醒`×23 / `警告`×7 —— 这些是**真信号**（23 件待复核），不该靠隐藏解决，该靠减少待复核项。
 - build 展开态 17681 字符是四屏最重的，多为解释性长句，可改为默认折叠的详情。
-- `check-builder-runtime-smoke.mjs` 的 `verified.*` 只打印不断言，functional 模式还会跳过布局项并打印一串 `=false`。真回归容易被「ok」盖住。
+- `check:showcase-size` 现在 19906/20000 行，只剩不到一百行余量，再往 `BuilderShowcase.tsx` 加东西就会顶到上限。

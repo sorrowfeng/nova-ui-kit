@@ -17,7 +17,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && tsc && vite build && npm run check:bundle-size",
     "check:components": "node scripts/check-component-coverage.mjs",
-    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:release-artifact-magic && npm run check:project-file-models && npm run check:ui-density-rules && npm run check:ui-density",
+    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:release-artifact-magic && npm run check:project-file-models && npm run check:ui-density-rules && npm run check:ui-density && npm run check:builder-runtime",
     "check:goal": "node scripts/check-goal-coverage.mjs",
     "check:runtime-contract": "node scripts/check-generated-runtime-contract.mjs",
     "check:project-persistence": "node scripts/check-project-persistence-rust.mjs",

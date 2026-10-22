@@ -51,15 +51,24 @@ try {
         <App />
       </ErrorBoundary>,
     );
-    // Hide splash after App has a chance to paint
-    window.setTimeout(() => {
+    // Retire the splash as soon as the app has actually painted. A fixed
+    // delay kept a z-index:9999 layer over the whole window for a second
+    // after the workbench was already interactive — clicks landed on it and
+    // went nowhere. Poll, with a deadline so a hung render still surfaces.
+    const splashDeadline = Date.now() + 1000;
+    const retireSplash = () => {
       const html = rootEl.innerHTML;
       if (html.trim().length > 20 && !errorBox?.textContent) {
         if (splash) splash.style.display = "none";
-      } else if (html.trim().length <= 20) {
-        showFatal("[empty-root] len=" + html.length);
+        return;
       }
-    }, 1000);
+      if (Date.now() >= splashDeadline) {
+        if (html.trim().length <= 20) showFatal("[empty-root] len=" + html.length);
+        return;
+      }
+      window.setTimeout(retireSplash, 32);
+    };
+    window.requestAnimationFrame(retireSplash);
   }
 } catch (error) {
   showFatal("[bootstrap] " + String(error));

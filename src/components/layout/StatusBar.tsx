@@ -51,7 +51,13 @@ export function StatusBar({ copy, language, theme, scheme, density, autoSaveEnab
   }, []);
 
   return (
-    <footer className="flex h-8 shrink-0 items-center justify-between gap-3 border-t border-outline-variant bg-surface-container-lowest px-4 text-xs text-on-surface-variant">
+    // Not a bare `footer`: the design canvas renders component previews that
+    // contain their own <footer> elements, so a test that queries the tag lands
+    // inside a preview. This is the app chrome the layout gates measure.
+    <footer
+      data-app-status-bar=""
+      className="flex h-8 shrink-0 items-center justify-between gap-3 border-t border-outline-variant bg-surface-container-lowest px-4 text-xs text-on-surface-variant"
+    >
       <div className="flex min-w-0 items-center gap-3">
         <span className="flex shrink-0 items-center gap-1.5">
           <CheckCircle2 aria-hidden className="size-3.5 text-primary" />
