@@ -131,11 +131,29 @@ async function waitForHttp(url, label, timeoutMs = 20000) {
       }
       lastError = `${response.status} ${response.statusText}`;
     } catch (error) {
+      // undici reports a bare "fetch failed"; the actual reason is on `cause`.
+      // Collapsing it to the surface message is how a port race stayed invisible.
+      const cause = error instanceof Error && error.cause ? error.cause : null;
+      const causeText = cause instanceof Error ? `${cause.message}${cause.code ? ` (${cause.code})` : ""}` : String(cause ?? "");
       lastError = error instanceof Error ? error.message : String(error);
+      if (causeText && causeText !== "undefined") lastError += `: ${causeText}`;
     }
     await delay(250);
   }
-  fail(`${label} did not become available: ${lastError}`);
+  // Distinguish "nothing is listening" from "something answered wrong".
+  const parsed = new URL(url);
+  const tcp = await new Promise((resolve) => {
+    const socket = net.connect(Number(parsed.port) || 80, parsed.hostname);
+    const done = (detail) => {
+      socket.destroy();
+      resolve(detail);
+    };
+    socket.setTimeout(1500);
+    socket.once("connect", () => done("port is accepting connections"));
+    socket.once("timeout", () => done("port connect timed out"));
+    socket.once("error", (error) => done(`port connect failed: ${error.code || error.message}`));
+  });
+  fail(`${label} did not become available at ${url}: ${lastError}; ${tcp}`);
 }
 
 function findBrowserExecutable() {
