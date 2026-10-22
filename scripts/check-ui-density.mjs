@@ -21,10 +21,37 @@ import {
 
 const root = process.cwd();
 const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
-const browserPath =
-  process.env.EDGE_PATH ||
-  process.env.CHROME_PATH ||
-  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+
+// The gate runs wherever `npm run build` runs, so browser discovery has to work
+// on every CI host, not just a developer's Windows box.
+const BROWSER_CANDIDATES =
+  process.platform === "win32"
+    ? [
+        process.env.EDGE_PATH,
+        process.env.CHROME_PATH,
+        "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+        "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      ].filter(Boolean)
+    : [
+        process.env.CHROME_PATH,
+        process.env.EDGE_PATH,
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+      ].filter(Boolean);
+
+function resolveBrowser() {
+  for (const candidate of BROWSER_CANDIDATES) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 const debugPort = Number(process.env.NOVA_DENSITY_DEBUG_PORT || 14651);
 const vitePort = Number(process.env.NOVA_DENSITY_VITE_PORT || 14650);
 const reportOnly = process.argv.includes("--report");
@@ -133,8 +160,11 @@ async function measureSurface(surface) {
 }
 
 async function main() {
-  if (!fs.existsSync(browserPath)) {
-    console.error(`check-ui-density: no browser at ${browserPath} (set EDGE_PATH or CHROME_PATH)`);
+  const browserPath = resolveBrowser();
+  if (!browserPath) {
+    console.error(
+      "check-ui-density: no Chrome/Edge/Chromium found. Install one or set EDGE_PATH / CHROME_PATH.",
+    );
     process.exit(1);
   }
 
