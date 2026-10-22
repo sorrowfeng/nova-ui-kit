@@ -29,10 +29,10 @@ import {
   projectExplorerBadgeLabel,
 } from "./monolith-module";
 
-export type ProjectViewScope = Record<string, any>;
+import type { ProjectViewScope } from "./scope-project";
 
 export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
-  const scope = props.scope ?? {};
+  const scope = props.scope;
   const {
     Field,
     PathRow,
