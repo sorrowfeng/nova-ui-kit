@@ -5246,7 +5246,9 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
             >
               <Layers aria-hidden className="size-4 text-primary" />
               <span>{palettePointerDrag.title}</span>
-              <Badge variant={dropIntent ? "secondary" : "outline"}>{dropIntent ? "Drop" : "Drag"}</Badge>
+              <span className="text-[0.68rem] text-on-surface-variant">
+                {dropIntent ? "放置" : "拖拽"}
+              </span>
             </div>
           ) : null}
       </div>

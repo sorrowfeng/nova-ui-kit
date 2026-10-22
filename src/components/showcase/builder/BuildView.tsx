@@ -265,6 +265,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     syncReleaseWindowFromActivePage,
     taskQueueNextActionLabel,
     taskQueueStateDetail,
+    taskQueueStateLabel,
     taskQueueStateTitle,
     taskQueueStateTone,
     toggleGeneratedPreviewPath,
@@ -586,7 +587,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">发布配置</h3>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">写入目标 app 的 package、Cargo 和 Tauri 配置。</p>
                     </div>
-                    <Badge variant="outline">发布</Badge>
+                    <span className="text-[0.68rem] text-on-surface-variant">发布</span>
                   </div>
                   <Field label="应用名称">
                     <Input
@@ -706,9 +707,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         <Label className="text-xs font-medium">签名与发布校验</Label>
                         <p className="mt-1 text-xs leading-5 text-on-surface-variant">{releaseSigningDescription(activeProject.releaseConfig)}</p>
                       </div>
-                      <Badge variant={activeProject.releaseConfig.signingMode === "unsigned" ? "outline" : releaseSigningConfigured(activeProject.releaseConfig) ? "secondary" : "destructive"}>
-                        {activeProject.releaseConfig.signingMode === "unsigned" ? "未签名" : releaseSigningConfigured(activeProject.releaseConfig) ? "就绪" : "缺失"}
-                      </Badge>
+                      <StateLabel
+                        showQuiet
+                        variant={activeProject.releaseConfig.signingMode === "unsigned" ? "outline" : releaseSigningConfigured(activeProject.releaseConfig) ? "secondary" : "destructive"}
+                        label={activeProject.releaseConfig.signingMode === "unsigned" ? "未签名" : releaseSigningConfigured(activeProject.releaseConfig) ? "就绪" : "缺失"}
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Field label="签名模式">
@@ -787,9 +790,14 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               data-builder-certificate-store-result=""
                             >
                               <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant={certificateInspection.found ? "secondary" : "outline"}>
-                                  {certificateInspection.found ? `${certificateInspection.match_count} found` : "missing"}
-                                </Badge>
+                                <CountReadout
+                                  label={
+                                    certificateInspection.found
+                                      ? `${certificateInspection.match_count} 个匹配`
+                                      : "未找到"
+                                  }
+                                  count={certificateInspection.found ? certificateInspection.match_count : 0}
+                                />
                                 <span className="min-w-0 break-words">{certificateInspection.summary}</span>
                               </div>
                               {certificateInspection.entries.length > 0 ? (
@@ -798,11 +806,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                     <div key={`${entry.store}-${entry.thumbprint}`} className="rounded-lg bg-surface-container px-2 py-2">
                                       <div className="flex flex-wrap items-center gap-2">
                                         <span className="font-medium">{entry.store}</span>
-                                        <Badge variant={entry.has_private_key ? "secondary" : "outline"}>
-                                          {entry.has_private_key ? "private key" : "no private key"}
-                                        </Badge>
+                                        <StateLabel
+                                          showQuiet
+                                          variant={entry.has_private_key ? "secondary" : "outline"}
+                                          label={entry.has_private_key ? "含私钥" : "无私钥"}
+                                        />
                                         {entry.not_after ? (
-                                          <span className="text-on-surface-variant">expires {validationTimeLabel(entry.not_after)}</span>
+                                          <span className="text-on-surface-variant">到期 {validationTimeLabel(entry.not_after)}</span>
                                         ) : null}
                                       </div>
                                       <p className="mt-1 break-words font-mono text-[0.68rem] text-on-surface-variant">
@@ -2015,7 +2025,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
-                          <Badge
+                          <StateLabel
+                            showQuiet
                             variant={
                               taskQueueStateTone === "attention"
                                 ? "destructive"
@@ -2023,9 +2034,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   ? "secondary"
                                   : "outline"
                             }
-                          >
-                            {taskQueueStateTone}
-                          </Badge>
+                            label={taskQueueStateLabel}
+                          />
                           <span className="min-w-0 truncate font-medium text-on-surface">{taskQueueStateTitle}</span>
                         </div>
                         <p className="mt-2 line-clamp-2 leading-5 text-on-surface-variant">{taskQueueStateDetail}</p>

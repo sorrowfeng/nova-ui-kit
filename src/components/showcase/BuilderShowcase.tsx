@@ -2473,6 +2473,18 @@ export function BuilderShowcase() {
         : latestFailedProjectTask
           ? "attention"
           : "ready";
+  // The tone is wire vocabulary ("attention"/"queued"); the badge has to say it
+  // in the UI language, and the classifier needs Chinese to decide its weight.
+  const taskQueueStateLabel =
+    taskQueueStateTone === "running"
+      ? "运行中"
+      : taskQueueStateTone === "paused"
+        ? "已暂停"
+        : taskQueueStateTone === "queued"
+          ? "排队中"
+          : taskQueueStateTone === "attention"
+            ? "需处理"
+            : "就绪";
   const taskQueueStateTitle = runningProjectTask
     ? `正在运行 ${runningProjectTask.title}`
     : projectTaskQueuePaused && localQueuedProjectTasks.length > 0
@@ -19837,6 +19849,7 @@ export function BuilderShowcase() {
       tabOrderOverlayVisible,
       taskQueueNextActionLabel,
       taskQueueStateDetail,
+      taskQueueStateLabel,
       taskQueueStateTitle,
       taskQueueStateTone,
       testActiveBackendIntegrationMethod,

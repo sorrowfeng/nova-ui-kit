@@ -1374,7 +1374,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <p className="truncate text-xs font-semibold text-on-surface">UI 文件</p>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">项目内 {activeProject.files.length} 个文件</p>
                       </div>
-                      <Badge variant="outline">{activeFile.items.length} 控件</Badge>
+                      <CountReadout label={`${activeFile.items.length} 控件`} count={activeFile.items.length} />
                     </div>
                     <Field label="当前文件">
                       <Input data-builder-file-name="" inputSize="sm" value={activeFile.name} onChange={(event: any) => renameActiveFile(event.target.value)} />
@@ -2397,7 +2397,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       吸附
                       <Switch className="h-5 w-9 border" checked={page.snapToGrid} onCheckedChange={(snapToGrid: any) => updatePage({ snapToGrid })} />
                     </label>
-                    <Badge variant="outline">{items.length} 个节点</Badge>
+                    <CountReadout label={`${items.length} 个节点`} count={items.length} />
                     <Badge variant={selectedIds.length > 0 ? "secondary" : "outline"}>{selectedIds.length} 个已选</Badge>
                   </div>
                     </div>
@@ -4304,7 +4304,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <Layers aria-hidden className="size-4 text-primary" />
                         <h3 className="text-sm font-medium">对象树</h3>
                       </div>
-                      <Badge variant="secondary">{items.length}</Badge>
+                      <CountReadout label={String(items.length)} count={items.length} />
                     </div>
                     {treeRows.length === 0 ? (
                       <div className="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-xs text-on-surface-variant">
@@ -4395,7 +4395,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <h3 className="truncate text-sm font-medium">批量选择</h3>
                           <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedItems.length} 个控件已选中</p>
                         </div>
-                        <Badge variant="secondary">{selectedItems.filter((item: any) => item.locked).length} 个已锁定</Badge>
+                        <CountReadout label={`${selectedItems.filter((item: any) => item.locked).length} 个已锁定`} count={selectedItems.filter((item: any) => item.locked).length} />
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 text-center text-[0.68rem]">
@@ -4987,7 +4987,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">选项</h4>
                               <p className="mt-1 text-xs text-on-surface-variant">候选项会写入生成 app 的控件内容。</p>
                             </div>
-                            <Badge variant="outline">{selectOptionsForItem(selectedItem).length} 个选项</Badge>
+                            <CountReadout label={`${selectOptionsForItem(selectedItem).length} 个选项`} count={selectOptionsForItem(selectedItem).length} />
                           </div>
                           <div className="grid grid-cols-1 gap-2">
                             <Field label="选项 A">
@@ -5028,7 +5028,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">状态绑定</h4>
                               <p className="mt-1 text-xs text-on-surface-variant">将控件属性绑定到项目级共享状态。</p>
                             </div>
-                            <Badge variant="outline">{activeProject.stateVariables.length} 个状态</Badge>
+                            <CountReadout label={`${activeProject.stateVariables.length} 个状态`} count={activeProject.stateVariables.length} />
                           </div>
                           <div className="grid grid-cols-1 gap-2">
                             {selectedBindableProps.map((prop: any) => (
@@ -5399,7 +5399,10 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <h4 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">输入载荷</h4>
                               <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedConnectionInputSummary}</p>
                             </div>
-                            <Badge variant="outline">{selectedEventCommandArgs.length || (selectedEventBinding?.passValue ? 1 : 0)} arg</Badge>
+                            <CountReadout
+                              label={`${selectedEventCommandArgs.length || (selectedEventBinding?.passValue ? 1 : 0)} 参数`}
+                              count={selectedEventCommandArgs.length || (selectedEventBinding?.passValue ? 1 : 0)}
+                            />
                           </div>
                           {selectedEventCommandArgs.length > 0 ? (
                             <div className="space-y-1.5">

@@ -916,10 +916,10 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{activeProject.rustCommands.length} 命令</Badge>
-                    <Badge variant="outline">{activeProject.rustModules.filter((module: any) => module.enabled).length} 模块</Badge>
-                    <Badge variant="outline">{activeProject.cargoDependencies.filter((dependency: any) => dependency.enabled).length} 依赖</Badge>
-                    <Badge variant="outline">{activeProject.backendIntegrations.filter((integration: any) => integration.enabled).length} 集成</Badge>
+                    <CountReadout label={`${activeProject.rustCommands.length} 命令`} count={activeProject.rustCommands.length} />
+                    <CountReadout label={`${activeProject.rustModules.filter((module: any) => module.enabled).length} 模块`} count={activeProject.rustModules.filter((module: any) => module.enabled).length} />
+                    <CountReadout label={`${activeProject.cargoDependencies.filter((dependency: any) => dependency.enabled).length} 依赖`} count={activeProject.cargoDependencies.filter((dependency: any) => dependency.enabled).length} />
+                    <CountReadout label={`${activeProject.backendIntegrations.filter((integration: any) => integration.enabled).length} 集成`} count={activeProject.backendIntegrations.filter((integration: any) => integration.enabled).length} />
                   </div>
                 </div>
                 <div
@@ -1237,7 +1237,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           Rust 作为主后端，统一连接命令、模块、依赖、外部进程和状态。
                         </p>
                       </div>
-                      <Badge variant="outline">Rust first</Badge>
+                      <span className="text-[0.68rem] text-on-surface-variant">Rust 优先</span>
                     </div>
                     <div className="mt-3 grid gap-2">
                       {rustBackendTopology.map((node: any) => (
@@ -1571,7 +1571,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="mt-3 rounded-[18px] border border-outline-variant bg-surface-container-low p-2.5" data-builder-logic-slot-assistant-history="">
                       <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
                         <span className="truncate text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">最近槽函数</span>
-                        <Badge variant="outline">{recentSlotNavigationEntries.length} 条</Badge>
+                        <CountReadout label={`${recentSlotNavigationEntries.length} 条`} count={recentSlotNavigationEntries.length} />
                       </div>
                       <div className="grid gap-2 md:grid-cols-2">
                         {recentSlotNavigationEntries.slice(0, 4).map((entry: any) => (
@@ -1708,8 +1708,14 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <span className="truncate text-xs font-semibold text-on-surface">连接待办</span>
-                            <Badge variant="outline">{unboundLogicSignalSlotRows.length} 信号未绑定</Badge>
-                            <Badge variant="outline">{missingRustSlotEntries.length} 槽函数缺失</Badge>
+                            <StateBadge
+                              label={`${unboundLogicSignalSlotRows.length} 信号未绑定`}
+                              signal={unboundLogicSignalSlotRows.length > 0}
+                            />
+                            <StateBadge
+                              label={`${missingRustSlotEntries.length} 槽函数缺失`}
+                              signal={missingRustSlotEntries.length > 0}
+                            />
                           </div>
                           <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
                             像 Qt 的 Signals/Slots 面板一样，把需要连接或生成的项集中处理。
@@ -2345,7 +2351,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     >
                       <ClipboardCopy aria-hidden className="size-4" />
                       任务
-                      <Badge variant="outline">{activeProjectTasks.length}</Badge>
+                      <CountReadout label={String(activeProjectTasks.length)} count={activeProjectTasks.length} />
                     </Button>
                     <Button
                       size="sm"
@@ -2554,16 +2560,15 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <Badge variant={rustCursorSignalSlotRow ? "secondary" : "outline"}>
                           {rustCursorSignalSlotRow ? "UI 槽" : rustCursorOutlineEntry ? "Rust" : "全局"}
                         </Badge>
-                        <Badge variant={activeRustCompletion ? "secondary" : "outline"}>
+                        <span className="text-[0.68rem] text-on-surface-variant">
                           {activeRustCompletion ? `补全 ${activeRustCompletion.kind}` : "Ctrl+Space"}
-                        </Badge>
-                        <Badge
-                          variant={rustSignatureHelp?.source === "cursor-slot" ? "secondary" : "outline"}
+                        </span>
+                        <CountReadout
+                          label={rustSignatureHelp ? `${rustSignatureHelp.parameters.length} 参数` : "无签名"}
+                          count={rustSignatureHelp?.parameters.length}
                           data-builder-rust-signature-source={rustSignatureHelp?.source ?? "none"}
-                        >
-                          {rustSignatureHelp ? `${rustSignatureHelp.parameters.length} 参数` : "无签名"}
-                        </Badge>
-                        {buildDiagnostics.length > 0 ? <Badge variant="outline">{buildDiagnostics.length} 诊断</Badge> : null}
+                        />
+                        <CountReadout label={`${buildDiagnostics.length} 诊断`} count={buildDiagnostics.length} />
                       </div>
                       <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">{rustEditorContextDetail}</p>
                     </div>
@@ -3066,12 +3071,13 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <div className="min-w-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
                           <span className="truncate font-medium text-on-surface">Rust CodeLens</span>
-                          <Badge variant={activeRustCommandBindingRows.length > 0 ? "secondary" : "outline"}>
-                            {activeRustCommandBindingRows.length > 0 ? `${activeRustCommandBindingRows.length} UI 调用` : "待连接"}
-                          </Badge>
-                          <Badge variant={activeRustCommandOutlineEntry ? "outline" : "destructive"}>
-                            {activeRustCommandOutlineEntry?.line ? `Ln ${activeRustCommandOutlineEntry.line}` : "槽函数缺失"}
-                          </Badge>
+                          <StateBadge
+                            label={activeRustCommandBindingRows.length > 0 ? `${activeRustCommandBindingRows.length} UI 调用` : "待连接"}
+                          />
+                          <StateBadge
+                            label={activeRustCommandOutlineEntry?.line ? `第 ${activeRustCommandOutlineEntry.line} 行` : "槽函数缺失"}
+                            variant={activeRustCommandOutlineEntry?.line ? "outline" : "destructive"}
+                          />
                         </div>
                         <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
                           {sanitizeRustCommandName(activeRustCommand.name)} 的 UI 调用者、槽函数和映射操作集中在这里。
