@@ -142,7 +142,8 @@ useBuilderBuild()  / useBuilderTasks()  / useBuilderDocks()
 ```bash
 npx tsc --noEmit        # 现在自带 noUnusedLocals / noUnusedParameters
 npm run check:experience          # 含 full 冒烟 110 项
-npm run check:showcase-size
+npm run check:showcase-size       # 只管 BuilderShowcase.tsx
+npm run check:builder-file-size   # builder/ 每个文件的行数棘轮
 
 # Phase 3 额外：
 npm run check:ui-density          # chip 数不许动
@@ -176,6 +177,18 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
   2. *折叠面板那两条断言对零条面板循环。* `shell.disclosures` 是首屏快照里 `<details>` 的集合，而面板在另外三个 mode 里；循环空转，checklist 5.1 一直是绿的、其实一条都没测。**空集合上的循环是不败的门。** 改成走四个 mode 收集，并且要求收集结果非零——收集本身也要能输。
 - **「快速检查」这功能在 UI 上根本进不去。** Phase 0 删掉的 `checkActiveProject`（57 行，调 `check_editor_project`）是 `checkingTarget` 的唯一写入者，而 tsc 证明它从来没被调用过。现在 `checkingTarget` 永远是 `null`，`dirty` 那一项永远不为真，Build 面上「正在检查」的分支是死的。删它是对的（删除前后行为完全一致），但**功能缺失是真的**——要么接回 UI，要么把这堆状态一起清掉。不是 Phase 0 的事，记在这里免得忘。
 - **`window` 这个名字在项目里有两个意思。** Phase 0 把 DOM 全局从 scope 袋里拿掉了：它被当普通键传过三层，`DesignView` 里 `window.prompt(...)` 实际拿到的是袋子里那个。今天袋子里没人供给 `window`，所以它回落到全局、侥幸能跑；而项目自己有「窗口壳」这个领域概念（`page.windowKind`、`releaseWindowKinds`、`data-builder-page-window-kind`），哪天谁加一个叫 `window` 的项目域对象，批量改标签那个弹窗当场就炸。**名字遮蔽比死代码危险**：死代码顶多占地，遮蔽会在别的文件里悄悄改行为。
-- `check:showcase-size` 只量 `BuilderShowcase.tsx`。`builder/` 里那 11 个超 800 行的文件不在它管辖内，靠 Phase 3 和代码评审约束。若要强制，需另开一条按文件量的门禁。
+- ~~`check:showcase-size` 只量 `BuilderShowcase.tsx`~~ → 已补 `check:builder-file-size`：`builder/` 下每个 `.ts`/`.tsx` 一条行数棘轮，12 个超标的文件钉在实测值上，只许降不许涨；新文件按 800 行硬顶。**棘轮会往回滑**——文件缩了、上限还挂得很高，下一次膨胀就被盖住了，所以这条门禁同时报「缩了就得把上限拧下来」。
+- **Phase 2 的切片不能按「领域」分，得按「谁在读」分。** 计划里写的「先 project，109 个名」是 `ProjectView` 整个解构块的行数，不是 project 独占的量。实测按每个视图自己的解构块统计（不是搜标识符——`name`、`page`、`length` 这种词在每个文件里都是属性名，会误报）：
+
+  | 归属 | 名字数 |
+  |------|-------:|
+  | 只有 `ProjectView` 读 | 44 |
+  | 只有 `DesignView` 读 | 323 |
+  | 只有 `LogicView` 读 | 267 |
+  | 只有 `BuildView` 读 | 205 |
+  | **多个子视图共读** | **103** |
+  | 只有 `ShellView` 读（从不下发） | 148 |
+
+  共读的 103 个塞不进任何单一领域切片——真按领域切，要么一个名字出现在两个切片里（那就不是切片了），要么逼着视图改用 `scope.project.foo` 这种限定名去点每一个使用点。**按视图切**和代码现在的组织一致，也正好是 Phase 3 拆胖视图的边界。共读的那 103 个进共享袋，谁都不许藏。
 - scope 袋的类型在 Phase 2 之前是 `Record<string, any>`，`tsc` 全程查不出漏键。Phase 0/1 期间靠 `check:experience` 的 110 项冒烟兜底。
 - `check-goal-coverage` 有 97 条断言钉在冒烟脚本的字面量上。改冒烟脚本时这些会跟着挂——那是故意的，它们测的是「冒烟真的在断言」。
