@@ -3,7 +3,7 @@
 // Kept out of BuilderShowcase so each view can import what it needs without
 // pulling the monolith back in.
 
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,100 @@ export function PanelTitle({ icon: Icon, title, description }: { icon: typeof La
         <p className="mt-1 text-xs leading-5 text-on-surface-variant">{description}</p>
       </div>
     </div>
+  );
+}
+
+/**
+ * A status token that only paints when the user has something to do.
+ *
+ * Routine labels ("目录", "文件", ".nova") restate what a row's icon already
+ * shows. Painting them on every row buries the rows that are actually wrong,
+ * so they stay in the accessible name instead of the visual field.
+ */
+export function SignalChip({
+  label,
+  signal,
+  toneClass,
+  className,
+  children,
+}: {
+  label: string;
+  signal: boolean;
+  toneClass: string;
+  className?: string;
+  children?: ReactNode;
+}) {
+  if (!signal) {
+    return <span className="sr-only">{children ?? label}</span>;
+  }
+  return (
+    <span
+      className={cn(
+        "shrink-0 rounded-md border px-1.5 py-0.5 text-[0.58rem] font-medium leading-4",
+        toneClass,
+        className,
+      )}
+    >
+      {children ?? label}
+    </span>
+  );
+}
+
+/**
+ * States that need no visual weight: the panel is fine and there is nothing to
+ * do. An idle task queue saying "空" on six sections tells the user nothing six
+ * times over — only the sections that are running or failed do.
+ */
+export const QUIET_STATE_LABELS: ReadonlySet<string> = new Set([
+  "就绪",
+  "空",
+  "已同步",
+  "已完成",
+  "正常",
+  "无",
+  "待开始",
+]);
+
+/** Zero is not news; a count chip should paint when something is actually queued. */
+export function isQuietCount(count: number): boolean {
+  return !Number.isFinite(count) || count <= 0;
+}
+
+export function isQuietStateLabel(label: string): boolean {
+  return QUIET_STATE_LABELS.has(label.trim());
+}
+
+/**
+ * Badge wrapper that drops to screen-reader-only text for benign states and
+ * for zero counts. Call sites pass the state they have; this decides whether
+ * the eye needs to see it.
+ */
+export function StateBadge({
+  label,
+  signal,
+  variant = "outline",
+  className,
+  children,
+  ...rest
+}: {
+  label: string;
+  signal?: boolean;
+  variant?: "default" | "secondary" | "outline" | "destructive" | "accent";
+  className?: string;
+  children?: ReactNode;
+} & HTMLAttributes<HTMLSpanElement>) {
+  const quiet = signal === undefined ? isQuietStateLabel(label) : !signal;
+  if (quiet) {
+    return (
+      <span className="sr-only" {...rest}>
+        {children ?? label}
+      </span>
+    );
+  }
+  return (
+    <Badge variant={variant} className={className} {...rest}>
+      {children ?? label}
+    </Badge>
   );
 }
 

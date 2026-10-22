@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { SignalChip, StateBadge, isQuietCount } from "./view-helpers";
 
 export type ProjectViewScope = Record<string, any>;
 
@@ -258,10 +259,10 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-topology-legend="">
-                      <Badge variant="outline">source</Badge>
-                      <Badge variant="secondary">generated</Badge>
-                      <Badge variant="outline">.nova</Badge>
+                    {/* Cards already name their domain, so a scope colour key
+                        would explain a distinction the eye cannot see. */}
+                    <div className="sr-only" data-builder-project-topology-legend="">
+                      项目范围分为 source（源码）、generated（生成目标）与 .nova（本地元数据）。
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2 lg:grid-cols-3 2xl:grid-cols-6">
@@ -313,9 +314,9 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             </span>
                           </span>
                           <span className="mt-3 flex min-w-0 items-center justify-between gap-2">
-                            <span className="rounded-full border border-outline-variant bg-surface-container px-2 py-0.5 text-[0.62rem] text-on-surface-variant">
-                              {node.scope}
-                            </span>
+                            {/* Scope is already on the card title and icon; the
+                                chip only repeated it on all six cards. */}
+                            <span className="sr-only">{node.scope}</span>
                             <span className="inline-flex min-w-0 items-center gap-1 text-primary">
                               <span className="truncate">{node.actionLabel}</span>
                               <ArrowRight aria-hidden className="size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
@@ -357,12 +358,26 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-source-overview-summary="">
-                      <Badge variant="outline">{projectSourceOverviewRows.filter((row: any) => row.scope === "source").length} source</Badge>
-                      <Badge variant="outline">{projectSourceOverviewRows.filter((row: any) => row.scope === "metadata").length} .nova</Badge>
-                      <Badge variant="secondary">{projectSourceOverviewRows.filter((row: any) => row.status === "dirty").length} 未保存</Badge>
-                      <Badge variant={activeProject.outputExePath ? "accent" : "outline"}>
-                        {activeProject.outputExePath ? "exe 就绪" : "待构建"}
-                      </Badge>
+                      <StateBadge
+                        label={`${projectSourceOverviewRows.filter((row: any) => row.scope === "source").length} source`}
+                        signal={false}
+                        variant="outline"
+                      />
+                      <StateBadge
+                        label={`${projectSourceOverviewRows.filter((row: any) => row.scope === "metadata").length} .nova`}
+                        signal={false}
+                        variant="outline"
+                      />
+                      <StateBadge
+                        label={`${projectSourceOverviewRows.filter((row: any) => row.status === "dirty").length} 未保存`}
+                        signal={projectSourceOverviewRows.some((row: any) => row.status === "dirty")}
+                        variant="secondary"
+                      />
+                      <StateBadge
+                        label={activeProject.outputExePath ? "exe 就绪" : "待构建"}
+                        signal={!activeProject.outputExePath}
+                        variant={activeProject.outputExePath ? "accent" : "outline"}
+                      />
                     </div>
                   </div>
 
@@ -475,13 +490,22 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-folder-health-summary="inline-status">
-                      <Badge variant={activeProject.rootPath ? "secondary" : "outline"} data-builder-project-folder-health-root-state="">
-                        {activeProject.rootPath ? "已连接" : "待保存"}
-                      </Badge>
-                      <Badge variant={projectSourceDirty ? "destructive" : "secondary"}>
-                        {projectSourceDirty ? "待同步" : "已同步"}
-                      </Badge>
-                      <Badge variant="outline">{projectSaveManifestItems.length} 项</Badge>
+                      <StateBadge
+                        label={activeProject.rootPath ? "已连接" : "待保存"}
+                        signal={!activeProject.rootPath}
+                        variant={activeProject.rootPath ? "secondary" : "outline"}
+                        data-builder-project-folder-health-root-state=""
+                      />
+                      <StateBadge
+                        label={projectSourceDirty ? "待同步" : "已同步"}
+                        signal={Boolean(projectSourceDirty)}
+                        variant={projectSourceDirty ? "destructive" : "secondary"}
+                      />
+                      <StateBadge
+                        label={`${projectSaveManifestItems.length} 项`}
+                        signal={!isQuietCount(projectSaveManifestItems.length)}
+                        variant="outline"
+                      />
                     </div>
                   </div>
                   <div
@@ -570,15 +594,21 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 text-[0.68rem]" data-builder-project-action-center-summary="">
-                      <Badge variant={projectSourceDirty ? "outline" : "secondary"}>
-                        {projectSourceDirty ? "有未保存来源" : "来源已同步"}
-                      </Badge>
-                      <Badge variant={selectedRailKitPlanStats.failed > 0 ? "destructive" : "outline"}>
-                        Kit {selectedRailKitPlanStats.completed}/{selectedRailKitPlanStats.total}
-                      </Badge>
-                      <Badge variant={runningProjectTask ? "accent" : latestFailedProjectTask ? "destructive" : "outline"}>
-                        {runningProjectTask ? "运行中" : latestFailedProjectTask ? "需处理" : "队列就绪"}
-                      </Badge>
+                      <StateBadge
+                        label={projectSourceDirty ? "有未保存来源" : "来源已同步"}
+                        signal={Boolean(projectSourceDirty)}
+                        variant={projectSourceDirty ? "outline" : "secondary"}
+                      />
+                      <StateBadge
+                        label={`Kit ${selectedRailKitPlanStats.completed}/${selectedRailKitPlanStats.total}`}
+                        signal={selectedRailKitPlanStats.failed > 0 || selectedRailKitPlanStats.total > 0}
+                        variant={selectedRailKitPlanStats.failed > 0 ? "destructive" : "outline"}
+                      />
+                      <StateBadge
+                        label={runningProjectTask ? "运行中" : latestFailedProjectTask ? "需处理" : "队列就绪"}
+                        signal={Boolean(runningProjectTask) || Boolean(latestFailedProjectTask)}
+                        variant={runningProjectTask ? "accent" : latestFailedProjectTask ? "destructive" : "outline"}
+                      />
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-2" data-builder-project-action-center-list="">
@@ -761,9 +791,12 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         </div>
                       </div>
                     </div>
-                    <Badge variant={projectSourceDirty ? "outline" : "secondary"} data-builder-project-ownership-sync-state="">
-                      {projectSourceDirty ? "有未保存来源" : "来源已同步"}
-                    </Badge>
+                    <StateBadge
+                      label={projectSourceDirty ? "有未保存来源" : "来源已同步"}
+                      signal={Boolean(projectSourceDirty)}
+                      variant={projectSourceDirty ? "outline" : "secondary"}
+                      data-builder-project-ownership-sync-state=""
+                    />
                   </div>
                   <div className="mt-3 overflow-hidden rounded-[20px] border border-outline-variant bg-surface-container-low" data-builder-project-ownership-table="">
                     <div className="grid grid-cols-[0.8fr_1fr_1.15fr_1.2fr_auto] gap-3 border-b border-outline-variant bg-surface-container-high px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant max-lg:hidden">
@@ -1011,9 +1044,11 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                   </span>
                                 </button>
                                 <div className="flex shrink-0 items-center gap-1">
-                                  <span className={cn("hidden rounded-full border px-1.5 py-0.5 text-[0.58rem] font-medium sm:inline-flex", projectExplorerStatusClass(status.tone))}>
-                                    {status.label}
-                                  </span>
+                                  <SignalChip
+                                    label={status.label}
+                                    signal={status.signal}
+                                    toneClass={projectExplorerStatusClass(status.tone)}
+                                  />
                                   <Button
                                     size="icon-sm"
                                     variant="ghost"
@@ -1123,13 +1158,17 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 </span>
                                 <span className="sr-only">{node.detail}</span>
                               </span>
-                              <span className={cn("shrink-0 rounded-md border px-1.5 py-0.5 text-[0.58rem] font-medium leading-4", projectExplorerStatusClass(status.tone))}>
-                                {status.label}
-                              </span>
+                              <SignalChip
+                                label={status.label}
+                                signal={status.signal}
+                                toneClass={projectExplorerStatusClass(status.tone)}
+                              />
                               {node.badge ? (
-                                <Badge variant={selected ? "secondary" : "outline"} className="h-5 shrink-0 rounded-md px-1.5 text-[0.58rem]">
-                                  {node.badge}
-                                </Badge>
+                                <SignalChip
+                                  label={node.badge}
+                                  signal={node.badge === "dirty" || node.badge === "active"}
+                                  toneClass={selected ? "border-transparent bg-secondary-container text-secondary-container-foreground" : "border-outline-variant bg-transparent text-on-surface-variant"}
+                                />
                               ) : null}
                             </button>
                             <Button

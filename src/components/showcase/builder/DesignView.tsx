@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToolchainBanner } from "./ToolchainBanner";
 
 import { DesignWorkspace } from "./DesignWorkspace";
-import { Field, NumberBox, PanelTitle, PathRow, PropertySection, TemplateMiniPreview } from "./view-helpers";
+import { Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, TemplateMiniPreview } from "./view-helpers";
 
 export type DesignViewScope = Record<string, any>;
 
@@ -911,13 +911,17 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <span className="mt-0.5 block truncate text-[0.66rem] opacity-70">{node.detail}</span>
                               </span>
                               <span className="flex min-w-0 shrink-0 items-center gap-1">
-                                <span className={cn("hidden rounded-full border px-1.5 py-0.5 text-[0.58rem] font-medium 2xl:inline-flex", projectExplorerStatusClass(status.tone))}>
-                                  {status.label}
-                                </span>
+                                <SignalChip
+                                  label={status.label}
+                                  signal={status.signal}
+                                  toneClass={projectExplorerStatusClass(status.tone)}
+                                />
                                 {node.badge ? (
-                                  <Badge variant={node.active ? "secondary" : "outline"} className="shrink-0">
-                                    {node.badge}
-                                  </Badge>
+                                  <SignalChip
+                                    label={node.badge}
+                                    signal={node.badge === "dirty" || node.badge === "active"}
+                                    toneClass={node.active ? "border-transparent bg-secondary-container text-secondary-container-foreground" : "border-outline-variant bg-transparent text-on-surface-variant"}
+                                  />
                                 ) : null}
                               </span>
                             </button>

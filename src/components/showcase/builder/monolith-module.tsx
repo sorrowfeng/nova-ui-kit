@@ -8332,29 +8332,45 @@ export function projectExplorerVisibleWithCollapsedAncestors(
   return true;
 }
 
-export function projectExplorerNodeStatus(node: ProjectExplorerNode): { label: string; tone: ProjectExplorerStatusTone } {
+export type ProjectExplorerNodeStatus = {
+  label: string;
+  tone: ProjectExplorerStatusTone;
+  /**
+   * True only when the row needs the user to act. Routine labels ("目录",
+   * "文件", ".nova", "产物") restate what the node icon already shows, so a
+   * workbench that paints every one of them ends up with a chip wall and no
+   * way to spot the rows that are actually wrong.
+   */
+  signal: boolean;
+};
+
+export function projectExplorerNodeStatus(node: ProjectExplorerNode): ProjectExplorerNodeStatus {
   if (node.dirty) {
-    return { label: "未保存", tone: "warning" };
+    return { label: "未保存", tone: "warning", signal: true };
   }
   if (node.active) {
-    return { label: "当前", tone: "success" };
+    return { label: "当前", tone: "success", signal: true };
   }
   if (node.badge === "exe" || node.badge === "bundle" || node.badge === "log") {
-    return { label: "产物", tone: "success" };
+    return { label: "产物", tone: "success", signal: false };
   }
   if (!node.path && (node.action === "open-path" || node.action === "open-build")) {
-    return { label: "待生成", tone: "warning" };
+    return { label: "待生成", tone: "warning", signal: true };
   }
   if (node.id === "nova-folder" || node.id.startsWith("nova-")) {
-    return { label: ".nova", tone: "muted" };
+    return { label: ".nova", tone: "muted", signal: false };
   }
   if (node.label.endsWith("/")) {
-    return { label: "目录", tone: node.muted ? "muted" : "default" };
+    return { label: "目录", tone: node.muted ? "muted" : "default", signal: false };
   }
   if (node.label.includes(".")) {
-    return { label: "文件", tone: node.muted ? "muted" : "default" };
+    return { label: "文件", tone: node.muted ? "muted" : "default", signal: false };
   }
-  return { label: projectExplorerActionLabel(node.action), tone: node.muted ? "muted" : "default" };
+  return {
+    label: projectExplorerActionLabel(node.action),
+    tone: node.muted ? "muted" : "default",
+    signal: false,
+  };
 }
 
 export function projectExplorerStatusClass(tone: ProjectExplorerStatusTone) {

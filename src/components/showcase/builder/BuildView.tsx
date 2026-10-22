@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, ArrowRight, Box, Braces, CheckCircle2, ChevronDown, ChevronRight, ClipboardCopy, Clock3, CornerDownRight, Download, FileImage, FileJson, FolderOpen, GitBranch, ListChecks, Menu, Monitor, MousePointer2, MoveDown, MoveUp, Pause, Play, Plus, RotateCcw, Save, Search, Settings2, Square, Terminal, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateBadge, isQuietCount, isQuietStateLabel } from "./view-helpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { GeneratedDiffView } from "./GeneratedDiffView";
@@ -1776,9 +1777,12 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </p>
                       </div>
                     </div>
-                    <Badge className="shrink-0" variant={checkingTarget ? "outline" : "secondary"}>
-                      {checkingTarget ?? selectedRailActionPreset?.badge ?? "就绪"}
-                    </Badge>
+                    <StateBadge
+                      label={checkingTarget ?? selectedRailActionPreset?.badge ?? "就绪"}
+                      signal={Boolean(checkingTarget) || (Boolean(selectedRailActionPreset?.badge) && !isQuietStateLabel(String(selectedRailActionPreset?.badge ?? "")))}
+                      className="shrink-0"
+                      variant={checkingTarget ? "outline" : "secondary"}
+                    />
                   </summary>
                   <div className="mt-2 border-t border-outline-variant pt-2" data-builder-build-assist-dock-details="deferred">
                     <section className="rounded-[18px] bg-surface-container-low p-2.5">
@@ -1910,9 +1914,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-2">
                           <h3 className="truncate text-xs font-medium text-on-surface">任务中心</h3>
-                          <Badge variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}>
-                            {runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
-                          </Badge>
+                          <StateBadge
+                            label={runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
+                            signal={Boolean(runningProjectTask) || failedProjectTaskCount > 0 || activeProjectTasks.length > 0}
+                            variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}
+                          />
                         </div>
                         <p className="sr-only">
                           {taskQueueStateTitle} · {taskQueueNextActionLabel}
@@ -1923,15 +1929,24 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       className="hidden shrink-0 items-center gap-1.5 sm:flex"
                       data-builder-build-task-center-summary-detail="compact-inline"
                     >
-                      <Badge variant="outline" className="px-1.5 text-[0.62rem]">
-                        运行 {runningProjectTask ? 1 : 0}
-                      </Badge>
-                      <Badge variant={queuedProjectTaskCount ? "secondary" : "outline"} className="px-1.5 text-[0.62rem]">
-                        等待 {queuedProjectTaskCount}
-                      </Badge>
-                      <Badge variant={failedProjectTaskCount ? "destructive" : "outline"} className="px-1.5 text-[0.62rem]">
-                        失败 {failedProjectTaskCount}
-                      </Badge>
+                      <StateBadge
+                        label={`运行 ${runningProjectTask ? 1 : 0}`}
+                        signal={!isQuietCount(runningProjectTask ? 1 : 0)}
+                        variant="outline"
+                        className="px-1.5 text-[0.62rem]"
+                      />
+                      <StateBadge
+                        label={`等待 ${queuedProjectTaskCount}`}
+                        signal={!isQuietCount(queuedProjectTaskCount)}
+                        variant="secondary"
+                        className="px-1.5 text-[0.62rem]"
+                      />
+                      <StateBadge
+                        label={`失败 ${failedProjectTaskCount}`}
+                        signal={!isQuietCount(failedProjectTaskCount)}
+                        variant="destructive"
+                        className="px-1.5 text-[0.62rem]"
+                      />
                     </div>
                   </summary>
                   <div className="border-t border-outline-variant p-3" data-builder-build-task-center-details="deferred">
@@ -1942,9 +1957,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         队列化保存、生成、检查、验证、构建和打包动作。
                       </p>
                     </div>
-                    <Badge variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}>
-                      {runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
-                    </Badge>
+                    <StateBadge
+                      label={runningProjectTask ? "运行中" : activeProjectTasks.length ? `${visibleProjectTasks.length}/${activeProjectTasks.length}` : "空"}
+                      signal={Boolean(runningProjectTask) || failedProjectTaskCount > 0 || activeProjectTasks.length > 0}
+                      variant={runningProjectTask ? "outline" : activeProjectTasks.length ? "secondary" : "outline"}
+                    />
                   </div>
                   <div className="mb-3 grid grid-cols-3 gap-2 text-center text-[0.68rem]">
                     <div className="rounded-xl bg-surface-container-high px-2 py-2">
@@ -2473,9 +2490,11 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-2">
                           <h3 className="truncate text-xs font-medium text-on-surface">发布流水线</h3>
-                          <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}>
-                            {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
-                          </Badge>
+                          <StateBadge
+                            label={latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
+                            signal={Boolean(latestReleasePipeline) && !isQuietStateLabel(projectTaskStatusLabel(latestReleasePipeline.status))}
+                            variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}
+                          />
                         </div>
                         <p className="sr-only">
                           {latestReleasePipeline ? latestReleasePipeline.summary : "按需展开查看流水线记录和复跑入口"}
@@ -2486,12 +2505,18 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       className="hidden shrink-0 items-center gap-1.5 sm:flex"
                       data-builder-release-pipelines-summary-detail="compact-inline"
                     >
-                      <Badge variant="outline" className="px-1.5 text-[0.62rem]">
-                        {activeProject.releasePipelineHistory?.length ?? 0} 条
-                      </Badge>
-                      <Badge variant={refreshingPipelineRecords ? "secondary" : "outline"} className="px-1.5 text-[0.62rem]">
-                        {refreshingPipelineRecords ? "刷新中" : activeProject.rootPath ? "可刷新" : "本地"}
-                      </Badge>
+                      <StateBadge
+                        label={`${activeProject.releasePipelineHistory?.length ?? 0} 条`}
+                        signal={!isQuietCount(activeProject.releasePipelineHistory?.length ?? 0)}
+                        variant="outline"
+                        className="px-1.5 text-[0.62rem]"
+                      />
+                      <StateBadge
+                        label={refreshingPipelineRecords ? "刷新中" : activeProject.rootPath ? "可刷新" : "本地"}
+                        signal={Boolean(refreshingPipelineRecords)}
+                        variant={refreshingPipelineRecords ? "secondary" : "outline"}
+                        className="px-1.5 text-[0.62rem]"
+                      />
                     </span>
                   </summary>
                   <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-release-pipelines-details="deferred">
