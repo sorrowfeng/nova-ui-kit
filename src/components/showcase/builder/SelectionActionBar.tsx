@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { BuilderComponentType, BuilderItem } from "./types";
-import { CountReadout } from "./view-helpers";
+import { CountReadout, StateBadge, StateLabel } from "./view-helpers";
 
 export type SelectionActionBarState = "idle" | "single" | "multi";
 
@@ -128,8 +128,11 @@ export type SelectionActionBarProps = {
 };
 
 const compactBadgeClass = "h-5 px-1.5 py-0 text-[0.62rem] leading-none";
+// A keyboard hint is something to read, not something to act on. Six permanent
+// pills on a floating action bar spent the selection state's entire visual
+// budget restating what the F1 shortcut dialog already lists.
 const shortcutChipClass =
-  "hidden rounded-full border border-outline-variant bg-surface-container px-1.5 py-0 font-mono text-[0.56rem] leading-none text-on-surface-variant xl:inline-flex items-center";
+  "hidden px-1.5 py-0 font-mono text-[0.56rem] leading-none text-on-surface-variant xl:inline";
 
 function CompactIconGroup({ label, dataKey, children }: { label: string; dataKey: string; children: ReactNode }) {
   return (
@@ -294,19 +297,26 @@ export function SelectionActionBar({
                   {selectedItems.length > 1 ? `已选择 ${selectedItems.length} 个控件` : selectedItem ? getItemSummary(selectedItem) : "未选择"}
                 </h3>
                 {selectedItem ? (
-                  <Badge variant="outline" className={cn("hidden shrink-0 2xl:inline-flex", compactBadgeClass)}>
-                    {selectedItem.type}
-                  </Badge>
+                  <StateLabel
+                    className={cn("hidden shrink-0 2xl:inline-flex", compactBadgeClass)}
+                    label={String(selectedItem.type)}
+                  />
                 ) : null}
                 {selectedItem && selectedEventName ? (
-                  <Badge variant={selectedEventCommandName ? "secondary" : "outline"} className={cn("shrink-0", compactBadgeClass)}>
-                    {selectedEventCommandName ? `${selectedEventName} 已绑定` : `${selectedEventName} 就绪`}
-                  </Badge>
+                  <StateLabel
+                    showQuiet
+                    variant={selectedEventCommandName ? "secondary" : "outline"}
+                    className={cn("shrink-0", compactBadgeClass)}
+                    label={selectedEventCommandName ? `${selectedEventName} 已绑定` : `${selectedEventName} 就绪`}
+                  />
                 ) : null}
                 {selectedPropertyIssueCount > 0 ? (
-                  <Badge variant="destructive" className={cn("shrink-0", compactBadgeClass)}>
-                    {selectedPropertyIssueCount} 个问题
-                  </Badge>
+                  <StateBadge
+                    signal
+                    variant="destructive"
+                    className={cn("shrink-0", compactBadgeClass)}
+                    label={`${selectedPropertyIssueCount} 个问题`}
+                  />
                 ) : null}
                 {selectedItemHierarchy.length > 0 ? (
                   <div

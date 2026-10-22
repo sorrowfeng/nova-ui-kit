@@ -8,6 +8,7 @@ import {
   DENSITY_BUDGETS,
   EXPANDED_BUDGETS,
   describeDensity,
+  findChipTextProblems,
   findDensityOverages,
 } from "./usability/ui-density.mjs";
 import {
@@ -155,6 +156,30 @@ check(
 check("zero counts are quiet", isQuietCountLabel("0"));
 check("non-zero counts are not quiet", !isQuietCountLabel("3"));
 check("a name is never mistaken for a zero count", !isQuietCountLabel("源码"));
+
+// "未知" is the helpers' fallback when a call site supplied no label. The `未`
+// fragment would otherwise read it as "not yet" and paint a missing value as a
+// red call to act.
+check(
+  "未知 is a readout, not a signal",
+  isReadoutStateLabel("未知") && !isSignalStateLabel("未知") && !isQuietStateLabel("未知"),
+);
+
+// The density gate treats a 未知 chip as a defect regardless of budget. Pin the
+// judgement itself so a quiet verdict cannot come from a check that never
+// compares anything.
+check(
+  "a 未知 chip fails the surface",
+  findChipTextProblems({ chipHistogram: [{ text: "未知", count: 1, sampleTag: "x" }] }, "test").length > 0,
+);
+check(
+  "a real signal chip is not a text defect",
+  findChipTextProblems({ chipHistogram: [{ text: "待构建", count: 1, sampleTag: "x" }] }, "test").length === 0,
+);
+check(
+  "a surface with no chips has no text defects",
+  findChipTextProblems({ chipHistogram: [] }, "test").length === 0,
+);
 
 console.log("\ncheck-ui-density-rules: status label lookups are total");
 

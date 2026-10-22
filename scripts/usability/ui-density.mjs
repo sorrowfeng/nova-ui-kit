@@ -48,6 +48,11 @@ export const DENSITY_PROBE = `(() => {
     // Screen-reader-only text is deliberately not painted; counting it would
     // charge the surface for content the eye never sees.
     if (el.closest(".sr-only, [aria-hidden='true'], .visually-hidden")) return false;
+    // A canvas node renders the control the user is designing. Its pills and
+    // its text belong to their project, not to Nova's chrome — the same
+    // scoping call already made for BuilderItemPreview. Measuring them would
+    // charge the workbench for decoration it did not draw.
+    if (el.closest("[data-builder-node-id]")) return false;
     // A closed <details> still reports a live rect for its body, so geometry
     // alone over-counts. Collapsed panels are not on screen.
     for (let host = el.parentElement; host; host = host.parentElement) {
@@ -211,6 +216,47 @@ export const EXPANDED_BUDGETS = {
   logic: { maxChips: 4, maxTextChars: 3400 },
   build: { maxChips: 22, maxTextChars: 17800 },
 };
+
+/**
+ * The state someone actually works in: panels open and something selected.
+ *
+ * Selection mounts the inspector, and the inspector is where most of the
+ * decoration lives. Measuring only the empty canvas reports a surface quieter
+ * than any user ever sees once they start editing — a verdict the gate cannot
+ * lose, because the pills it is supposed to catch are not in the DOM yet.
+ *
+ * Surfaces without a selection concept are not listed here; the gate asserts
+ * it never measures a state it has no budget for.
+ */
+export const SELECTED_BUDGETS = {
+  project: { maxChips: 10, maxTextChars: 5300 },
+  design: { maxChips: 2, maxTextChars: 500 },
+};
+
+/**
+ * Chip texts that mean the UI is showing a hole in its own data.
+ *
+ * "未知" is the label helpers' fallback when a call site supplies no label at
+ * all. Seeing it as a chip is not "a bit of decoration" — it is a missing
+ * value that reached the screen and got painted as a call to act, so the gate
+ * refuses to call that surface clean.
+ */
+export const CHIP_TEXT_ERRORS = ["未知"];
+
+/**
+ * Chip texts that may never appear in a measured surface. Independent of the
+ * budget: a surface can be within budget and still be showing a defect.
+ */
+export function findChipTextProblems(report, state = "") {
+  const tag = state ? ` (${state})` : "";
+  const problems = [];
+  for (const entry of report.chipHistogram ?? []) {
+    if (CHIP_TEXT_ERRORS.includes(entry.text)) {
+      problems.push(`chip text "${entry.text}" on screen${tag} — a missing status label reached the UI`);
+    }
+  }
+  return problems;
+}
 
 /**
  * Compare one surface report against its budget.

@@ -15,7 +15,9 @@ import {
   DENSITY_PROBE,
   EXPANDED_BUDGETS,
   EXPAND_DISCLOSURES,
+  SELECTED_BUDGETS,
   describeDensity,
+  findChipTextProblems,
   findDensityOverages,
 } from "./usability/ui-density.mjs";
 
@@ -58,7 +60,12 @@ const reportOnly = process.argv.includes("--report");
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const SURFACES = ["project", "design", "logic", "build"];
+// Design is measured last. Reaching its "selected" state seeds one control
+// from the palette so the inspector mounts, and that insert is saved into the
+// project — running design first left every later surface measuring a canvas
+// the gate itself had edited, so the numbers depended on the order the
+// surfaces were listed in.
+const SURFACES = ["project", "logic", "build", "design"];
 
 let ws;
 let nextId = 0;
@@ -233,7 +240,45 @@ async function measureSurface(surface) {
   await evalJs(EXPAND_DISCLOSURES);
   await delay(500);
   const expanded = await evalJs(DENSITY_PROBE);
-  return { collapsed, expanded };
+  // The lived-in state: panels open and something selected. Selection mounts
+  // the inspector, which is where the decoration concentrates — an empty
+  // canvas is quieter than any surface a user actually edits on.
+  //
+  // Canvas nodes only exist once a page has items on it; the project tree
+  // always has rows and clicking one selects the node behind it. When neither
+  // is present, seeding one control from the palette is what a user does in
+  // the first minute — and the inspector it mounts is the state worth
+  // measuring.
+  const SELECTABLE =
+    "[data-builder-density-root] [data-builder-node-id], [data-builder-density-root] [data-builder-project-tree-node]";
+  const countSelectable = `(() => {
+    const root = document.querySelector("[data-builder-density-root]");
+    if (!root) return { nodes: 0, treeRows: 0 };
+    return {
+      nodes: root.querySelectorAll("[data-builder-node-id]").length,
+      treeRows: root.querySelectorAll("[data-builder-project-tree-node]").length,
+    };
+  })()`;
+  let selectable = await evalJs(countSelectable);
+  if (!selectable.nodes && !selectable.treeRows) {
+    const canSeed = await evalJs(
+      `Boolean(document.querySelector("[data-builder-density-root] [data-builder-component-kit-insert]"))`,
+    );
+    if (!canSeed) {
+      return { collapsed, expanded, selected: null, selectable };
+    }
+    await clickCenter(`[data-builder-density-root] [data-builder-component-kit-insert]`);
+    await delay(800);
+    selectable = await evalJs(countSelectable);
+    if (!selectable.nodes && !selectable.treeRows) {
+      return { collapsed, expanded, selected: null, selectable };
+    }
+  }
+  await clickCenter(SELECTABLE);
+  await delay(600);
+  await evalJs(EXPAND_DISCLOSURES);
+  await delay(400);
+  return { collapsed, expanded, selected: await evalJs(DENSITY_PROBE), selectable };
 }
 
 async function main() {
@@ -303,26 +348,60 @@ async function main() {
     const problems = [];
     const reports = new Map();
     for (const surface of SURFACES) {
+      // Every surface is measured from the same clean state. Seeding a control
+      // on one surface (to reach the selected state) would otherwise show up
+      // as extra rows on the next, and then the numbers would depend on the
+      // order the surfaces happen to be listed in.
+      if (surface !== SURFACES[0]) {
+        await send("Page.navigate", { url: `http://127.0.0.1:${vitePort}/` });
+        await waitForReady();
+        await dismissOnboarding();
+      }
       const pair = await measureSurface(surface);
       reports.set(surface, pair);
       console.log("  " + describeDensity(surface, pair.collapsed, "collapsed"));
       console.log("  " + describeDensity(surface, pair.expanded, "expanded "));
+      if (reportOnly) {
+        const s = pair.selectable ?? { nodes: 0, treeRows: 0 };
+        console.log(
+          `  ${surface.padEnd(8)} selectable: canvas=${s.nodes} tree=${s.treeRows}` +
+            `${pair.selected ? "" : "  (nothing to select — no 'selected' measurement)"}`,
+        );
+      }
       // Budgets are judged even in report mode. A report that never asks the
       // question used to print "ok" for surfaces it had not compared, which is
       // the same defect as a gate that prints a verdict and exits 0. The only
       // difference between the modes is whether the verdict can fail the run.
       problems.push(...findDensityOverages(surface, pair.collapsed, DENSITY_BUDGETS, "collapsed"));
       problems.push(...findDensityOverages(surface, pair.expanded, EXPANDED_BUDGETS, "expanded"));
+      problems.push(...findChipTextProblems(pair.collapsed, `${surface} collapsed`));
+      problems.push(...findChipTextProblems(pair.expanded, `${surface} expanded`));
+      if (pair.selected) {
+        console.log("  " + describeDensity(surface, pair.selected, "selected "));
+        problems.push(...findChipTextProblems(pair.selected, `${surface} selected`));
+        if (!SELECTED_BUDGETS[surface]) {
+          // Measuring a state nothing judges is how a quiet verdict gets
+          // printed for decoration nobody checked.
+          problems.push(
+            `${surface} (selected): measured a state with no budget in SELECTED_BUDGETS`,
+          );
+        } else {
+          problems.push(...findDensityOverages(surface, pair.selected, SELECTED_BUDGETS, "selected"));
+        }
+      }
     }
 
     if (reportOnly) {
-      console.log("\n  repeated chip text in the expanded state:");
-      for (const surface of SURFACES) {
-        console.log(`  ${surface}:`);
-        for (const entry of reports.get(surface).expanded.chipHistogram.slice(0, 10)) {
-          console.log(
-            `    ${String(entry.count).padStart(3)}x  "${entry.text}"  ${entry.sampleTag}`,
-          );
+      for (const state of ["expanded", "selected"]) {
+        console.log(`\n  repeated chip text in the ${state} state:`);        for (const surface of SURFACES) {
+          const report = reports.get(surface)[state];
+          if (!report) continue;
+          console.log(`  ${surface}:`);
+          for (const entry of report.chipHistogram.slice(0, 10)) {
+            console.log(
+              `    ${String(entry.count).padStart(3)}x  "${entry.text}"  ${entry.sampleTag}`,
+            );
+          }
         }
       }
     }

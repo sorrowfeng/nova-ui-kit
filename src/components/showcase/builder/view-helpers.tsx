@@ -80,6 +80,7 @@ import {
 
 export {
   QUIET_STATE_LABELS,
+  READOUT_STATE_LABELS,
   SIGNAL_STATE_LABELS,
   isQuietCount,
   isQuietCountLabel,

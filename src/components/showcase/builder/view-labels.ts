@@ -95,8 +95,17 @@ const SIGNAL_STATE_FRAGMENTS = [
 
 const SIGNAL_STATE_SUFFIXES = ["中"];
 
+/**
+ * Labels that name a gap in the data rather than a job for the user. "未知" is
+ * what a panel says when nobody supplied a status — painting it as a signal
+ * would turn a missing label into a red call to act, and the `未` fragment
+ * below would otherwise read it as "not yet".
+ */
+export const READOUT_STATE_LABELS: ReadonlySet<string> = new Set(["未知"]);
+
 export function isSignalStateLabel(label: string): boolean {
   const trimmed = label.trim();
+  if (READOUT_STATE_LABELS.has(trimmed)) return false;
   // "待开始" is routine scheduling, not a call to act — the quiet list wins.
   if (QUIET_STATE_LABELS.has(trimmed)) return false;
   if (QUIET_STATE_PREFIXES.some((prefix) => trimmed.startsWith(prefix))) return false;
@@ -128,5 +137,6 @@ export function isQuietStateLabel(label: string): boolean {
  */
 export function isReadoutStateLabel(label: string): boolean {
   const trimmed = label.trim();
+  if (READOUT_STATE_LABELS.has(trimmed)) return true;
   return !isSignalStateLabel(trimmed) && !isQuietStateLabel(trimmed);
 }
