@@ -13,6 +13,7 @@ import { CountReadout, StateBadge, StateLabel, isQuietCount, isQuietStateLabel, 
 // needs the same symbol wired through BuilderShowcase and ShellView, which is
 // how "X is not a function" once blanked this whole workbench.
 import { projectActivityStatusLabel } from "./monolith-module";
+import { buildDiagnosticSeverityLabel } from "./status-labels";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { GeneratedDiffView } from "./GeneratedDiffView";
@@ -1108,9 +1109,10 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               : "运行检查、构建或安装包任务后显示本次生成目标变更。未变化的文件不会重写，以保留 Vite/Cargo 增量缓存。"}
                           </p>
                         </div>
-                        <Badge variant={latestGeneratedFileSummary?.changed_count ? "outline" : "secondary"}>
-                          {latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} 个变更` : "待生成"}
-                        </Badge>
+                        <StateBadge
+                          label={latestGeneratedFileSummary ? `${latestGeneratedFileSummary.changed_count} 个变更` : "待生成"}
+                          signal={!latestGeneratedFileSummary || latestGeneratedFileSummary.changed_count > 0}
+                        />
                       </div>
                       <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
                         <div className="rounded-lg bg-surface-container-high px-2 py-1.5">
@@ -1480,7 +1482,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <article key={`${diagnostic.message}-${index}`} className="rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs">
                             <div className="mb-1 flex items-start justify-between gap-2">
                               <div className="flex min-w-0 items-center gap-2">
-                                <StateLabel showQuiet variant={diagnostic.severity === "error" ? "destructive" : "outline"} label={diagnostic.severity} />
+                                <StateLabel showQuiet variant={diagnostic.severity === "error" ? "destructive" : "outline"} label={buildDiagnosticSeverityLabel(diagnostic.severity)} />
                                 {diagnostic.code ? <span className="font-mono text-[0.66rem] text-on-surface-variant">{diagnostic.code}</span> : null}
                                 {diagnostic.origin ? <span className="text-[0.66rem] text-on-surface-variant">{diagnostic.origin}</span> : null}
                                 {diagnostic.file ? (
@@ -1526,7 +1528,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-on-surface-variant">体验审计</h3>
-                        <Badge
+                        <StateLabel
+                          showQuiet
                           variant={
                             editorExperienceAuditStats.failCount > 0
                               ? "destructive"
@@ -1534,9 +1537,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 ? "outline"
                                 : "secondary"
                           }
-                        >
-                          {editorExperienceAuditStatusLabel}
-                        </Badge>
+                          label={editorExperienceAuditStatusLabel}
+                        />
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface-variant">
                         对齐桌面编辑器工作流：选择、多选、Dock、窗口壳、Rust 逻辑、项目树、运行区和控件覆盖。
@@ -3713,17 +3715,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setActiveGeneratedPreviewPath(entry.relative_path)}>
                                 <div className="mb-2 flex items-start justify-between gap-2">
                                   <span className="min-w-0 truncate font-mono text-[0.72rem]">{entry.relative_path}</span>
-                                  <Badge
-                                    variant={
-                                      entry.status === "update"
-                                        ? "outline"
-                                        : entry.status === "create" || entry.status === "copy"
-                                          ? "secondary"
-                                          : "outline"
-                                    }
-                                  >
-                                    {generatedFileStatusLabel(entry.status)}
-                                  </Badge>
+                                  <StateLabel showQuiet label={generatedFileStatusLabel(entry.status)} />
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2 text-[0.68rem]">
                                   <span className="rounded-full bg-surface-container-high px-2 py-0.5">{entry.kind}</span>
@@ -3750,9 +3742,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">{activeGeneratedPreviewEntry.summary}</p>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
-                                  <Badge variant={activeGeneratedPreviewEntry.changed ? "secondary" : "outline"}>
-                                    {generatedFileStatusLabel(activeGeneratedPreviewEntry.status)}
-                                  </Badge>
+                                  <StateLabel showQuiet label={generatedFileStatusLabel(activeGeneratedPreviewEntry.status)} />
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -4128,12 +4118,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div>
                           <h3 className="font-medium">断点问题定位</h3>
-                          <p className="mt-1 text-on-surface-variant">从 desktop / tablet / mobile 运行时审阅结果反向定位到画布控件。</p>
+                          <p className="mt-1 text-on-surface-variant">从桌面 / 平板 / 手机运行时审阅结果反向定位到画布控件。</p>
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center gap-2">
-                          <Badge variant={breakpointIssues.length > 0 ? "outline" : "secondary"}>
-                            {breakpointIssues.length ? `可修复 ${fixableBreakpointIssueCount}/${breakpointIssues.length}` : 0}
-                          </Badge>
+                          <CountReadout
+                            label={breakpointIssues.length ? `可修复 ${fixableBreakpointIssueCount}/${breakpointIssues.length}` : "0"}
+                            count={breakpointIssues.length}
+                          />
                           {breakpointIssues.length ? (
                             <>
                               <Button
@@ -4246,9 +4237,9 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               </Badge>
                             </div>
                             <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[0.68rem]">
-                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.errorCount} errors</span>
-                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.warningCount} warnings</span>
-                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.checkedItems} controls</span>
+                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.errorCount} 错误</span>
+                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.warningCount} 警告</span>
+                              <span className="rounded-xl bg-surface-container-low px-2 py-1">{entry.checkedItems} 控件</span>
                             </div>
                             <div className="mt-2 grid grid-cols-2 gap-2 xl:grid-cols-6">
                               <Button

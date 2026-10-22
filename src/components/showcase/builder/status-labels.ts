@@ -13,6 +13,7 @@ export type EditorExperienceAuditSeverity = "pass" | "warning" | "fail";
 export type SimulatorTraceStatus = "success" | "error";
 export type FrameLayoutMode = "free" | "row" | "column" | "grid";
 export type ResponsiveBreakpointId = "desktop" | "tablet" | "mobile";
+export type BuildDiagnosticSeverity = "error" | "warning";
 
 /** Shown when wire data carries a status the table never anticipated. */
 export const UNKNOWN_STATUS_LABEL = "未知";
@@ -53,6 +54,11 @@ const RESPONSIVE_BREAKPOINT_LABELS: Record<ResponsiveBreakpointId, string> = {
   mobile: "手机",
 };
 
+const BUILD_DIAGNOSTIC_SEVERITY_LABELS: Record<BuildDiagnosticSeverity, string> = {
+  error: "错误",
+  warning: "警告",
+};
+
 function lookup(table: Record<string, string>, key: string): string {
   return table[key] ?? (typeof key === "string" && key.trim() !== "" ? key : UNKNOWN_STATUS_LABEL);
 }
@@ -81,6 +87,10 @@ export function responsiveBreakpointLabel(breakpoint: ResponsiveBreakpointId): s
   return lookup(RESPONSIVE_BREAKPOINT_LABELS, breakpoint);
 }
 
+export function buildDiagnosticSeverityLabel(severity: BuildDiagnosticSeverity): string {
+  return lookup(BUILD_DIAGNOSTIC_SEVERITY_LABELS, severity);
+}
+
 /** Every severity the lookup tables claim to cover — the gate asserts against this. */
 export const STATUS_LABEL_DOMAINS = {
   buildReadiness: {
@@ -106,5 +116,9 @@ export const STATUS_LABEL_DOMAINS = {
   responsiveBreakpoint: {
     table: RESPONSIVE_BREAKPOINT_LABELS,
     label: responsiveBreakpointLabel,
+  },
+  buildDiagnosticSeverity: {
+    table: BUILD_DIAGNOSTIC_SEVERITY_LABELS,
+    label: buildDiagnosticSeverityLabel,
   },
 } as const;

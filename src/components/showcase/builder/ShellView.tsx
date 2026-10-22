@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignHorizontalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, AlignVerticalJustifyStart, Box, Braces, CheckCircle2, ChevronRight, ClipboardCopy, ClipboardPaste, Clock3, Copy, Download, Eye, EyeOff, FileJson, Grid3x3, Keyboard, Layers, ListChecks, LoaderCircle, Lock, LockOpen, Maximize2, Menu, Monitor, MousePointer2, Move, MoveDown, MoveUp, Pause, Play, RectangleHorizontal, RotateCcw, Save, Scissors, ScrollText, Settings2, Square, Terminal, TextCursorInput, ToggleLeft, Trash2, Type, ZoomIn } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buildDiagnosticSeverityLabel } from "./status-labels";
 import { CountReadout, StateBadge, StateLabel, isQuietStateLabel } from "./view-helpers";
 import { BuilderComponentType } from "./types";
 import { Button } from "@/components/ui/button";
@@ -1317,9 +1318,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           {step.index + 1}
                         </span>
                         <span className="min-w-0 truncate font-medium text-on-surface">{step.title}</span>
-                        <Badge variant={step.statusVariant} className="shrink-0 px-1.5 py-0.5 text-[0.5rem]">
-                          {step.statusLabel}
-                        </Badge>
+                        <StateLabel showQuiet variant={step.statusVariant} className="shrink-0 px-1.5 py-0.5 text-[0.5rem]" label={step.statusLabel} />
                       </button>
                     ))}
                     {selectedRailKitStepRows.length > 3 ? (
@@ -1393,9 +1392,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                 >
                   <div className="flex items-center justify-between gap-1 px-1">
                     <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">最近</span>
-                    <Badge variant={latestRailPresetStatusVariant} className="shrink-0 px-1.5 py-0.5 text-[0.5rem]" data-builder-rail-recent-run-status="">
-                      {latestRailPresetStatusLabel}
-                    </Badge>
+                    <StateLabel
+                      showQuiet
+                      variant={latestRailPresetStatusVariant}
+                      className="shrink-0 px-1.5 py-0.5 text-[0.5rem]"
+                      label={latestRailPresetStatusLabel}
+                      data-builder-rail-recent-run-status=""
+                    />
                   </div>
                   <button
                     type="button"
@@ -3820,9 +3823,11 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                <Badge variant={selectedBuilderIssue.diagnostic.severity === "error" ? "destructive" : "outline"}>
-                                  {selectedBuilderIssue.diagnostic.severity}
-                                </Badge>
+                                <StateBadge
+                                  signal
+                                  variant={selectedBuilderIssue.diagnostic.severity === "error" ? "destructive" : "outline"}
+                                  label={buildDiagnosticSeverityLabel(selectedBuilderIssue.diagnostic.severity)}
+                                />
                                 {selectedBuilderIssue.diagnostic.code ? <StateLabel label={selectedBuilderIssue.diagnostic.code} /> : null}
                                 {selectedBuilderIssue.diagnostic.origin ? <StateLabel label={selectedBuilderIssue.diagnostic.origin} /> : null}
                               </div>
@@ -3911,7 +3916,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           </div>
                         ) : selectedBuilderIssue?.kind === "build-error" && buildError ? (
                           <div className="space-y-3">
-                            <Badge variant="destructive">构建错误</Badge>
+                            <StateBadge signal variant="destructive" label="构建错误" />
                             <p className="leading-5 text-destructive">{buildError}</p>
                             <Button size="sm" variant="secondary" onClick={() => openBottomDock("logs", bottomDockExpanded)}>
                               <FileJson aria-hidden className="size-4" />
@@ -4277,13 +4282,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1.5">
-                          <Badge variant="outline" data-builder-output-log-line-count="">
-                            {bottomDockLogLineCount} 行
-                          </Badge>
+                          <CountReadout label={`${bottomDockLogLineCount} 行`} count={bottomDockLogLineCount} data-builder-output-log-line-count="" />
                           {bottomDockLogSearchQuery ? (
-                            <Badge variant={bottomDockLogMatchCount > 0 ? "secondary" : "outline"} data-builder-output-log-search-count="">
-                              {bottomDockLogMatchCount} 匹配
-                            </Badge>
+                            <CountReadout
+                              label={`${bottomDockLogMatchCount} 匹配`}
+                              count={bottomDockLogMatchCount}
+                              data-builder-output-log-search-count=""
+                            />
                           ) : null}
                           <Button
                             size="sm"
