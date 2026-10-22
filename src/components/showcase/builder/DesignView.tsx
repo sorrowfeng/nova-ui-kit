@@ -56,10 +56,10 @@ import {
   TemplateMiniPreview,
 } from "./view-helpers";
 
-export type DesignViewScope = Record<string, any>;
+import type { DesignViewScope } from "./scope-design";
 
 export function DesignView(props: { scope: DesignViewScope }): ReactNode {
-  const scope = props.scope ?? {};
+  const scope = props.scope;
   const {
     SelectedProjectExplorerIcon,
     activeBreakpoint,

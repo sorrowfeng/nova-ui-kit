@@ -45,10 +45,10 @@ import {
   Textarea,
 } from "@/components/ui/textarea";
 
-export type LogicViewScope = Record<string, any>;
+import type { LogicViewScope } from "./scope-logic";
 
 export function LogicView(props: { scope: LogicViewScope }): ReactNode {
-  const scope = props.scope ?? {};
+  const scope = props.scope;
   const {
     Field,
     LogicWorkspace,

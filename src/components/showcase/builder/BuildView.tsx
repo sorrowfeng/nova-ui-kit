@@ -51,10 +51,10 @@ import {
   Textarea,
 } from "@/components/ui/textarea";
 
-export type BuildViewScope = Record<string, any>;
+import type { BuildViewScope } from "./scope-build";
 
 export function BuildView(props: { scope: BuildViewScope }): ReactNode {
-  const scope = props.scope ?? {};
+  const scope = props.scope;
   const {
     BuildWorkspace,
     Field,

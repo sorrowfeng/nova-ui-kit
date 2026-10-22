@@ -133,7 +133,7 @@ useBuilderBuild()  / useBuilderTasks()  / useBuilderDocks()
 
 **2·1 起的实际做法（和原计划不一样，记下来免得重复踩）：** 先把每份 scope 从 `Record<string, any>` 收成**封闭键集**——`{ [K in ProjectViewScopeKey]: any }`，键集由视图自己的解构生成，不手抄。这一步只关门不查值，代价小、见效快：改错一个键名编译当场挂，还带「did you mean」，而以前是编译通过、面板空白。负例已经验过（把 `activeEditorTab` 写成 `activeEditorTabTYPO` 会报 `TS2339`）。
 
-**但只关了一半门，别当它已经安全了。** `ShellView → ProjectView` 那一侧仍然是开的：`ShellView` 手里那个 `ProjectView` 组件是从 scope 袋里拿到的，袋的类型是 `Record<string, any>`，于是 `<ProjectView scope={{…}} />` 等于在调 `any`，prop 根本不查。要关这一半，得先把四个视图组件在袋边界上标类型——那正是 Phase 2 剩下的正经活。
+**但只关了一半门，别当它已经安全了。** `ShellView → 各子视图` 那一侧仍然是开的：`ShellView` 手里那四个视图组件是从 scope 袋里拿到的，袋的类型是 `Record<string, any>`，于是 `<ProjectView scope={{…}} />` 等于在调 `any`，prop 根本不查——子视图自己解构写错键名会被抓，`ShellView` 少传一个键不会。要关这一半，得先把四个视图组件在袋边界上标类型——那正是 Phase 2 剩下的正经活。
 
 ### Phase 3 — 拆胖视图（长期）
 
@@ -171,7 +171,7 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 0 | 死重清扫：491 个未用 import 绑定、16 条整条未用的 import、82 个解构死键、13 个没人调用过的函数；DOM 全局 `window` 出袋。`tsconfig` 打开 `noUnusedLocals`/`noUnusedParameters`，`MAX_LINES` 拧到实测旁边 | **19544** | **19600** |
 | 1 | `editorExperienceAuditItems`（1037 行）搬进 `builder/editor-experience-audit.ts`，依赖数组逐字保留；顺带修好 `check:a11y` 两处「关不掉的门」（见下） | **18802** | **18850** |
 | 2·0 | 清掉没人读的 scope 键：袋里 5 个（含 `name`＝`window.name`）、`ShellView` 四份子视图字面量里 9 个（含 `open`＝Tauri 的 dialog `open`，ShellView 自己还要用，只是子视图不解构）、以及随之变成死代码的 2 个声明。补 `check:builder-file-size` 按文件量棘轮 | **18789** | **18820** |
-| 2·1 | `ProjectViewScope` 从 `Record<string, any>` 收成**封闭键集**（108 键，由视图自己的解构生成 `builder/scope-project.ts`）。值仍是 `any`，只关门不查值 | **18789** | **18820** |
+| 2·1 | 四个子视图的 scope 全部从 `Record<string, any>` 收成**封闭键集**（Project 108 / Logic 310 / Build 246 / Design 406 键，由各视图自己的解构生成 `builder/scope-*.ts`）。值仍是 `any`，只关门不查值 | **18789** | **18820** |
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
