@@ -308,7 +308,13 @@ npm run tauri:exe && npm run check:desktop-exe
 
 已经接上了：换项目时重读 git 状态，Git 快照之后也重读，冲突文件可以点开进合并编辑器。`building`/`bundling` 改由后台任务的真实状态驱动。
 
-**留个检测办法，别再靠人眼：** 新写 `useState` 时问一句「这个 setter 有没有一处传非空？」——`tsc --noUnusedLocals` 只能告诉你 setter 有没有被调用，告诉不了你它是不是只被传了初值。这条 `tsc` 查不出来，得靠评审，或者靠「UI 上真的点得到吗」的冒烟。
+**留个检测办法，别再靠人眼：** 新写 `useState` 时问一句「这个 setter 有没有一处传非空？」——`tsc --noUnusedLocals` 只能告诉你 setter 有没有被调用，告诉不了你它是不是只被传了初值。
+
+现在有门禁了：`check:dead-usestate` 扫 `src/` 里每个 `useState` 绑定，报「setter 永远改不了它拥有的那份状态」。它对自己断言——先跑一份已知形状的 fixture（该报的 3 个、不该报的 3 个）再扫真代码，**fixture 分类不对就拒绝出结论**，否则「扫到 0 个」和「瞎了」分不清。也验过它会红：往 `App.tsx` 塞一个真死的 setter，门禁 exit 1。
+
+写它的过程又踩了两个坑，都是「量错了」那一类：
+1. **第一版把 `setBuilding`/`setBundling` 报成从未调用**——它们是作为值传出去的（`taskKind === "build" ? setBuilding : …`），语法上确实没有 `setBuilding(...)`。照着删就等于删掉刚接上的线。所以「被当值用过」就算活。
+2. **`ts.isLiteralExpression` 不含 `null`/`false`**（那是关键字表达式不是字面量），于是 `setConflictFile(null)` 这个最典型的形状根本看不见。fixture 才把它照出来。
 
 ### 5. 两次踩到的同一类坑，别再踩
 
