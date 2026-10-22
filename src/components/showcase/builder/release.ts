@@ -1,5 +1,6 @@
 import { clamp } from "./layout";
 import type {
+  PageConfig,
   ProjectReleaseConfig,
   ReleaseBundleTarget,
   ReleaseInstallerSmokeMode,
@@ -223,6 +224,35 @@ export function defaultReleaseConfig(name = "Nova 项目"): ProjectReleaseConfig
     minWindowHeight: 480,
     resizable: true,
     showRuntimePanel: false,
+  };
+}
+
+/**
+ * The exe window opens the window that was designed. The page is the surface
+ * being drawn; this config is what the built exe opens.
+ *
+ * Seeded from `defaultReleaseConfig` alone they disagree on four of six shell
+ * fields (title, subtitle, width, height), so a fresh project started life
+ * "需同步" and its exe opened a different window from the one on the canvas —
+ * which is the one requirement this product exists to meet.
+ *
+ * Only the shell follows the page. Signing, bundling and installer settings
+ * are release concerns with no page counterpart and must survive untouched.
+ * Re-syncing after a deliberate divergence stays a user action, not a side
+ * effect of saving.
+ */
+export function releaseWindowShellFromPage(
+  config: ProjectReleaseConfig,
+  page: PageConfig,
+): ProjectReleaseConfig {
+  return {
+    ...config,
+    windowTitle: page.title.trim() || config.windowTitle,
+    windowKind: page.windowKind,
+    titlebarStyle: page.titlebarStyle,
+    titlebarSubtitle: page.titlebarSubtitle,
+    windowWidth: page.width,
+    windowHeight: page.height,
   };
 }
 

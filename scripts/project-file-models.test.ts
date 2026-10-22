@@ -147,4 +147,4 @@ function uniqueIds(rows: Array<{ id: string }>, label: string) {
   assert.equal(dirtyRustRow.statusLabel, "未保存", "dirty rust logic row is labelled 未保存");
 }
 
-console.log("check-project-file-models ok: save manifest, route groups and source overview contracts hold.");
+console.log("project-file-models ok: save manifest, route groups and source overview contracts hold.");

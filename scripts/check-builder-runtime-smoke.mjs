@@ -5964,6 +5964,15 @@ async function runShellCommandPlacementChecks(send, verified) {
     `(() => {
       const panel = document.querySelector("[data-builder-qt-creator-parity-panel]");
       if (!panel) return { missing: true };
+      const auditSeverity = new Map(
+        Array.from(document.querySelectorAll("[data-builder-experience-audit-item]")).map((node) => [
+          node.getAttribute("data-builder-experience-audit-item"),
+          {
+            severity: node.getAttribute("data-builder-experience-audit-item-severity") ?? "",
+            detail: (node.textContent || "").replace(/\\s+/g, " ").trim().slice(0, 120),
+          },
+        ]),
+      );
       const rows = Array.from(panel.querySelectorAll("[data-builder-qt-creator-parity-item]"));
       return {
         score: panel.getAttribute("data-builder-qt-creator-parity-score") ?? "",
@@ -5972,6 +5981,11 @@ async function runShellCommandPlacementChecks(send, verified) {
           requirement: row.getAttribute("data-builder-qt-creator-parity-item") ?? row.querySelector("[data-builder-qt-creator-parity-requirement]")?.textContent?.trim() ?? "",
           severity: row.getAttribute("data-builder-qt-creator-parity-state") ?? "",
           title: row.querySelector("p.truncate")?.textContent?.trim() ?? "",
+          evidence: Array.from(row.querySelectorAll("[data-builder-qt-creator-parity-evidence-id]")).map((chip) => {
+            const id = chip.getAttribute("data-builder-qt-creator-parity-evidence-id") ?? "";
+            const audit = auditSeverity.get(id);
+            return { id, severity: audit?.severity ?? "missing", detail: audit?.detail ?? "" };
+          }),
         })),
       };
     })()`,
@@ -5982,6 +5996,10 @@ async function runShellCommandPlacementChecks(send, verified) {
   // literal would break on a backtick or ${ in the product copy.
   const parityRows = parityReport?.rows ?? [];
   const parityBlank = parityRows.filter((row) => !row.requirement || !row.severity || !row.title).length;
+  const parityEvidenceEmpty = parityRows.filter((row) => !(row.evidence || []).length).length;
+  const parityEvidenceUnknown = parityRows
+    .flatMap((row) => row.evidence || [])
+    .filter((chip) => chip.severity === "missing").length;
   const parityScore = Number(parityReport?.score);
   const parityTotal = Number(parityReport?.total);
   const parityCaptureOk =
@@ -5993,11 +6011,13 @@ async function runShellCommandPlacementChecks(send, verified) {
     Number.isInteger(parityTotal) &&
     parityTotal > 0 &&
     parityRows.length === parityTotal &&
-    parityBlank === 0;
+    parityBlank === 0 &&
+    parityEvidenceEmpty === 0 &&
+    parityEvidenceUnknown === 0;
   await assertRuntimeCheck(
     send,
     `(() => ({ passed: ${parityCaptureOk ? "true" : "false"}, detail: ${JSON.stringify(
-      `score=${parityReport?.score ?? "missing"}, total=${parityReport?.total ?? "missing"}, rows=${parityRows.length}, blank=${parityBlank}`,
+      `score=${parityReport?.score ?? "missing"}, total=${parityReport?.total ?? "missing"}, rows=${parityRows.length}, blank=${parityBlank}, evidenceEmpty=${parityEvidenceEmpty}, evidenceUnknown=${parityEvidenceUnknown}`,
     )} }))()`,
     "qt creator parity verdict is readable",
   );
@@ -6631,6 +6651,9 @@ try {
     const notPassing = (parityReport.rows || []).filter((row) => row.severity !== "pass");
     for (const row of notPassing) {
       console.log(`[builder-smoke]   parity ${row.requirement} ${row.severity}: ${row.title}`);
+      for (const chip of (row.evidence || []).filter((entry) => entry.severity !== "pass")) {
+        console.log(`[builder-smoke]     evidence ${chip.id} ${chip.severity}: ${chip.detail}`);
+      }
     }
   } else {
     console.log(`[builder-smoke] qt-creator parity panel not captured`);

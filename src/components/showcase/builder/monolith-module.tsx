@@ -93,6 +93,7 @@ import {
   normalizeReleaseWindowKind,
   releaseSigningConfigured,
   releaseSigningDescription,
+  releaseWindowShellFromPage,
 } from "./release";
 import {
   backendIntegrationStarterHint,
@@ -4988,7 +4989,7 @@ export function createProject(name = "未命名项目", templateId: ProjectTempl
     releasePipelineHistory: [],
     files: seed.files,
     activeFileId: activeFile.id,
-    releaseConfig: defaultReleaseConfig(name),
+    releaseConfig: releaseWindowShellFromPage(defaultReleaseConfig(name), getEffectivePage(activeFile.page)),
     createdAt: now,
     updatedAt: now,
   };

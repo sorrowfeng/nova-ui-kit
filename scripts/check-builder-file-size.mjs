@@ -24,13 +24,16 @@ const HOUSE_MAX_LINES = 800; // ~/.claude/rules/common/coding-style.md
  * adds behaviour and says which lines the behaviour is — the ratchet's job is
  * to make growth visible, not to make growth impossible. BuildView went
  * 4768 -> 4774 wiring the git conflict editor (4 destructure entries, the
- * onOpenConflict prop, and a refresh after Git 快照).
+ * onOpenConflict prop, and a refresh after Git 快照). monolith-module went
+ * 8631 -> 8632 seeding a new project's release window shell from its page:
+ * one `releaseWindowShellFromPage` import and the createProject call site.
+ * The helper itself lives in release.ts — the monolith only pays for the call.
  *
  * `check:builder-file-size` fails on a missing entry's file and on any file
  * above its ceiling.
  */
 const CEILINGS = {
-  "monolith-module.tsx": 8631,
+  "monolith-module.tsx": 8632,
   "DesignView.tsx": 5768,
   "LogicView.tsx": 5713,
   "ShellView.tsx": 3365,
