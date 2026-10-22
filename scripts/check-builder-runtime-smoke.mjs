@@ -2772,6 +2772,10 @@ async function runProjectWorkspaceChecks(send, verified) {
       window.__novaSmokeProjectActionBefore = {
         fileCount: Number(summary.match(/(\\d+)\\s*文件/)?.[1] || 0),
         uiNodeCount: uiNodes.length,
+        // The duplicate is identified by being new, not by its name: the naming
+        // suffix is a product decision this check must not freeze. What it
+        // claims is "duplicate adds a selectable UI file node".
+        uiNodeIds: uiNodes.map((entry) => entry.getAttribute("data-builder-project-tree-node") || ""),
         selectedFile: strip?.getAttribute("data-builder-project-node-action-strip-file") || "",
         selectedNode: strip?.getAttribute("data-builder-project-node-action-strip-node") || ""
       };
@@ -2805,7 +2809,8 @@ async function runProjectWorkspaceChecks(send, verified) {
       const fileCount = Number(summary.match(/(\\d+)\\s*文件/)?.[1] || 0);
       const uiNodes = Array.from(document.querySelectorAll('[data-builder-project-tree-node^="ui-"]'))
         .filter((entry) => entry.getAttribute("data-builder-project-tree-node") !== "ui-folder");
-      const duplicateNode = uiNodes.find((entry) => /Copy\\.ui/.test(entry.textContent || ""));
+      const beforeIds = new Set(window.__novaSmokeProjectActionBefore?.uiNodeIds || []);
+      const duplicateNode = uiNodes.find((entry) => !beforeIds.has(entry.getAttribute("data-builder-project-tree-node") || ""));
       window.__novaSmokeProjectDuplicateNodeId = duplicateNode?.getAttribute("data-builder-project-tree-node") || "";
       window.__novaSmokeProjectFileCountAfterDuplicate = fileCount;
       return {

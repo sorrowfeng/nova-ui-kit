@@ -1269,7 +1269,7 @@ export function BuilderShowcase() {
       generated: {
         owner: "Nova 构建流水线",
         responsibility: "由源码重新生成的 Tauri app、release exe、构建记录和运行证据。",
-        sourceOfTruth: "source + release config",
+        sourceOfTruth: "源码 + 发布配置",
         savePolicy: "构建/运行任务刷新，可删除后从源码再生成。",
         actionLabel: "查看生成",
       },
@@ -2794,16 +2794,16 @@ export function BuilderShowcase() {
     [activeBackendIntegrationMethod.responseSchema],
   );
   const activeBackendRequestValidationIssues = useMemo(() => {
-    const requestSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.requestSchema, "Request schema");
-    const sampleResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "Sample payload");
+    const requestSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.requestSchema, "请求 schema");
+    const sampleResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "示例载荷");
     if (requestSchemaResult.error || sampleResult.error) {
       return [requestSchemaResult.error, sampleResult.error].filter(Boolean) as string[];
     }
-    return validateBackendSchemaValue(sampleResult.value, requestSchemaResult.value, "Sample payload");
+    return validateBackendSchemaValue(sampleResult.value, requestSchemaResult.value, "示例载荷");
   }, [activeBackendIntegrationMethod.requestSchema, activeBackendIntegrationMethod.samplePayload]);
   const activeBackendResponseValidationIssues = useMemo(() => {
-    const responseSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.responseSchema, "Response schema");
-    const responseResult = parseJsonEditorValue(activeBackendIntegrationMethod.lastTest?.response ?? "", "Last response");
+    const responseSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.responseSchema, "响应 schema");
+    const responseResult = parseJsonEditorValue(activeBackendIntegrationMethod.lastTest?.response ?? "", "最近响应");
     if (responseSchemaResult.error || responseResult.error || !activeBackendIntegrationMethod.lastTest?.response) {
       return [];
     }
@@ -3036,7 +3036,7 @@ export function BuilderShowcase() {
       {
         id: "snippet-json-response",
         kind: "snippet",
-        label: "Nova JSON result",
+        label: "Nova JSON 结果",
         detail: "success/message/patch 返回结构",
         sourceLabel: "Nova result 模板",
         insertText: novaJsonSnippet,
@@ -3044,7 +3044,7 @@ export function BuilderShowcase() {
       {
         id: "snippet-state-patch",
         kind: "snippet",
-        label: "state patch",
+        label: "状态补丁",
         detail: "按当前项目 state 名称回写状态",
         sourceLabel: "状态回写模板",
         insertText: statePatchSnippet,
@@ -3052,7 +3052,7 @@ export function BuilderShowcase() {
       {
         id: "snippet-command-debug-result",
         kind: "snippet",
-        label: `${activeCommandName} debug result`,
+        label: `${activeCommandName} 调试结果`,
         detail: "带当前命令参数 Debug 的 JSON 返回",
         sourceLabel: "当前命令模板",
         insertText: commandDebugSnippet,
@@ -3267,7 +3267,7 @@ export function BuilderShowcase() {
       ? `${selectedEventCommandArgs.length} 个命名参数`
       : selectedEventBinding?.passValue
         ? selectedEventBinding.payloadMode === "json"
-          ? `${selectedConnectionPayloadFields.length} JSON field(s)`
+          ? `${selectedConnectionPayloadFields.length} 个 JSON 字段`
           : "当前值"
         : "无载荷"
     : "无命令";
@@ -3278,8 +3278,8 @@ export function BuilderShowcase() {
             ? `${getItemSummary(selectedConnectionResultTarget)}.${selectedEventBinding.resultTargetProp}`
             : "目标缺失"
           : "",
-        selectedConnectionResultState ? `状态 ${selectedConnectionResultState.name}` : "",
         selectedEventBinding?.applyJsonStatePatch ? "JSON patch" : "",
+        selectedEventBinding?.applyJsonStatePatch ? "JSON 补丁" : "",
       ].filter(Boolean).join(" · ") || "无回写"
     : "未配置";
   const selectedConnectionVerificationLabel = selectedEventCommand
@@ -3328,7 +3328,7 @@ export function BuilderShowcase() {
           ? activeProject.stateVariables.find((state) => state.id === binding.resultStateId)?.name ?? "状态缺失"
           : "";
         const outputSummary = command
-          ? [targetSummary, stateSummary ? `状态 ${stateSummary}` : "", binding?.applyJsonStatePatch ? "JSON patch" : ""].filter(Boolean).join(" · ") ||
+          ? [targetSummary, stateSummary ? `状态 ${stateSummary}` : "", binding?.applyJsonStatePatch ? "JSON 补丁" : ""].filter(Boolean).join(" · ") ||
             "无回写"
           : "等待配置";
 
@@ -3704,7 +3704,7 @@ export function BuilderShowcase() {
       title: activeProject.outputExePath ? "定位 release exe" : "生成桌面运行目标",
       detail: activeProject.outputExePath
         ? `${fileNameFromPath(activeProject.outputExePath)} 已作为项目产物挂到文件树和运行证据。`
-        : `${activeProject.releaseConfig.appName} 还没有 release exe，可从左下 Run Kit 或 Build 页生成。`,
+        : `${activeProject.releaseConfig.appName} 还没有 release exe，可从左下 Run Kit 或 构建 页生成。`,
       meta: activeProject.outputExePath || buildSourceRow?.relativePath || "app/",
       // Kind marker; `tone` and `title` already carry whether it is ready.
       badge: activeProject.outputExePath ? "exe" : "构建",
@@ -3931,7 +3931,7 @@ export function BuilderShowcase() {
         const state = stateById.get(binding.resultStateId);
         impacts.push({
           id: `state-${row.id}-${binding.resultStateId}`,
-          label: state ? `State ${state.name}` : "State 缺失",
+          label: state ? `状态 ${state.name}` : "状态 缺失",
           detail: binding.applyJsonStatePatch
             ? "JSON patch 会合并到共享状态。"
             : `${getItemSummary(row.item)}.${row.eventName} 会更新共享状态。`,
@@ -3942,7 +3942,7 @@ export function BuilderShowcase() {
       if (binding.applyJsonStatePatch) {
         impacts.push({
           id: `patch-${row.id}`,
-          label: `JSON patch · ${activeRustCommandResultSchema.statePatchPath || "patch"}`,
+          label: `JSON 补丁 · ${activeRustCommandResultSchema.statePatchPath || "patch"}`,
           detail: `${activeRustCommandResultSchema.messagePath || "message"} 作为用户反馈，patch 作为状态差量。`,
           tone: "patch",
         });
@@ -4101,7 +4101,7 @@ export function BuilderShowcase() {
       rows.push(
         ...activeRustCommandParameters.slice(0, 4).map((parameter, index) => ({
           id: `param-${parameter.id}`,
-          expression: `args.${sanitizeRustParameterName(parameter.name, index)}`,
+          expression: `参数。${sanitizeRustParameterName(parameter.name, index)}`,
           value: parameter.source,
           detail: rustParameterTypeCode(parameter.type),
           tone: "parameter",
@@ -4127,7 +4127,7 @@ export function BuilderShowcase() {
             id: "frame-ui-signal",
             frame: "#0",
             label: `${getItemSummary(caller.item)}.${caller.eventName}`,
-            detail: `${caller.item.type} UI signal`,
+            detail: `${caller.item.type} UI 信号`,
             line: null as number | null,
             action: "design" as const,
           }
@@ -4592,8 +4592,8 @@ export function BuilderShowcase() {
     const result = commandResultSchema(command);
     const resultSummary =
       result.mode === "json"
-        ? `JSON result · ${result.messagePath || "message"} / ${result.statePatchPath || "patch"}`
-        : "String result";
+        ? `JSON 结果 · ${result.messagePath || "message"} / ${result.statePatchPath || "patch"}`
+        : "字符串结果";
 
     return {
       commandId: command.id,
@@ -4666,7 +4666,7 @@ export function BuilderShowcase() {
     if (state) {
       return {
         kind: "state",
-        title: `State · ${state.name}`,
+        title: `状态 · ${state.name}`,
         detail: `初始值 ${state.initialValue || "空"}，可由 Rust JSON patch 回写到 UI。`,
         location: "项目 state store",
         badges: ["状态变量", state.initialValue ? "有初始值" : "空值", "可回写"],
@@ -4679,7 +4679,7 @@ export function BuilderShowcase() {
     if (module) {
       return {
         kind: "module",
-        title: `Rust module · ${sanitizeRustModuleName(module.name)}`,
+        title: `Rust 模块 · ${sanitizeRustModuleName(module.name)}`,
         detail: module.enabled ? "模块会写入生成 app 并通过 lib.rs mod 声明载入。" : "模块已禁用，保存时不会参与生成。",
         location: `rust/modules/${sanitizeRustModuleName(module.name)}.rs`,
         badges: [module.enabled ? "启用" : "禁用", `${module.source.split(/\r?\n/).length} 行`, "模块"],
@@ -4770,7 +4770,7 @@ export function BuilderShowcase() {
         ? `${getItemSummary(rustCursorSignalSlotRow.item)}.${rustCursorSignalSlotRow.eventName} 调用当前槽。`
         : rustCursorOutlineEntry
           ? `${rustOutlineKindTitle(rustCursorOutlineEntry.kind)} ${rustCursorOutlineEntry.label} · ${rustCursorOutlineRangeLabel || "logic.rs"}`
-          : `Ln ${rustEditorSelection.line}, Col ${rustEditorSelection.column}`,
+          : `Ln ${rustEditorSelection.line}, 列 ${rustEditorSelection.column}`,
       badge: rustCursorSignalSlotRow ? "UI 槽" : rustCursorOutlineEntry ? rustOutlineKindLabel(rustCursorOutlineEntry.kind) : "光标",
       icon: Braces,
       actionLabel: rustCursorOutlineEntry ? "打开范围" : "定位光标",
@@ -4789,7 +4789,6 @@ export function BuilderShowcase() {
       detail: `${sanitizeRustCommandName(activeRustCommand.name)} · ${activeRustCommandBindingRows.length} 个 UI 调用 · ${activeRustCommandParameterSummary}`,
       badge: activeRustCommandSlotState === "located" ? activeRustCommandSlotLocationLabel : "缺槽",
       icon: CornerDownRight,
-      actionLabel: activeRustCommandSlotState === "located" ? "打开槽" : "生成槽",
       tone: activeRustCommandSlotState === "located" ? "ready" as const : "warning" as const,
       onAction: () => {
         if (activeRustCommandOutlineEntry) {
@@ -4965,7 +4964,7 @@ export function BuilderShowcase() {
     projectPropertyIssues.forEach((issue) => {
       const fixable = fixableProjectPropertyIssueKeys.has(`${issue.fileId}:${issue.itemId}:${String(issue.prop)}`);
       issues.push({
-        id: `property:${issue.id}`,
+        id: `属性：${issue.id}`,
         kind: "property",
         severity: issue.severity,
         sourceLabel: "设计",
@@ -5118,7 +5117,7 @@ export function BuilderShowcase() {
         : projectChangeImpact.status === "needs-plan" || projectChangeImpact.status === "stale"
           ? projectChangeImpact.executionPlan.detail
           : projectChangeImpact.status === "dirty"
-            ? `${projectChangeImpact.dirtyScopeCount} dirty scope(s). Apply generated changes before checks or release builds.`
+            ? `${projectChangeImpact.dirtyScopeCount} 个范围有改动。先应用生成变更，再做检查或发布构建。`
             : "运行检查、验证窗口，然后从当前生成输出构建可执行文件。";
   const projectDependencyValidity = useMemo(
     () => projectDependencyValidityViews(projectDependencyGraph, projectChangeImpact, activeProjectSnapshotHash),
@@ -5141,7 +5140,7 @@ export function BuilderShowcase() {
       id: `ui-file-${activeFile.id}`,
       kind: "ui-file",
       label: activeFile.name,
-      detail: `${activeFile.items.length} controls in ${activeFile.path}`,
+      detail: `${activeFile.items.length} 个控件，位于 ${activeFile.path}`,
       fileId: activeFile.id,
       path: activeFile.path,
     };
@@ -5169,7 +5168,7 @@ export function BuilderShowcase() {
         id: `rust-module-${activeRustModule.id}`,
         kind: "rust-module",
         label: activeRustModule.name,
-        detail: activeRustModule.enabled ? "Enabled Rust module" : "Disabled Rust module",
+        detail: activeRustModule.enabled ? "已启用的 Rust 模块" : "已停用的 Rust 模块",
         moduleId: activeRustModule.id,
         path: `rust/modules/${activeRustModule.name}.rs`,
       },
@@ -5177,7 +5176,7 @@ export function BuilderShowcase() {
         id: `cargo-dependency-${activeCargoDependency.id}`,
         kind: "cargo-dependency",
         label: activeCargoDependency.name,
-        detail: activeCargoDependency.enabled ? `Cargo dependency v${activeCargoDependency.version}` : "Disabled Cargo dependency",
+        detail: activeCargoDependency.enabled ? `Cargo 依赖 v${activeCargoDependency.version}` : "已停用的 Cargo 依赖",
         dependencyId: activeCargoDependency.id,
         path: "rust/dependencies.json",
       },
@@ -8767,21 +8766,21 @@ export function BuilderShowcase() {
 
   const alignmentLabel = (alignment: AlignmentMode) => {
     if (alignment === "left") {
-      return "left edges";
+      return "左边缘";
     }
     if (alignment === "center") {
-      return "horizontal centers";
+      return "水平中心";
     }
     if (alignment === "right") {
-      return "right edges";
+      return "右边缘";
     }
     if (alignment === "top") {
-      return "top edges";
+      return "上边缘";
     }
     if (alignment === "middle") {
-      return "vertical centers";
+      return "垂直中心";
     }
-    return "bottom edges";
+    return "下边缘";
   };
 
   const alignSelected = (alignment: AlignmentMode) => {
@@ -9090,8 +9089,8 @@ export function BuilderShowcase() {
     const status: ProjectTaskRunResult["status"] = failures.length || errors.length ? "failed" : "succeeded";
     const summary =
       status === "succeeded"
-        ? `Built ${results.length} backend artifact(s).`
-        : `Backend artifact build finished with ${failures.length + errors.length} failure(s).`;
+        ? `已构建 ${results.length} 个后端产物。`
+        : `后端产物构建结束，${failures.length + errors.length} 个失败。`;
     const logPreview = [
       ...results.map((result) => `${result.integration_name}: ${result.summary}`),
       ...errors,
@@ -9301,7 +9300,7 @@ export function BuilderShowcase() {
     const fileName = activeFile.name;
     updateActiveFile((file) => ({
       ...file,
-      page: { ...defaultPage, title: file.name.replace(/\.ui$/i, "") || "Untitled Interface" },
+      page: { ...defaultPage, title: file.name.replace(/\.ui$/i, "") || "未命名界面" },
       items: [],
     }));
     setSelectedId("");
@@ -9411,7 +9410,7 @@ export function BuilderShowcase() {
     if (isTauriRuntime()) {
       setDiskBusy(true);
       try {
-        const checkpoint = await persistDiskCheckpoint(`Before ${bump} release ${currentVersion} -> ${nextVersion}`);
+        const checkpoint = await persistDiskCheckpoint(`之前 ${bump} release ${currentVersion} -> ${nextVersion}`);
         if (!checkpoint) {
           setBuildError("版本发布前检查点需要在 Tauri 桌面 app 中运行。");
           return;
@@ -10589,7 +10588,7 @@ export function BuilderShowcase() {
     if (!rustBracketMatch || rustBracketMatch.status !== "matched") {
       if (rustBracketMatch) {
         const location = rustLocationAtIndex(activeProject.rustLogic, rustBracketMatch.anchor);
-        focusRustLine(location.line, `Rust bracket · ${rustBracketMatch.anchorBracket} 未匹配`, location.column);
+        focusRustLine(location.line, `Rust 括号 · ${rustBracketMatch.anchorBracket} 未匹配`, location.column);
       }
       return;
     }
@@ -10601,7 +10600,7 @@ export function BuilderShowcase() {
       return;
     }
     const targetLocation = rustLocationAtIndex(activeProject.rustLogic, targetIndex);
-    focusRustLine(targetLocation.line, `Rust bracket match · ${rustBracketMatch.pair}`, targetLocation.column);
+    focusRustLine(targetLocation.line, `Rust 括号匹配 · ${rustBracketMatch.pair}`, targetLocation.column);
   };
 
   const openBuildDiagnostic = (diagnostic: BuildDiagnostic, index: number, focusEditable = true) => {
@@ -11364,7 +11363,7 @@ export function BuilderShowcase() {
   };
 
   const updateActiveBackendMethodSampleField = (field: BackendSchemaField, rawValue: string) => {
-    const payloadResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "Sample payload");
+    const payloadResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "示例载荷");
     const currentPayload = isPlainRecord(payloadResult.value) ? { ...payloadResult.value } : {};
     const nextPayload = setValueAtPath(currentPayload, field.path, parseBackendFieldInput(field.type, rawValue));
     updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { samplePayload: prettyJson(nextPayload) });
@@ -11426,9 +11425,9 @@ export function BuilderShowcase() {
   };
 
   const validateActiveBackendMethodContract = () => {
-    const payloadResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "Sample payload");
-    const requestSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.requestSchema, "Request schema");
-    const responseSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.responseSchema, "Response schema");
+    const payloadResult = parseJsonEditorValue(activeBackendIntegrationMethod.samplePayload, "示例载荷");
+    const requestSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.requestSchema, "请求 schema");
+    const responseSchemaResult = parseJsonEditorValue(activeBackendIntegrationMethod.responseSchema, "响应 schema");
     const requestValidationIssues =
       !payloadResult.error && !requestSchemaResult.error
         ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, "Sample payload")
@@ -11614,7 +11613,7 @@ export function BuilderShowcase() {
       showProjectJumpFeedback(
         "success",
         "状态已选择",
-        `${state.name} is active in Logic. ${formatStateReferenceCount(countStateVariableReferences(activeProject, state.id))} linked.`,
+        `${state.name} 在逻辑页激活。 ${formatStateReferenceCount(countStateVariableReferences(activeProject, state.id))} 已关联。`,
       );
     }
   };
@@ -11676,7 +11675,7 @@ export function BuilderShowcase() {
       showProjectJumpFeedback(
         "success",
         "状态变量已创建",
-        `${state.name} is selected with Properties bindings and Connections result routing ready.`,
+        `${state.name} 已选中，属性绑定与连接结果路由就绪。`,
       );
     }
   };
@@ -12025,8 +12024,8 @@ export function BuilderShowcase() {
       );
       showProjectJumpFeedback(
         item.severity === "error" ? "warning" : "success",
-        `Opened ${item.title}`,
-        item.itemName ? `${item.itemName} is selected for this readiness item.` : "The related UI file is active.",
+        `已打开 ${item.title}`,
+        item.itemName ? `${item.itemName} 已为该就绪度条目选中。` : "The related UI file is active.",
       );
       return;
     }
@@ -12034,7 +12033,7 @@ export function BuilderShowcase() {
     if (["project-name", "project-root", "release-config", "release-icon", "release-icon-format", "release-signing", "release-certificate-import", "installer-smoke-mode", "installer-smoke-runner"].includes(item.id)) {
       setMode("design");
       setLeftDockTab("project");
-      showProjectJumpFeedback("success", "已打开项目设置", `${item.title} 可在项目 Dock 中查看。`);
+      showProjectJumpFeedback("success", "已打开项目设置", `${item.title} 可在项目 输出面板 中查看。`);
       return;
     }
 
@@ -12552,7 +12551,7 @@ export function BuilderShowcase() {
       })),
       {
         id: "output-dock-dom",
-        title: "输出 Dock 圆角与滚动 DOM",
+        title: "输出 输出面板 圆角与滚动 DOM",
         passed:
           Boolean(outputDock) &&
           outputDockStyle?.position === "fixed" &&
@@ -12566,11 +12565,11 @@ export function BuilderShowcase() {
           query("[data-builder-output-dock-resize-handle]"),
         detail: outputDock
           ? `Dock ${outputDockLayout}，position=${outputDockStyle?.position ?? "unknown"}，radius=${outputDockRadius}px，高度=${outputDockHeightRaw}，范围 ${outputDockMinHeight}-${outputDockMaxHeight}px。`
-          : "没有找到输出 Dock DOM。",
+          : "没有找到输出 输出面板 DOM。",
       },
       {
         id: "output-dock-safe-scroll-dom",
-        title: "输出 Dock 无背景遮罩 DOM",
+        title: "输出 输出面板 无背景遮罩 DOM",
         passed:
           Boolean(outputDockWorkspace) &&
           outputDockWorkspacePaddingBottom <= 24 &&
@@ -12580,7 +12579,7 @@ export function BuilderShowcase() {
           query("[data-builder-output-dock-no-background-shield]"),
         detail: outputDockWorkspace
           ? `工作区 padding-bottom=${outputDockWorkspacePaddingBottom}px，Dock 外层透明，不再用背景遮罩或整块底部占位影响原内容。`
-          : "没有找到输出 Dock 工作区标记。",
+          : "没有找到输出 输出面板 工作区标记。",
       },
       {
         id: "page-window-dom",
@@ -12743,7 +12742,7 @@ export function BuilderShowcase() {
           }
           return {
             summary: result.summary,
-            logPreview: `${result.changed_count} changed / ${result.total_count} total generated target file(s).`,
+            logPreview: `${result.changed_count} changed / ${result.total_count} 个生成目标文件。`,
             artifactPath: result.root_path,
           };
         }
@@ -12767,7 +12766,7 @@ export function BuilderShowcase() {
           }
           return {
             summary: result.summary,
-            logPreview: `${result.applied_count} applied / ${result.skipped_count} skipped. Snapshot: ${result.checkpoint_path}`,
+            logPreview: `${result.applied_count} applied / ${result.skipped_count} 已跳过。快照： ${result.checkpoint_path}`,
             artifactPath: result.root_path,
           };
         }
@@ -12819,7 +12818,7 @@ export function BuilderShowcase() {
         }
         applyProjectPropertyAutoFixes();
         return {
-          summary: `Applied ${projectPropertyAutoFixSummary.propertyCount} safe property fix(es) across ${projectPropertyAutoFixSummary.targets.length} control(s).`,
+          summary: `已应用 ${projectPropertyAutoFixSummary.propertyCount} 个安全属性修复，涉及 ${projectPropertyAutoFixSummary.targets.length} 个控件。`,
         };
     }
   };
@@ -12859,7 +12858,7 @@ export function BuilderShowcase() {
           ...startedTaskBase,
           commandArgs: createReleasePipelineCommandArgs(startedTaskBase),
         };
-        setProjectTaskQueueMessage(`Started ${startedTask.title}.`);
+        setProjectTaskQueueMessage(`已开始 ${startedTask.title}.`);
         updateProjectTask(task.id, startedTask);
         recordReleasePipelineTaskUpdate(startedTask);
 
@@ -12884,7 +12883,7 @@ export function BuilderShowcase() {
           };
           setProjectTaskQueueMessage(
             `${finishedTask.title} ${finishedTask.status}. ${
-              projectTaskQueueRef.current.length > 0 ? `${projectTaskQueueRef.current.length} task(s) still waiting.` : "Queue is clear."
+              projectTaskQueueRef.current.length > 0 ? `${projectTaskQueueRef.current.length} 个任务仍在等待。` : "Queue is clear."
             }`,
           );
           updateProjectTask(task.id, finishedTask);
@@ -12892,7 +12891,7 @@ export function BuilderShowcase() {
           if (finishedTask.pipelineRunId && (finishedTask.status === "failed" || finishedTask.status === "canceled")) {
             cancelRemainingReleasePipelineTasks(
               finishedTask.pipelineRunId,
-              `Skipped because ${finishedTask.title} ${finishedTask.status}.`,
+              `已跳过，因为 ${finishedTask.title} ${finishedTask.status}.`,
             );
           }
         } catch (error) {
@@ -12918,7 +12917,7 @@ export function BuilderShowcase() {
           updateProjectTask(task.id, failedTask);
           recordReleasePipelineTaskUpdate(failedTask);
           if (failedTask.pipelineRunId) {
-            cancelRemainingReleasePipelineTasks(failedTask.pipelineRunId, `Skipped because ${failedTask.title} failed.`);
+            cancelRemainingReleasePipelineTasks(failedTask.pipelineRunId, `已跳过，因为 ${failedTask.title} failed.`);
           }
         }
       }
@@ -12972,7 +12971,7 @@ export function BuilderShowcase() {
     setProjectTaskSearchQuery("");
     setProjectTasks((current) => [skippedTask, ...current].slice(0, 100));
     setSelectedProjectTaskId(skippedTask.id);
-    setProjectTaskQueueMessage(`${summary} Open Build readiness or Issues before retrying.`);
+    setProjectTaskQueueMessage(`${summary} 请先打开构建就绪度或问题面板再重试。`);
     setFeedbackPanelOpen(true);
     openBottomDock("issues", false);
     showProjectJumpFeedback("warning", "发布被阻止", detail);
@@ -13024,8 +13023,8 @@ export function BuilderShowcase() {
     setSelectedProjectTaskId(tasks[0].id);
     setProjectTaskQueueMessage(
       tasks.length === 1
-        ? `Queued ${tasks[0].title}.`
-        : `Queued ${tasks.length} task(s), starting with ${tasks[0].title}.`,
+        ? `已排队 ${tasks[0].title}.`
+        : `已排队 ${tasks.length} 个任务，从 ${tasks[0].title}.`,
     );
     const switchTaskWorkspace = shouldSwitchTaskWorkspaceForActions(actionIds);
     openBottomDock("tasks", switchTaskWorkspace);
@@ -13085,11 +13084,11 @@ export function BuilderShowcase() {
     const actionIds = entry.steps.slice(startIndex).map((step) => step.actionId);
     const preset: ProjectActionPresetDefinition = {
       id: `rerun-${entry.id}-${Date.now()}`,
-      title: startIndex > 0 ? `${entry.presetTitle} from step ${startIndex + 1}` : `${entry.presetTitle} rerun`,
+      title: startIndex > 0 ? `${entry.presetTitle} 来自步骤 ${startIndex + 1}` : `${entry.presetTitle} rerun`,
       detail:
         startIndex > 0
-          ? `Re-run ${entry.presetTitle} from step ${startIndex + 1} based on pipeline ${entry.id}.`
-          : `Re-run ${entry.presetTitle} based on pipeline ${entry.id}.`,
+          ? `重跑 ${entry.presetTitle} 来自步骤 ${startIndex + 1} 基于流水线 ${entry.id}.`
+          : `重跑 ${entry.presetTitle} 基于流水线 ${entry.id}.`,
       badge: startIndex > 0 ? "rerun" : entry.presetBadge || "rerun",
       actions: actionIds.filter(isProjectJumpActionId),
       custom: true,
@@ -13153,9 +13152,9 @@ export function BuilderShowcase() {
     setProjectTaskQueuePaused(paused);
     setProjectTaskQueueMessage(
       paused
-        ? `Queue paused. ${localQueuedProjectTasks.length} waiting task(s) will stay queued.`
+        ? `队列已暂停。 ${localQueuedProjectTasks.length} 个等待中的任务会留在队列。`
         : localQueuedProjectTasks.length > 0
-          ? `Queue resumed. Next task: ${localQueuedProjectTasks[0].title}.`
+          ? `队列已恢复。下一个任务： ${localQueuedProjectTasks[0].title}.`
           : "队列已恢复。没有等待中的任务。",
     );
     if (!paused) {
@@ -13175,7 +13174,7 @@ export function BuilderShowcase() {
     projectTaskQueueRef.current = nextQueue;
     bumpProjectTaskQueueVersion();
     syncProjectTaskQueueOrderToHistory();
-    setProjectTaskQueueMessage(`${task.title} moved to queue position ${nextIndex + 1}.`);
+    setProjectTaskQueueMessage(`${task.title} 移至队列位置 ${nextIndex + 1}.`);
   };
 
   const cancelQueuedProjectTasks = () => {
@@ -13185,7 +13184,7 @@ export function BuilderShowcase() {
     }
     projectTaskQueueRef.current = projectTaskQueueRef.current.filter((task) => !canceledIds.has(task.id));
     bumpProjectTaskQueueVersion();
-    setProjectTaskQueueMessage(`Canceled ${canceledIds.size} waiting task(s).`);
+    setProjectTaskQueueMessage(`已取消 ${canceledIds.size} 个等待中的任务。`);
     localQueuedProjectTasks
       .filter((task) => canceledIds.has(task.id))
       .forEach((task) =>
@@ -13219,7 +13218,7 @@ export function BuilderShowcase() {
   };
 
   const retryProjectTask = (task: ProjectTaskEntry) => {
-    setProjectTaskQueueMessage(`Retry queued for ${task.title}.`);
+    setProjectTaskQueueMessage(`已重新排队：${task.title}.`);
     enqueueProjectTask(task.actionId, task.attempt + 1);
   };
 
@@ -13261,7 +13260,7 @@ export function BuilderShowcase() {
 
     if (issue) {
       openBuildReadinessItem(issue);
-      setProjectTaskQueueMessage(`${sourceTask.title} is waiting on ${issue.title}.`);
+      setProjectTaskQueueMessage(`${sourceTask.title} 正在等待 ${issue.title}.`);
       return true;
     }
 
@@ -13295,8 +13294,8 @@ export function BuilderShowcase() {
         selectedEventName ? "success" : "warning",
         selectedEventName ? "已打开连接" : "所选控件是静态控件",
         selectedEventName
-          ? `${getItemSummary(selectedItem)} is ready for event binding or simulation.`
-          : `${getItemSummary(selectedItem)} has no supported event; choose another control from Navigator.`,
+          ? `${getItemSummary(selectedItem)} 可绑定事件或仿真。`
+          : `${getItemSummary(selectedItem)} 没有支持的事件；请在导航器中换一个控件。`,
       );
       return;
     }
@@ -13339,7 +13338,7 @@ export function BuilderShowcase() {
       showProjectJumpFeedback(
         "success",
         task.actionId === "build-backend-artifacts" ? "已打开后端集成" : "已打开逻辑",
-        `${task.title} can be repaired from commands, state, dependencies, and backend integration settings.`,
+        `${task.title} 可从命令、状态、依赖和后端集成设置修复。`,
       );
       return;
     }
@@ -13415,7 +13414,7 @@ export function BuilderShowcase() {
   };
 
   const clearCompletedProjectTasks = () => {
-    setProjectTaskQueueMessage(`Cleared ${completedProjectTaskCount} completed task(s).`);
+    setProjectTaskQueueMessage(`已清除 ${completedProjectTaskCount} 个已完成任务。`);
     setProjectTasks((current) =>
       current.filter(
         (task) =>
@@ -13498,7 +13497,7 @@ export function BuilderShowcase() {
       const asset = await chooseImageAsset();
       recordInstantProjectAction(
         actionId,
-        asset ? `Imported ${asset.name} into project assets.` : "Image asset import was canceled or unavailable.",
+        asset ? `已导入 ${asset.name} 并入项目资源。` : "Image asset import was canceled or unavailable.",
         asset ? "succeeded" : "skipped",
       );
       return true;
@@ -13572,7 +13571,7 @@ export function BuilderShowcase() {
         openRelevantTaskDock(null, false);
       }
       runProjectJumpAction(result.actionId);
-      showProjectJumpFeedback("success", "动作已开始", `${result.title} 已显示在工作流栏和任务 Dock 中。`);
+      showProjectJumpFeedback("success", "动作已开始", `${result.title} 已显示在工作流栏和任务 输出面板 中。`);
       return;
     }
 
@@ -13645,7 +13644,7 @@ export function BuilderShowcase() {
       showProjectJumpFeedback(
         "success",
         result.itemId ? "已定位控件" : "已打开 UI 文件",
-        result.itemId ? `${result.title} is selected in ${targetFile.name}.` : `${targetFile.name} is active on the canvas.`,
+        result.itemId ? `${result.title} 已选中于 ${targetFile.name}.` : `${targetFile.name} 在画布上激活。`,
       );
       return;
     }
@@ -13970,8 +13969,8 @@ export function BuilderShowcase() {
     const nextFile: DesignerFile = {
       ...sourceFile,
       id: createId(),
-      name: `${sourceName} Copy.ui`,
-      path: `ui/${sourceName} Copy.ui`,
+      name: `${sourceName} 副本.ui`,
+      path: `ui/${sourceName} 副本.ui`,
       page: { ...sourceFile.page },
       items: nextItems,
       updatedAt: new Date().toISOString(),
@@ -14128,7 +14127,7 @@ export function BuilderShowcase() {
     if (buildReadinessSummary.errorCount > 0) {
       const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
       const message = [
-        `Window validation blocked by ${blockingItems.length} readiness issue${blockingItems.length === 1 ? "" : "s"}.`,
+        `窗口验证被阻塞：${blockingItems.length} 个就绪度问题${blockingItems.length === 1 ? "" : "s"}.`,
         ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
       ].join("\n");
       setBuildError(message);
@@ -15108,7 +15107,7 @@ export function BuilderShowcase() {
       }
       updateActiveProject((project) => ({
         ...project,
-        buildLog: `${result.summary}\nSandbox config: ${result.sandbox_config_path}\nSandbox result: ${result.sandbox_result_path}\n${project.buildLog || ""}`.trim(),
+        buildLog: `${result.summary}\nSandbox config: ${result.sandbox_config_path}\nSandbox 结果： ${result.sandbox_result_path}\n${project.buildLog || ""}`.trim(),
       }));
       await openLocalArtifact(result.sandbox_config_path);
     } catch (error) {
@@ -15155,7 +15154,7 @@ export function BuilderShowcase() {
                 ? "quick-check-rust"
                 : "quick-check-all",
           status: result.success ? "succeeded" : "failed",
-          summary: result.success ? `${checkKind} check completed.` : `${checkKind} check failed.`,
+          summary: result.success ? `${checkKind} 检查完成。` : `${checkKind} 检查失败。`,
           artifactPath: result.paths.generated_app_dir,
         },
         projectChangeImpact,
@@ -15413,7 +15412,7 @@ export function BuilderShowcase() {
       return {
         status: "skipped",
         summary: "生成目标文件已经是最新状态。",
-        logPreview: `${preview.unchanged_count} unchanged / ${preview.total_count} total generated target file(s).`,
+        logPreview: `${preview.unchanged_count} 未变更 / ${preview.total_count} 个生成目标文件。`,
         artifactPath: preview.root_path,
       };
     }
@@ -15423,7 +15422,7 @@ export function BuilderShowcase() {
     }
     return {
       summary: result.summary,
-      logPreview: `${result.applied_count} applied / ${result.skipped_count} skipped. Snapshot: ${result.checkpoint_path}`,
+      logPreview: `${result.applied_count} applied / ${result.skipped_count} 已跳过。快照： ${result.checkpoint_path}`,
       artifactPath: result.root_path,
     };
   };
@@ -15436,7 +15435,7 @@ export function BuilderShowcase() {
     if (buildReadinessSummary.errorCount > 0) {
       const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
       const message = [
-        `Build blocked by ${blockingItems.length} readiness issue${blockingItems.length === 1 ? "" : "s"}.`,
+        `构建被阻塞：${blockingItems.length} 个就绪度问题${blockingItems.length === 1 ? "" : "s"}.`,
         ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
       ].join("\n");
       setBuildError(message);
@@ -15509,7 +15508,7 @@ export function BuilderShowcase() {
     if (buildReadinessSummary.errorCount > 0) {
       const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
       const message = [
-        `Bundle build blocked by ${blockingItems.length} readiness issue${blockingItems.length === 1 ? "" : "s"}.`,
+        `安装包 build blocked by ${blockingItems.length} 个就绪度问题${blockingItems.length === 1 ? "" : "s"}.`,
         ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
       ].join("\n");
       setBuildError(message);
@@ -17077,19 +17076,19 @@ export function BuilderShowcase() {
       },
       {
         id: "output-dock-policy",
-        title: "输出 Dock 无背景遮罩",
+        title: "输出 输出面板 无背景遮罩",
         severity: outputDockWorkspacePadding === "pb-0" && outputDockWorkspaceAvoidancePadding === "0px" ? "pass" : "fail",
-        detail: `底部 Dock 状态 ${outputDockWorkspaceState}，工作区 padding=${outputDockWorkspaceAvoidancePadding}，最小化和展开都不再撑出可见背景遮罩。`,
+        detail: `底部 输出面板 状态 ${outputDockWorkspaceState}，工作区 padding=${outputDockWorkspaceAvoidancePadding}，最小化和展开都不再撑出可见背景遮罩。`,
       },
       {
         id: "output-dock-resizable",
-        title: "输出 Dock 可调高度",
+        title: "输出 输出面板 可调高度",
         severity: activeBottomDockHeight >= 300 ? "pass" : "fail",
         detail: `标准 ${bottomDockHeight}px，展开 ${bottomDockExpandedHeight}px，当前 ${outputDockWorkspaceHeight}，可拖动顶部手柄或用方向键调整。`,
       },
       {
         id: "output-dock-viewport-fit",
-        title: "输出 Dock 视口适配",
+        title: "输出 输出面板 视口适配",
         severity: "pass",
         detail: "Dock 高度由组件按视口暴露 min/max 范围；短窗口会进入 compact 高度，避免内容被窗口边缘裁掉。",
       },
@@ -17097,13 +17096,13 @@ export function BuilderShowcase() {
         id: "canvas-output-dock-avoidance",
         title: "画布避让输出 Dock",
         severity: canvasViewportDockScrollPadding >= (bottomDockMinimized ? 68 : activeBottomDockHeight) ? "pass" : "fail",
-        detail: `滚动定位避让 ${canvasViewportDockScrollPadding}px，随底部 Dock 当前高度 ${outputDockWorkspaceHeight} 动态更新。`,
+        detail: `滚动定位避让 ${canvasViewportDockScrollPadding}px，随底部 输出面板 当前高度 ${outputDockWorkspaceHeight} 动态更新。`,
       },
       {
         id: "canvas-output-dock-no-white-band",
         title: "画布底部无空白带",
         severity: canvasViewportDockVisualPadding <= 16 ? "pass" : "fail",
-        detail: `Dock 是固定浮层，画布只保留 ${canvasViewportDockVisualPadding}px 视觉缓冲，不再用 Dock 高度撑出空白区域。`,
+        detail: `Dock 是固定浮层，画布只保留 ${canvasViewportDockVisualPadding}px 视觉缓冲，不再用 输出面板 高度撑出空白区域。`,
       },
       {
         id: "runtime-shell",
@@ -17378,8 +17377,8 @@ export function BuilderShowcase() {
         title: "问题导航",
         severity: "pass",
         detail: builderIssueCount > 0
-          ? `底部 Dock 当前有 ${builderIssueCount} 个问题，可用 F8 / Shift+F8 在诊断、属性问题和构建错误之间跳转。`
-          : "底部 Dock 支持 F8 / Shift+F8 问题导航；当前没有活跃问题。",
+          ? `底部 输出面板 当前有 ${builderIssueCount} 个问题，可用 F8 / Shift+F8 在诊断、属性问题和构建错误之间跳转。`
+          : "底部 输出面板 支持 F8 / Shift+F8 问题导航；当前没有活跃问题。",
       },
       {
         id: "project-tree",
@@ -17477,7 +17476,7 @@ export function BuilderShowcase() {
         title: "项目节点主操作条",
         severity: selectedProjectExplorerNode ? "pass" : "warning",
         detail: selectedProjectExplorerFile
-          ? `${selectedProjectExplorerFile.name} 的打开、重命名、复制、新建、删除和路径工具已提升到 Project 主详情区。`
+          ? `${selectedProjectExplorerFile.name} 的打开、重命名、复制、新建、删除和路径工具已提升到 项目 主详情区。`
           : "选中项目树节点后，Project 主详情区会集中显示打开、新建、路径复制、系统显示和同类筛选等直接操作。",
       },
       {
@@ -17580,7 +17579,7 @@ export function BuilderShowcase() {
         id: "build-run-command-ownership",
         title: "构建运行命令归属",
         severity: "pass",
-        detail: "左下 Run Kit 是唯一主运行入口；顶部 chip 可直接聚焦 Run Kit，标题栏 Build 菜单作为备用菜单路径，Build 页只做配置、审计和检查。",
+        detail: "左下 Run Kit 是唯一主运行入口；顶部 chip 可直接聚焦 Run Kit，标题栏 构建 菜单作为备用菜单路径，Build 页只做配置、审计和检查。",
       },
       {
         id: "compact-locator",
@@ -17592,7 +17591,7 @@ export function BuilderShowcase() {
       },
       {
         id: "output-dock-minimized-peek",
-        title: "底部 Dock 最小化摘要",
+        title: "底部 输出面板 最小化摘要",
         severity: "pass",
         detail: `最小化时仍显示 ${feedbackIssueCount} 个问题、${queuedProjectTaskCount} 个排队任务和 ${feedbackSummaryToneLabel} 状态，避免展开面板才知道日志/问题变化。`,
       },
@@ -17879,7 +17878,7 @@ export function BuilderShowcase() {
       item(1, "固定选择操作栏", "统一 idle / single / multi 三态，不再因选中控件时弹出栏位而推动画布，并用独立命令滚动区处理窄窗口拥挤。", ["selection-actionbar", "selection-actionbar-overflow", "selection-status-bar", "selection-hierarchy-breadcrumb", "canvas-fit-selection"]),
       item(2, "多选与框选", "支持框选、组合选择、键盘微调和多选属性批量编辑。", ["selection-marquee", "multi-select-inspector", "selection-keyboard-nudge"]),
       item(3, "圆角输出 Dock", "底部问题、输出和任务日志使用可缩放、可短窗口适配的 Nova 圆角浮层。", ["output-dock-policy", "output-dock-resizable", "output-dock-viewport-fit", "output-dock-minimized-peek"]),
-      item(4, "无无效白带", "输出 Dock 浮在工作区上方，画布只保留必要避让和滚动定位。", ["canvas-output-dock-avoidance", "canvas-output-dock-no-white-band"]),
+      item(4, "无无效白带", "输出 输出面板 浮在工作区上方，画布只保留必要避让和滚动定位。", ["canvas-output-dock-avoidance", "canvas-output-dock-no-white-band"]),
       item(5, "exe 同款窗口壳", "发布目标与编辑器窗口风格对齐，Build 页展示运行端窗口一致性。", ["runtime-shell", "runtime-window-parity", "desktop-runtime-workbench"]),
       item(6, "运行端无设计网格", "设计网格只属于画布，生成 runtime 固定关闭网格并可验证。", ["runtime-grid", "runtime-window-parity"]),
       item(7, "UI 外窗体可编辑", "当前 UI 与发布目标都能配置窗口类型、标题栏和标题信息。", ["page-window-shape", "runtime-shell", "runtime-window-parity"]),
@@ -18641,7 +18640,7 @@ export function BuilderShowcase() {
       if (command === "open-build-output") {
         setMode("build");
         openBottomDock("output");
-        showProjectJumpFeedback("success", "已打开构建输出", "构建工作区和输出 Dock 已显示。");
+        showProjectJumpFeedback("success", "已打开构建输出", "构建工作区和输出 输出面板 已显示。");
         return;
       }
       if (command === "help-guide") {

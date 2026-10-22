@@ -7,7 +7,7 @@ import {
 } from "./monolith-module";
 import type { DesignerProject, EditorProjectCheckpoint } from "./types-project";
 
-/** Pure builders for the Project page save manifest. */
+/** Pure builders for the 项目 page save manifest. */
 export type ProjectSaveManifestInput = {
   readonly activeProject: DesignerProject;
   readonly diskCheckpoints: readonly EditorProjectCheckpoint[];

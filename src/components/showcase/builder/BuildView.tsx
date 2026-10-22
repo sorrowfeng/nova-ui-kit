@@ -550,7 +550,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition-transform group-open:rotate-90" />
                       <div className="min-w-0">
                         <h3 className="truncate text-xs font-medium text-on-surface">项目设置</h3>
-                        <p className="sr-only">Release config 由 Project Dock 管理，展开查看当前目标。</p>
+                        <p className="sr-only">Release config 由 项目 输出面板 管理，展开查看当前目标。</p>
                       </div>
                     </div>
                     {/* A version is a value, not a state. */}
@@ -601,7 +601,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       onChange={(event: any) => updateReleaseConfig({ appName: event.target.value })}
                     />
                   </Field>
-                  <Field label="Bundle 标识符">
+                  <Field label="安装包 标识符">
                     <Input
                       inputSize="sm"
                       data-builder-release-identifier=""
@@ -1210,7 +1210,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         data-builder-readiness-summary-strip="inline-counts"
                         data-builder-readiness-a11y="disclosure-summary"
                       >
-                        {/* Problems are signals; "N 就绪" is a tally to read. */}
+                        {/* 问题 are signals; "N 就绪" is a tally to read. */}
                         <StateBadge
                           variant="destructive"
                           label={`${buildReadinessSummary.errorCount} 错误`}
@@ -2135,7 +2135,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <button
                             type="button"
                             className="focus-ring rounded-full px-1 text-primary"
-                            aria-label={`Move ${projectTaskDefinitions[actionId].title} up in preset`}
+                            aria-label={`移动 ${projectTaskDefinitions[actionId].title} 在预设中上移`}
                             disabled={index === 0}
                             onClick={() => moveCustomPresetDraftAction(index, -1)}
                           >
@@ -2144,7 +2144,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <button
                             type="button"
                             className="focus-ring rounded-full px-1 text-primary"
-                            aria-label={`Move ${projectTaskDefinitions[actionId].title} down in preset`}
+                            aria-label={`移动 ${projectTaskDefinitions[actionId].title} 在预设中下移`}
                             disabled={index === customPresetDraftActions.length - 1}
                             onClick={() => moveCustomPresetDraftAction(index, 1)}
                           >
@@ -2153,7 +2153,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <button
                             type="button"
                             className="focus-ring rounded-full px-1 text-destructive"
-                            aria-label={`Remove ${projectTaskDefinitions[actionId].title} from preset`}
+                            aria-label={`移除 ${projectTaskDefinitions[actionId].title} 从预设移除`}
                             onClick={() => removeActionFromCustomPresetDraft(index)}
                           >
                             x
@@ -4420,7 +4420,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         label={`${activeProject.buildHistory?.length ?? 0} 项`}
                         count={activeProject.buildHistory?.length ?? 0}
                       />
-                      {/* Build kind is a category of the artifact, not a state to act on. */}
+                      {/* 构建 kind is a category of the artifact, not a state to act on. */}
                       {activeProject.buildHistory?.[0]?.buildKind ? (
                         <span className="text-[0.68rem] text-on-surface-variant">
                           {activeProject.buildHistory[0].buildKind}

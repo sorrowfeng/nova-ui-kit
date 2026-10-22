@@ -2183,7 +2183,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             {activeProjectSavePlanStep ? `当前定位：${activeProjectSavePlanStep.title}` : "未定位阶段"}
                           </span>
                           <span className="min-w-0 truncate text-right font-mono text-on-surface" data-builder-project-save-plan-route-path="">
-                            {activeProjectSavePlanStep?.path ?? "source / generated / .nova"}
+                            {activeProjectSavePlanStep?.path ?? "源码 / 生成 / .nova"}
                           </span>
                         </div>
                         <div className="divide-y divide-outline-variant" data-builder-project-save-plan-list="" data-builder-project-save-plan-list-density="row-table">

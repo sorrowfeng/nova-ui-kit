@@ -10,7 +10,7 @@ import {
 import { normalizeReleaseVersion } from "./release";
 import type { DesignerFile, DesignerProject, EditorProjectCheckpoint } from "./types-project";
 
-/** Pure builders for the Project page file-route map and source overview. */
+/** Pure builders for the 项目 page file-route map and source overview. */
 export type ProjectFileSaveState = {
   readonly fileId: string;
   readonly currentFingerprint: string;

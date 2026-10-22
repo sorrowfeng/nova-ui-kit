@@ -1614,7 +1614,7 @@ export function formatSimulatorTraceLog(trace: SimulatorTraceEntry) {
     `args: ${args}`,
     `result: ${trace.rawResult}`,
     trace.target ? `target: ${trace.target}` : "target: none",
-    `state patch: ${patch}`,
+    `状态补丁： ${patch}`,
   ].join("\n");
 }
 
@@ -2966,7 +2966,7 @@ export function normalizeReleasePipelineHistory(value: unknown): ReleasePipeline
         failedCount: Math.max(0, Number(entry.failedCount ?? steps.filter((step) => step.status === "failed").length)),
         skippedCount: Math.max(0, Number(entry.skippedCount ?? steps.filter((step) => step.status === "skipped").length)),
         canceledCount: Math.max(0, Number(entry.canceledCount ?? steps.filter((step) => step.status === "canceled").length)),
-        releaseAppName: typeof entry.releaseAppName === "string" && entry.releaseAppName ? entry.releaseAppName : "Nova App",
+        releaseAppName: typeof entry.releaseAppName === "string" && entry.releaseAppName ? entry.releaseAppName : "Nova 应用",
         releaseVersion: normalizeReleaseVersion(entry.releaseVersion || "0.1.0"),
         artifactPath,
         logPath,
@@ -2977,7 +2977,7 @@ export function normalizeReleasePipelineHistory(value: unknown): ReleasePipeline
         bundleManifestPath: typeof entry.bundleManifestPath === "string" && entry.bundleManifestPath.trim() ? entry.bundleManifestPath : undefined,
         bundlePaths,
         rootPath: typeof entry.rootPath === "string" && entry.rootPath.trim() ? entry.rootPath : undefined,
-        summary: typeof entry.summary === "string" && entry.summary ? entry.summary : `${steps.length} release pipeline step(s).`,
+        summary: typeof entry.summary === "string" && entry.summary ? entry.summary : `${steps.length} 个发布流水线步骤。`,
         steps,
       };
     })
@@ -3611,7 +3611,7 @@ export function rustLogicOutlineEntries(rustLogic: string, commands: RustCommand
       const parameterCount = signature.trim() ? signature.split(",").filter((part) => part.trim()).length : 0;
       const bindingCount = command ? bindingCountByCommandId.get(command.id) ?? 0 : 0;
       entries.push({
-        id: command ? `slot:${command.id}` : `function:${name}:${index}`,
+        id: command ? `槽：${command.id}` : `函数：${name}:${index}`,
         kind: command ? "slot" : "function",
         label: name,
         detail: command
@@ -3632,7 +3632,7 @@ export function rustLogicOutlineEntries(rustLogic: string, commands: RustCommand
     if (moduleMatch) {
       const [, name] = moduleMatch;
       entries.push({
-        id: `module:${name}:${index}`,
+        id: `模块：${name}:${index}`,
         kind: "module",
         label: name,
         detail: line.includes(";") ? "外部模块声明" : "内联模块",
@@ -3680,7 +3680,7 @@ export function rustLogicOutlineEntries(rustLogic: string, commands: RustCommand
     if (constantMatch) {
       const [, symbolType, name] = constantMatch;
       entries.push({
-        id: `constant:${name}:${index}`,
+        id: `常量：${name}:${index}`,
         kind: "constant",
         label: name,
         detail: `${symbolType} 定义`,
@@ -3706,7 +3706,7 @@ export function rustLogicOutlineEntries(rustLogic: string, commands: RustCommand
     }
     const safeName = sanitizeRustCommandName(command.name);
     entries.push({
-      id: `missing-slot:${command.id}`,
+      id: `missing-槽：${command.id}`,
       kind: "slot",
       label: safeName,
       detail: `${bindingCountByCommandId.get(command.id) ?? 0} 个 UI 绑定 · 未找到同名函数`,
@@ -5764,12 +5764,12 @@ export function buildReadiness(
   const invalidBackendMethodContracts = enabledBackendIntegrations.flatMap((integration) =>
     integration.methods.flatMap((method) =>
       (() => {
-        const payloadResult = parseJsonEditorValue(method.samplePayload, `${integration.name}/${method.name} sample payload`);
-        const requestSchemaResult = parseJsonEditorValue(method.requestSchema, `${integration.name}/${method.name} request schema`);
-        const responseSchemaResult = parseJsonEditorValue(method.responseSchema, `${integration.name}/${method.name} response schema`);
+        const payloadResult = parseJsonEditorValue(method.samplePayload, `${integration.name}/${method.name} 示例载荷`);
+        const requestSchemaResult = parseJsonEditorValue(method.requestSchema, `${integration.name}/${method.name} 请求 schema`);
+        const responseSchemaResult = parseJsonEditorValue(method.responseSchema, `${integration.name}/${method.name} 响应 schema`);
         const requestIssues =
           !payloadResult.error && !requestSchemaResult.error
-            ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, `${integration.name}/${method.name} sample payload`)
+            ? validateBackendSchemaValue(payloadResult.value, requestSchemaResult.value, `${integration.name}/${method.name} 示例载荷`)
             : [];
         return [payloadResult.error, requestSchemaResult.error, responseSchemaResult.error, ...requestIssues]
           .filter(Boolean)
@@ -6032,7 +6032,7 @@ export function buildReadiness(
     "后端方法契约",
     invalidBackendMethodContracts.length > 0
       ? `${invalidBackendMethodContracts.length} 个 backend method sample/schema 不是合法 JSON；先在 Method test bench 修正再发布。`
-      : "Backend method sample payload、request schema 和 response schema 都可解析并通过基础类型校验。",
+      : "示例载荷、请求 schema 与响应 schema 均可解析，并通过基础类型校验。",
   );
 
   addItem(
@@ -6218,9 +6218,9 @@ export function buildReadiness(
 
   const unnamedStateNames = project.stateVariables.filter((state) => !state.name.trim());
   if (unnamedStateNames.length > 0) {
-    addItem("error", "empty-state-names", "状态名称", "State 名称不能为空，否则 JSON patch 无法稳定映射。");
+    addItem("error", "empty-state-names", "状态名称", "状态 名称不能为空，否则 JSON patch 无法稳定映射。");
   } else if (stateNames.size !== project.stateVariables.length) {
-    addItem("error", "duplicate-state-names", "状态名称", "State 名称需要唯一。");
+    addItem("error", "duplicate-state-names", "状态名称", "状态 名称需要唯一。");
   }
 
   return summarizeReadiness(items);
@@ -6751,7 +6751,7 @@ export function createBuildHistoryEntry(
     createdAt: new Date().toISOString(),
     status: "success",
     buildKind,
-    label: buildKind === "bundle" ? `Bundle ${buildNumber}` : `Build ${buildNumber}`,
+    label: buildKind === "bundle" ? `安装包 ${buildNumber}` : `Build ${buildNumber}`,
     releaseAppName: project.releaseConfig.appName,
     releaseVersion: normalizeReleaseVersion(project.releaseConfig.version),
     releaseBundleTargets: project.releaseConfig.bundleTargets,
@@ -6900,7 +6900,7 @@ export async function inspectReleasePipelineArtifactEvidence(path?: string): Pro
       sizeBytes: 0,
       modifiedAt: null,
       sha256: null,
-      summary: `Artifact inspection failed: ${String(error)}`,
+      summary: `产物检查失败： ${String(error)}`,
       checkedAt: new Date().toISOString(),
     };
   }
@@ -7051,10 +7051,10 @@ export function projectDependencyValidityViews(
       validityStatus === "failed"
         ? `${entry.label} last ${entry.resultStatus}.`
         : validityStatus === "stale"
-          ? `${entry.label} is stale for ${[...(entry.invalidatedScopeIds ?? []), ...invalidatedByCurrentScopes].filter(Boolean).slice(0, 4).join(", ") || "changed scopes"}.`
+          ? `${entry.label} 因 ${[...(entry.invalidatedScopeIds ?? []), ...invalidatedByCurrentScopes].filter(Boolean).slice(0, 4).join(", ") || "changed scopes"}.`
           : validityStatus === "needs-plan"
             ? `${entry.label} 需要刷新生成计划，Nova 才能证明它仍然有效。`
-            : `${entry.label} is valid for the current known scopes.`;
+            : `${entry.label} 在当前已知范围内有效。`;
     return {
       ...entry,
       validityStatus,
@@ -7124,7 +7124,7 @@ export function createProjectDependencyGraphRecord(
     validity: updateDependencyValidityCache(previousRecord, impact, event, impact.currentSnapshotHash),
     previewRootPath: impact.previewRootPath,
     updatedAt: recordedAt,
-    summary: `${impact.summary} Last event: ${lastEvent.kind}${lastEvent.status ? ` (${lastEvent.status})` : ""}.`,
+    summary: `${impact.summary} 最近事件： ${lastEvent.kind}${lastEvent.status ? ` (${lastEvent.status})` : ""}.`,
   };
 }
 
@@ -7175,16 +7175,16 @@ export function summarizeReleasePipelineEntry(entry: ReleasePipelineEntry, steps
   const finishedAt = terminalCount === steps.length ? [...steps].reverse().find((step) => step.finishedAt)?.finishedAt ?? new Date().toISOString() : undefined;
   const summary =
     status === "running" && runningStep
-      ? `Running ${runningStep.title} (${terminalCount}/${steps.length} finished).`
+      ? `运行中 ${runningStep.title} (${terminalCount}/${steps.length} 已完成）。`
       : status === "failed"
-        ? `${failedCount} of ${steps.length} step(s) failed.`
+        ? `${failedCount} of ${steps.length} 个步骤失败。`
         : status === "canceled"
-          ? `${canceledCount} of ${steps.length} step(s) canceled.`
+          ? `${canceledCount} of ${steps.length} 个步骤已取消。`
           : status === "skipped"
-            ? `All ${steps.length} step(s) were skipped.`
+            ? `全部 ${steps.length} 个步骤被跳过。`
             : status === "succeeded"
-              ? `Completed ${succeededCount} step(s), skipped ${skippedCount}.`
-              : `Queued ${steps.length} release pipeline step(s).`;
+              ? `已完成 ${succeededCount} 个步骤，跳过 ${skippedCount}.`
+              : `已排队 ${steps.length} 个发布流水线步骤。`;
 
   return {
     ...entry,
@@ -7227,7 +7227,7 @@ export function createReleasePipelineEntry(
       releaseAppName: project.releaseConfig.appName,
       releaseVersion: normalizeReleaseVersion(project.releaseConfig.version),
       rootPath: project.rootPath,
-      summary: `Queued ${steps.length} release pipeline step(s).`,
+      summary: `已排队 ${steps.length} 个发布流水线步骤。`,
       steps,
     },
     steps,
@@ -7537,7 +7537,7 @@ export function simulatorStateValuesForArgs(
 
 export function simulatorRunMessage(commandResponse: string | undefined, eventName: BuilderEventName, commandName: string) {
   const response = commandResponse?.trim() || DEFAULT_RUST_COMMAND_RESPONSE;
-  return `${response} completed for ${eventName} -> ${commandName}.`;
+  return `${response} 已完成于 ${eventName} -> ${commandName}.`;
 }
 
 export function prettyJson(value: unknown) {
@@ -7565,7 +7565,7 @@ export function parseJsonEditorValue(value: string, label: string): { value: unk
   } catch (error) {
     return {
       value: null,
-      error: `${label} JSON is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      error: `${label} JSON 不合法： ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }
@@ -7842,7 +7842,7 @@ export function backendSchemaFieldsFromValues(schema: unknown, sample: unknown):
 
 export function backendSchemaFields(schemaText: string, sampleText: string) {
   const schemaResult = parseJsonEditorValue(schemaText, "Request schema");
-  const sampleResult = parseJsonEditorValue(sampleText, "Sample payload");
+  const sampleResult = parseJsonEditorValue(sampleText, "示例载荷");
   if (schemaResult.error || sampleResult.error) {
     return [];
   }
@@ -7851,7 +7851,7 @@ export function backendSchemaFields(schemaText: string, sampleText: string) {
 
 export function samplePayloadFromBackendSchema(schemaText: string, existingSampleText: string) {
   const schemaResult = parseJsonEditorValue(schemaText, "Request schema");
-  const sampleResult = parseJsonEditorValue(existingSampleText, "Sample payload");
+  const sampleResult = parseJsonEditorValue(existingSampleText, "示例载荷");
   const existingSample = isPlainRecord(sampleResult.value) ? sampleResult.value : {};
   if (schemaResult.error) {
     return existingSampleText;
@@ -7895,12 +7895,12 @@ export function validateBackendJsonSchemaValue(value: unknown, schema: Record<st
   const rootType = normalizeBackendSchemaType(schema.type ?? (isPlainRecord(schema.properties) ? "object" : "json"));
   const issues: string[] = [];
   if (!backendValueMatchesType(value, rootType)) {
-    issues.push(`${label} should be ${rootType}.`);
+    issues.push(`${label} 应为 ${rootType}。`);
     return issues;
   }
   const enumValues = backendSchemaEnumValues(schema);
   if (enumValues?.length && !enumValues.includes(String(value))) {
-    issues.push(`${label} should be one of ${enumValues.join(", ")}.`);
+    issues.push(`${label} 应为其中之一：${enumValues.join("、")}。`);
   }
   if (rootType === "array") {
     if (!Array.isArray(value)) {
@@ -7920,7 +7920,7 @@ export function validateBackendJsonSchemaValue(value: unknown, schema: Record<st
   const required = new Set(Array.isArray(schema.required) ? schema.required.filter((name): name is string => typeof name === "string") : []);
   for (const name of required) {
     if (!Object.prototype.hasOwnProperty.call(value, name)) {
-      issues.push(`${label}.${name} is required.`);
+      issues.push(`${label}.${name} 为必填。`);
     }
   }
   for (const [name, definition] of Object.entries(schema.properties)) {
@@ -7933,7 +7933,7 @@ export function validateBackendJsonSchemaValue(value: unknown, schema: Record<st
     }
     const type = normalizeBackendSchemaType(definition);
     if (!backendValueMatchesType(value[name], type)) {
-      issues.push(`${label}.${name} should be ${type}.`);
+      issues.push(`${label}.${name} 应为 ${type}。`);
     }
   }
   return issues;
@@ -7941,29 +7941,29 @@ export function validateBackendJsonSchemaValue(value: unknown, schema: Record<st
 
 export function validateBackendSchemaValue(value: unknown, schema: unknown, label: string): string[] {
   if (backendSchemaIsLegacyPayloadEnvelope(schema)) {
-    return isPlainRecord(value) ? [] : [`${label} should be an object payload.`];
+    return isPlainRecord(value) ? [] : [`${label} 应为对象载荷。`];
   }
   if (backendSchemaIsJsonSchema(schema)) {
     return validateBackendJsonSchemaValue(value, schema as Record<string, unknown>, label);
   }
   if (isPlainRecord(schema)) {
     if (!isPlainRecord(value)) {
-      return [`${label} should be an object.`];
+      return [`${label} 应为对象。`];
     }
     return Object.entries(schema).flatMap(([name, definition]) => {
       const type = normalizeBackendSchemaType(isPlainRecord(definition) ? definition.type ?? definition : definition);
       if (!Object.prototype.hasOwnProperty.call(value, name)) {
-        return [`${label}.${name} is required.`];
+        return [`${label}.${name} 为必填。`];
       }
-      return backendValueMatchesType(value[name], type) ? [] : [`${label}.${name} should be ${type}.`];
+      return backendValueMatchesType(value[name], type) ? [] : [`${label}.${name} 应为 ${type}。`];
     });
   }
   return [];
 }
 
 export function backendSchemaFieldIssues(field: BackendSchemaField, issues: string[]) {
-  const label = `Sample payload.${field.name}`;
-  return issues.filter((issue) => issue.startsWith(label) || issue.includes(`.${field.name} `) || issue.includes(`.${field.name} is`));
+  const label = `示例载荷.${field.name}`;
+  return issues.filter((issue) => issue.startsWith(label) || issue.includes(`.${field.name} `));
 }
 
 export function backendPayloadFieldsForEvent(fields: BackendSchemaField[], item: BuilderItem): BuilderEventPayloadField[] {

@@ -1261,7 +1261,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   type="button"
                   data-builder-rail-kit=""
                   aria-label={`打开构建配置：${railConfigurationLabel}`}
-                  title={`Kit: ${railKitLabel} · ${railConfigurationLabel}`}
+                  title={`Kit：${railKitLabel} · ${railConfigurationLabel}`}
                   className="focus-ring flex h-8 w-full items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-high hover:text-primary"
                   onClick={() => setMode("build")}
                 >
@@ -1328,7 +1328,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         data-builder-rail-kit-step-overflow=""
                         onClick={() => setMode("build")}
                       >
-                        <span className="truncate">还有 {selectedRailKitStepRows.length - 3} 步在 Build 页查看</span>
+                        <span className="truncate">还有 {selectedRailKitStepRows.length - 3} 步在 构建 页查看</span>
                         <ChevronRight aria-hidden className="size-3 shrink-0" />
                       </button>
                     ) : null}
@@ -1466,7 +1466,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     type="button"
                     className="focus-ring grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-1.5 rounded-xl px-1.5 py-1 text-left transition hover:bg-surface-container-high"
                     data-builder-rail-release-target=""
-                    title={`Release：${railReleaseTargetLabel} · ${railBundleTargetLabel}`}
+                    title={`发布：${railReleaseTargetLabel} · ${railBundleTargetLabel}`}
                     onClick={() => setMode("build")}
                   >
                     <Download aria-hidden className="size-3 shrink-0 text-primary" />
@@ -4018,7 +4018,6 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           size="sm"
                           variant={latestRunSessionRunning ? "ghost" : "secondary"}
                           data-builder-output-run-exe=""
-                          data-builder-output-run-state={latestRunSessionRunning ? "running" : "idle"}
                           loading={latestRunSessionRunning && latestRunSessionEntry ? stoppingRunId === latestRunSessionEntry.id : launchingExeId === "active-output"}
                           disabled={
                             latestRunSessionRunning && latestRunSessionEntry
@@ -4034,7 +4033,6 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             void launchActiveOutputExecutable();
                           }}
                         >
-                          {latestRunSessionRunning ? <Square aria-hidden className="size-4" /> : <Play aria-hidden className="size-4" />}
                           {latestRunSessionRunning ? "停止" : bottomDockExpanded ? "运行 exe" : "运行"}
                         </Button>
                         <Button

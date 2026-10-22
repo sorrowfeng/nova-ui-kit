@@ -552,7 +552,7 @@ export const palette: ComponentDefinition[] = [
       value: "fn save_project(input: SaveInput) -> Result<String, String> {\n  validate(input)?;\n  Ok(\"saved\".into())\n}",
       placeholder: "编写代码片段...",
       description: "支持绑定 change 事件保存脚本内容。",
-      helper: "Ln 3, Col 18",
+      helper: "Ln 3, 列 18",
     },
   },
   {
@@ -1449,7 +1449,7 @@ export const palette: ComponentDefinition[] = [
       value: "Run command",
       optionA: "UI Signal",
       optionB: "Run command",
-      optionC: "State patch",
+      optionC: "状态 patch",
     },
   },
   {
@@ -1471,7 +1471,7 @@ export const palette: ComponentDefinition[] = [
   {
     type: "problems-panel",
     title: "问题面板",
-    description: "IDE 风格 Problems 面板，按错误、警告和文件位置聚合诊断，适合 Rust/前端构建结果。",
+    description: "IDE 风格 问题 面板，按错误、警告和文件位置聚合诊断，适合 Rust/前端构建结果。",
     icon: AlertTriangle,
     defaultSize: { width: 560, height: 260 },
     defaultProps: {
@@ -2140,7 +2140,7 @@ export const palette: ComponentDefinition[] = [
     defaultSize: { width: 420, height: 116 },
     defaultProps: {
       title: "需要确认发布配置",
-      description: "Bundle identifier 和版本号会写入生成项目，请在构建前确认。",
+      description: "安装包 identifier 和版本号会写入生成项目，请在构建前确认。",
       label: "打开设置",
       variant: "secondary",
     },

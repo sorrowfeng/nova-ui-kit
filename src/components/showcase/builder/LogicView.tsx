@@ -1275,7 +1275,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         />
                         <StateLabel
                           showQuiet
-                          variant={activeRustCommandSlotState === "located" ? "secondary" : "outline"}
                           label={activeRustCommandSlotState === "located" ? "槽已定位" : "槽待生成"}
                         />
                       </div>
@@ -3232,7 +3231,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         variant="ghost"
                         className="h-8 px-2 text-xs"
                         data-builder-rust-hover-open-source=""
-                        onClick={() => focusRustLine(rustEditorHoverDoc.sourceLine ?? 1, `Rust hover · ${rustEditorHoverDoc.title}`)}
+                        onClick={() => focusRustLine(rustEditorHoverDoc.sourceLine ?? 1, `Rust 悬停 · ${rustEditorHoverDoc.title}`)}
                       >
                         <Navigation aria-hidden className="size-4" />
                         源码
@@ -3799,7 +3798,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                               data-builder-rust-minimap-line={marker.line}
                               aria-label={`${marker.label}，跳转到第 ${marker.line} 行`}
                               title={`${marker.label} · Ln ${marker.line}`}
-                              onClick={() => focusRustLine(marker.line, `Minimap · ${marker.label}`)}
+                              onClick={() => focusRustLine(marker.line, `缩略图 · ${marker.label}`)}
                             />
                           );
                         })}
@@ -4295,7 +4294,6 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <h3 className="truncate text-sm font-medium text-on-surface">当前槽函数</h3>
                         <StateLabel
-                          variant={activeRustCommandSlotState === "located" ? "secondary" : "outline"}
                           label={activeRustCommandSlotState === "located" ? "源码已定位" : "待生成"}
                         />
                         <CountReadout

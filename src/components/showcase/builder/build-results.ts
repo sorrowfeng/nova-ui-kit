@@ -15,7 +15,7 @@ export function normalizeGeneratedFileChangeSummary(value: unknown): GeneratedFi
     summary:
       typeof source.summary === "string" && source.summary.trim()
         ? source.summary
-        : `${totalCount} generated targets · ${changedCount} changed · ${unchangedCount} unchanged`,
+        : `${totalCount} 个生成目标 · ${changedCount} 已变更 · ${unchangedCount} 未变更`,
     total_count: totalCount,
     changed_count: changedCount,
     created_count: createdCount,

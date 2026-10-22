@@ -729,7 +729,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <h3 className="truncate text-xs font-semibold text-on-surface">打开文件</h3>
-                          <p className="mt-1 text-[0.66rem] leading-4 text-on-surface-variant">项目 Dock 中的轻量标签管理。</p>
+                          <p className="mt-1 text-[0.66rem] leading-4 text-on-surface-variant">项目 输出面板 中的轻量标签管理。</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
                           <StateLabel
@@ -1227,7 +1227,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         onChange={(event: any) => updateReleaseConfig({ appName: event.target.value })}
                       />
                     </Field>
-                    <Field label="Bundle 标识符">
+                    <Field label="安装包 标识符">
                       <Input
                         inputSize="sm"
                         data-builder-project-release-identifier=""
@@ -4336,9 +4336,9 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               >
                                 <span className="block truncate text-xs font-medium">{getItemSummary(item)}</span>
                                 <span className="block truncate text-[0.68rem] opacity-70">
-                                  {item.name} · {item.parentId ? "child" : "root"} · z {item.z}
-                                  {!runtimeState.visible ? " · hidden" : ""}
-                                  {item.locked ? " · locked" : ""}
+                                  {item.name} · {item.parentId ? "子级" : "根"} · z {item.z}
+                                  {!runtimeState.visible ? " · 隐藏" : ""}
+                                  {item.locked ? " · 锁定" : ""}
                                 </span>
                               </button>
                               <button
