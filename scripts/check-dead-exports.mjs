@@ -15,9 +15,15 @@
 // whose export surface is its API — ButtonProps and buttonVariants are unused
 // here and still the point of the file.
 //
-// Self-checked before it counts: a fixture with one imported export and one
-// orphan must classify both exactly. A counter that reports nothing is
-// indistinguishable from one that sees nothing.
+// Consumers are read from the whole of src/ plus scripts/*.mjs. Restricting the
+// consumer scan to the export scan is how App.tsx and OnboardingGuide.tsx — the
+// two files outside showcase/ that import from it — looked like nobody.
+//
+// Self-checked before it counts: a fixture that reproduces an in-scan import, a
+// relative dynamic import(), an @/ aliased dynamic import() from outside the
+// scan dir, and a static import from outside the scan dir must classify all
+// four, plus two orphans. A counter that reports nothing is indistinguishable
+// from one that sees nothing.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -26,31 +32,74 @@ import ts from "typescript";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
-const SCAN_DIR = path.join(root, "src", "components", "showcase");
-const CEILING = 220; // measured 2026-10-23. Lower it whenever an export is deleted.
+const SRC_DIR = path.join(root, "src");
+const SCAN_DIR = path.join(SRC_DIR, "components", "showcase");
+// "@/" -> "<root>/src/", the one alias in tsconfig.json's paths.
+const ALIASES = [{ prefix: "@/", target: SRC_DIR + path.sep }];
+const CEILING = 197; // measured 2026-10-23. Lower it whenever an export is stripped.
 
-const FIXTURE = `
+// --- fixture: every shape the classifier must not miss ---
+const FIXTURE_SRC = `src`;
+const FIXTURE_SHOWCASE = `src/components/showcase`;
+
+const FIXTURE_FILES = {
+  [`${FIXTURE_SHOWCASE}/fixture.ts`]: `
 export type OrphanType = { a: number };
 export function orphanFn() { return 1; }
 export const orphanConst = 2;
 export type UsedType = { b: number };
 export function usedFn() { return 3; }
-`;
-const FIXTURE_CONSUMER = `
+`,
+  // Exports nothing on purpose: this file only exists to consume UsedType and
+  // usedFn by name and to hold a relative import(). Anything it exported would
+  // show up in the expected orphan set and blur what the fixture is testing.
+  [`${FIXTURE_SHOWCASE}/consumer.ts`]: `
 import type { UsedType } from "./fixture";
 import { usedFn } from "./fixture";
-export const consumer: UsedType = { b: usedFn() };
-`;
+const consumer: UsedType = { b: usedFn() };
+const lazyView = () => import("./lazy-target").then((m) => ({ default: m.LazyView }));
+void consumer;
+void lazyView;
+`,
+  // Loaded only through import().then(m => m.LazyView) — never an import binding.
+  [`${FIXTURE_SHOWCASE}/lazy-target.ts`]: `
+export function LazyView() { return null; }
+export type LazyOnlyType = { c: number };
+`,
+  // Reached through the @/ alias from a file outside the scan dir.
+  [`${FIXTURE_SHOWCASE}/lazy-alias-target.ts`]: `
+export function AliasView() { return null; }
+export type AliasOnlyType = { d: number };
+`,
+  // Static import from outside the scan dir — the OnboardingGuide shape.
+  [`${FIXTURE_SHOWCASE}/outside-used.ts`]: `
+export const outsideOnly = 4;
+`,
+  // Outside the export scan dir; must still count as a consumer.
+  [`${FIXTURE_SRC}/App.tsx`]: `
+import { outsideOnly } from "@/components/showcase/outside-used";
+export const aliasLazy = () =>
+  import("@/components/showcase/lazy-alias-target").then((m) => ({ default: m.AliasView }));
+export const app = outsideOnly + 1;
+`,
+};
 
-const EXPECT_DEAD_FIXTURE = ["OrphanType", "orphanFn", "orphanConst"];
-const EXPECT_LIVE_FIXTURE = ["UsedType", "usedFn"];
+// The exact orphan report the fixture must produce — nothing more, nothing less.
+// UsedType/usedFn (in-scan import), outsideOnly (import from outside the scan
+// dir) and every export of the two dynamic targets (relative import() and @/
+// aliased import()) must NOT appear here.
+const EXPECT_ORPHANS = [
+  [`${FIXTURE_SHOWCASE}/fixture.ts`, "OrphanType"],
+  [`${FIXTURE_SHOWCASE}/fixture.ts`, "orphanFn"],
+  [`${FIXTURE_SHOWCASE}/fixture.ts`, "orphanConst"],
+];
 
-function listFiles(dir, out = []) {
+function listFiles(dir, extensions, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) listFiles(full, out);
-    else if (/\.(ts|tsx)$/.test(entry.name) && !/\.test\.ts$/.test(entry.name)) out.push(full);
+    if (entry.isDirectory()) listFiles(full, extensions, out);
+    else if (extensions.some((ext) => entry.name.endsWith(ext)) && !/\.test\.ts$/.test(entry.name)) out.push(full);
   }
   return out;
 }
@@ -119,73 +168,181 @@ function consumedNames(sf) {
   return names;
 }
 
-function collect(files, readText) {
+/**
+ * Modules loaded via `import("./x")`. `lazy(() => import("./builder/BuildView")
+ * .then((m) => ({ default: m.BuildView })))` never names an import binding —
+ * it reaches the export through the namespace object, so nothing here looks
+ * like a use. Treating those modules as fully consumed is the conservative
+ * call: it cannot cause someone to delete a live component.
+ */
+function dynamicImportSpecifiers(sf) {
+  const specifiers = [];
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments.length === 1 &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      specifiers.push(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return specifiers;
+}
+
+/** Relative and tsconfig-alias specifiers -> absolute file path, else null. */
+function resolveSpecifier(fromFile, specifier, aliases = ALIASES) {
+  let base = null;
+  if (specifier.startsWith(".")) {
+    base = path.resolve(path.dirname(fromFile), specifier);
+  } else {
+    const alias = aliases.find((a) => specifier.startsWith(a.prefix));
+    if (!alias) return null;
+    base = path.join(alias.target, specifier.slice(alias.prefix.length));
+  }
+  for (const ext of ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]) {
+    const candidate = base + ext;
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+  }
+  return null;
+}
+
+/**
+ * The whole scan, in one function. The fixture and the real tree call this same
+ * function, so a change to consumer scope or specifier resolution changes the
+ * fixture's answer too — which is the only way a self-check can catch it.
+ *
+ * `srcDir` is both the consumer root and the alias target: consumers come from
+ * every .ts/.tsx under it, exports only from `scanRel` inside it. Scanning the
+ * export directory for consumers as well is what hid App.tsx and
+ * OnboardingGuide.tsx, the two files outside showcase/ that import from it.
+ */
+function runScan(srcDir, scanRel, aliases, readText, extraConsumedWords = new Set()) {
+  const scanDir = path.join(srcDir, scanRel);
+  const exportFiles = listFiles(scanDir, [".ts", ".tsx"]);
   const exported = new Map();
   const consumed = new Set();
-  for (const file of files) {
-    const text = readText(file);
-    const sf = parse(file, text);
-    exported.set(file, exportNames(sf));
-    for (const name of consumedNames(sf)) consumed.add(name);
+  const dynamicModules = new Set();
+
+  for (const file of exportFiles) {
+    exported.set(file, exportNames(parse(file, readText(file))));
   }
-  return { exported, consumed };
+  for (const file of listFiles(srcDir, [".ts", ".tsx"])) {
+    const sf = parse(file, readText(file));
+    for (const name of consumedNames(sf)) consumed.add(name);
+    for (const specifier of dynamicImportSpecifiers(sf)) {
+      const resolved = resolveSpecifier(file, specifier, aliases);
+      if (resolved) dynamicModules.add(resolved);
+    }
+  }
+
+  const orphans = [];
+  for (const [file, names] of exported) {
+    if (dynamicModules.has(file)) continue;
+    for (const name of names) {
+      if (!consumed.has(name) && !extraConsumedWords.has(name)) {
+        orphans.push({ file, name });
+      }
+    }
+  }
+  return { exportFiles, exported, consumed, dynamicModules, orphans };
+}
+
+/** Absolute paths in, repo-relative posix paths out. */
+function reportOrphans(orphans, fromDir) {
+  return orphans.map((o) => ({ file: path.relative(fromDir, o.file).split(path.sep).join("/"), name: o.name }));
 }
 
 // Check scripts reference a few symbols by name in assertions; that counts as
-// use, and the plan doc says three symbols live only there.
+// use. STATUS_LABEL_DOMAINS is the known one — check-ui-density-rules.mjs reads
+// it by name to walk the label tables.
 const scriptWords = new Set();
-for (const file of listFiles(path.join(root, "scripts"))) {
-  if (!/\.mjs$/.test(file)) continue;
+for (const file of listFiles(path.join(root, "scripts"), [".mjs"])) {
   for (const match of fs.readFileSync(file, "utf8").matchAll(/[A-Za-z_$][\w$]*/g)) scriptWords.add(match[0]);
 }
 
-// --- self-check ---
+// --- self-check: runScan on a fixture whose answer is known exactly ---
+// The fixture asserts on the final orphan report, not on intermediate state.
+// Asserting the probe is how the previous version stayed green while the real
+// call site scanned the wrong directory.
 const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "nova-dead-exports-"));
 try {
-  const fixtureFile = path.join(fixtureDir, "fixture.ts");
-  const consumerFile = path.join(fixtureDir, "consumer.ts");
-  fs.writeFileSync(fixtureFile, FIXTURE, "utf8");
-  fs.writeFileSync(consumerFile, FIXTURE_CONSUMER, "utf8");
-  const probe = collect([fixtureFile, consumerFile], (f) => fs.readFileSync(f, "utf8"));
-  const problems = [];
-  for (const name of EXPECT_DEAD_FIXTURE) {
-    if (!probe.exported.get(fixtureFile)?.has(name)) problems.push(`fixture: ${name} was not seen as exported`);
-    else if (probe.consumed.has(name)) problems.push(`fixture: ${name} should be dead but is marked consumed`);
+  const fixtureApp = path.join(fixtureDir, FIXTURE_SRC);
+  fs.mkdirSync(path.join(fixtureDir, FIXTURE_SHOWCASE), { recursive: true });
+  fs.mkdirSync(fixtureApp, { recursive: true });
+  for (const [rel, body] of Object.entries(FIXTURE_FILES)) {
+    fs.writeFileSync(path.join(fixtureDir, rel), body, "utf8");
   }
-  for (const name of EXPECT_LIVE_FIXTURE) {
-    if (!probe.exported.get(fixtureFile)?.has(name)) problems.push(`fixture: ${name} was not seen as exported`);
-    else if (!probe.consumed.has(name)) problems.push(`fixture: ${name} should be live but is not consumed`);
+  const fixtureAliases = [{ prefix: "@/", target: fixtureApp + path.sep }];
+  const probe = runScan(
+    fixtureDir,
+    "src/components/showcase",
+    fixtureAliases,
+    (f) => fs.readFileSync(f, "utf8"),
+  );
+  const actual = reportOrphans(probe.orphans, fixtureDir).map((o) => `${o.file}: ${o.name}`).sort();
+  const expected = EXPECT_ORPHANS.map((e) => `${e[0]}: ${e[1]}`).sort();
+
+  const problems = [];
+  for (const entry of expected) {
+    if (!actual.includes(entry)) problems.push(`fixture: expected orphan missing — ${entry}`);
+  }
+  for (const entry of actual) {
+    if (!expected.includes(entry)) problems.push(`fixture: live code reported as orphan — ${entry}`);
   }
   if (problems.length > 0) {
     console.error("check-dead-exports: the classifier is blind — refusing to trust a count");
     for (const problem of problems) console.error(`  ${problem}`);
     process.exit(1);
   }
-  console.log("check-dead-exports: classifier self-check ok (2 dead, 2 live shapes)");
+  console.log(
+    `check-dead-exports: classifier self-check ok (${expected.length} expected, ${actual.length} reported; relative + @/ dynamic import and out-of-scan consumers tracked)`,
+  );
 } finally {
   fs.rmSync(fixtureDir, { recursive: true, force: true });
 }
 
 // --- the real count ---
-const files = listFiles(SCAN_DIR);
-const { exported, consumed } = collect(files, (f) => fs.readFileSync(f, "utf8"));
-const orphans = [];
-for (const [file, names] of exported) {
-  for (const name of names) {
-    if (!consumed.has(name) && !scriptWords.has(name)) {
-      orphans.push({ file: path.relative(root, file).split(path.sep).join("/"), name });
-    }
-  }
-}
+const scan = runScan(SRC_DIR, path.relative(SRC_DIR, SCAN_DIR), ALIASES, (f) => fs.readFileSync(f, "utf8"), scriptWords);
+const orphans = reportOrphans(scan.orphans, root);
 
 if (orphans.length > CEILING) {
   console.error(
     `check-dead-exports: ${orphans.length} unreferenced export(s) in src/components/showcase (ceiling ${CEILING}).`,
   );
-  console.error(`  Delete the export or use it. New over the ceiling by ${orphans.length - CEILING}:`);
+  console.error(`  Strip the export or use it. New over the ceiling by ${orphans.length - CEILING}:`);
   for (const orphan of orphans) console.error(`    ${orphan.file}: ${orphan.name}`);
   process.exit(1);
 }
 console.log(
-  `check-dead-exports ok: ${orphans.length} unreferenced export(s) in ${files.length} file(s) (ceiling ${CEILING} — delete some and lower the ceiling).`,
+  `check-dead-exports ok: ${orphans.length} unreferenced export(s) in ${scan.exportFiles.length} file(s) (ceiling ${CEILING} — strip some and lower the ceiling).`,
 );
+
+if (process.argv.includes("--report")) {
+  const byFile = new Map();
+  for (const orphan of orphans) {
+    if (!byFile.has(orphan.file)) byFile.set(orphan.file, []);
+    byFile.get(orphan.file).push(orphan.name);
+  }
+  console.log(`\ncheck-dead-exports: ${byFile.size} file(s) carry the ${orphans.length} orphan(s)`);
+  for (const [file, names] of [...byFile].sort((a, b) => b[1].length - a[1].length)) {
+    console.log(`  ${String(names.length).padStart(3)}  ${file}`);
+    console.log(`       ${names.join(", ")}`);
+  }
+}
+
+if (process.argv.includes("--json")) {
+  const outPath = process.argv[process.argv.indexOf("--json") + 1];
+  if (!outPath) {
+    console.error("check-dead-exports: --json needs a path");
+    process.exit(1);
+  }
+  const byFile = {};
+  for (const orphan of orphans) {
+    if (!byFile[orphan.file]) byFile[orphan.file] = [];
+    byFile[orphan.file].push(orphan.name);
+  }
+  fs.writeFileSync(outPath, JSON.stringify(byFile, null, 2), "utf8");
+}
