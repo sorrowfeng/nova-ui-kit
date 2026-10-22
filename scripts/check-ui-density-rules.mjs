@@ -10,6 +10,12 @@ import {
   describeDensity,
   findDensityOverages,
 } from "./usability/ui-density.mjs";
+import {
+  isQuietCountLabel,
+  isQuietStateLabel,
+  isReadoutStateLabel,
+  isSignalStateLabel,
+} from "../src/components/showcase/builder/view-labels.ts";
 
 const failures = [];
 
@@ -84,6 +90,67 @@ check(
   line.includes("chip/action= 28%"),
   line,
 );
+
+console.log("check-ui-density-rules: label classification");
+
+// The three-way split decides what the eye has to filter. Each case below is a
+// label that actually appears in the workbenches; getting one wrong either
+// hides a call to act or spends visual budget on a routine note.
+const signalLabels = [
+  "未保存", "待生成", "待构建", "失败", "运行中", "3 个槽待生成", "未连接 UI", "需处理",
+  // A stale or drifted plan is unusable until it is regenerated.
+  "已过期", "有变更",
+  // In-flight work is the one state the user is waiting on.
+  "正在构建 exe", "排队中", "运行中 · pid 3",
+  // Negations of success are problems, not routine notes.
+  "不通过", "校验不通过", "不同步", "无法同步", "不一致", "页面与发布不一致", "不匹配",
+];
+for (const label of signalLabels) {
+  check(`"${label}" is a signal`, isSignalStateLabel(label) && !isQuietStateLabel(label) && !isReadoutStateLabel(label));
+}
+
+const quietLabels = [
+  "就绪", "空", "已同步", "通过", "槽函数就绪", "全部同步", "页面与发布一致", "待开始", "一致",
+  "完成", "已取消", "已跳过",
+  // A negated need says there is nothing to do.
+  "无需处理", "无需重建", "不必保存",
+];
+for (const label of quietLabels) {
+  check(`"${label}" is quiet`, isQuietStateLabel(label) && !isSignalStateLabel(label) && !isReadoutStateLabel(label));
+}
+
+const readoutLabels = ["当前", "当前编辑", "目录", "推断", "release", "必填", "string", "尚无版本", "83%", "01.0", "desktop"];
+for (const label of readoutLabels) {
+  check(`"${label}" is a readout`, isReadoutStateLabel(label) && !isSignalStateLabel(label) && !isQuietStateLabel(label));
+}
+
+// A compound that mixes a routine noun with work still to do must not be
+// swallowed by the quiet suffix rule.
+check(
+  "a routine ending does not silence outstanding work",
+  isSignalStateLabel("槽函数待生成") && !isQuietStateLabel("槽函数待生成"),
+);
+check(
+  "the quiet list beats a signal fragment",
+  isQuietStateLabel("待开始") && !isSignalStateLabel("待开始"),
+);
+// A routine ending is routine even when the compound also carries a work
+// fragment — "3 项待开始" is scheduling, and the quiet suffix has to win.
+check(
+  "a quiet ending beats an in-word work fragment",
+  isQuietStateLabel("任务待开始") && !isSignalStateLabel("任务待开始"),
+);
+check(
+  "a negated success still beats a quiet ending",
+  isSignalStateLabel("页面与发布不同步") && !isQuietStateLabel("页面与发布不同步"),
+);
+check(
+  "a quiet prefix beats the need fragment",
+  isQuietStateLabel("无需处理") && !isSignalStateLabel("无需处理"),
+);
+check("zero counts are quiet", isQuietCountLabel("0"));
+check("non-zero counts are not quiet", !isQuietCountLabel("3"));
+check("a name is never mistaken for a zero count", !isQuietCountLabel("源码"));
 
 if (failures.length > 0) {
   console.error(`\ncheck-ui-density-rules: ${failures.length} failure(s)`);

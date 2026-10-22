@@ -25,6 +25,22 @@ export type ProjectFileRouteGroupsInput = {
   readonly diskCheckpoints: readonly EditorProjectCheckpoint[];
 };
 
+/**
+ * Display label for a project file scope. Scope names on the wire are English
+ * ("source" / "generated" / "metadata"); the Chinese UI shows the ownership
+ * word. Unknown scopes fall back to the id so a new one stays visible.
+ */
+export function projectSourceScopeLabel(scope: string): string {
+  const labels: Record<string, string> = {
+    source: "源码",
+    generated: "生成",
+    metadata: ".nova",
+    runtime: "运行",
+    build: "构建",
+  };
+  return labels[scope] ?? scope;
+}
+
 export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput): ProjectFileRouteGroup[] {
   const { activeProject, diskCheckpoints } = input;
   const projectPath = (...segments: string[]) => projectDiskPath(activeProject.rootPath, ...segments) || projectRelativePath(...segments);
@@ -34,7 +50,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
       id: "source",
       title: "源码与设计输入",
       detail: "这些文件应该进入版本控制，是项目复用和协作的主数据。",
-      countLabel: `${activeProject.files.length} UI / ${activeProject.rustCommands.length} commands`,
+      countLabel: `${activeProject.files.length} UI / ${activeProject.rustCommands.length} 命令`,
       icon: FileJson,
       routes: [
         {
@@ -45,7 +61,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "nova.project.json",
           filter: "all",
           nodeId: "manifest",
-          badge: "tracked",
+          badge: "源码",
           icon: FileJson,
         },
         {
@@ -67,7 +83,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "logic.rs",
           filter: "rust",
           nodeId: "rust-logic",
-          badge: `${activeProject.rustModules.length} modules`,
+          badge: `${activeProject.rustModules.length} 模块`,
           icon: Braces,
         },
         {
@@ -109,7 +125,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "app/",
           filter: "build",
           nodeId: "app-folder",
-          badge: "generated",
+          badge: "生成",
           icon: Download,
         },
         {
@@ -131,7 +147,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "target release",
           filter: "build",
           nodeId: activeProject.outputExePath ? "app-release-exe" : "app-folder",
-          badge: activeProject.outputExePath ? "exe" : "pending",
+          badge: activeProject.outputExePath ? "exe" : "待构建",
           icon: Download,
         },
         {
@@ -142,7 +158,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "builds/",
           filter: "build",
           nodeId: "nova-builds",
-          badge: "evidence",
+          badge: "证据",
           icon: FileJson,
         },
         {
@@ -153,7 +169,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "runtime/",
           filter: "build",
           nodeId: "nova-runtime",
-          badge: "logs",
+          badge: "日志",
           icon: Terminal,
         },
       ],
@@ -162,7 +178,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
       id: "metadata",
       title: ".nova 本地元数据",
       detail: "类似 .vscode 的项目本地状态：可复用索引、打开状态、任务、检查点和流水线。",
-      countLabel: `${diskCheckpoints.length} checkpoints`,
+      countLabel: `${diskCheckpoints.length} 检查点`,
       icon: Settings2,
       routes: [
         {
@@ -173,7 +189,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "workspace.json",
           filter: "meta",
           nodeId: "nova-workspace",
-          badge: "trackable",
+          badge: "可跟踪",
           icon: FileJson,
         },
         {
@@ -184,12 +200,12 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "editor-state.json",
           filter: "meta",
           nodeId: "nova-editor-state",
-          badge: "local",
+          badge: "本地",
           icon: Settings2,
         },
         {
           id: "metadata-checkpoints",
-          title: "checkpoints/",
+          title: "检查点/",
           detail: "命名磁盘版本，可比较并恢复项目快照。",
           path: projectPath(".nova", "checkpoints"),
           query: "checkpoints/",
@@ -206,7 +222,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "pipelines/",
           filter: "build",
           nodeId: "nova-pipelines",
-          badge: "runs",
+          badge: "运行",
           icon: FileJson,
         },
         {
@@ -217,7 +233,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "tasks/",
           filter: "build",
           nodeId: "nova-tasks",
-          badge: "queue",
+          badge: "队列",
           icon: Terminal,
         },
         {
@@ -228,7 +244,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "applies/",
           filter: "meta",
           nodeId: "nova-applies",
-          badge: "snapshots",
+          badge: "快照",
           icon: FileJson,
         },
         {
@@ -239,7 +255,7 @@ export function buildProjectFileRouteGroups(input: ProjectFileRouteGroupsInput):
           query: "dependency-graph.json",
           filter: "meta",
           nodeId: "nova-dependency-graph",
-          badge: "graph",
+          badge: "图谱",
           icon: FileJson,
         },
       ],

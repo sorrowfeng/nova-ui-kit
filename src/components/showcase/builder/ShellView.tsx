@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignHorizontalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, AlignVerticalJustifyStart, Box, Braces, CheckCircle2, ChevronRight, ClipboardCopy, ClipboardPaste, Clock3, Copy, Download, Eye, EyeOff, FileJson, Grid3x3, Keyboard, Layers, ListChecks, LoaderCircle, Lock, LockOpen, Maximize2, Menu, Monitor, MousePointer2, Move, MoveDown, MoveUp, Pause, Play, RectangleHorizontal, RotateCcw, Save, Scissors, ScrollText, Settings2, Square, Terminal, TextCursorInput, ToggleLeft, Trash2, Type, ZoomIn } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { StateBadge, isQuietStateLabel } from "./view-helpers";
+import { CountReadout, StateBadge, StateLabel, isQuietStateLabel } from "./view-helpers";
 import { BuilderComponentType } from "./types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1272,7 +1272,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   title={selectedRailActionPreset?.detail}
                 >
                   <div className="flex items-center justify-between gap-1 px-1">
-                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Preset</span>
+                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">预设</span>
                     <span className="shrink-0 rounded-full bg-surface-container-high px-1.5 py-0.5 text-[0.54rem] text-on-surface-variant">
                       {selectedRailActionPresetStepLabel}
                     </span>
@@ -1346,7 +1346,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     title={`下一步：${selectedRailKitPlanStats.nextStep?.title ?? "无"} · ${selectedRailKitPlanStats.summary}`}
                   >
                     <div className="flex min-w-0 items-center justify-between gap-2">
-                      <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Plan</span>
+                      <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">计划</span>
                       <span className="shrink-0 rounded-full bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.52rem] text-on-surface-variant">
                         {selectedRailKitPlanStats.completed}/{selectedRailKitPlanStats.total}
                       </span>
@@ -1391,7 +1391,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   title={latestRailPresetSummary}
                 >
                   <div className="flex items-center justify-between gap-1 px-1">
-                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Recent</span>
+                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">最近</span>
                     <Badge variant={latestRailPresetStatusVariant} className="shrink-0 px-1.5 py-0.5 text-[0.5rem]" data-builder-rail-recent-run-status="">
                       {latestRailPresetStatusLabel}
                     </Badge>
@@ -1802,7 +1802,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   title={leftRunTaskTimelineSummary}
                 >
                   <div className="flex min-w-0 items-center justify-between gap-2 px-1">
-                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">Timeline</span>
+                    <span className="truncate text-[0.56rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">时间线</span>
                     <button
                       type="button"
                       className="focus-ring shrink-0 rounded-lg px-1.5 py-0.5 text-[0.52rem] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
@@ -1846,9 +1846,10 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             {projectTaskStatusLabel(task.status)} · {projectTaskElapsedLabel(task)}
                           </span>
                         </span>
-                        <Badge variant={projectTaskStatusVariant(task.status)} className="shrink-0 px-1.5 py-0.5 text-[0.48rem]">
+                        {/* Pipeline position is a tally and task.kind is a category. */}
+                        <span className="shrink-0 px-1.5 py-0.5 text-[0.48rem] text-on-surface-variant">
                           {task.pipelineStepCount && task.pipelineStepIndex !== undefined ? `${task.pipelineStepIndex + 1}/${task.pipelineStepCount}` : task.kind}
-                        </Badge>
+                        </span>
                       </button>
                     ))
                   ) : (
@@ -1882,10 +1883,11 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <div
                 className={cn(
-                  "hidden h-6 min-w-0 max-w-[16rem] items-center gap-1.5 rounded-lg border px-2 text-[0.64rem] font-medium md:flex",
+                  "hidden h-6 min-w-0 max-w-[16rem] items-center gap-1.5 px-2 text-[0.64rem] font-medium md:flex",
+                  // A saved document is just text; only unsaved work earns the pill.
                   projectSourceDirty || activeFileDirty
-                    ? "border-primary/40 bg-surface-container text-primary"
-                    : "border-outline-variant bg-surface-container-high text-on-surface-variant",
+                    ? "rounded-lg border border-primary/40 bg-surface-container text-primary"
+                    : "text-on-surface-variant",
                 )}
                 data-builder-active-document-status="compact"
                 data-builder-topbar-status-chip-count="1"
@@ -2147,7 +2149,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
               })}
             </div>
             <div className="hidden min-w-0 shrink items-center gap-2 text-[0.62rem] text-on-surface-variant md:flex" data-builder-editor-tabs-summary="">
-              <span className="max-w-[10rem] truncate rounded-full bg-surface-container-high px-2 py-1">{openEditorTabCountLabel}</span>
+              {/* A tab tally is a readout; the pill made a number look like a state. */}
+              <CountReadout className="max-w-[10rem] truncate" label={openEditorTabCountLabel} count={openEditorTabs.length} />
               <Button size="icon-sm" variant="ghost" className="size-7 rounded-lg" data-builder-editor-tabs-new-file="" aria-label="新建 UI 文件标签" title="新建 UI 文件" onClick={createNewFileFromNavigator}>
                 <Plus aria-hidden className="size-4" />
               </Button>
@@ -2222,9 +2225,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     >
                       <Menu aria-hidden className="size-4" />
                       <span className="hidden sm:inline">流程</span>
-                      <Badge variant="outline" className="h-5 px-1.5 text-[0.56rem]">
-                        {workflowStepCount}
-                      </Badge>
+                      <CountReadout label={String(workflowStepCount)} count={workflowStepCount} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -2325,7 +2326,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   )}
                   data-builder-operation-monitor=""
                 >
-                  <Badge variant={projectTaskStatusVariant(operationMonitorStatus)}>{projectTaskStatusLabel(operationMonitorStatus)}</Badge>
+                  <StateLabel showQuiet variant={projectTaskStatusVariant(operationMonitorStatus)} label={projectTaskStatusLabel(operationMonitorStatus)} />
                   <span className="min-w-0 max-w-[22rem] truncate font-medium text-on-surface">{operationMonitorTitle}</span>
                   <span className="hidden min-w-[10rem] flex-1 truncate text-on-surface-variant md:block">{operationMonitorDetail}</span>
                   {operationMonitorTask?.pipelineStepCount ? (
@@ -2488,7 +2489,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                 onClick={() => openRelevantTaskDock(task)}
                               >
                                 <span className="truncate">{task.title}</span>
-                                <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
+                                <StateLabel showQuiet variant={projectTaskStatusVariant(task.status)} label={projectTaskStatusLabel(task.status)} />
                               </button>
                             ))}
                             {visibleProjectTasks.length === 0 ? <span className="text-on-surface-variant">暂无任务。</span> : null}
@@ -2519,6 +2520,12 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
             data-builder-workspace-output-padding={outputDockWorkspaceAvoidancePadding}
             data-builder-workspace-no-output-reserved-band=""
             data-builder-workspace-no-output-background-shield=""
+            // Density scope, one level out from DesignWorkspace's layout contract.
+            // That attribute only exists in design mode; reusing it as the probe
+            // root made the other three modes fall back to document.body and
+            // measure the titlebar, mode rail and docks too — numbers that were
+            // not comparable across surfaces.
+            data-builder-density-root={mode}
           >
           <Suspense fallback={null}>
           {mode === "project" ? (
@@ -3741,7 +3748,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                 }
                 minimizedSummary={
                   <div className="flex min-w-0 items-center gap-2" data-builder-output-dock-minimized-feedback="">
-                    <Badge
+                    <StateLabel
                       variant={
                         feedbackSummaryTone === "attention"
                           ? "destructive"
@@ -3750,9 +3757,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             : "outline"
                       }
                       className="shrink-0"
-                    >
-                      {feedbackSummaryToneLabel}
-                    </Badge>
+                      label={feedbackSummaryToneLabel}
+                    />
                     <span className="min-w-0 truncate font-medium text-on-surface">{feedbackSummaryTitle}</span>
                     <span className="hidden shrink-0 text-on-surface-variant lg:inline">
                       问题 {feedbackIssueCount}
@@ -3954,9 +3960,11 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                             {latestReleasePipeline ? latestReleasePipeline.summary : "还没有发布流水线"}
                           </p>
                         </div>
-                        <Badge variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as any) : "outline"}>
-                          {latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空闲"}
-                        </Badge>
+                        <StateLabel
+                          showQuiet
+                          variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as any) : "outline"}
+                          label={latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空闲"}
+                        />
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <Button
@@ -4094,7 +4102,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           >
                             <span className="flex items-center justify-between gap-2">
                               <span className="truncate font-medium">{task.title}</span>
-                              <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
+                              <StateLabel showQuiet variant={projectTaskStatusVariant(task.status)} label={projectTaskStatusLabel(task.status)} />
                             </span>
                             <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
                             <span className="mt-1 block line-clamp-1 text-[0.68rem] text-on-surface-variant">{task.summary ?? task.detail}</span>
@@ -4116,7 +4124,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                   {selectedProjectTask.summary ?? selectedProjectTask.detail}
                                 </p>
                               </div>
-                              <Badge variant={projectTaskStatusVariant(selectedProjectTask.status)}>{projectTaskStatusLabel(selectedProjectTask.status)}</Badge>
+                              <StateLabel showQuiet variant={projectTaskStatusVariant(selectedProjectTask.status)} label={projectTaskStatusLabel(selectedProjectTask.status)} />
                             </div>
                             {selectedProjectTask.error ? (
                               <p className="mt-2 line-clamp-2 rounded-xl bg-destructive/10 p-2 font-mono text-[0.68rem] leading-4 text-destructive">
@@ -4231,7 +4239,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         >
                           <span className="flex items-center justify-between gap-2">
                             <span className="truncate font-medium">{task.title}</span>
-                            <Badge variant={projectTaskStatusVariant(task.status)}>{projectTaskStatusLabel(task.status)}</Badge>
+                            <StateLabel showQuiet variant={projectTaskStatusVariant(task.status)} label={projectTaskStatusLabel(task.status)} />
                           </span>
                           <span className="mt-1 block truncate text-on-surface-variant">{projectTaskKindLabel(task.kind)} · {projectTaskElapsedLabel(task)}</span>
                         </button>

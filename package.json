@@ -53,7 +53,7 @@
     "check:release-artifact-magic": "node scripts/check-release-artifact-magic.mjs",
     "check:a11y": "node scripts/check-a11y.mjs",
     "check:ui-density": "node scripts/check-ui-density.mjs",
-    "check:ui-density-rules": "node scripts/check-ui-density-rules.mjs",
+    "check:ui-density-rules": "node --experimental-strip-types scripts/check-ui-density-rules.mjs",
     "check:ui-density:report": "node scripts/check-ui-density.mjs --report",
     "check:project-file-models": "node scripts/check-project-file-models.mjs"
   },

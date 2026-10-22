@@ -87,15 +87,22 @@ const ALLOWED_ASCII = new Set([
   "ui", "rust", "css", "json", "md", "exe", "app", "dmg", "deb", "npm", "git",
   "nova", "ok", "id", "url", "api", "cpu", "ram", "png", "svg", "toml", "yaml",
   "yaml", "deb", "appimage", "tauri", "vite", "webview", "ipc", "ffi", "cli",
+  // Schema and wire vocabulary that is code, not prose.
+  "string", "number", "boolean", "object", "array", "enum", "true", "false",
+  "null", "undefined", "float", "int", "uint", "char", "str", "vec", "path",
+  "file", "dir", "src", "bin", "lib", "target", "debug", "release", "main",
+  "fn", "impl", "mod", "pub", "mut", "let", "const", "type", "struct", "enum",
+  // Short editor/key tokens that never carry prose meaning.
+  "ln", "col", "esc", "tab", "alt", "ctrl", "shift", "enter", "space", "cmd",
 ]);
 
 export const CHINESE_UI_AUDIT = `(() => {
   const ALLOWED = new Set(${JSON.stringify([...ALLOWED_ASCII])});
-  const KBD_OR_CODE = 'kbd, code, pre, samp, [class*="font-mono"]';
+  const KBD_OR_CODE = 'kbd, code, pre, samp';
   // File names, paths and key chords are technical identifiers, not prose.
   const isIdentifier = (text) =>
     /[\\\\/]/.test(text) ||
-    /\\.[A-Za-z0-9]{1,8}$/.test(text) ||
+    /\\.[A-Za-z0-9]{1,16}$/.test(text) ||
     /\\+/.test(text) ||
     /^[A-Za-z][A-Za-z0-9]*([._-][A-Za-z0-9]+)+$/.test(text);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -109,14 +116,29 @@ export const CHINESE_UI_AUDIT = `(() => {
     if (parent.closest('script, style, ' + KBD_OR_CODE)) continue;
     const style = getComputedStyle(parent);
     if (style.display === 'none' || style.visibility === 'hidden') continue;
-    // Flag runs of English words: two or more ASCII-letter tokens separated by
-    // spaces, with no CJK anywhere in the string.
+    // Mixed CJK+ASCII is fine — the Chinese carries the meaning and the ASCII
+    // is an identifier riding along ("0 处引用", "逻辑 Main Window.ui").
     if (/[\\u4e00-\\u9fff]/.test(text)) continue;
     if (isIdentifier(text)) continue;
     const tokens = text.split(/[^A-Za-z]+/).filter(Boolean);
-    if (tokens.length < 2) continue;
-    if (tokens.every((t) => ALLOWED.has(t.toLowerCase()))) continue;
-    leftovers.push({ text: text.slice(0, 80), tag: parent.tagName.toLowerCase() });
+    if (tokens.length === 0) continue;
+    // A single leftover word is the common leak ("modules", "checkpoints",
+    // "tracked"). Short tokens are initials and key names, not prose.
+    const proseTokens = tokens.filter((t) => t.length >= 3);
+    if (proseTokens.length === 0) continue;
+    if (proseTokens.every((t) => ALLOWED.has(t.toLowerCase()))) continue;
+    // Name the call site the way the density histogram does: the nearest
+    // data-builder-* hook is the identifier the tests already use.
+    let hook = "";
+    for (let host = parent; host && !hook; host = host.parentElement) {
+      for (const attr of host.attributes || []) {
+        if (attr.name.startsWith("data-builder-")) {
+          hook = attr.name.replace("data-builder-", "") + (attr.value ? "=" + attr.value.slice(0, 28) : "");
+          break;
+        }
+      }
+    }
+    leftovers.push({ text: text.slice(0, 80), tag: parent.tagName.toLowerCase(), hook });
     if (leftovers.length >= 25) break;
   }
   return { leftovers, leftoverCount: leftovers.length };

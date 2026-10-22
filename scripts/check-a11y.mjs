@@ -503,7 +503,8 @@ async function main() {
       phrasing.leftoverCount === 0,
       "Chinese UI has no untranslated English labels (checklist 6.7)",
       phrasing.leftoverCount
-        ? `${phrasing.leftoverCount} e.g. ${phrasing.leftovers.slice(0, 5).map((l) => l.text).join(" | ")}`
+        ? `${phrasing.leftoverCount}:\n` +
+          phrasing.leftovers.map((l) => `      <${l.tag}> ${l.text}${l.hook ? `  @${l.hook}` : ""}`).join("\n")
         : "",
     );
   } finally {

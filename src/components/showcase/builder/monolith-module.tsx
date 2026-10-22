@@ -736,6 +736,12 @@ export type ProjectWorkingSetItem = {
   dirty: boolean;
   active: boolean;
   tabId?: string;
+  /**
+   * The workbench the entry belongs to. `kind` is remapped to "current" for the
+   * active row, so readiness checks that want "is the build tab present" must
+   * look here instead of at `kind` or at badge text.
+   */
+  tabKind?: BuilderEditorTabKind;
   sourceRowId?: string;
   icon: typeof FileJson;
 };
@@ -2771,7 +2777,7 @@ export function normalizeProjectDependencyGraphPlan(value: unknown): ProjectDepe
       id: "dependency-plan",
       title: "依赖计划",
       detail: "没有找到已保存的依赖计划。",
-      badge: "graph",
+      badge: "图谱",
       actions: [],
       scopeIds: [],
       ready: false,
@@ -7523,7 +7529,7 @@ export function countStateVariableReferences(project: DesignerProject, stateId: 
 }
 
 export function formatStateReferenceCount(count: number) {
-  return `${count} state reference${count === 1 ? "" : "s"}`;
+  return `${count} 处引用`;
 }
 
 export function compactJson(value: unknown) {
@@ -8196,6 +8202,36 @@ export function projectExplorerNodeMatchesSearch(node: ProjectExplorerNode, quer
   return tokens.every((token) => searchable.includes(token));
 }
 
+/**
+ * Display label for a project-explorer node badge. Badges arrive as wire names
+ * ("root" / "manifest" / "dirty") and are also compared against those names for
+ * signal decisions, so the translation happens at the render boundary rather
+ * than in the model. Unknown values pass through so a new badge stays visible.
+ */
+export function projectExplorerBadgeLabel(badge: string): string {
+  const labels: Record<string, string> = {
+    root: "根目录",
+    manifest: "清单",
+    ignore: "忽略",
+    logic: "逻辑",
+    generated: "生成",
+    bundle: "安装包",
+    log: "日志",
+    meta: "元数据",
+    state: "状态",
+    index: "索引",
+    dirty: "未保存",
+    active: "当前",
+    tracked: "已跟踪",
+    untracked: "未跟踪",
+    local: "本地",
+    build: "构建",
+    runtime: "运行",
+    source: "源码",
+  };
+  return labels[badge.trim()] ?? badge;
+}
+
 export function projectExplorerActionLabel(action: ProjectExplorerNodeAction) {
   switch (action) {
     case "select-file":
@@ -8388,7 +8424,10 @@ export function projectExplorerNodeStatus(node: ProjectExplorerNode): ProjectExp
     return { label: "未保存", tone: "warning", signal: true };
   }
   if (node.active) {
-    return { label: "当前", tone: "success", signal: true };
+    // Selection is already carried by the row's background and aria-selected;
+    // a "当前" chip on top is the same fact told twice. Keep it for the
+    // accessibility tree only.
+    return { label: "当前", tone: "success", signal: false };
   }
   if (node.badge === "exe" || node.badge === "bundle" || node.badge === "log") {
     return { label: "产物", tone: "success", signal: false };

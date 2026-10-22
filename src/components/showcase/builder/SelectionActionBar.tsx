@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { BuilderComponentType, BuilderItem } from "./types";
+import { CountReadout } from "./view-helpers";
 
 export type SelectionActionBarState = "idle" | "single" | "multi";
 
@@ -809,9 +810,11 @@ export function SelectionActionBar({
             <div className="min-w-0 flex-1 overflow-hidden">
               <div className="flex h-7 min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
                 <h3 className="truncate text-xs font-semibold leading-none text-on-surface">选择</h3>
-                <span className="rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.62rem] leading-none text-on-surface-variant">
-                  {canvasItemCount}
-                </span>
+                <CountReadout
+                  label={String(canvasItemCount)}
+                  count={canvasItemCount}
+                  className="font-mono text-[0.62rem] leading-none"
+                />
                 <span className="sr-only" data-builder-selection-keyboard-nudge-hint="">
                   Ctrl/Shift 多选快捷键
                 </span>

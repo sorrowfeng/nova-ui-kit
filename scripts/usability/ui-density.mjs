@@ -22,11 +22,16 @@ export const DENSITY_PROBE = `(() => {
   const heightLimit = ${CHIP_MAX_HEIGHT};
   const textLimit = ${CHIP_MAX_TEXT};
 
-  // Chrome (titlebar, status bar, bottom dock) is stable and expected; what the
-  // user has to parse is the workbench itself. Measuring the whole viewport
-  // hides surface noise behind a constant shared by every mode.
-  const root =
-    document.querySelector("[data-builder-readable-workbench]") || document.body;
+  // Chrome (titlebar, status bar, mode rail, bottom dock) is stable and expected;
+  // what the user has to parse is the workbench itself. Measuring the whole
+  // viewport hides surface noise behind a constant shared by every mode.
+  //
+  // The root is a dedicated hook, not the design workspace's layout contract:
+  // that one only mounts in design mode, and the silent document.body fallback
+  // it used to fall back to measured three of four surfaces against a different
+  // scope than the fourth. A missing root is a wiring bug, so it throws.
+  const root = document.querySelector("[data-builder-density-root]");
+  if (!root) throw new Error("no [data-builder-density-root] — workbench scope is not mounted");
 
   // Counted as "in the surface", not "in the viewport". Scrolling must not
   // change the answer: a panel does not get quieter by pushing its decoration
@@ -62,28 +67,39 @@ export const DENSITY_PROBE = `(() => {
     return text.replace(/\\s+/g, " ").trim();
   };
 
-  const isInteractive = (el) =>
-    el.matches(
-      "button, a[href], input, select, textarea, summary, " +
-        "[role=button], [role=link], [role=tab], [role=menuitem], " +
-        "[role=checkbox], [role=switch], [role=option], [role=combobox], " +
-        "[tabindex]:not([tabindex='-1'])",
-    );
+  const CONTROL_SELECTOR =
+    "button, a[href], input, select, textarea, summary, " +
+    "[role=button], [role=link], [role=tab], [role=menuitem], " +
+    "[role=checkbox], [role=switch], [role=option], [role=combobox], " +
+    "[tabindex]:not([tabindex='-1'])";
+
+  const isInteractive = (el) => el.matches(CONTROL_SELECTOR);
 
   const isChip = (el) => {
     const rect = el.getBoundingClientRect();
     if (rect.height > heightLimit) return false;
-    const text = leafTextOf(el);
+    // A rounded row that holds buttons is chrome, not a status token. Without
+    // this, every toolbar and palette row was counted as decoration — the probe
+    // charged the surface for layout it does not control.
+    if (el.querySelector(CONTROL_SELECTOR)) return false;
+    // Subtree text, not leaf: a token whose label sits in an inner span is
+    // still one token on screen. hasChipChild below stops the wrapper and its
+    // inner span both being counted.
+    const text = (el.textContent || "").replace(/\\s+/g, " ").trim();
     if (!text || text.length > textLimit) return false;
     const style = window.getComputedStyle(el);
-    if (parseFloat(style.borderRadius) < rect.height / 2 - 1) return false;
+    // Any visible corner rounding counts. Requiring a pill radius missed every
+    // rounded-md badge — which is most of them — so the probe reported a
+    // decorated workbench as quiet.
+    if (parseFloat(style.borderRadius) <= 0) return false;
     const hasChipChild = Array.from(el.children).some((child) => {
       const childRect = child.getBoundingClientRect();
+      if (childRect.height > heightLimit) return false;
+      const childText = (child.textContent || "").replace(/\\s+/g, " ").trim();
       return (
-        childRect.height <= heightLimit &&
-        leafTextOf(child).length > 0 &&
-        leafTextOf(child).length <= textLimit &&
-        window.getComputedStyle(child).borderRadius !== "0px"
+        childText.length > 0 &&
+        childText.length <= textLimit &&
+        parseFloat(window.getComputedStyle(child).borderRadius) > 0
       );
     });
     return !hasChipChild;
@@ -131,7 +147,7 @@ export const DENSITY_PROBE = `(() => {
   // keeping one sample tag so the source is one look away instead of a search.
   const histogram = new Map();
   for (const chip of chips) {
-    const text = leafTextOf(chip).slice(0, textLimit);
+    const text = (chip.textContent || "").replace(/\\s+/g, " ").trim().slice(0, textLimit);
     const entry = histogram.get(text) || { text, count: 0, sampleTag: describe(chip) };
     entry.count += 1;
     histogram.set(text, entry);
@@ -144,7 +160,7 @@ export const DENSITY_PROBE = `(() => {
     textChars: visible.reduce((sum, el) => sum + leafTextOf(el).length, 0),
     chipSamples: chips.slice(0, 12).map((el) => ({
       tag: describe(el),
-      text: leafTextOf(el).slice(0, textLimit),
+      text: (el.textContent || "").replace(/\\s+/g, " ").trim().slice(0, textLimit),
     })),
     chipHistogram: Array.from(histogram.values())
       .sort((a, b) => b.count - a.count || a.text.localeCompare(b.text))
@@ -158,8 +174,8 @@ export const DENSITY_PROBE = `(() => {
  * first impression; the expanded state is what a working session lives in.
  */
 export const EXPAND_DISCLOSURES = `(() => {
-  const root =
-    document.querySelector("[data-builder-readable-workbench]") || document.body;
+  const root = document.querySelector("[data-builder-density-root]");
+  if (!root) throw new Error("no [data-builder-density-root] — workbench scope is not mounted");
   const panels = Array.from(root.querySelectorAll("details"));
   let opened = 0;
   for (const panel of panels) {
@@ -183,17 +199,17 @@ export const EXPAND_DISCLOSURES = `(() => {
  * every optimization round should ratchet them down.
  */
 export const DENSITY_BUDGETS = {
-  project: { maxChips: 17, maxTextChars: 1350 },
-  design: { maxChips: 11, maxTextChars: 410 },
-  logic: { maxChips: 17, maxTextChars: 380 },
-  build: { maxChips: 9, maxTextChars: 265 },
+  project: { maxChips: 6, maxTextChars: 1250 },
+  design: { maxChips: 2, maxTextChars: 450 },
+  logic: { maxChips: 2, maxTextChars: 350 },
+  build: { maxChips: 6, maxTextChars: 150 },
 };
 
 export const EXPANDED_BUDGETS = {
-  project: { maxChips: 68, maxTextChars: 5700 },
-  design: { maxChips: 14, maxTextChars: 1180 },
-  logic: { maxChips: 43, maxTextChars: 3550 },
-  build: { maxChips: 78, maxTextChars: 18100 },
+  project: { maxChips: 14, maxTextChars: 5500 },
+  design: { maxChips: 3, maxTextChars: 1250 },
+  logic: { maxChips: 5, maxTextChars: 3600 },
+  build: { maxChips: 52, maxTextChars: 18000 },
 };
 
 /**

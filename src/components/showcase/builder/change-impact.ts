@@ -195,6 +195,16 @@ function scopeDefinitionForId(id: ProjectChangeScopeId) {
   return scopeDefinitions.find((definition) => definition.id === id)!;
 }
 
+/**
+ * Display label for a change-impact scope. Scope ids are wire names; the UI
+ * shows the Chinese name. An unknown id falls back to the id itself so a new
+ * scope stays visible instead of rendering blank.
+ */
+export function projectChangeScopeLabel(scopeId: string): string {
+  const definition = scopeDefinitions.find((entry) => entry.id === scopeId);
+  return definition?.label ?? scopeId;
+}
+
 function reverseDependencyFallbackScopeIds(target: ProjectReverseDependencyTarget): ProjectChangeScopeId[] {
   if (target.kind === "project") {
     return ["project", "ui", "frontend", "rust", "backend", "release", "validation"];

@@ -66,79 +66,37 @@ export function SignalChip({
 }
 
 /**
- * States that need no visual weight: the panel is fine and there is nothing to
- * do. An idle task queue saying "空" on six sections tells the user nothing six
- * times over — only the sections that are running or failed do.
+ * The quiet-vs-signal rules live in view-labels.ts so the density gate's
+ * regression test can import them without a JSX transform. Re-exported here so
+ * view call sites keep one import.
  */
-export const QUIET_STATE_LABELS: ReadonlySet<string> = new Set([
-  "就绪",
-  "空",
-  "已同步",
-  "已完成",
-  "正常",
-  "无",
-  "待开始",
-  "通过",
-  "已清理",
-]);
+import {
+  isQuietCount,
+  isQuietCountLabel,
+  isQuietStateLabel,
+  isSignalStateLabel,
+} from "./view-labels";
 
-/** Zero is not news; a count chip should paint when something is actually queued. */
-export function isQuietCount(count: number): boolean {
-  return !Number.isFinite(count) || count <= 0;
-}
-
-/**
- * Same rule for counts that arrive as display text. Non-numeric labels are
- * left alone — they are names, not tallies, and must not vanish on a parse.
- */
-export function isQuietCountLabel(label: string): boolean {
-  const count = Number(label.trim());
-  return Number.isFinite(count) && count <= 0;
-}
-
-export function isQuietStateLabel(label: string): boolean {
-  return QUIET_STATE_LABELS.has(label.trim());
-}
-
-/**
- * Labels that always mean "act now". These earn a chip even when the row's
- * coarse status field looks benign — "待生成" arrives on a `pending` row that
- * also carries plain empty-state text like "尚无版本", and those two must not
- * be painted with the same weight.
- */
-export const SIGNAL_STATE_LABELS: ReadonlySet<string> = new Set([
-  "未保存",
-  "设置未保存",
-  "等待保存",
-  "待同步",
-  "待生成",
-  "待构建",
-  "运行中",
-  "失败",
-  "缺失",
-  "阻塞",
-  "错误",
-  "当前编辑",
-]);
-
-export function isSignalStateLabel(label: string): boolean {
-  return SIGNAL_STATE_LABELS.has(label.trim());
-}
-
-/**
- * A value to read rather than a state to act on: a version, a tally, a mode.
- * Unknown labels default here — spending a chip on something nobody has
- * classified is how decoration accumulates.
- */
-export function isReadoutStateLabel(label: string): boolean {
-  const trimmed = label.trim();
-  return !isSignalStateLabel(trimmed) && !isQuietStateLabel(trimmed);
-}
+export {
+  QUIET_STATE_LABELS,
+  SIGNAL_STATE_LABELS,
+  isQuietCount,
+  isQuietCountLabel,
+  isQuietStateLabel,
+  isReadoutStateLabel,
+  isSignalStateLabel,
+} from "./view-labels";
 
 /**
  * Badge wrapper that drops to screen-reader-only text for benign states and
  * for zero counts. Call sites pass the state they have; this decides whether
  * the eye needs to see it.
+ */
+/**
+ * `signal` is the explicit override: `true` forces a chip, `false` forces the
+ * accessible tree only. Leaving it out runs the three-way classifier, so a
+ * label nobody has classified becomes plain text rather than defaulting to
+ * decoration — the same rule `StateLabel` follows.
  */
 export function StateBadge({
   label,
@@ -154,7 +112,48 @@ export function StateBadge({
   className?: string;
   children?: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>) {
-  const quiet = signal === undefined ? isQuietStateLabel(label) : !signal;
+  const chip = signal === undefined ? isSignalStateLabel(label) : signal;
+  if (chip) {
+    return (
+      <Badge variant={variant} className={className} {...rest}>
+        {children ?? label}
+      </Badge>
+    );
+  }
+  if (signal === false || isQuietStateLabel(label)) {
+    return (
+      <span className="sr-only" {...rest}>
+        {children ?? label}
+      </span>
+    );
+  }
+  // A readout: a version, a tally, a category. Plain text, not a pill.
+  return (
+    <span className={cn("text-[0.68rem] text-on-surface-variant", className)} {...rest}>
+      {children ?? label}
+    </span>
+  );
+}
+
+/**
+ * A tally is something to read, not something to act on: "9 项", "27", "0 控件".
+ * Painting it as a pill spends visual budget on a number the row or list it
+ * summarizes already states. Zero is not news at all, so it drops out of the
+ * visual field and stays in the accessible tree.
+ */
+export function CountReadout({
+  label,
+  count,
+  className,
+  children,
+  ...rest
+}: {
+  label: string;
+  count?: number;
+  className?: string;
+  children?: ReactNode;
+} & HTMLAttributes<HTMLSpanElement>) {
+  const quiet = count === undefined ? isQuietCountLabel(label) : isQuietCount(count);
   if (quiet) {
     return (
       <span className="sr-only" {...rest}>
@@ -163,9 +162,59 @@ export function StateBadge({
     );
   }
   return (
-    <Badge variant={variant} className={className} {...rest}>
+    <span
+      className={cn("font-mono text-[0.68rem] tabular-nums text-on-surface-variant", className)}
+      {...rest}
+    >
       {children ?? label}
-    </Badge>
+    </span>
+  );
+}
+
+/**
+ * The three-way split at the heart of the quiet rules, for labels that arrive
+ * as free text. A signal paints a chip, a quiet state drops to the accessible
+ * tree, and everything in between is a readout: a category or a provenance
+ * note the eye can scan without having to filter a rounded box first.
+ */
+/**
+ * `showQuiet` decides what a routine state does when it *is* the row's datum.
+ * In chrome, "完成" next to a done icon is repetition and drops to the
+ * accessible tree. In a status column it is the cell the user came to read, so
+ * it must stay as plain text — never as a pill.
+ */
+export function StateLabel({
+  label,
+  variant = "outline",
+  className,
+  showQuiet = false,
+  children,
+  ...rest
+}: {
+  label: string;
+  variant?: "default" | "secondary" | "outline" | "destructive" | "accent";
+  className?: string;
+  showQuiet?: boolean;
+  children?: ReactNode;
+} & HTMLAttributes<HTMLSpanElement>) {
+  if (isSignalStateLabel(label)) {
+    return (
+      <Badge variant={variant} className={className} {...rest}>
+        {children ?? label}
+      </Badge>
+    );
+  }
+  if (isQuietStateLabel(label) && !showQuiet) {
+    return (
+      <span className="sr-only" {...rest}>
+        {children ?? label}
+      </span>
+    );
+  }
+  return (
+    <span className={cn("text-[0.68rem] text-on-surface-variant", className)} {...rest}>
+      {children ?? label}
+    </span>
   );
 }
 

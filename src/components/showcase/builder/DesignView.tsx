@@ -27,7 +27,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToolchainBanner } from "./ToolchainBanner";
 
 import { DesignWorkspace } from "./DesignWorkspace";
-import { Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, StateBadge, TemplateMiniPreview } from "./view-helpers";
+import { projectExplorerBadgeLabel } from "./monolith-module";
+import { CountReadout, Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, StateBadge, StateLabel, TemplateMiniPreview } from "./view-helpers";
 
 export type DesignViewScope = Record<string, any>;
 
@@ -469,7 +470,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
-                        <Badge variant={activeProject.rootPath ? "secondary" : "outline"}>{activeProject.rootPath ? "已落盘" : "未保存"}</Badge>
+                        <StateLabel
+                          showQuiet
+                          variant={activeProject.rootPath ? "secondary" : "outline"}
+                          label={activeProject.rootPath ? "已落盘" : "未保存"}
+                        />
                         <button
                           type="button"
                           aria-label="展开项目文件树"
@@ -728,9 +733,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <p className="mt-1 text-[0.66rem] leading-4 text-on-surface-variant">项目 Dock 中的轻量标签管理。</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
-                          <Badge variant={dirtyOpenEditorTabCount > 0 ? "outline" : "secondary"}>
-                            {dirtyOpenEditorTabCount > 0 ? `${dirtyOpenEditorTabCount} 未保存` : "同步"}
-                          </Badge>
+                          <StateLabel
+                            showQuiet
+                            variant={dirtyOpenEditorTabCount > 0 ? "destructive" : "secondary"}
+                            label={dirtyOpenEditorTabCount > 0 ? `${dirtyOpenEditorTabCount} 未保存` : "同步"}
+                          />
                           <button
                             type="button"
                             className="focus-ring rounded-lg px-1.5 py-1 text-[0.62rem] text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface disabled:opacity-35"
@@ -916,11 +923,16 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   signal={status.signal}
                                   toneClass={projectExplorerStatusClass(status.tone)}
                                 />
-                                {node.badge ? (
-                                  <SignalChip
-                                    label={node.badge}
-                                    signal={node.badge === "dirty" || node.badge === "active"}
-                                    toneClass={node.active ? "border-transparent bg-secondary-container text-secondary-container-foreground" : "border-outline-variant bg-transparent text-on-surface-variant"}
+                                {node.badge && projectExplorerBadgeLabel(node.badge) !== status.label ? (
+                                  /* Kind words are column values; "N 个未保存" is a real
+                                     signal. Either way it must not repeat the status chip. */
+                                  <StateLabel
+                                    className={
+                                      node.active
+                                        ? "shrink-0 border-transparent bg-secondary-container text-secondary-container-foreground"
+                                        : "shrink-0"
+                                    }
+                                    label={projectExplorerBadgeLabel(node.badge)}
                                   />
                                 ) : null}
                               </span>
@@ -1688,7 +1700,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <p className="truncate text-[0.62rem] text-on-surface-variant">拖放/单击</p>
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
+                  <span className="shrink-0 font-mono text-[0.6rem] text-on-surface-variant">
                     {visibleComponentPalette.length}
                   </span>
                 </div>
@@ -1763,9 +1775,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           >
                             <ChevronRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant transition group-open/palette:rotate-90" />
                             <span className="min-w-0 flex-1 truncate font-semibold text-on-surface">{group.label}</span>
-                            <span className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.6rem] text-on-surface-variant">
-                              {group.definitions.length}
-                            </span>
+                            <CountReadout
+                              label={String(group.definitions.length)}
+                              count={group.definitions.length}
+                              className="shrink-0 text-[0.62rem]"
+                            />
                           </summary>
                           <div className="subtle-scrollbar mt-1 max-h-[260px] space-y-0.5 overflow-y-auto border-t border-outline-variant/70 pt-1" data-builder-component-group-details={group.id}>
                             {group.definitions.map((definition: any) => {
@@ -1857,7 +1871,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     >
                       <div className="flex items-center gap-1">
                         <span
-                          className="shrink-0 rounded-md bg-surface-container-high px-1.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant"
+                          className="shrink-0 text-[0.62rem] font-semibold uppercase tracking-[0.08em] text-on-surface-variant"
                           data-builder-component-quick-insert-label="compact"
                         >
                           常用控件
@@ -2140,7 +2154,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                 >
                   <div className="flex min-w-0 items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-1.5 overflow-hidden text-xs">
-                      <Badge variant="secondary">{activeBreakpoint}</Badge>
+                      <span className="text-[0.68rem] text-on-surface-variant">{activeBreakpoint}</span>
                       <span className="truncate font-medium text-on-surface">{page.title || activeFile.name}</span>
                       <div
                         className={cn(
@@ -2206,7 +2220,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         ) : null}
                       </div>
                       <span
-                        className="hidden shrink-0 rounded-md border border-outline-variant bg-surface-container-high px-1.5 py-0.5 font-mono text-[0.66rem] text-on-surface-variant md:inline-flex"
+                        className="hidden shrink-0 font-mono text-[0.66rem] tabular-nums text-on-surface-variant md:inline"
                         data-builder-canvas-toolbar-metrics="compact"
                       >
                         {Math.round(page.width)}x{Math.round(page.height)} · {Math.round(page.zoom * 100)}% · {items.length}/{selectedIds.length}
@@ -2294,7 +2308,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       value={activeBreakpoint}
                       onValueChange={(value: any) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                       options={[
-                        { value: "desktop", label: "Desktop" },
+                        { value: "desktop", label: "桌面" },
                         { value: "tablet", label: "Tablet" },
                         { value: "mobile", label: "Mobile" },
                       ]}
@@ -2712,13 +2726,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           ))}
                         </div>
                         <div
-                          className="absolute left-0 top-0 flex h-6 w-8 items-center justify-center rounded-tl-xl border border-outline-variant bg-surface-container-lowest/95 font-mono text-[0.56rem] text-on-surface-variant shadow-m3-1 backdrop-blur"
+                          className="absolute left-0 top-0 flex h-6 w-8 items-center justify-center border border-outline-variant bg-surface-container-lowest/95 font-mono text-[0.56rem] text-on-surface-variant shadow-m3-1 backdrop-blur"
                           data-builder-canvas-ruler-origin=""
                         >
                           0
                         </div>
                         <div
-                          className="absolute left-10 top-7 max-w-[16rem] truncate rounded-full border border-outline-variant bg-surface-container-lowest/90 px-2 py-1 font-mono text-[0.62rem] text-on-surface-variant shadow-m3-1 backdrop-blur"
+                          className="absolute left-10 top-7 max-w-[16rem] truncate bg-surface-container-lowest/90 px-1 py-0.5 font-mono text-[0.62rem] tabular-nums text-on-surface-variant backdrop-blur"
                           data-builder-canvas-ruler-coordinate-readout=""
                         >
                           {canvasRulerSelectionProjection ? canvasRulerSelectionProjection.label : `${Math.round(page.width)} x ${Math.round(page.height)} · grid ${page.gridSize}`}

@@ -2,6 +2,7 @@ import type { ProjectJumpKind } from "./builder/task-center";
 import {
   Field,
   NumberBox,
+  CountReadout,
   PanelTitle,
   PathRow,
   ProjectJumpIcon,
@@ -9,7 +10,6 @@ import {
   PropertySection,
   StateBadge,
   TemplateMiniPreview,
-  isQuietCount,
 } from "./builder/view-helpers";
 import {
   lazy,
@@ -1301,7 +1301,7 @@ export function BuilderShowcase() {
         title: "项目 manifest",
         detail: "项目根索引，串联 UI、Rust、资源和发布配置。",
         path: projectPath("nova.project.json"),
-        metric: activeProject.rootPath ? "tracked" : "保存后创建",
+        metric: activeProject.rootPath ? "已跟踪" : "保存后创建",
         scope: "source",
         icon: FileJson,
         filter: "all",
@@ -1357,7 +1357,7 @@ export function BuilderShowcase() {
         title: ".nova 本地状态",
         detail: "类似 .vscode：保存打开标签、Dock、检查点、任务和编辑器偏好。",
         path: projectPath(".nova", "workspace.json"),
-        metric: `${diskCheckpoints.length} checkpoints`,
+        metric: `${diskCheckpoints.length} 检查点`,
         scope: "metadata",
         icon: Settings2,
         filter: "meta",
@@ -1628,7 +1628,7 @@ export function BuilderShowcase() {
         kind: "build",
         label: "构建与运行",
         detail: activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : "尚未生成 exe",
-        badge: activeProject.outputExePath ? "exe" : "Build",
+        badge: activeProject.outputExePath ? "exe" : "待构建",
         path: activeProject.outputExePath || projectDiskPath(activeProject.rootPath, "app") || projectRelativePath("app"),
         relativePath:
           activeProject.rootPath && activeProject.outputExePath?.startsWith(activeProject.rootPath)
@@ -1685,7 +1685,21 @@ export function BuilderShowcase() {
         path: tab.path,
         relativePath: tab.relativePath,
         badge: tab.badge,
-        statusLabel: active ? "当前" : tab.dirty ? "未保存" : tab.kind === "ui" ? "已打开" : tab.kind === "logic" ? "逻辑" : "构建",
+        // The workbench kind the tab belongs to. `kind` above is remapped to
+        // "current" for the active row, which used to make this self-check lose
+        // track of the build/logic entry exactly while it was on screen.
+        tabKind: tab.kind,
+        // Dirty wins over active: an unsaved change is the thing to act on, and
+        // "当前" is already carried by the row's background + aria-current.
+        statusLabel: tab.dirty
+          ? "未保存"
+          : active
+            ? "当前"
+            : tab.kind === "ui"
+              ? "已打开"
+              : tab.kind === "logic"
+                ? "逻辑"
+                : "构建",
         nodeId: tab.revealNodeId,
         dirty: Boolean(tab.dirty),
         active,
@@ -2425,8 +2439,8 @@ export function BuilderShowcase() {
     latestRailPresetTask?.pipelineStepCount && latestRailPresetTask.pipelineStepIndex !== undefined
       ? `${latestRailPresetTask.pipelineStepIndex + 1}/${latestRailPresetTask.pipelineStepCount}`
       : latestRailPreset
-        ? `${latestRailPreset.actions.length} steps`
-        : "no run";
+        ? `${latestRailPreset.actions.length} 步`
+        : "未运行";
   const latestRailPresetSummary =
     latestRailPresetTask?.summary ??
     latestRailPresetTask?.error ??
@@ -2490,8 +2504,8 @@ export function BuilderShowcase() {
     allProjectActionPresets[0] ??
     projectActionPresets[0];
   const selectedRailActionPresetStepLabel = selectedRailActionPreset
-    ? `${selectedRailActionPreset.actions.length} step${selectedRailActionPreset.actions.length === 1 ? "" : "s"}`
-    : "0 steps";
+    ? `${selectedRailActionPreset.actions.length} 步`
+    : "0 步";
   const selectedRailKitStepRows = useMemo(() => {
     if (!selectedRailActionPreset) {
       return [];
@@ -3568,7 +3582,7 @@ export function BuilderShowcase() {
         ? `${dirtyUiFileCount} 个 UI 文件、Rust ${rustLogicDirty ? "未保存" : "已同步"}、设置 ${projectSettingsDirty ? "未保存" : "已同步"}。`
         : "UI 文件、Rust 逻辑、发布设置和 .nova 编辑状态已在当前工作区对齐。",
       meta: projectSourceDirty ? `${dirtySourceCount} 个来源待同步` : activeProject.rootPath || "未选择项目目录",
-      badge: projectSourceDirty ? "同步" : "就绪",
+      badge: projectSourceDirty ? "待同步" : "已同步",
       actionLabel: projectSourceDirty ? "保存" : "查看",
       tone: projectSourceDirty ? "warning" : "success",
       icon: Save,
@@ -3672,7 +3686,7 @@ export function BuilderShowcase() {
         ? `${fileNameFromPath(activeProject.outputExePath)} 已作为项目产物挂到文件树和运行证据。`
         : `${activeProject.releaseConfig.appName} 还没有 release exe，可从左下 Run Kit 或 Build 页生成。`,
       meta: activeProject.outputExePath || buildSourceRow?.relativePath || "app/",
-      badge: activeProject.outputExePath ? "exe" : "build",
+      badge: activeProject.outputExePath ? "exe" : "待构建",
       actionLabel: activeProject.outputExePath ? "定位" : "构建",
       tone: activeProject.outputExePath ? "success" : "warning",
       icon: Download,
@@ -16314,12 +16328,12 @@ export function BuilderShowcase() {
       value: "navigator",
       label: "导航",
       icon: FileJson,
+      // Panel tallies are readouts: "how many are in here", not a state to act on.
       badge: (
-        <StateBadge
-          variant="outline"
+        <CountReadout
           className="px-1 py-0 text-[0.55rem] leading-4"
           label={String(activeProject.files.length)}
-          signal={!isQuietCount(activeProject.files.length)}
+          count={activeProject.files.length}
         />
       ),
     },
@@ -16328,11 +16342,10 @@ export function BuilderShowcase() {
       label: "组件",
       icon: Layers,
       badge: (
-        <StateBadge
-          variant="outline"
+        <CountReadout
           className="px-1 py-0 text-[0.55rem] leading-4"
           label={String(palette.length)}
-          signal={!isQuietCount(palette.length)}
+          count={palette.length}
         />
       ),
     },
@@ -16341,11 +16354,10 @@ export function BuilderShowcase() {
       label: "资源",
       icon: FileImage,
       badge: (
-        <StateBadge
-          variant="outline"
+        <CountReadout
           className="px-1 py-0 text-[0.55rem] leading-4"
           label={String(activeProject.assets.length)}
-          signal={!isQuietCount(activeProject.assets.length)}
+          count={activeProject.assets.length}
         />
       ),
     },
@@ -16362,10 +16374,10 @@ export function BuilderShowcase() {
       label: "问题",
       icon: AlertTriangle,
       badge: (
-        <StateBadge
-          variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}
+        <CountReadout
+          className="px-1 py-0 text-[0.55rem] leading-4"
           label={String(builderIssueCount)}
-          signal={!isQuietCount(builderIssueCount)}
+          count={builderIssueCount}
         />
       ),
     },
@@ -16375,10 +16387,10 @@ export function BuilderShowcase() {
       label: "任务",
       icon: ClipboardCopy,
       badge: (
-        <StateBadge
-          variant="outline"
+        <CountReadout
+          className="px-1 py-0 text-[0.55rem] leading-4"
           label={String(projectTasks.length)}
-          signal={!isQuietCount(projectTasks.length)}
+          count={projectTasks.length}
         />
       ),
     },
@@ -16617,7 +16629,7 @@ export function BuilderShowcase() {
           : "待构建";
   const railRunTargetLabel = activeProject.outputExePath ? fileNameFromPath(activeProject.outputExePath) : activeProject.releaseConfig.appName || activeProject.name;
   const railEventTargetLabel = selectedEventCommand ? sanitizeRustCommandName(selectedEventCommand.name) : selectedEventName ? "待绑定" : "无事件";
-  const railKitLabel = activeProject.releaseConfig.bundleTargets === "all" ? "Desktop" : activeProject.releaseConfig.bundleTargets;
+  const railKitLabel = activeProject.releaseConfig.bundleTargets === "all" ? "桌面" : activeProject.releaseConfig.bundleTargets;
   const railConfigurationLabel = `${activeProject.releaseConfig.appName || activeProject.name} ${activeProject.releaseConfig.version}`;
   const railWindowTargetLabel = `${pageWindowKindMeta?.label ?? page.windowKind} / ${pageTitlebarStyleMeta?.label ?? page.titlebarStyle}`;
   const railReleaseTargetLabel = `${releaseWindowKindMeta?.label ?? activeProject.releaseConfig.windowKind} / ${releaseTitlebarStyleMeta?.label ?? activeProject.releaseConfig.titlebarStyle}`;
@@ -16783,8 +16795,10 @@ export function BuilderShowcase() {
     const projectWorkingSetReady =
       projectWorkingSetItems.length >= 3 &&
       projectWorkingSetItems.some((item) => item.active) &&
-      projectWorkingSetItems.some((item) => item.badge === "Rust" || item.kind === "logic") &&
-      projectWorkingSetItems.some((item) => item.badge === "Build" || item.badge === "exe" || item.kind === "build");
+      // Match the tab's own kind, not its badge text or the "current" remap:
+      // an unsaved build tab or one without an exe is still the build entry.
+      projectWorkingSetItems.some((item) => item.tabKind === "logic") &&
+      projectWorkingSetItems.some((item) => item.tabKind === "build");
     const projectActionCenterReady =
       projectActionCenterItems.length >= 5 &&
       projectActionCenterItems.some((item) => item.kind === "sync") &&

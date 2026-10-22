@@ -127,7 +127,7 @@ async function clickCenter(selector) {
 async function waitForReady() {
   for (let i = 0; i < 60; i += 1) {
     try {
-      if (await evalJs(`Boolean(document.querySelector("[data-builder-readable-workbench]"))`)) return;
+      if (await evalJs(`Boolean(document.querySelector("[data-builder-density-root]"))`)) return;
     } catch {
       // vite still compiling
     }
@@ -220,6 +220,15 @@ async function measureSurface(surface) {
   if (active === false) {
     throw new Error(`clicking the ${surface} mode button did not switch workbench`);
   }
+  // The scope hook is stamped with the mode it is showing. A click that looked
+  // like it landed but left the previous workbench mounted would otherwise be
+  // measured as the new surface.
+  const scope = await evalJs(
+    `document.querySelector("[data-builder-density-root]")?.getAttribute("data-builder-density-root")`,
+  );
+  if (scope !== surface) {
+    throw new Error(`density scope is "${scope}" after clicking ${surface} — measuring the wrong workbench`);
+  }
   const collapsed = await evalJs(DENSITY_PROBE);
   await evalJs(EXPAND_DISCLOSURES);
   await delay(500);
@@ -298,10 +307,12 @@ async function main() {
       reports.set(surface, pair);
       console.log("  " + describeDensity(surface, pair.collapsed, "collapsed"));
       console.log("  " + describeDensity(surface, pair.expanded, "expanded "));
-      if (!reportOnly) {
-        problems.push(...findDensityOverages(surface, pair.collapsed, DENSITY_BUDGETS, "collapsed"));
-        problems.push(...findDensityOverages(surface, pair.expanded, EXPANDED_BUDGETS, "expanded"));
-      }
+      // Budgets are judged even in report mode. A report that never asks the
+      // question used to print "ok" for surfaces it had not compared, which is
+      // the same defect as a gate that prints a verdict and exits 0. The only
+      // difference between the modes is whether the verdict can fail the run.
+      problems.push(...findDensityOverages(surface, pair.collapsed, DENSITY_BUDGETS, "collapsed"));
+      problems.push(...findDensityOverages(surface, pair.expanded, EXPANDED_BUDGETS, "expanded"));
     }
 
     if (reportOnly) {
@@ -335,11 +346,15 @@ async function main() {
     }
 
     if (problems.length > 0) {
-      console.error(`\ncheck-ui-density: ${problems.length} surface(s) over budget`);
+      console.error(
+        `\ncheck-ui-density: ${problems.length} surface(s) over budget` +
+          (reportOnly ? " (report mode does not fail)" : ""),
+      );
       for (const problem of problems) console.error(`  - ${problem}`);
-      process.exit(1);
+      if (!reportOnly) process.exit(1);
+    } else {
+      console.log("\ncheck-ui-density ok: every workbench is within its density budget.");
     }
-    console.log("\ncheck-ui-density ok: every workbench is within its density budget.");
   } finally {
     cleanup();
   }

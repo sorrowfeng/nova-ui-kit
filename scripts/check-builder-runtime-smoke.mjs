@@ -4134,13 +4134,17 @@ async function runLogicRustChecks(send, verified) {
     `(() => {
       const input = document.querySelector('[data-builder-rust-editor-goto-line] input[aria-label="跳转 Rust 行列"]');
       const editor = document.querySelector("[data-builder-rust-logic]");
+      // The status row is a run of sibling spans. Reading the container's
+      // textContent glues "行 1，列 1" onto the next span's "18 行" and makes a
+      // precise cursor-position check impossible.
+      const cursor = document.querySelector("[data-builder-rust-editor-status] span")?.textContent?.trim() || "";
       const status = document.querySelector("[data-builder-rust-editor-status]")?.textContent?.trim().replace(/\\s+/g, " ") || "";
       return {
         passed:
           (input?.value === "1" || input?.value === "1:1") &&
           editor?.selectionStart === 0 &&
-          /Ln\\s+1,\\s*Col\\s+1/.test(status),
-        detail: \`input=\${input?.value || "missing"}, selection=\${editor?.selectionStart ?? "missing"}-\${editor?.selectionEnd ?? "missing"}, status=\${status.slice(0, 180)}\`
+          /行\\s*1[，,]\\s*列\\s*1\\s*$/.test(cursor),
+        detail: \`input=\${input?.value || "missing"}, selection=\${editor?.selectionStart ?? "missing"}-\${editor?.selectionEnd ?? "missing"}, cursor=\${cursor}, status=\${status.slice(0, 180)}\`
       };
     })()`,
     "Rust go-to-line selection",
