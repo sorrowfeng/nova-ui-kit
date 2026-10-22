@@ -207,6 +207,8 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 3·1 | 删掉 5 个没人 invoke 的 Tauri 命令（`check/build/bundle_editor_project`、`create_editor_project`，连同永远跑不到的两个函数半边、随之孤儿的 `project_paths`/`write_readme`）；`applyBackendBuildResult` 补上一直漏写的 3 个 bundle 产物字段；`building`/`bundling` 改由后台任务驱动；Git 冲突编辑器接上（换项目/快照后重读状态，冲突可点开）；新增 `check:command-reachability` 两个方向把这类东西钉死 | `BuilderShowcase` **18726** | **18760** |
 | 3·2 | 新项目的 exe 窗口跟自己的设计画布对上：页面和发布配置各自由 `defaultPage` / `defaultReleaseConfig` 播种，六个壳字段里四个不一致（标题、副标题、宽、高），于是每个项目一出生就是「需同步」，做出来的 exe 是 1200×800 而画布是 1440×900。`createProject` 改为用 `releaseWindowShellFromPage` 从页面播种发布壳；只有壳跟走，签名/打包/安装器设置原样保留。顺带把 TS 测试跑手从「只跑一个写死的入口」换成 `check:ts-tests` 跑 `scripts/*.test.ts`，新域不用借邻居的文件名 | Qt Creator 对齐 **74% → 79%**，第 6/7 条转 pass | — |
 | 3·3 | 空画布被报成 8 个能力缺口：19 条里 8 条标「复核」，其实一条缺口都没有——检查根本没跑（没选中、光标不在符号里、还没构建）。新增第四种严重度 `unverified`（待验证），49 处「前提不存在就报 warning」翻过来；聚合逻辑抽成 `worstAuditSeverity` 并钉测试。**待验证不是软 pass**：未知证据 id 仍算 warning，混着真失败仍是 fail | 对齐 **11 pass / 8 unverified / 0 warning / 0 fail** | — |
+| 3·4 | `check:dead-exports` 修掉三个会让它**误报活代码是孤儿**的盲区：消费者只扫导出目录（`App.tsx`/`OnboardingGuide.tsx` 在外面）、`@/` 别名解析不了（`ShowcasePage` 是这么 lazy 进来的）、字面量扫描漏了 `scripts/*.test.ts`（三个被测试钉住的类型差点被摘）。自检改成断言**最终孤儿集合**并且和真实扫描共用 `runScan`，三种注入各自点名会误删谁 | 存量 **198 → 194** | 上限 194 |
+| 3·5 | 清零死 export：194 个名字**摘掉 `export` 关键字**（不删声明——多数在自己模块里用着），`tsc` 当裁判，只剩 2 个连内部都没人读的真死代码（`workflowStepStatusClassName` 18 行、`DEFAULT_RUST_LOGIC`），已删。剥脚本自带 fixture；它的第一版用正则「修残留空格」，把 27 个文件里 1327 行缩进压平，fixture 就是为堵这个而生 | 死 export **0**，`monolith-module` **8613** | 死 export **0** |
 
 **接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
 
@@ -236,8 +238,14 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
   | 只有 `ShellView` 读（从不下发） | 148 |
 
   共读的 103 个塞不进任何单一领域切片——真按领域切，要么一个名字出现在两个切片里（那就不是切片了），要么逼着视图改用 `scope.project.foo` 这种限定名去点每一个使用点。**按视图切**和代码现在的组织一致，也正好是 Phase 3 拆胖视图的边界。共读的那 103 个进共享袋，谁都不许藏。
-- **`noUnusedLocals` 查不出死 export——导出本身就是一次「使用」。** Phase 0 清的是未用的局部变量和 import 绑定，所以这类东西全躲过去了。按「整个 `src/` 里标识符只出现一次（就是它自己那行定义）」扫一遍，抓到 12 个，其中 3 个被 check 脚本读着（`workflowStepStatusClassName`、`DEFAULT_RUST_LOGIC`、`STATUS_LABEL_DOMAINS`），另外 9 个躺在 5 个**没有任何文件 import 过的模块**里，已删（388 行）。`CanvasContextMenu.tsx` 最典型：它不是没用的组件，是**孤儿副本**——真正的右键菜单写在 `ShellView` 里，那些 `data-builder-canvas-context-*` 钩子也在那儿；冒烟 110 项能测到行为，所以这份没人接线的副本一直没人发现。
-  现在有棘轮了：`check:dead-exports` 数 `src/components/showcase/` 里「没人 import 也没人 re-export」的导出名，钉在 **220** 上，**只许降不许涨**（`src/components/ui/` 不算在内——那是组件库，导出面就是它的 API，`ButtonProps` 没人用也仍然是文件的意义）。它也对自己断言：fixture 里一个被 import 的、一个孤儿的，分类不对就拒绝出结论。220 个是**要清的存量**，不是门禁坏了；每删一个就把上限拧下来一格。
+- **`noUnusedLocals` 查不出死 export——导出本身就是一次「使用」。** Phase 0 清的是未用的局部变量和 import 绑定，所以这类东西全躲过去了。按「整个 `src/` 里标识符只出现一次（就是它自己那行定义）」扫一遍，抓到 12 个。当时记的「其中 3 个被 check 脚本读着（`workflowStepStatusClassName`、`DEFAULT_RUST_LOGIC`、`STATUS_LABEL_DOMAINS`）」**只有最后一个是真的**：`STATUS_LABEL_DOMAINS` 确实被 `check-ui-density-rules.mjs` 按名字读着，另外两个从头到尾没人读——`tsc` 在摘掉 `export` 之后立刻点了名。**别把「定义了」当成「有人用」，也别把文档里的旧结论当成已核实的事实。** 另外 9 个躺在 5 个**没有任何文件 import 过的模块**里，已删（388 行）。`CanvasContextMenu.tsx` 最典型：它不是没用的组件，是**孤儿副本**——真正的右键菜单写在 `ShellView` 里，那些 `data-builder-canvas-context-*` 钩子也在那儿；冒烟 110 项能测到行为，所以这份没人接线的副本一直没人发现。
+  现在有棘轮了：`check:dead-exports` 数 `src/components/showcase/` 里「没人 import 也没人 re-export」的导出名（`src/components/ui/` 不算在内——那是组件库，导出面就是它的 API，`ButtonProps` 没人用也仍然是文件的意义）。**存量已经清零，上限钉在 0**：新加一个没人用的导出当场红。清的过程是**摘掉 `export` 关键字，不是删声明**——这些名字多半在自己模块里用着，只有对外那张脸是死的；`tsc` 当裁判，摘完只剩两个连内部都没人读的（`workflowStepStatusClassName`、`DEFAULT_RUST_LOGIC`），那才是真死，已删。
+  这个门禁自己栽过三次，每次都会**误报出「活着的代码是孤儿」**——那是会让人删掉活代码的失败方向，比查不出来危险：
+  1. **消费者只从导出目录里找。** `App.tsx` 和 `OnboardingGuide.tsx` 是 `src/components/showcase/` 之外仅有的两个从它 import 的文件，于是它们用到的名字全被算成没人用。改成消费者扫整个 `src/`。
+  2. **别名解析不了。** tsconfig 只有一个别名 `@/*` -> `./src/*`，而 `App.tsx` 是这么加载 `ShowcasePage` 的：`lazy(() => import("@/components/showcase/ShowcasePage")…)`。相对路径解析不到，整个模块没被认成动态加载，`ShowcasePage` 就被报成孤儿。现在 `@/` 也解析。
+  3. **字面量扫描漏了 `scripts/*.test.ts`。** 把「check 脚本按名字引用也算使用」这件事只做在 `*.mjs` 上，而 `project-file-models.test.ts` 按名字钉着 `ProjectSaveManifestInput` 等三个类型。根因是 `listFiles` 为了不让测试文件被当成导出源而排除了 `*.test.ts`，字面量扫描继承了这个排除。现在 `listFiles` 带 `includeTests` 参数，两处各传各的。
+  **自检必须断言最终报告，不能断言中间状态。** 第一版 fixture 断言的是 probe 里「谁被标成已消费」，把真实调用点的扫描范围改错它照样绿。现在 fixture 和真实扫描调同一个 `runScan`，断言的是完整的孤儿集合（多一个少一个都红），并且回归了三种注入：别名解析关掉、消费者范围收窄、动态 import 忽略，各自都红并点名会误删哪个。
+  另外教训：**别用「名字哨兵」当自检。** 第一版想用「扫描结果里必须有 `worstAuditSeverity`」来证明扫描没瞎，但这个名字就写在自检自己的源码里——检查脚本自己满足了它，永远绿。改成结构性断言（扫描必须至少各命中一个 `.mjs` 和一个 `.test.ts` 文件），这种断言没法自我满足。
   教训：**「冒烟全绿」不等于「没有死代码」**，冒烟测的是行为在不在，不是代码有没有人用。这两件事各有各的测法。
 - `check-goal-coverage` 有 97 条断言钉在冒烟脚本的字面量上。改冒烟脚本时这些会跟着挂——那是故意的，它们测的是「冒烟真的在断言」。
 - **读数比代码更容易骗人，尤其是产品自己算出来的那个分。** Qt Creator 对齐矩阵一直在算分，冒烟一直只断言「面板在不在」，从没读过那个分。读出来是 79%、8 条「复核」——看着像产品还差八块能力，实际一条都不差，是八个检查没跑到前提。**分数没人打印，就等于分数没人负责。** 现在冒烟每次都打出来，并且把每行连到它的审计证据上（只看行级分数找不到病根：它只说「第 5 条是 warning」就停了）。
@@ -246,6 +254,9 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
   2. **读数是产品文案的时候，别把结果注回页面模板。** 自检那段第一版把报告 `JSON.stringify` 后塞回页面里的模板字符串，中文文案里一个反引号或 `${` 就把脚本截断了。改成在 Node 侧算好，只把布尔值注回去。
 - **标签分类错了，装饰就会冒充信号。** 给 `unverified` 起名「待验证」之后，build 工作台的 status chip 从 10 个涨到 29 个，密度门当场红。原因是 `SIGNAL_STATE_FRAGMENTS` 里有「待」，`isSignalStateLabel("待验证")` 为真，于是每个待验证都画成徽章——而这个词说的是「没得可做」。和 `view-labels.ts` 开头写的那种病一模一样：**没分类的日常标签被画成 chip 就是纯装饰。** 已归入 `READOUT_STATE_LABELS` 并在 `check-ui-density-rules` 钉住。
 - **同一个类型写两份，加成员的那次就会分叉。** `EditorExperienceAuditSeverity` 同时声明在 `status-labels.ts` 和 `monolith-module.tsx`，这次要加第四种严重度，两份当场对不上。单体那份改成 `import("./status-labels").…` 的别名，不再手抄。**别名是一行，分叉是一个下午。**
+- **批量改写脚本里，「修一下残留空格」的那个正则是最危险的一行。** 摘 `export` 关键字会留下一个前导空格（`export const x` → ` const x`），第一版剥脚本用 `/( {2,})(const|function|…)/ → " $1"` 收拾这个残留，结果**把全部 27 个文件里 1327 行的两格缩进压成了一格**——函数体里的 `  const nested = 1;` 全变成 ` const nested = 1;`。其余每道检查都是绿的：它们只问「文件变没变」，从不问「允许变的是哪几行」。
+  正确做法是**在切口处把那个空格一起切掉**（`export` 后面只跟一个空格时连它带走），并且给脚本加 fixture：嵌套缩进的 `const` 行必须逐字节不变。注入那个正则 → fixture 红并点名 `  const nested = 1;` → ` const nested = 1;`。同一次 fixture 还抓到另外两个真 bug：删最后一行会留下一个悬挂换行（文件多出空行）、`export { a, b }` 里摘掉 a 会留下 `export {  b }` 或 `export { b, }`（看它在哪一头）。**三种切法都进了 fixture：关键字、从句子里摘首/摘尾、整句删。**
+  通则：**批量改写的脚本必须有 fixture，而且 fixture 里要放「绝不能动」的行。** 只断言「要改的改了」不够——真正贵的是「不该改的被改了」。
 
 ## 没做完的
 
@@ -269,7 +280,7 @@ npm run tauri:exe && npm run check:desktop-exe
 
 | 文件 | 现在 | 备注 |
 |------|-----:|------|
-| `monolith-module.tsx` | 8632 | 杂物间，纯函数/常量/类型混在一起，最该按域拆 |
+| `monolith-module.tsx` | 8613 | 杂物间，纯函数/常量/类型混在一起，最该按域拆（8632 → 8613 删掉了没人调的 `workflowStepStatusClassName`） |
 | `DesignView.tsx` | 5768 | |
 | `LogicView.tsx` | 5713 | |
 | `BuilderItemPreview.tsx` | 4844 | |
