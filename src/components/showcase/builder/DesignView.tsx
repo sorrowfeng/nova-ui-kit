@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToolchainBanner } from "./ToolchainBanner";
 
 import { DesignWorkspace } from "./DesignWorkspace";
-import { Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, TemplateMiniPreview } from "./view-helpers";
+import { Field, NumberBox, PanelTitle, PathRow, PropertySection, SignalChip, StateBadge, TemplateMiniPreview } from "./view-helpers";
 
 export type DesignViewScope = Record<string, any>;
 
@@ -839,7 +839,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         if (row.kind === "group") {
                           return (
                             <div
-                              key={`sidebar-group-${row.id}`}
+                              key={row.key}
                               className="sticky top-0 z-[1] flex items-center justify-between gap-2 rounded-xl border border-outline-variant/70 bg-surface-container-high/95 px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant backdrop-blur"
                               data-builder-project-tree-group={row.id}
                             >
@@ -2037,15 +2037,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <span className="shrink-0 font-mono text-[0.62rem] text-on-surface-variant">
                                   {row.availableCount}/{row.totalCount}
                                 </span>
-                                <span
-                                  className={cn(
-                                    "shrink-0 rounded-md px-1.5 py-0.5 text-[0.58rem] font-semibold",
-                                    complete ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive",
-                                  )}
+                                <StateBadge
+                                  className="shrink-0 text-[0.58rem] font-semibold"
+                                  variant={complete ? "secondary" : "destructive"}
+                                  label={complete ? "完整" : `${row.missingTypes.length} 缺口`}
+                                  signal={!complete}
                                   data-builder-component-coverage-missing={row.id}
-                                >
-                                  {complete ? "完整" : `${row.missingTypes.length} 缺口`}
-                                </span>
+                                />
                               </button>
                             );
                           })

@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, AlignHorizontalJustifyCenter, AlignHorizontalJustifyEnd, AlignHorizontalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd, AlignVerticalJustifyStart, Box, Braces, CheckCircle2, ChevronRight, ClipboardCopy, ClipboardPaste, Clock3, Copy, Download, Eye, EyeOff, FileJson, Grid3x3, Keyboard, Layers, ListChecks, LoaderCircle, Lock, LockOpen, Maximize2, Menu, Monitor, MousePointer2, Move, MoveDown, MoveUp, Pause, Play, RectangleHorizontal, RotateCcw, Save, Scissors, ScrollText, Settings2, Square, Terminal, TextCursorInput, ToggleLeft, Trash2, Type, ZoomIn } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { StateBadge, isQuietStateLabel } from "./view-helpers";
 import { BuilderComponentType } from "./types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -629,6 +630,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
     projectChangeImpact,
     projectChangeImpactStatusLabel,
     projectChangeImpactStatusVariant,
+    projectChangeScopeStatusLabel,
     projectChangeScopeStatusVariant,
     projectDependencyGraph,
     projectDependencySources,
@@ -2183,9 +2185,12 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   <span className="min-w-0">
                     <span className="flex min-w-0 items-center gap-1.5">
                       <span className="truncate font-medium text-on-surface">{workflowRailTitle}</span>
-                      <Badge variant={workflowRailBadgeVariant} className="h-5 shrink-0 px-1.5 text-[0.58rem]">
-                        {workflowRailBadgeLabel}
-                      </Badge>
+                      <StateBadge
+                        variant={workflowRailBadgeVariant}
+                        className="h-5 shrink-0 px-1.5 text-[0.58rem]"
+                        label={workflowRailBadgeLabel}
+                        signal={!isQuietStateLabel(workflowRailBadgeLabel)}
+                      />
                     </span>
                     <span className="mt-0.5 block truncate text-[0.62rem] text-on-surface-variant">{workflowProgressLabel} · {workflowProgressValue}%</span>
                   </span>
@@ -2194,7 +2199,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   className="hidden min-w-0 flex-[1.4] items-center gap-2 lg:flex"
                   data-builder-workflow-summary="condensed"
                 >
-                  <span className="shrink-0 rounded-full bg-surface-container-high px-2 py-1 text-[0.62rem] font-medium text-on-surface-variant">
+                  <span className="shrink-0 text-[0.62rem] font-medium uppercase tracking-[0.06em] text-on-surface-variant">
                     流程
                   </span>
                   <span className="min-w-0 truncate text-[0.66rem] text-on-surface-variant">
@@ -3082,6 +3087,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
         projectChangeImpact,
         projectChangeImpactStatusLabel,
         projectChangeImpactStatusVariant,
+        projectChangeScopeStatusLabel,
         projectChangeScopeStatusVariant,
         projectDependencyGraph,
         projectDependencySources,

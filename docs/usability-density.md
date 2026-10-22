@@ -17,34 +17,44 @@
 
 ## 口径细节（踩过的坑）
 
-1. **只算真正画出来的**。`.sr-only` / `aria-hidden` / 视口外的元素不计。
+1. **只算真正画出来的**。`.sr-only` / `aria-hidden` / 无布局尺寸的元素不计。
 2. **闭合的 `<details>` 不计**。它对内部节点报非零 rect，但屏幕上根本没有。早期版本把折叠面板里的 chip 全算进来了，数字虚高 4 倍。
 3. **文本只算叶子节点**。`textContent` 在父元素上会重复整棵子树，按深度累加会把数字乘上嵌套层数。
 4. **测两种状态**：`collapsed`（首屏印象）与 `expanded`（展开全部后的作业态）。两态预算不同。
-5. **只测工作区**（`[data-builder-readable-workbench]`）。标题栏、状态栏、底部 Dock 是稳定外壳，各模式共担，算进去会淹没工作区噪音。
+5. **量整个工作区，不量视口**（`[data-builder-readable-workbench]`）。滚动不该改变答案：一个面板不会因为把装饰挤到折叠线下就变安静。标题栏、状态栏、底部 Dock 是稳定外壳，各模式共担，算进去会淹没工作区噪音。
+6. **鼠标点击是命中测试的**。CDP 的 `Input.dispatchMouseEvent` 和真实鼠标一样会被遮罩吃掉。首屏引导的全屏遮罩一开，模式栏的点击全落到弹窗上，四个工作区测出来是同一个数字。现在 `clickCenter` 会先做命中测试，被挡住就报出是谁挡的；关弹窗也带断言，关不掉直接失败，而不是默默测错界面。
 
-## 当前基线（1440×960）
+## 当前基线（1440×960，量整个工作区）
 
-| 工作区 | collapsed chips | expanded chips | expanded 装饰/动作 |
-|--------|----------------:|---------------:|-------------------:|
-| project | 19 | 22 | 35% |
-| design | 11 | 12 | 17% |
-| logic | 17 | 22 | 26% |
-| build | 11 | 23 | 41% |
+| 工作区 | collapsed chips | expanded chips | expanded 装饰/动作 | expanded 字符 |
+|--------|----------------:|---------------:|-------------------:|--------------:|
+| project | 15 | 65 | 27% | 5367 |
+| design | 10 | 13 | 5% | 1111 |
+| logic | 15 | 40 | 26% | 3398 |
+| build | 7 | 74 | 27% | 17681 |
+
+`check:ui-density:report` 会打印重复标签直方图，每条带最近的 `data-builder-*` 钩子名，直接指向调用点，不用再猜。
 
 ## 规则：什么时候该染色
 
 新写状态标签前先问一句——**用户需要因此动手吗？**
 
 - **要动手** → 染色：`未保存`、`待生成`、`待构建`、`运行中`、`失败`、`缺失`。
-- **不用动手** → 只进无障碍树（`sr-only`），不占视觉：`就绪`、`空`、`已同步`、`目录`、`文件`、`.nova`、`产物`、计数为 0。
-- **折叠区的计数** → 只在折叠时染色（`group-open:hidden`）。展开后列表本身就说明了数量，再挂一个 chip 是重复。折叠时它就是这个区的「含义」，必须留。
+- **不用动手** → 只进无障碍树（`sr-only`），不占视觉：`就绪`、`空`、`已同步`、`已完成`、`正常`、`无`、`待开始`、`通过`，以及计数为 0。
+- **折叠区的计数** → 只在折叠时染色（`group-open:hidden`）。展开后列表本身就说明了数量，再挂一个 chip 是重复。折叠时它就是这个区的「含义」，必须留。**但展开区不重述这个数时不能用它** —— `group-open:hidden` 是 `display:none`，会连无障碍树里的内容一起摘掉。
+- **读数不是状态** → 分数百分比、进度值用等宽纯文本。它旁边多半已经有图标或进度条在表达严重程度，再包一层圆角是花视觉预算买重复信息。
+- **类别不是状态** → 存储归属（`源码` / `生成` / `.nova`）、类型名（`string` / `必填`）、事件种类是表格列值，做正文文本，不做药丸。
+- **未知标签默认当读数** → 没人分过类的东西不该先花一笔视觉预算；分类之后再决定。
 
 实现落在 `src/components/showcase/builder/view-helpers.tsx`：
 
 - `SignalChip` — 显式传 `signal`，不适合时退化为 `sr-only`。
-- `StateBadge` — 按标签自动判定，`QUIET_STATE_LABELS` / `isQuietCount` 是判定依据。
+- `StateBadge` — 按标签自动判定，`QUIET_STATE_LABELS` / `isQuietCount` / `isQuietCountLabel` 是判定依据。`isQuietCountLabel` 处理以文本到达的计数，且**不会**把 `源码` 这类名字当成 0 吞掉。
+- `SIGNAL_STATE_LABELS` / `isSignalStateLabel` — 「必须动手」白名单。用它而不是「不安静就染色」，因为同一个状态字段下会并排出现「待生成」和「尚无版本」，两者不该同一个重量。
+- `isReadoutStateLabel` — 既非信号也非安静，就是读数，做正文。
 - 行级类型（`目录` / `文件`）由图标承载，chip 只补充需要动手的状态。
+
+**wire 值要先翻译再判定。** `ProjectActivityEntry.status` 之类是 `"built"` / `"saved"` 这种英文，拿去比中文安静集合永远不匹配，例行项会一直带着 chip，还会把英文漏进中文界面。先过 `projectActivityStatusLabel` / `projectChangeScopeStatusLabel` 这类映射，再做安静判定。
 
 信息不丢：`sr-only` 仍在无障碍树里，读屏照读；`data-builder-*` 钩子挂在同一个节点上，既有测试不受影响。
 
@@ -53,9 +63,12 @@
 ```bash
 npm run check:ui-density          # 门禁：超出预算即失败
 npm run check:ui-density:report   # 只打印，含重复标签直方图
+npm run check:ui-density-rules    # 门禁判定逻辑自身的回归测试
 ```
 
-`check:ui-density` 已并入 `npm run check:experience`，也就是 `npm run build` 的前置。
+两者都已并入 `npm run check:experience`，也就是 `npm run build` 的前置。
+
+判定逻辑单独成一个测试，是因为 `findDensityOverages` 一旦写错，就会把装饰过度的界面报成「安静」，而且不响。预算数值从表里推导而不是写死在测试里，这样每轮收紧预算不会让用例跟表打架。
 
 ## 预算怎么定
 
@@ -70,9 +83,14 @@ npm run check:ui-density:report   # 只打印，含重复标签直方图
 | 3 | Build 区块摘要与计数徽章按 `StateBadge` 静音 | build 空态不再连喊 6 次「空」 |
 | 4 | 拓扑卡范围 chip 与图例去掉（标题已说明范围） | project expanded 34 → 22 |
 | 5 | 折叠区计数 chip 只在折叠时显示 | logic expanded 28 → 22 |
+| 6 | 探针改为量整个工作区；`clickCenter` 加命中测试 | 暴露出 build 展开态 224 chips / 82% 装饰；顺带发现首屏遮罩会吞掉模式切换 |
+| 7 | 体验审计 `通过`×94 静音；`group-meta` 重复 key 修复 | build expanded 216 → 122，页面报错清零，门禁能挂住回归 |
+| 8 | readiness/`就绪`/零计数/路径药丸按规则收；类别与读数改正文 | build expanded 122 → 76，装饰比 79% → 28% |
+| 9 | working-set 状态与类别拆开；选中行改用底色；门禁判定补回归测试 | project expanded 71 → 64 |
+| 10 | 代码审查：修 `signal` 反了（「待生成」被静音）、wire 英文泄露、`group-open:hidden` 摘掉无障碍内容 | build 74 / project 65，中文界面无未翻译英文 |
 
 ## 还能往哪推
 
-- project 顶部栏的 `来源已同步` / `编辑器状态` 等区块标签仍是装饰，可以再收一轮。
-- build 展开态 23 chips / 41% 装饰比是四屏里最高的：`需要计划`×3、`待开始`×2、`0`×2，适合按同一规则处理。
-- 文本预算还可以再压：Build 展开态 1083 字符，多为解释性长句，可改为默认折叠的详情。
+- build 展开态仍有 `提醒`×23 / `警告`×7 —— 这些是**真信号**（23 件待复核），不该靠隐藏解决，该靠减少待复核项。
+- build 展开态 17681 字符是四屏最重的，多为解释性长句，可改为默认折叠的详情。
+- `check-builder-runtime-smoke.mjs` 的 `verified.*` 只打印不断言，functional 模式还会跳过布局项并打印一串 `=false`。真回归容易被「ok」盖住。

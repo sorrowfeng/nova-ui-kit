@@ -78,6 +78,8 @@ export const QUIET_STATE_LABELS: ReadonlySet<string> = new Set([
   "正常",
   "无",
   "待开始",
+  "通过",
+  "已清理",
 ]);
 
 /** Zero is not news; a count chip should paint when something is actually queued. */
@@ -85,8 +87,52 @@ export function isQuietCount(count: number): boolean {
   return !Number.isFinite(count) || count <= 0;
 }
 
+/**
+ * Same rule for counts that arrive as display text. Non-numeric labels are
+ * left alone — they are names, not tallies, and must not vanish on a parse.
+ */
+export function isQuietCountLabel(label: string): boolean {
+  const count = Number(label.trim());
+  return Number.isFinite(count) && count <= 0;
+}
+
 export function isQuietStateLabel(label: string): boolean {
   return QUIET_STATE_LABELS.has(label.trim());
+}
+
+/**
+ * Labels that always mean "act now". These earn a chip even when the row's
+ * coarse status field looks benign — "待生成" arrives on a `pending` row that
+ * also carries plain empty-state text like "尚无版本", and those two must not
+ * be painted with the same weight.
+ */
+export const SIGNAL_STATE_LABELS: ReadonlySet<string> = new Set([
+  "未保存",
+  "设置未保存",
+  "等待保存",
+  "待同步",
+  "待生成",
+  "待构建",
+  "运行中",
+  "失败",
+  "缺失",
+  "阻塞",
+  "错误",
+  "当前编辑",
+]);
+
+export function isSignalStateLabel(label: string): boolean {
+  return SIGNAL_STATE_LABELS.has(label.trim());
+}
+
+/**
+ * A value to read rather than a state to act on: a version, a tally, a mode.
+ * Unknown labels default here — spending a chip on something nobody has
+ * classified is how decoration accumulates.
+ */
+export function isReadoutStateLabel(label: string): boolean {
+  const trimmed = label.trim();
+  return !isSignalStateLabel(trimmed) && !isQuietStateLabel(trimmed);
 }
 
 /**

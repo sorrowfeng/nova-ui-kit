@@ -63,6 +63,7 @@ const SURFACES = ["project", "design", "logic", "build"];
 let ws;
 let nextId = 0;
 const pending = new Map();
+const pageErrors = [];
 
 function send(method, params = {}) {
   return new Promise((resolve) => {
@@ -81,26 +82,41 @@ async function evalJs(expression) {
 }
 
 async function clickCenter(selector) {
-  const point = await evalJs(`(() => {
+  const target = await evalJs(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) return null;
     el.scrollIntoView({ block: "center", inline: "nearest" });
     const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    const hit = document.elementFromPoint(x, y);
+    const blocked = hit && hit !== el && !el.contains(hit);
+    const blocker = blocked
+      ? (hit.getAttribute("data-builder-mode-button")
+          || hit.getAttribute("aria-label")
+          || hit.getAttribute("data-builder-onboarding")
+          || hit.tagName)
+      : null;
+    return { x, y, blocked, blocker };
   })()`);
-  if (!point) throw new Error(`no element for ${selector}`);
+  if (!target) throw new Error(`no element for ${selector}`);
+  // CDP mouse events are hit-tested like real ones, so an overlay in front of the
+  // target silently steals the click. Say who stole it rather than mis-measure.
+  if (target.blocked) {
+    throw new Error(`click on ${selector} is blocked by ${target.blocker}`);
+  }
   await send("Input.dispatchMouseEvent", {
     type: "mousePressed",
-    x: point.x,
-    y: point.y,
+    x: target.x,
+    y: target.y,
     button: "left",
     buttons: 1,
     clickCount: 1,
   });
   await send("Input.dispatchMouseEvent", {
     type: "mouseReleased",
-    x: point.x,
-    y: point.y,
+    x: target.x,
+    y: target.y,
     button: "left",
     buttons: 0,
     clickCount: 1,
@@ -120,6 +136,31 @@ async function waitForReady() {
   throw new Error("builder workbench never appeared");
 }
 
+// The first-run guide paints a full-screen scrim. Input.dispatchMouseEvent is
+// hit-tested, so the scrim swallows clicks meant for the mode rail and every
+// workbench then measures as the default one. Dismiss it and prove it is gone —
+// a silent miss here once made four surfaces report identical numbers.
+async function dismissOnboarding() {
+  let lastReason = "";
+  for (let i = 0; i < 12; i += 1) {
+    const present = await evalJs(`Boolean(document.querySelector("[data-builder-onboarding]"))`);
+    if (!present) return;
+    try {
+      await clickCenter("[data-builder-onboarding-skip]");
+    } catch (error) {
+      // The guide may still be mounting; keep the reason for the final report.
+      lastReason = error.message;
+    }
+    await delay(400);
+  }
+  if (await evalJs(`Boolean(document.querySelector("[data-builder-onboarding]"))`)) {
+    throw new Error(
+      `the first-run guide would not dismiss; workbench clicks are unreachable` +
+        (lastReason ? ` (${lastReason})` : ""),
+    );
+  }
+}
+
 function connectToBrowser(page) {
   return new Promise((resolve, reject) => {
     ws = new WebSocket(page.webSocketDebuggerUrl);
@@ -130,6 +171,24 @@ function connectToBrowser(page) {
       if (msg.id && pending.has(msg.id)) {
         pending.get(msg.id)(msg);
         pending.delete(msg.id);
+      }
+      // A workbench that failed to render must not be reported as "0 chips".
+      // Silence here once turned a real crash into a passing measurement.
+      if (msg.method === "Runtime.exceptionThrown") {
+        const text = msg.params?.exceptionDetails?.exception?.description
+          || msg.params?.exceptionDetails?.text
+          || "unknown page error";
+        console.error(`  page error: ${String(text).split("\n")[0]}`);
+        pageErrors.push(String(text).split("\n")[0]);
+      }
+      if (msg.method === "Runtime.consoleAPICalled" && msg.params?.type === "error") {
+        const text = (msg.params.args || [])
+          .map((arg) => arg.value ?? arg.description ?? "")
+          .join(" ");
+        if (text) {
+          console.error(`  console.error: ${text.split("\n")[0]}`);
+          pageErrors.push(text.split("\n")[0]);
+        }
       }
     };
   });
@@ -152,6 +211,15 @@ async function findPage() {
 async function measureSurface(surface) {
   await clickCenter(`[data-builder-mode-button="${surface}"]`);
   await delay(1200);
+  // Measuring the wrong workbench once reported every surface as quiet. Make
+  // the mode change itself part of the assertion.
+  const active = await evalJs(`(() => {
+    const el = document.querySelector("[data-builder-mode-button='${surface}']");
+    return el ? el.getAttribute("aria-current") === "page" || el.getAttribute("data-active") === "true" : null;
+  })()`);
+  if (active === false) {
+    throw new Error(`clicking the ${surface} mode button did not switch workbench`);
+  }
   const collapsed = await evalJs(DENSITY_PROBE);
   await evalJs(EXPAND_DISCLOSURES);
   await delay(500);
@@ -220,10 +288,7 @@ async function main() {
     await waitForReady();
 
     // Measure the workbench the way a user sees it: first-run guide dismissed.
-    if (await evalJs(`Boolean(document.querySelector("[data-builder-onboarding]"))`)) {
-      await clickCenter("[data-builder-onboarding-skip]");
-      await delay(400);
-    }
+    await dismissOnboarding();
 
     console.log(`check-ui-density: workbench density at 1440x960${reportOnly ? " (report)" : ""}`);
     const problems = [];
@@ -244,8 +309,28 @@ async function main() {
       for (const surface of SURFACES) {
         console.log(`  ${surface}:`);
         for (const entry of reports.get(surface).expanded.chipHistogram.slice(0, 10)) {
-          console.log(`    ${String(entry.count).padStart(3)}x  "${entry.text}"`);
+          console.log(
+            `    ${String(entry.count).padStart(3)}x  "${entry.text}"  ${entry.sampleTag}`,
+          );
         }
+      }
+    }
+
+    if (pageErrors.length > 0) {
+      console.error(`\ncheck-ui-density: the page threw ${pageErrors.length} error(s) while measuring`);
+      for (const error of [...new Set(pageErrors)].slice(0, 5)) console.error(`  - ${error}`);
+      process.exit(1);
+    }
+
+    // A workbench that failed to mount looks "quiet". Require enough controls
+    // to be a real surface before trusting its numbers.
+    for (const surface of SURFACES) {
+      const { collapsed } = reports.get(surface);
+      if (collapsed.controlCount < 10) {
+        console.error(
+          `\ncheck-ui-density: ${surface} exposed only ${collapsed.controlCount} controls; the workbench probably failed to render`,
+        );
+        process.exit(1);
       }
     }
 

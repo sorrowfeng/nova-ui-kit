@@ -19,22 +19,29 @@ pub(super) const DEFAULT_THEME: &str = "light";
 /// Normalize a raw locale string to a supported locale tag.
 pub(super) fn normalize_locale(value: &str) -> String {
     let trimmed = value.trim();
-    if trimmed.eq_ignore_ascii_case("en") || trimmed.eq_ignore_ascii_case("en-US") {
+    // Common aliases first — "en" and "zh" are what callers actually write.
+    if trimmed.eq_ignore_ascii_case("en") {
         return "en-US".to_string();
     }
-    if trimmed.eq_ignore_ascii_case("zh") || trimmed.eq_ignore_ascii_case("zh-CN") {
+    if trimmed.eq_ignore_ascii_case("zh") {
         return "zh-CN".to_string();
     }
-    DEFAULT_LOCALE.to_string()
+    // Then the allowlist, so a new supported locale only has to be added there.
+    SUPPORTED_LOCALES
+        .iter()
+        .find(|supported| trimmed.eq_ignore_ascii_case(supported))
+        .map(|supported| supported.to_string())
+        .unwrap_or_else(|| DEFAULT_LOCALE.to_string())
 }
 
 /// Normalize a raw theme string to a supported theme name.
 pub(super) fn normalize_theme(value: &str) -> String {
     let trimmed = value.trim().to_ascii_lowercase();
-    if trimmed == "dark" {
-        return "dark".to_string();
-    }
-    DEFAULT_THEME.to_string()
+    SUPPORTED_THEMES
+        .iter()
+        .find(|supported| trimmed == **supported)
+        .map(|supported| supported.to_string())
+        .unwrap_or_else(|| DEFAULT_THEME.to_string())
 }
 
 /// Read the project locale, falling back to `fallback` then `zh-CN`.
@@ -170,11 +177,6 @@ pub(super) fn theme_surface_overrides() -> String {
         .to_string()
 }
 
-/// Full theme overlay: variables first, surface overrides last.
-pub(super) fn theme_css(theme: &str) -> String {
-    format!("{}{}", theme_variables(theme), theme_surface_overrides())
-}
-
 /// `lang` attribute value for the generated index.html.
 pub(super) fn html_lang(locale: &str) -> String {
     match normalize_locale(locale).as_str() {
@@ -243,9 +245,9 @@ mod tests {
     }
 
     #[test]
-    fn theme_css_switches_palette() {
-        let light = theme_css("light");
-        let dark = theme_css("dark");
+    fn theme_variables_switch_palette() {
+        let light = theme_variables("light");
+        let dark = theme_variables("dark");
         assert!(light.contains("--nova-theme-bg: #f8f7fb;"));
         assert!(dark.contains("--nova-theme-bg: #14121c;"));
         assert!(light.contains("Nova project theme: light"));

@@ -10,7 +10,15 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { SignalChip, StateBadge, isQuietCount } from "./view-helpers";
+import {
+  SignalChip,
+  StateBadge,
+  isQuietCount,
+  isQuietCountLabel,
+  isQuietStateLabel,
+  isReadoutStateLabel,
+  isSignalStateLabel,
+} from "./view-helpers";
 
 export type ProjectViewScope = Record<string, any>;
 
@@ -419,17 +427,34 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                               <span className="min-w-0">
                                 <span className="flex min-w-0 items-center gap-1.5">
                                   <span className="truncate font-semibold text-on-surface">{row.title}</span>
-                                  <Badge variant="outline" className="shrink-0 text-[0.58rem]">
+                                  {/* A category is a table column value, not a
+                                      status token. Pill-shaped, it read as
+                                      something to act on. */}
+                                  <span className="shrink-0 truncate text-[0.58rem] text-on-surface-variant">
                                     {row.kind}
-                                  </Badge>
+                                  </span>
                                 </span>
                                 <span className="sr-only">{row.detail}</span>
                               </span>
                             </button>
                             <div className="flex min-w-0 items-center gap-1.5">
-                              <Badge variant={projectSourceOverviewBadgeVariant(row.status)} className="shrink-0" data-builder-project-source-overview-state={row.status}>
-                                {row.statusLabel}
-                              </Badge>
+                              {isReadoutStateLabel(row.statusLabel) ? (
+                                /* A version or a tally is a value, not a state. */
+                                <span
+                                  className="shrink-0 truncate font-mono text-[0.66rem] text-on-surface"
+                                  data-builder-project-source-overview-state={row.status}
+                                >
+                                  {row.statusLabel}
+                                </span>
+                              ) : (
+                                <StateBadge
+                                  label={row.statusLabel}
+                                  signal={isSignalStateLabel(row.statusLabel)}
+                                  variant={projectSourceOverviewBadgeVariant(row.status)}
+                                  className="shrink-0"
+                                  data-builder-project-source-overview-state={row.status}
+                                />
+                              )}
                               <span className="truncate text-[0.66rem] text-on-surface-variant">{row.scope}</span>
                             </div>
                             <div
@@ -548,7 +573,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           </div>
                           <p className="min-w-0 truncate text-on-surface-variant">{item.detail}</p>
                           <p
-                            className="min-w-0 truncate rounded-md bg-surface-container px-2 py-1 font-mono text-[0.66rem] text-on-surface-variant"
+                            className="min-w-0 truncate font-mono text-[0.66rem] text-on-surface-variant"
                             data-builder-project-folder-health-path=""
                             data-builder-project-folder-health-path-density="single-line"
                             title={item.path}
@@ -641,9 +666,12 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             <span className="min-w-0">
                               <span className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 <span className="truncate font-semibold text-on-surface">{item.title}</span>
-                                <Badge variant={projectActionCenterBadgeVariant(item.tone)} className="shrink-0 text-[0.58rem]">
-                                  {item.badge}
-                                </Badge>
+                                <StateBadge
+                                  variant={projectActionCenterBadgeVariant(item.tone)}
+                                  className="shrink-0 text-[0.58rem]"
+                                  label={item.badge}
+                                  signal={!isQuietStateLabel(item.badge)}
+                                />
                               </span>
                               <span className="mt-1 line-clamp-2 leading-5 text-on-surface-variant">{item.detail}</span>
                               <span className="mt-1 block truncate font-mono text-[0.66rem] text-on-surface-variant">{item.meta}</span>
@@ -721,7 +749,10 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         >
                           <button
                             type="button"
-                            className="focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl px-2 py-1.5 text-left transition hover:bg-surface-container-high"
+                            className={cn(
+                              "focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl px-2 py-1.5 text-left transition hover:bg-surface-container-high",
+                              item.active ? "bg-secondary-container/60" : "",
+                            )}
                             data-builder-project-working-set-open={item.id}
                             aria-current={item.active ? "page" : undefined}
                             title={`${item.label} · ${item.relativePath}`}
@@ -738,9 +769,14 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                               <span className="mt-0.5 block truncate text-on-surface-variant">{item.detail}</span>
                               <span className="mt-0.5 block truncate font-mono text-[0.66rem] text-on-surface-variant">{item.relativePath}</span>
                             </span>
-                            <Badge variant={item.active ? "secondary" : item.dirty ? "destructive" : "outline"} className="shrink-0">
-                              {item.statusLabel}
-                            </Badge>
+                            {/* Kind words (逻辑 / 构建) ride the icon; only the row you must
+                                act on — or know is current — earns a chip. */}
+                            <StateBadge
+                              variant={item.active ? "secondary" : item.dirty ? "destructive" : "outline"}
+                              label={item.statusLabel}
+                              signal={item.active || item.dirty}
+                              className="shrink-0"
+                            />
                           </button>
                           <div className="flex shrink-0 items-center gap-1">
                             <Button
@@ -840,9 +876,10 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                               {item.savePolicy}
                             </p>
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5 lg:justify-end">
-                              <Badge variant={item.id === "generated" ? "secondary" : "outline"} className="shrink-0">
+                              {/* A storage kind is a column value, not a state worth a pill. */}
+                              <span className="shrink-0 text-[0.68rem] text-on-surface-variant">
                                 {item.id === "source" ? "tracked" : item.id === "generated" ? "generated" : ".nova"}
-                              </Badge>
+                              </span>
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -1090,7 +1127,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         if (row.kind === "group") {
                           return (
                             <div
-                              key={`group-${row.id}`}
+                              key={row.key}
                               className="sticky top-0 z-[1] flex items-center justify-between gap-2 rounded-md bg-surface-container-lowest/95 px-1.5 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.06em] text-on-surface-variant backdrop-blur"
                               data-builder-project-workspace-group={row.id}
                             >
@@ -1431,12 +1468,18 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                   <Badge variant="secondary" data-builder-project-node-dossier-domain-label="">
                                     {selectedProjectExplorerDossier.groupLabel}
                                   </Badge>
-                                  <Badge variant={selectedProjectExplorerDossier.syncState === "已同步" ? "secondary" : "outline"}>
-                                    {selectedProjectExplorerDossier.syncState}
-                                  </Badge>
-                                  <Badge variant="outline" data-builder-project-node-dossier-related-tabs="">
-                                    {selectedProjectExplorerDossier.relatedTabCount} 标签
-                                  </Badge>
+                                  <StateBadge
+                                    variant={selectedProjectExplorerDossier.syncState === "已同步" ? "secondary" : "outline"}
+                                    label={selectedProjectExplorerDossier.syncState}
+                                    signal={!isQuietStateLabel(selectedProjectExplorerDossier.syncState)}
+                                    data-builder-project-node-dossier-sync-state=""
+                                  />
+                                  <StateBadge
+                                    variant="outline"
+                                    label={`${selectedProjectExplorerDossier.relatedTabCount} 标签`}
+                                    signal={!isQuietCount(selectedProjectExplorerDossier.relatedTabCount)}
+                                    data-builder-project-node-dossier-related-tabs=""
+                                  />
                                 </div>
                                 <p className="mt-1 truncate leading-4 text-on-surface-variant" data-builder-project-node-dossier-source-of-truth="">
                                   事实来源：<span className="font-mono text-on-surface">{selectedProjectExplorerDossier.sourceOfTruth}</span>
@@ -1544,8 +1587,9 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                         {item.detail}
                                       </span>
                                     </span>
+                                    {/* This is the button's own label, not a status. */}
                                     <span
-                                      className="shrink-0 rounded-full bg-surface-container-high px-2 py-1 font-medium text-primary"
+                                      className="shrink-0 font-medium text-primary"
                                       data-builder-project-node-impact-action={item.action.kind}
                                     >
                                       {item.actionLabel}
@@ -1994,9 +2038,12 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                       </span>
                                       <span className="hidden min-w-0 lg:block">
                                         {route.badge ? (
-                                          <Badge variant={group.id === "generated" ? "secondary" : "outline"} className="max-w-full truncate text-[0.58rem]">
-                                            {route.badge}
-                                          </Badge>
+                                          <StateBadge
+                                            variant={group.id === "generated" ? "secondary" : "outline"}
+                                            className="max-w-full truncate text-[0.58rem]"
+                                            label={route.badge}
+                                            signal={!isQuietCountLabel(route.badge)}
+                                          />
                                         ) : (
                                           <span className="text-[0.66rem] text-on-surface-variant">-</span>
                                         )}
@@ -2087,9 +2134,13 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                               阶段表按源码、生成目标和本地状态排列。
                             </span>
                           </div>
-                          <Badge variant={projectSourceDirty ? "destructive" : "secondary"} className="shrink-0 text-[0.58rem]" data-builder-project-save-plan-state="">
-                            {projectSourceDirty ? "待同步" : "就绪"}
-                          </Badge>
+                          <StateBadge
+                            variant={projectSourceDirty ? "destructive" : "secondary"}
+                            className="shrink-0 text-[0.58rem]"
+                            label={projectSourceDirty ? "待同步" : "就绪"}
+                            signal={Boolean(projectSourceDirty)}
+                            data-builder-project-save-plan-state=""
+                          />
                         </div>
                         <div
                           className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(10rem,auto)] items-center gap-2 border-b border-outline-variant bg-surface-container px-2.5 py-1.5 text-[0.66rem]"
@@ -2131,9 +2182,12 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 <span className="grid min-w-0 grid-cols-[minmax(0,8rem)_minmax(0,1fr)] items-center gap-2">
                                   <span className="flex min-w-0 items-center gap-1.5">
                                     <span className="truncate font-medium text-on-surface">{step.title}</span>
-                                    <Badge variant={ready ? "secondary" : step.status === "warning" ? "destructive" : "outline"} className="shrink-0 text-[0.56rem]">
-                                      {ready ? "就绪" : step.status === "warning" ? `${step.pendingCount} 待同步` : "待生成"}
-                                    </Badge>
+                                    <StateBadge
+                                      variant={ready ? "secondary" : step.status === "warning" ? "destructive" : "outline"}
+                                      className="shrink-0 text-[0.56rem]"
+                                      label={ready ? "就绪" : step.status === "warning" ? `${step.pendingCount} 待同步` : "待生成"}
+                                      signal={!ready}
+                                    />
                                   </span>
                                   <span className="hidden min-w-0 truncate text-[0.66rem] text-on-surface-variant lg:block">{step.detail}</span>
                                 </span>
@@ -2188,9 +2242,10 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 <span className="grid min-w-0 grid-cols-[minmax(0,8rem)_minmax(0,1fr)] items-center gap-2">
                                   <span className="flex min-w-0 items-center gap-1.5">
                                     <span className="truncate font-medium text-on-surface">{item.title}</span>
-                                    <Badge variant={item.scope === "metadata" ? "outline" : item.scope === "generated" ? "secondary" : "outline"} className="shrink-0 text-[0.56rem]">
+                                    {/* Scope is a category, not a state; a pill would spend the eye's budget on taxonomy. */}
+                                    <span className="shrink-0 text-[0.56rem] text-on-surface-variant">
                                       {item.scope === "source" ? "源码" : item.scope === "generated" ? "生成" : ".nova"}
-                                    </Badge>
+                                    </span>
                                   </span>
                                   <span className="hidden min-w-0 truncate text-[0.66rem] text-on-surface-variant lg:block">{item.detail}</span>
                                 </span>

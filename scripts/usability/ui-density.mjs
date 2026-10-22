@@ -27,15 +27,17 @@ export const DENSITY_PROBE = `(() => {
   // hides surface noise behind a constant shared by every mode.
   const root =
     document.querySelector("[data-builder-readable-workbench]") || document.body;
-  const inViewport = (rect) =>
-    rect.width > 0 && rect.height > 0 &&
-    rect.bottom > 0 && rect.right > 0 &&
-    rect.top < window.innerHeight && rect.left < window.innerWidth;
+
+  // Counted as "in the surface", not "in the viewport". Scrolling must not
+  // change the answer: a panel does not get quieter by pushing its decoration
+  // below the fold, and an expanded section would otherwise look better than
+  // a collapsed one simply because it scrolled things out of view.
+  const hasLayout = (rect) => rect.width > 0 && rect.height > 0;
 
   const all = Array.from(root.querySelectorAll("*"));
   const visible = all.filter((el) => {
     const rect = el.getBoundingClientRect();
-    if (!inViewport(rect)) return false;
+    if (!hasLayout(rect)) return false;
     const style = window.getComputedStyle(el);
     if (style.visibility === "hidden" || style.opacity === "0" || style.display === "none") return false;
     // Screen-reader-only text is deliberately not painted; counting it would
@@ -104,21 +106,35 @@ export const DENSITY_PROBE = `(() => {
     return label.trim().length > 0;
   });
 
+  // Badge's own classes are identical at every call site, so the useful label is
+  // the nearest data-builder-* hook — the same identifier the tests use.
   const describe = (el) => {
     const cls = (el.className && typeof el.className === "string" ? el.className : "")
       .split(/\\s+/)
       .filter((token) => token && !token.startsWith("data-"))
-      .slice(0, 4)
+      .slice(0, 3)
       .join(".");
-    return el.tagName.toLowerCase() + (cls ? "." + cls : "");
+    let hook = "";
+    for (let host = el; host && !hook; host = host.parentElement) {
+      for (const attr of host.attributes || []) {
+        if (attr.name.startsWith("data-builder-")) {
+          hook = attr.name.replace("data-builder-", "") + (attr.value ? "=" + attr.value.slice(0, 28) : "");
+          break;
+        }
+      }
+    }
+    return el.tagName.toLowerCase() + (cls ? "." + cls : "") + (hook ? " @" + hook : "");
   };
 
   // Repeated chip text is the tell: "source" painted on every tree row is one
-  // design decision made seventeen times. Grouping surfaces that pattern.
+  // design decision made seventeen times. Grouping surfaces that pattern, and
+  // keeping one sample tag so the source is one look away instead of a search.
   const histogram = new Map();
   for (const chip of chips) {
     const text = leafTextOf(chip).slice(0, textLimit);
-    histogram.set(text, (histogram.get(text) || 0) + 1);
+    const entry = histogram.get(text) || { text, count: 0, sampleTag: describe(chip) };
+    entry.count += 1;
+    histogram.set(text, entry);
   }
 
   return {
@@ -130,8 +146,7 @@ export const DENSITY_PROBE = `(() => {
       tag: describe(el),
       text: leafTextOf(el).slice(0, textLimit),
     })),
-    chipHistogram: Array.from(histogram.entries())
-      .map(([text, count]) => ({ text, count }))
+    chipHistogram: Array.from(histogram.values())
       .sort((a, b) => b.count - a.count || a.text.localeCompare(b.text))
       .slice(0, 15),
   };
@@ -159,25 +174,26 @@ export const EXPAND_DISCLOSURES = `(() => {
 /**
  * Per-surface budgets, in both disclosure states.
  *
- * `collapsed` is the first impression: a user who just opened the app should
- * see a handful of status tokens and mostly actions. `expanded` is the working
- * state after drilling in; it may carry more, but not a wall.
+ * Counts are of the whole workbench, not just the current scroll window, so
+ * expanding a panel that pushes its decoration below the fold still counts.
  *
- * Pinned just above the measured state of each workbench so that adding
- * decoration fails the gate while adding a genuine feature does not.
+ * `collapsed` is the first impression. `expanded` is what someone lives in
+ * once they have opened the panels they need. Budgets sit just above the
+ * measured state so adding decoration fails while adding a feature does not;
+ * every optimization round should ratchet them down.
  */
 export const DENSITY_BUDGETS = {
-  project: { maxChips: 22, maxTextChars: 1150 },
-  design: { maxChips: 14, maxTextChars: 380 },
-  logic: { maxChips: 20, maxTextChars: 430 },
-  build: { maxChips: 14, maxTextChars: 310 },
+  project: { maxChips: 17, maxTextChars: 1350 },
+  design: { maxChips: 11, maxTextChars: 410 },
+  logic: { maxChips: 17, maxTextChars: 380 },
+  build: { maxChips: 9, maxTextChars: 265 },
 };
 
 export const EXPANDED_BUDGETS = {
-  project: { maxChips: 24, maxTextChars: 1300 },
-  design: { maxChips: 16, maxTextChars: 420 },
-  logic: { maxChips: 25, maxTextChars: 1150 },
-  build: { maxChips: 25, maxTextChars: 1300 },
+  project: { maxChips: 68, maxTextChars: 5700 },
+  design: { maxChips: 14, maxTextChars: 1180 },
+  logic: { maxChips: 43, maxTextChars: 3550 },
+  build: { maxChips: 78, maxTextChars: 18100 },
 };
 
 /**

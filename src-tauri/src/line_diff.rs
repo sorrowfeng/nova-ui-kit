@@ -100,11 +100,6 @@ pub fn diff_text(old: &str, new: &str) -> LineDiff {
     }
 }
 
-/// Summary-only helper (kept for the compact per-entry badge).
-pub fn diff_summary(old: &str, new: &str) -> LineDiffSummary {
-    diff_text(old, new).summary
-}
-
 fn diff_lines(old: &[&str], new: &[&str]) -> Vec<Edit> {
     let mut edits = Vec::new();
     let mut old_start = 0usize;

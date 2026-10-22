@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Activity, AlertTriangle, ArrowRight, Box, Braces, Bug, CheckCircle2, ChevronRight, ClipboardCopy, Clock3, Copy, CornerDownRight, FileJson, FolderOpen, ListChecks, MessageSquare, MousePointer2, MoveDown, MoveUp, Navigation, Play, Plus, RotateCcw, Save, ScrollText, Search, Settings2, Terminal, TextCursorInput, ToggleLeft, Trash2, Wand2 } from "lucide-react";
 import { BackendIntegrationKind, BackendIntegrationLanguage, BackendIntegrationTransport, RustCommandParameterSource, RustCommandParameterType, RustCommandResultSchema } from "./types";
 import { Badge } from "@/components/ui/badge";
+import { StateBadge, isQuietCount } from "./view-helpers";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_RUST_COMMAND_RESPONSE } from "./rust-commands";
 import { Input } from "@/components/ui/input";
@@ -3905,7 +3906,12 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         onClick={() => setRustDebuggerPanel(tab.id)}
                       >
                         <span>{tab.label}</span>
-                        <span className="rounded-full bg-surface-container-lowest px-1.5 py-0.5 font-mono text-[0.58rem]">{tab.count}</span>
+                        <StateBadge
+                          variant="secondary"
+                          className="font-mono text-[0.58rem]"
+                          label={String(tab.count)}
+                          signal={!isQuietCount(tab.count)}
+                        />
                       </button>
                     ))}
                   </div>

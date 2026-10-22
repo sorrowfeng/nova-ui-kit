@@ -612,6 +612,8 @@ export type ProjectExplorerRow =
   | {
       kind: "group";
       id: ProjectExplorerGroupId;
+      /** Unique per contiguous run: the same group can open more than once. */
+      key: string;
       label: string;
       detail: string;
       count: number;
@@ -6600,6 +6602,43 @@ export function projectChangeScopeStatusVariant(scope: ProjectChangeScope): "def
   return "outline";
 }
 
+/**
+ * Scope status is a discriminated value, not copy. Rendering it raw leaked the
+ * wire names ("unknown", "dirty", "clean") into the Chinese UI.
+ */
+export function projectChangeScopeStatusLabel(status: ProjectChangeScope["status"]): string {
+  switch (status) {
+    case "dirty":
+      return "有变更";
+    case "clean":
+      return "已同步";
+    default:
+      return "未分析";
+  }
+}
+
+/**
+ * Activity statuses are free-form wire names from the build/run history
+ * ("built", "launched", "ready", "saved"). Rendering them raw leaked English
+ * into the Chinese UI, and comparing them against the Chinese quiet set never
+ * matched — so every routine entry kept its chip.
+ */
+export function projectActivityStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    built: "已构建",
+    launched: "已启动",
+    truncated: "已截断",
+    ready: "就绪",
+    saved: "已保存",
+    succeeded: "已完成",
+    failed: "失败",
+    running: "运行中",
+    skipped: "已跳过",
+    canceled: "已取消",
+  };
+  return labels[status] ?? status;
+}
+
 export function dependencyGraphEventStatusVariant(status?: string): "default" | "secondary" | "outline" | "destructive" {
   if (status === "failed" || status === "canceled") {
     return "destructive";
@@ -8427,6 +8466,10 @@ export function projectExplorerDossierTasks(groupId: ProjectExplorerGroupId): Pr
 export function groupProjectExplorerRows(nodes: ProjectExplorerNode[]): ProjectExplorerRow[] {
   const rows: ProjectExplorerRow[] = [];
   let previousGroupId: ProjectExplorerGroupId | null = null;
+  // "meta" is the catch-all group, so a run of it can sit between two named
+  // groups and produce the same header twice. One header per contiguous run is
+  // what the layout wants; the run index is what makes each header's key unique.
+  let runIndex = 0;
 
   for (const node of nodes) {
     const groupId = projectExplorerNodeGroupId(node);
@@ -8436,10 +8479,12 @@ export function groupProjectExplorerRows(nodes: ProjectExplorerNode[]): ProjectE
       rows.push({
         kind: "group",
         id: groupId,
+        key: `group-${groupId}-${runIndex}`,
         label: meta.label,
         detail: meta.detail,
         count: groupNodes.length,
       });
+      runIndex += 1;
       previousGroupId = groupId;
     }
     rows.push({ kind: "node", node });

@@ -7,7 +7,9 @@ import {
   ProjectJumpIcon,
   ProjectTaskIcon,
   PropertySection,
+  StateBadge,
   TemplateMiniPreview,
+  isQuietCount,
 } from "./builder/view-helpers";
 import {
   lazy,
@@ -758,6 +760,7 @@ import {
   projectActivityTimeline,
   projectChangeImpactStatusLabel,
   projectChangeImpactStatusVariant,
+  projectChangeScopeStatusLabel,
   projectChangeScopeStatusVariant,
   projectDependencyGraphSourceRefs,
   projectDependencyValidityViews,
@@ -16311,19 +16314,40 @@ export function BuilderShowcase() {
       value: "navigator",
       label: "导航",
       icon: FileJson,
-      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{activeProject.files.length}</Badge>,
+      badge: (
+        <StateBadge
+          variant="outline"
+          className="px-1 py-0 text-[0.55rem] leading-4"
+          label={String(activeProject.files.length)}
+          signal={!isQuietCount(activeProject.files.length)}
+        />
+      ),
     },
     {
       value: "components",
       label: "组件",
       icon: Layers,
-      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{palette.length}</Badge>,
+      badge: (
+        <StateBadge
+          variant="outline"
+          className="px-1 py-0 text-[0.55rem] leading-4"
+          label={String(palette.length)}
+          signal={!isQuietCount(palette.length)}
+        />
+      ),
     },
     {
       value: "assets",
       label: "资源",
       icon: FileImage,
-      badge: <Badge variant="outline" className="px-1 py-0 text-[0.55rem] leading-4">{activeProject.assets.length}</Badge>,
+      badge: (
+        <StateBadge
+          variant="outline"
+          className="px-1 py-0 text-[0.55rem] leading-4"
+          label={String(activeProject.assets.length)}
+          signal={!isQuietCount(activeProject.assets.length)}
+        />
+      ),
     },
   ];
   const rightDockTabs: BuilderDockTab<BuilderRightDockTab>[] = [
@@ -16333,9 +16357,31 @@ export function BuilderShowcase() {
     { value: "impact", label: "影响", icon: AlertTriangle },
   ];
   const bottomDockTabs: BuilderDockTab<BuilderBottomDockTab>[] = [
-    { value: "issues", label: "问题", icon: AlertTriangle, badge: <Badge variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}>{builderIssueCount}</Badge> },
+    {
+      value: "issues",
+      label: "问题",
+      icon: AlertTriangle,
+      badge: (
+        <StateBadge
+          variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}
+          label={String(builderIssueCount)}
+          signal={!isQuietCount(builderIssueCount)}
+        />
+      ),
+    },
     { value: "output", label: "输出", icon: Terminal },
-    { value: "tasks", label: "任务", icon: ClipboardCopy, badge: <Badge variant="outline">{projectTasks.length}</Badge> },
+    {
+      value: "tasks",
+      label: "任务",
+      icon: ClipboardCopy,
+      badge: (
+        <StateBadge
+          variant="outline"
+          label={String(projectTasks.length)}
+          signal={!isQuietCount(projectTasks.length)}
+        />
+      ),
+    },
     { value: "logs", label: "日志", icon: FileJson },
     { value: "preview", label: "预览", icon: MonitorPlay },
   ];
@@ -19333,6 +19379,7 @@ export function BuilderShowcase() {
       projectChangeImpact,
       projectChangeImpactStatusLabel,
       projectChangeImpactStatusVariant,
+      projectChangeScopeStatusLabel,
       projectChangeScopeStatusVariant,
       projectDependencyGraph,
       projectDependencySources,
