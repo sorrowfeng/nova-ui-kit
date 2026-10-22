@@ -203,8 +203,10 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 2·3 | 清掉 `checkingTarget`：没有 setter 的 `useState`，18 处读法全是死分支，连同 `BuildView` 那串永远为假的 `disabled` 条件一起删 | **18783** | **18820** |
 | 2·4 | 子视图直接 `scope={scope}` 收袋子，删掉 `ShellView` 里两份手工抄写（1089 行字面量 + 838 行只为转发而存在的解构）。`ShellViewScope` 改由四个键集的交集派生；给 lazy 出来的 `ShellView` 补上类型标注，让袋子字面量本身也被查 | `ShellView` **3365** | **3365** |
 | 2·5 | 删掉 5 个没有任何文件 import 过的模块（388 行），含 `CanvasContextMenu.tsx` 这份孤儿副本 | `builder/` **50326** | — |
+| 3·0 | 审计表按域切成 4 片（surface/code/project/chrome + composer），39 个 flag 零共读才动手 | `editor-experience-audit.ts` **938 → 4 片全 <800** | 棘轮表划掉一行 |
+| 3·1 | 删掉 5 个没人 invoke 的 Tauri 命令（`check/build/bundle_editor_project`、`create_editor_project`，连同永远跑不到的两个函数半边、随之孤儿的 `project_paths`/`write_readme`）；`applyBackendBuildResult` 补上一直漏写的 3 个 bundle 产物字段；`building`/`bundling` 改由后台任务驱动；Git 冲突编辑器接上（换项目/快照后重读状态，冲突可点开）；新增 `check:command-reachability` 两个方向把这类东西钉死 | `BuilderShowcase` **18726** | **18760** |
 
-**接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18790**，`builder/` 51323 → **50326**。
+**接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
@@ -214,7 +216,8 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 - **`check:a11y` 里曾经有两道关不掉的门，Phase 1 修好了，记下病症免得再犯。** 两处是同一类错：**量的不是它以为在量的东西。**
   1. *固定 `delay(5000)` 当等待用。* 慢机器上 shell 还在挂载，门就去点 `[data-builder-mode-button="design"]`，报「no element」——控件马上就来。失败原因是竞态，不是界面。改成 `waitFor(selector)` 有界轮询：元素没到就带着选择器名字失败。
   2. *折叠面板那两条断言对零条面板循环。* `shell.disclosures` 是首屏快照里 `<details>` 的集合，而面板在另外三个 mode 里；循环空转，checklist 5.1 一直是绿的、其实一条都没测。**空集合上的循环是不败的门。** 改成走四个 mode 收集，并且要求收集结果非零——收集本身也要能输。
-- ~~**「快速检查」这功能在 UI 上根本进不去。**~~ → **已清掉。** `checkingTarget` 是个没有 setter 的 `useState`，永远是 `null`；它每一处读法都是死分支（`Boolean(checkingTarget) || x` 就是 `x`，`checkingTarget ?? y` 就是 `y`）。18 处引用连同 `BuildView` 上那一串 `disabled` 条件一起删了，行为逐条等价（冒烟仍 110/110）。**功能缺失仍然在**：`check_editor_project` 这个后端能力至今没有 UI 入口。哪天要接回来，它得自带状态，而不是复用这堆被注释成「留给将来」的空壳——空壳养不住功能，只会让人以为功能在。
+- ~~**「快速检查」这功能在 UI 上根本进不去。**~~ → **已清掉。** `checkingTarget` 是个没有 setter 的 `useState`，永远是 `null`；它每一处读法都是死分支（`Boolean(checkingTarget) || x` 就是 `x`，`checkingTarget ?? y` 就是 `y`）。18 处引用连同 `BuildView` 上那一串 `disabled` 条件一起删了，行为逐条等价（冒烟仍 110/110）。
+  ~~**功能缺失仍然在：`check_editor_project` 至今没有 UI 入口。**~~ → **这条记错了**，见「没做完的」第 3 条：UI 入口一直有，病是那几个命令本身没人调。同类的 `building`/`bundling`、`conflictFile` 也一起清/接了，见第 4 条。**空壳养不住功能，只会让人以为功能在**——但空壳也不一定是「没接 UI」，它可能整个功能都是死的。
 - **`window` 这个名字在项目里有两个意思。** Phase 0 把 DOM 全局从 scope 袋里拿掉了：它被当普通键传过三层，`DesignView` 里 `window.prompt(...)` 实际拿到的是袋子里那个。今天袋子里没人供给 `window`，所以它回落到全局、侥幸能跑；而项目自己有「窗口壳」这个领域概念（`page.windowKind`、`releaseWindowKinds`、`data-builder-page-window-kind`），哪天谁加一个叫 `window` 的项目域对象，批量改标签那个弹窗当场就炸。**名字遮蔽比死代码危险**：死代码顶多占地，遮蔽会在别的文件里悄悄改行为。
   Phase 2 的清扫在同一类里又抓到一个：袋子里有个键叫 `name`，值是 `window.name`（另一个同名同姓的还有 `open`，那是 `@tauri-apps/plugin-dialog` 的 `open`）。**已清掉**，连同 `length`、`railNextStepLabel` 一共 5 个没人读的袋键，和 ShellView 四份子视图字面量里 9 个子视图根本不解构的键。
   顺带记一个 `tsc` 的盲区，Phase 0 的清扫就是被它挡住的：**对象字面量里的简写属性 `{ name }` 在编译器眼里是「用了 `name`」**，所以 `noUnusedLocals` 不报；只有真的没人解构、没人用 `scope.name` 去取，它才是死的。这类死键得靠「谁在读」来量，不能靠编译器。
@@ -247,9 +250,9 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 npm run tauri:exe && npm run check:desktop-exe
 ```
 
-### 1. Phase 3 完全没动：拆胖视图
+### 1. Phase 3 只做完了第一刀：还剩 11 个胖文件
 
-这是四期方案里唯一一期**一行都还没写**的。目标是把子面板从这些文件里拆出去，规则只有一条：**渲染结果逐字节等价**（同标签、同嵌套、同 `data-builder-*`、同中文文案）。拆之前先抓一份渲染 HTML 快照，拆完比对。
+第一刀落在 `editor-experience-audit.ts`（938 → 拆成 4 个域切片 + 30 行 composer，全部低于 800）。剩下的目标是把子面板从这些文件里拆出去，规则只有一条：**渲染结果逐字节等价**（同标签、同嵌套、同 `data-builder-*`、同中文文案）。拆之前先抓一份渲染 HTML 快照，拆完比对。
 
 | 文件 | 现在 | 备注 |
 |------|-----:|------|
@@ -257,26 +260,48 @@ npm run tauri:exe && npm run check:desktop-exe
 | `DesignView.tsx` | 5768 | |
 | `LogicView.tsx` | 5713 | |
 | `BuilderItemPreview.tsx` | 4844 | |
-| `BuildView.tsx` | 4768 | |
+| `BuildView.tsx` | 4774 | 接上 Git 冲突编辑器时涨了 6 行，棘轮上限一并抬到 4774 并写清是哪几行 |
 | `ShellView.tsx` | 3365 | Phase 2·4 之后已经掉了 1913 行 |
 | `component-palette.ts` | 2534 | |
 | `ProjectView.tsx` | 2321 | |
-| `editor-experience-audit.ts` | 938 | 纯数据表，按域拆最安全，**建议从这个开刀** |
 | `types-project.ts` | 923 | |
 | `SelectionActionBar.tsx` | 882 | |
 | `change-impact.ts` | 820 | |
 
-12 个文件都钉在 `check:builder-file-size` 的棘轮上，**只许降不许涨**；拆下去之后记得把上限一并拧下来，否则那条门禁会报「缩了就得把上限拧下来」。
+11 个文件都钉在 `check:builder-file-size` 的棘轮上，**只许降不许涨**（涨要写清是哪几行是干什么的）；拆下去之后记得把上限一并拧下来，否则那条门禁会报「缩了就得把上限拧下来」。
+
+`editor-experience-audit.ts` 已经拆完，从这张表里划掉了。它是纯数据表，**是这张表里最安全的一刀，也是唯一已经验证过的一刀**：39 个派生 flag 全部只被一个域读，没有跨域依赖——先量出这条，再切。
 
 ### 2. Phase 2 的另一半没做：查值
 
 现在每个名字的**键**是查的，**值**还是 `any`。计划里写的就是「先分组，后收紧」，目前只做完了分组。收紧是 1087 个值的类型，是个长活，建议按域一个一个来（先 `project` 那 108 个），每收紧一片就跑一遍冒烟——**别把「收键」和「收值」混在一次提交里**，出问题会分不清是哪一半的锅。
 
-### 3. `check_editor_project` 还是没有 UI 入口
+### 3. ~~`check_editor_project` 还是没有 UI 入口~~ → **记错了，真问题在别处**
 
-后端能力在，界面上进不去。要么接回来（自带状态，别再留空壳），要么在产品文档里明确说「这功能不做」。**别再用「留个 setter 的空 useState」这种方式等着**——Phase 0/2 已经为此清过两次了。
+这条原先写的结论是错的，留着改正是为了下次别再照着错的开工。
 
-### 4. 两次踩到的同一类坑，别再踩
+`check_editor_project` **一直有 UI 入口**，而且不止一个：Build 页「更多检查」下拉里的前端检查 / Rust 检查 / 全部检查、标题栏菜单的「运行检查」、快捷键、任务中心的 preset、change-impact 的 nextActions，全都走 `enqueueProjectTask("quick-check-*")` → `waitForBackendProjectTask(..., "check", ...)` → `start_editor_project_task` → `run_editor_check_background_task`。
+
+**真正的病是反的：命令没人调。** `check_editor_project`、`build_editor_project`、`bundle_editor_project` 三个 `#[tauri::command]` 注册了但前端一处都没 invoke——它们的逻辑在 `editor_tasks.rs` 的后台任务跑手里被重写了一遍，UI 走的是后台那条。`buildActiveProject` / `bundleActiveProject` 看着在调它们，但这两个函数只在「被就绪度问题挡住」那个分支里被调用，而函数第一件事就是 `if (errorCount > 0) return null`——**invoke 那段永远跑不到**。`create_editor_project` 同理（前端自己 `createProject` 建好再 `save_editor_project` 存）。
+
+和 `CanvasContextMenu.tsx` 是同一类：**孤儿副本**。冒烟 110 项测得到行为，因为行为在活的那份里，所以死的那份一直没人发现。已删（5 个命令 + 两个永远跑不到的函数半边 + 随之变成孤儿的 `project_paths` / `write_readme`）。
+
+抓这类东西的办法也留下来了：`check:command-reachability`，两个方向都查——注册了没调、调了没注册。它就是靠 `read_git_conflict` 那一条红的逼出了下面第 4 条。
+
+### 4. 一个功能可以整块是死的：Git 冲突编辑器
+
+`check_editor_project` 那条顺手量出来的，比它本身严重。
+
+`ConflictMergeEditor` 组件在，`resolve_git_conflict` 接好了，`read_git_conflict` 后端和测试都在。**但 `conflictFile` 只被写过 `null`**——`setConflictFile` 全项目没有一处传非空值。于是编辑器永远不渲染，`read_git_conflict` 永远没人调，`git_project_status` 也只有「解决完冲突之后」才被调用一次（那一步同样永远走不到）。**整块功能是闭环的死代码**，面板上「Git 工作区」那一段也一直是空的。
+
+这是**第三次**踩同一个坑：`checkingTarget`（清了）、`building`/`bundling`（setters 根本没被调用过，按钮的 disabled 一直是假的）、`conflictFile`。三次都是「`useState` 的 setter 只被传过 `null`/`false`」。
+
+已经接上了：换项目时重读 git 状态，Git 快照之后也重读，冲突文件可以点开进合并编辑器。`building`/`bundling` 改由后台任务的真实状态驱动。
+
+**留个检测办法，别再靠人眼：** 新写 `useState` 时问一句「这个 setter 有没有一处传非空？」——`tsc --noUnusedLocals` 只能告诉你 setter 有没有被调用，告诉不了你它是不是只被传了初值。这条 `tsc` 查不出来，得靠评审，或者靠「UI 上真的点得到吗」的冒烟。
+
+### 5. 两次踩到的同一类坑，别再踩
 
 - **门禁要能输。** 固定 `delay()` 当等待用、对空数组循环断言、正则去量符号有没有被用——这三种都会让门「绿着但什么都没测」。现在 `check:a11y` 的 `waitFor`、`check:builder-file-size` 的「缩了就得拧上限」、以及 `phase2-drop-dead-scope-keys.mjs` 里那道 25 处的熔断，都是被坑过之后补的。新写门禁时先问一句：**它输了会是什么样？**
-- **测量工具自己的 bug 会伪装成结论。** 本轮至少有三次是量错了而不是代码错了：正则多打一个 `)` 让整份 import 被吞掉、`replace` 只换第一处结果删错了行、脚本把全路径再拼一次目录于是全部 MISS 还被 `catch` 吞了。**测量脚本要对自己断言**（这次的 `phase2-wire-scope-type.mjs` 就是靠「行数变化必须为 0」抓住了替换串少个换行）。
+- **测量工具自己的 bug 会伪装成结论。** 至少有六次是量错了而不是代码错了：正则多打一个 `)` 让整份 import 被吞掉、`replace` 只换第一处结果删错了行、脚本把全路径再拼一次目录于是全部 MISS 还被 `catch` 吞了、行号 1-based 去索引 0-based 数组、CRLF 文件被脚本重写成 LF、**用正则去扫 TS 而不是用编译器**。最后这条最贵：`invoke` 是产品文案里的一个词（「用 invoke 调用 Rust commands」），`invoke("${name}")` 是显示给用户看的代码预览，`function invokeIfAvailable<T>(...)` 是定义不是调用——正则三样全数成调用。**改用 TypeScript 的 AST 之后一次就对了。** 测量脚本要对自己断言。
+- **别自己写词法分析器。** `maskStringsAndComments` 那版为了躲开文案里的 `invoke` 去把字符串和注释抹掉，结果在正则字面量上失同步，把真代码抹了，`inspect_release_pipeline_artifact` 这个明明有调用的命令被报成孤儿。**能用编译器就别用正则。**

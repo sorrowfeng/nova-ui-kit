@@ -12095,6 +12095,14 @@ export function BuilderShowcase() {
       ...project,
       rootPath: result.paths.root_path,
       outputExePath: result.paths.output_exe_path ?? project.outputExePath,
+      // Bundle fields are recorded for every build-kind result. A plain build
+      // reports null/empty bundle fields and the ?? / length guards keep whatever
+      // the last bundle left behind; without these three the install-package
+      // path never wrote them and the "安装包目录" row stayed empty until a
+      // history entry happened to supply one.
+      outputBundleDir: result.bundle_dir ?? project.outputBundleDir,
+      outputBundlePaths: result.bundle_paths?.length ? result.bundle_paths : project.outputBundlePaths,
+      outputBundleManifestPath: result.bundle_manifest_path ?? project.outputBundleManifestPath,
       rustSourceMap: normalizeGeneratedRustSourceMap(result.rust_source_map) ?? project.rustSourceMap,
       rustSourceMapPath: result.paths.rust_source_map_path,
       generatedRustSourceMapPath: result.paths.generated_rust_source_map_path,
@@ -12105,7 +12113,26 @@ export function BuilderShowcase() {
     void refreshManagedProjects();
   };
 
+  // building / bundling used to be useState nothing ever set — the only writers
+  // lived in the direct build/bundle functions, which were unreachable (see the
+  // collapse below). The background registry is what actually runs one, so the
+  // busy flag is driven here. A check drives neither: it produces no artefact,
+  // and the task list already shows it as running.
   const waitForBackendProjectTask = async (
+    frontendTaskId: string,
+    taskKind: "check" | "build" | "bundle",
+    checkKind?: "frontend" | "rust" | "all",
+  ): Promise<ProjectTaskRunResult> => {
+    const markBusy = taskKind === "build" ? setBuilding : taskKind === "bundle" ? setBundling : null;
+    markBusy?.(true);
+    try {
+      return await runBackendProjectTask(frontendTaskId, taskKind, checkKind);
+    } finally {
+      markBusy?.(false);
+    }
+  };
+
+  const runBackendProjectTask = async (
     frontendTaskId: string,
     taskKind: "check" | "build" | "bundle",
     checkKind?: "frontend" | "rust" | "all",
@@ -12182,6 +12209,49 @@ export function BuilderShowcase() {
       backendTaskId: current.id,
     };
   };
+
+  // Git 状态和冲突编辑器。这两件以前各有一半：resolve_git_conflict 接在
+  // ConflictMergeEditor 上，但那个编辑器挂在 conflictFile 上，而 conflictFile
+  // 只被写过 null——从来没有人调 read_git_conflict 去填它。git_project_status
+  // 也只有解决完冲突之后才会被调用一次，那一步同样永远走不到。
+  const refreshProjectGitStatus = async () => {
+    const rootPath = activeProject.rootPath ?? "";
+    if (!rootPath.trim()) {
+      setProjectGitStatus(null);
+      return;
+    }
+    const status = await invokeIfAvailable<{ clean: boolean; conflicted: string[]; changed: string[] }>(
+      "git_project_status",
+      { rootPath },
+    );
+    setProjectGitStatus(status);
+  };
+
+  const openGitConflict = async (filePath: string) => {
+    const rootPath = activeProject.rootPath ?? "";
+    if (!rootPath.trim()) {
+      setBuildError("读取冲突需要项目有磁盘路径。");
+      return;
+    }
+    try {
+      const file = await invokeIfAvailable<ConflictFile>("read_git_conflict", { rootPath, filePath });
+      if (!file) {
+        setBuildError("读取冲突需要 Tauri 桌面运行时。");
+        return;
+      }
+      setConflictFile(file);
+      setMode("design");
+    } catch (error) {
+      setBuildError(String(error));
+    }
+  };
+
+  useEffect(() => {
+    void refreshProjectGitStatus();
+    // 依赖数组只跟 rootPath：换项目就重读一次 git 状态。不要往里加别的，
+    // 那等于把「什么时候重读」藏进重构里。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject.rootPath]);
 
   const runEditorExperienceAudit = async (): Promise<ProjectTaskRunResult> => {
     setMode("build");
@@ -12464,7 +12534,7 @@ export function BuilderShowcase() {
         return { summary: "生成窗口验证已完成。" };
       case "build-exe":
         if (buildReadinessSummary.errorCount > 0) {
-          await buildActiveProject();
+          reportBuildBlocked("构建");
           return {
             status: "skipped",
             summary: `exe 构建被 ${buildReadinessSummary.errorCount} 个就绪问题阻塞：${buildReadinessSummary.items.find((i) => i.severity === "error")?.title ?? "见就绪列表"}`,
@@ -12473,7 +12543,7 @@ export function BuilderShowcase() {
         return waitForBackendProjectTask(task.id, "build");
       case "bundle-installer":
         if (buildReadinessSummary.errorCount > 0) {
-          await bundleActiveProject();
+          reportBuildBlocked("安装包构建");
           return {
             status: "skipped",
             summary: `安装包构建被 ${buildReadinessSummary.errorCount} 个就绪问题阻塞：${buildReadinessSummary.items.find((i) => i.severity === "error")?.title ?? "见就绪列表"}`,
@@ -15039,160 +15109,24 @@ export function BuilderShowcase() {
     };
   };
 
-  const buildActiveProject = async () => {
+  // build 和 bundle 都走后台任务注册表（下面的 waitForBackendProjectTask），
+  // 那条路已经写好构建历史、产物路径和依赖图事件。直接函数剩下的唯一职责是
+  // 「被就绪度问题挡住」这件事——所以它们现在只剩这一点。以前下面还会去 invoke
+  // build_editor_project / bundle_editor_project，但它们只在 errorCount > 0 时
+  // 被调用，而第一件事就是 errorCount > 0 就 return，那段永远跑不到。
+  const reportBuildBlocked = (label: string) => {
+    const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
+    const message = [
+      `${label}被阻塞：${blockingItems.length} 个就绪度问题。`,
+      ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
+    ].join("\n");
     setMode("build");
-    setBuilding(true);
-    setBuildError("");
-
-    if (buildReadinessSummary.errorCount > 0) {
-      const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
-      const message = [
-        `构建被阻塞：${blockingItems.length} 个就绪度问题${blockingItems.length === 1 ? "" : "s"}.`,
-        ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
-      ].join("\n");
-      setBuildError(message);
-      updateActiveProject((project) => ({
-        ...project,
-        buildLog: message,
-      }));
-      setBuilding(false);
-      return null;
-    }
-
-    try {
-      const result = await invokeIfAvailable<BuildResult>("build_editor_project", {
-        project: activeProject,
-        rustLogic: activeProject.rustLogic,
-      });
-
-      if (!result) {
-        const message = "构建需要在 Tauri 桌面 app 中运行。浏览器模式只会把工作区保存到本地。";
-        updateActiveProject((project) => ({
-          ...project,
-          buildLog: message,
-        }));
-        return null;
-      }
-
-      const buildEntry = createBuildHistoryEntry(result, activeProject, buildReadinessSummary, windowVisualAudit);
-      updateActiveProject((project) => ({
-        ...project,
-        rootPath: result.paths.root_path,
-        outputExePath: result.paths.output_exe_path ?? project.outputExePath,
-        rustSourceMap: normalizeGeneratedRustSourceMap(result.rust_source_map) ?? project.rustSourceMap,
-        rustSourceMapPath: result.paths.rust_source_map_path,
-        generatedRustSourceMapPath: result.paths.generated_rust_source_map_path,
-        lastGeneratedFileSummary: normalizeGeneratedFileChangeSummary(result.generated_files) ?? project.lastGeneratedFileSummary,
-        buildLog: result.log,
-        buildHistory: [buildEntry, ...(project.buildHistory ?? [])].slice(0, 12),
-      }));
-      recordProjectDependencyGraphEvent(
-        {
-          kind: "build",
-          actionId: "build-exe",
-          status: result.success ? "succeeded" : "failed",
-          summary: buildEntry.summary,
-          artifactPath: result.paths.output_exe_path ?? result.paths.generated_app_dir,
-        },
-        projectChangeImpact,
-        { ...activeProject, rootPath: result.paths.root_path, outputExePath: result.paths.output_exe_path ?? activeProject.outputExePath },
-      );
-      void refreshManagedProjects();
-      return result;
-    } catch (error) {
-      const message = String(error);
-      setBuildError(message);
-      updateActiveProject((project) => ({
-        ...project,
-        buildLog: message,
-      }));
-      throw error;
-    } finally {
-      setBuilding(false);
-    }
-  };
-
-  const bundleActiveProject = async () => {
-    setMode("build");
-    setBundling(true);
-    setBuildError("");
-
-    if (buildReadinessSummary.errorCount > 0) {
-      const blockingItems = buildReadinessSummary.items.filter((item) => item.severity === "error");
-      const message = [
-        `安装包 build blocked by ${blockingItems.length} 个就绪度问题${blockingItems.length === 1 ? "" : "s"}.`,
-        ...blockingItems.map((item) => `- ${item.title}: ${item.detail}`),
-      ].join("\n");
-      setBuildError(message);
-      updateActiveProject((project) => ({
-        ...project,
-        buildLog: message,
-      }));
-      setBundling(false);
-      return null;
-    }
-
-    try {
-      const result = await invokeIfAvailable<BuildResult>("bundle_editor_project", {
-        project: activeProject,
-        rustLogic: activeProject.rustLogic,
-      });
-
-      if (!result) {
-        const message = "安装包构建需要在 Tauri 桌面 app 中运行。浏览器模式只会把工作区保存到本地。";
-        updateActiveProject((project) => ({
-          ...project,
-          buildLog: message,
-        }));
-        return null;
-      }
-
-      const buildEntry = createBuildHistoryEntry(result, activeProject, buildReadinessSummary, windowVisualAudit);
-      updateActiveProject((project) => ({
-        ...project,
-        rootPath: result.paths.root_path,
-        outputExePath: result.paths.output_exe_path ?? project.outputExePath,
-        outputBundleDir: result.bundle_dir ?? project.outputBundleDir,
-        outputBundlePaths: result.bundle_paths?.length ? result.bundle_paths : project.outputBundlePaths,
-        outputBundleManifestPath: result.bundle_manifest_path ?? project.outputBundleManifestPath,
-        rustSourceMap: normalizeGeneratedRustSourceMap(result.rust_source_map) ?? project.rustSourceMap,
-        rustSourceMapPath: result.paths.rust_source_map_path,
-        generatedRustSourceMapPath: result.paths.generated_rust_source_map_path,
-        lastGeneratedFileSummary: normalizeGeneratedFileChangeSummary(result.generated_files) ?? project.lastGeneratedFileSummary,
-        buildLog: result.log,
-        buildHistory: [buildEntry, ...(project.buildHistory ?? [])].slice(0, 12),
-      }));
-      recordProjectDependencyGraphEvent(
-        {
-          kind: "bundle",
-          actionId: "bundle-installer",
-          status: result.success ? "succeeded" : "failed",
-          summary: buildEntry.summary,
-          artifactPath: result.bundle_manifest_path ?? result.bundle_paths?.[0] ?? result.bundle_dir ?? result.paths.generated_app_dir,
-        },
-        projectChangeImpact,
-        {
-          ...activeProject,
-          rootPath: result.paths.root_path,
-          outputExePath: result.paths.output_exe_path ?? activeProject.outputExePath,
-          outputBundleDir: result.bundle_dir ?? activeProject.outputBundleDir,
-          outputBundlePaths: result.bundle_paths?.length ? result.bundle_paths : activeProject.outputBundlePaths,
-          outputBundleManifestPath: result.bundle_manifest_path ?? activeProject.outputBundleManifestPath,
-        },
-      );
-      void refreshManagedProjects();
-      return result;
-    } catch (error) {
-      const message = String(error);
-      setBuildError(message);
-      updateActiveProject((project) => ({
-        ...project,
-        buildLog: message,
-      }));
-      throw error;
-    } finally {
-      setBundling(false);
-    }
+    setBuildError(message);
+    updateActiveProject((project) => ({
+      ...project,
+      buildLog: message,
+    }));
+    return message;
   };
 
   const releaseReadinessActionItems = releaseReadinessSummary.items
@@ -18209,6 +18143,7 @@ export function BuilderShowcase() {
       openEditorTabCountLabel,
       openEditorTabs,
       openFeedbackPanel,
+      openGitConflict,
       openLocalArtifact,
       openLocalPath,
       openLogicConnectionSettings,
@@ -18322,6 +18257,7 @@ export function BuilderShowcase() {
       propertySchemaHint,
       propertySectionForProp,
       pushProjectSnapshot,
+      refreshProjectGitStatus,
       qtCreatorParityItems,
       qtCreatorParityStats,
       queuedProjectTaskCount,

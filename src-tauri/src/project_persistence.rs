@@ -1,9 +1,9 @@
 use crate::{
     managed_project_root, managed_projects_dir, migrate_project_schema,
     normalized_checkpoint_created_at,
-    project_checkpoints_dir, project_editor_state_path, project_name, project_paths,
+    project_checkpoints_dir, project_editor_state_path, project_name,
     project_paths_for_project, project_root_from_project, project_with_root_path, read_json_file,
-    safe_file_name, save_project_files, slugify, to_error, write_readme, EditorProjectPaths,
+    safe_file_name, save_project_files, slugify, to_error, EditorProjectPaths,
     ManagedProjectSummary, ProjectCheckpointDiff, ProjectCheckpointFileDiff,
     ProjectCheckpointResult, ProjectCheckpointSummary, DEFAULT_RUST_LOGIC,
 };
@@ -13,14 +13,6 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-
-#[tauri::command]
-pub(super) fn create_editor_project(name: String) -> Result<EditorProjectPaths, String> {
-    let root = managed_project_root(&name)?;
-    fs::create_dir_all(&root).map_err(to_error)?;
-    write_readme(&root, &name)?;
-    Ok(project_paths(&root, &name))
-}
 
 #[tauri::command]
 pub(super) fn save_editor_project(

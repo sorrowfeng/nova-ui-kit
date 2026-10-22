@@ -14,6 +14,7 @@ export function ProjectHealthPanel({
   hasCommands,
   onRunCheck,
   onGitSnapshot,
+  onOpenConflict,
   gitStatus,
 }: {
   fileCount: number;
@@ -21,6 +22,7 @@ export function ProjectHealthPanel({
   hasCommands: boolean;
   onRunCheck: () => void;
   onGitSnapshot?: () => void;
+  onOpenConflict?: (filePath: string) => void;
   gitStatus?: ProjectGitStatus | null;
 }) {
   return (
@@ -57,7 +59,18 @@ export function ProjectHealthPanel({
               <ul className="mt-1 space-y-0.5">
                 {gitStatus.conflicted.map((file) => (
                   <li key={file} className="truncate text-destructive">
-                    {file}
+                    {onOpenConflict ? (
+                      <button
+                        type="button"
+                        className="focus-ring w-full truncate rounded-sm px-0.5 text-left hover:underline"
+                        data-builder-git-conflict-open=""
+                        onClick={() => onOpenConflict(file)}
+                      >
+                        {file}
+                      </button>
+                    ) : (
+                      file
+                    )}
                   </li>
                 ))}
               </ul>

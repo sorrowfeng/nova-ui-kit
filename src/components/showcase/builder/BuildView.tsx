@@ -174,6 +174,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     openBottomDock,
     openBuildDiagnostic,
     openBuildReadinessItem,
+    openGitConflict,
     openLocalArtifact,
     openProjectTaskResolution,
     openQtCreatorParityRequirement,
@@ -215,6 +216,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     readingRuntimeLogId,
     refreshInstallerSmokeResult,
     refreshProjectDependencyGraph,
+    refreshProjectGitStatus,
     refreshReleasePipelineRecords,
     refreshRunSession,
     refreshRuntimeLog,
@@ -1162,6 +1164,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     hasRustLogic={Boolean(activeProject.rustLogic?.trim())}
                     hasCommands={activeProject.rustCommands.length > 0}
                     gitStatus={projectGitStatus}
+                    onOpenConflict={openGitConflict}
                     onGitSnapshot={() => {
                       void invokeIfAvailable("init_project_git", {
                         rootPath: activeProject.rootPath ?? "",
@@ -1171,6 +1174,9 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           result?.ok ? "Git 快照完成" : "Git 快照失败",
                           result?.ok ? "项目已提交到本地仓库" : "需要 Tauri 桌面运行时且项目已有磁盘路径",
                         );
+                        // 快照之后工作区一定变了，状态得跟着重读——以前只在
+                        // 「冲突解决完」之后读一次，那一步永远走不到。
+                        void refreshProjectGitStatus();
                       });
                     }}
                     onRunCheck={() => {

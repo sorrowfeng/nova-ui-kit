@@ -35,7 +35,7 @@ mod text_utils;
 use backend_artifact_builder::build_backend_artifact;
 use backend_artifact_inspector::inspect_backend_artifacts;
 use backend_method_runner::test_backend_integration_method;
-use build_pipeline::{build_editor_project, bundle_editor_project, check_editor_project, preview_generated_web};
+use build_pipeline::preview_generated_web;
 use editor_tasks::{
     cancel_editor_project_task, list_editor_project_tasks, read_editor_project_task,
     start_editor_project_task, EditorTaskState,
@@ -62,7 +62,6 @@ use generated_project_files::{
     preview_generated_project_files,
 };
 use generated_window_validation::{read_json_file, validate_generated_window};
-use incremental_io::write_text_if_changed;
 use installer_smoke::{
     create_installer_sandbox_handoff, inspect_windows_certificate_store,
     read_installer_smoke_result, run_installer_smoke_script,
@@ -79,11 +78,11 @@ use project_model::{
 };
 use project_paths::{
     managed_project_root, managed_projects_dir, project_builds_dir, project_checkpoints_dir,
-    project_editor_state_path, project_paths, project_paths_for_project, project_root_from_project,
-    project_with_root_path, write_readme,
+    project_editor_state_path, project_paths_for_project, project_root_from_project,
+    project_with_root_path,
 };
 use project_persistence::{
-    create_editor_project, create_project_checkpoint, diff_project_checkpoint,
+    create_project_checkpoint, diff_project_checkpoint,
     list_editor_projects, list_project_checkpoints, read_editor_project,
     restore_project_checkpoint, save_editor_project,
 };
@@ -338,7 +337,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            create_editor_project,
             save_editor_project,
             read_editor_project,
             list_editor_projects,
@@ -353,9 +351,6 @@ pub fn run() {
             inspect_release_pipeline_artifact,
             preview_generated_project_files,
             apply_generated_project_files,
-            build_editor_project,
-            bundle_editor_project,
-            check_editor_project,
             start_editor_project_task,
             list_editor_project_tasks,
             read_editor_project_task,

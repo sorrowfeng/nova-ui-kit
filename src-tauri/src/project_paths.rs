@@ -1,7 +1,4 @@
-use crate::{
-    generated_project_readme, project_name, release_config, slugify, write_text_if_changed,
-    EditorProjectPaths,
-};
+use crate::{project_name, release_config, slugify, EditorProjectPaths};
 use serde_json::Value;
 use std::{
     env,
@@ -72,11 +69,6 @@ pub(super) fn project_workspace_metadata_path(root: &Path) -> PathBuf {
     root.join(".nova").join("workspace.json")
 }
 
-pub(super) fn project_paths(root: &Path, project_name: &str) -> EditorProjectPaths {
-    let slug = slugify(project_name);
-    project_paths_with_slug(root, &slug)
-}
-
 pub(super) fn project_paths_for_project(root: &Path, project: &Value) -> EditorProjectPaths {
     let project_name = project_name(project);
     let release = release_config(project, &project_name);
@@ -117,12 +109,4 @@ fn project_paths_with_slug(root: &Path, slug: &str) -> EditorProjectPaths {
             .to_string(),
         output_exe_path: exe.exists().then(|| exe.display().to_string()),
     }
-}
-
-pub(super) fn write_readme(root: &Path, project_name: &str) -> Result<(), String> {
-    write_text_if_changed(
-        &root.join("README.md"),
-        &generated_project_readme(project_name),
-    )?;
-    Ok(())
 }
