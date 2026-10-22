@@ -183,6 +183,7 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 2·0 | 清掉没人读的 scope 键：袋里 5 个（含 `name`＝`window.name`）、`ShellView` 四份子视图字面量里 9 个（含 `open`＝Tauri 的 dialog `open`，ShellView 自己还要用，只是子视图不解构）、以及随之变成死代码的 2 个声明。补 `check:builder-file-size` 按文件量棘轮 | **18789** | **18820** |
 | 2·1 | 四个子视图的 scope 全部从 `Record<string, any>` 收成**封闭键集**（Project 108 / Logic 310 / Build 246 / Design 406 键，由各视图自己的解构生成 `builder/scope-*.ts`）。值仍是 `any`，只关门不查值 | **18789** | **18820** |
 | 2·2 | `scope-shell.ts` 在袋边界上给四个视图组件标 `ComponentType<{ scope: XViewScope }>`，`ShellView` 那四份字面量从此也被查。少键、多键、写错键名三种都会编译报错 | **18789** | **18820** |
+| 2·3 | 清掉 `checkingTarget`：没有 setter 的 `useState`，18 处读法全是死分支，连同 `BuildView` 那串永远为假的 `disabled` 条件一起删 | **18783** | **18820** |
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
@@ -192,7 +193,7 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 - **`check:a11y` 里曾经有两道关不掉的门，Phase 1 修好了，记下病症免得再犯。** 两处是同一类错：**量的不是它以为在量的东西。**
   1. *固定 `delay(5000)` 当等待用。* 慢机器上 shell 还在挂载，门就去点 `[data-builder-mode-button="design"]`，报「no element」——控件马上就来。失败原因是竞态，不是界面。改成 `waitFor(selector)` 有界轮询：元素没到就带着选择器名字失败。
   2. *折叠面板那两条断言对零条面板循环。* `shell.disclosures` 是首屏快照里 `<details>` 的集合，而面板在另外三个 mode 里；循环空转，checklist 5.1 一直是绿的、其实一条都没测。**空集合上的循环是不败的门。** 改成走四个 mode 收集，并且要求收集结果非零——收集本身也要能输。
-- **「快速检查」这功能在 UI 上根本进不去。** Phase 0 删掉的 `checkActiveProject`（57 行，调 `check_editor_project`）是 `checkingTarget` 的唯一写入者，而 tsc 证明它从来没被调用过。现在 `checkingTarget` 永远是 `null`，`dirty` 那一项永远不为真，Build 面上「正在检查」的分支是死的。删它是对的（删除前后行为完全一致），但**功能缺失是真的**——要么接回 UI，要么把这堆状态一起清掉。不是 Phase 0 的事，记在这里免得忘。
+- ~~**「快速检查」这功能在 UI 上根本进不去。**~~ → **已清掉。** `checkingTarget` 是个没有 setter 的 `useState`，永远是 `null`；它每一处读法都是死分支（`Boolean(checkingTarget) || x` 就是 `x`，`checkingTarget ?? y` 就是 `y`）。18 处引用连同 `BuildView` 上那一串 `disabled` 条件一起删了，行为逐条等价（冒烟仍 110/110）。**功能缺失仍然在**：`check_editor_project` 这个后端能力至今没有 UI 入口。哪天要接回来，它得自带状态，而不是复用这堆被注释成「留给将来」的空壳——空壳养不住功能，只会让人以为功能在。
 - **`window` 这个名字在项目里有两个意思。** Phase 0 把 DOM 全局从 scope 袋里拿掉了：它被当普通键传过三层，`DesignView` 里 `window.prompt(...)` 实际拿到的是袋子里那个。今天袋子里没人供给 `window`，所以它回落到全局、侥幸能跑；而项目自己有「窗口壳」这个领域概念（`page.windowKind`、`releaseWindowKinds`、`data-builder-page-window-kind`），哪天谁加一个叫 `window` 的项目域对象，批量改标签那个弹窗当场就炸。**名字遮蔽比死代码危险**：死代码顶多占地，遮蔽会在别的文件里悄悄改行为。
   Phase 2 的清扫在同一类里又抓到一个：袋子里有个键叫 `name`，值是 `window.name`（另一个同名同姓的还有 `open`，那是 `@tauri-apps/plugin-dialog` 的 `open`）。**已清掉**，连同 `length`、`railNextStepLabel` 一共 5 个没人读的袋键，和 ShellView 四份子视图字面量里 9 个子视图根本不解构的键。
   顺带记一个 `tsc` 的盲区，Phase 0 的清扫就是被它挡住的：**对象字面量里的简写属性 `{ name }` 在编译器眼里是「用了 `name`」**，所以 `noUnusedLocals` 不报；只有真的没人解构、没人用 `scope.name` 去取，它才是死的。这类死键得靠「谁在读」来量，不能靠编译器。

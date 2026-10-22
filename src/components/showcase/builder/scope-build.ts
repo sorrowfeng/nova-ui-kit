@@ -52,7 +52,6 @@ export type BuildViewScopeKey =
   | "certificateInspection"
   | "checkingCertificateStore"
   | "checkingRunId"
-  | "checkingTarget"
   | "chooseSigningCertificate"
   | "clearCompletedProjectTasks"
   | "cn"

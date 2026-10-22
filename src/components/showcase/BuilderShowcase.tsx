@@ -831,10 +831,6 @@ export function BuilderShowcase() {
   const [refreshingPipelineRecords, setRefreshingPipelineRecords] = useState(false);
   const [building, setBuilding] = useState(false);
   const [bundling, setBundling] = useState(false);
-  // Nothing can write this any more: its only setter lived in `checkActiveProject`,
-  // which tsc proved was never called. It stays because the dirty-check and the
-  // scope bag still read it, and both treat `null` as "not checking".
-  const [checkingTarget] = useState<"frontend" | "rust" | "all" | null>(null);
   const [validatingWindow, setValidatingWindow] = useState(false);
   const [previewingGeneratedFiles, setPreviewingGeneratedFiles] = useState(false);
   const [applyingGeneratedFiles, setApplyingGeneratedFiles] = useState(false);
@@ -1431,7 +1427,7 @@ export function BuilderShowcase() {
             : projectRelativePath("app"),
         revealNodeId: activeProject.outputExePath ? "app-release-exe" : "app-folder",
         targetMode: "build",
-        dirty: building || bundling || Boolean(checkingTarget) || validatingWindow,
+        dirty: building || bundling || validatingWindow,
         closable: false,
         icon: Download,
       },
@@ -1445,7 +1441,6 @@ export function BuilderShowcase() {
     activeProject.rustModules.length,
     building,
     bundling,
-    checkingTarget,
     fileSaveStates,
     mode,
     openEditorFileIds,
@@ -17891,7 +17886,6 @@ export function BuilderShowcase() {
       checkingBackendArtifacts,
       checkingCertificateStore,
       checkingRunId,
-      checkingTarget,
       checkpointDiff,
       checkpointDiffDetails,
       checkpointDiffLoadingId,

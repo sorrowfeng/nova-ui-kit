@@ -98,7 +98,6 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
     certificateInspection,
     checkingCertificateStore,
     checkingRunId,
-    checkingTarget,
     chooseSigningCertificate,
     clearCompletedProjectTasks,
     cn,
@@ -1575,7 +1574,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         variant="secondary"
                         data-builder-run-experience-audit=""
                         loading={runningProjectTask?.actionId === "audit-editor-experience"}
-                        disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
+                        disabled={building || bundling || validatingWindow}
                         onClick={() => enqueueProjectTask("audit-editor-experience")}
                       >
                         <Wand2 aria-hidden className="size-4" />
@@ -1837,10 +1836,10 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                     </div>
                     <StateBadge
-                      label={checkingTarget ?? selectedRailActionPreset?.badge ?? "就绪"}
-                      signal={Boolean(checkingTarget) || (Boolean(selectedRailActionPreset?.badge) && !isQuietStateLabel(String(selectedRailActionPreset?.badge ?? "")))}
+                      label={selectedRailActionPreset?.badge ?? "就绪"}
+                      signal={Boolean(selectedRailActionPreset?.badge) && !isQuietStateLabel(String(selectedRailActionPreset?.badge ?? ""))}
                       className="shrink-0"
-                      variant={checkingTarget ? "outline" : "secondary"}
+                      variant="secondary"
                     />
                   </summary>
                   <div className="mt-2 border-t border-outline-variant pt-2" data-builder-build-assist-dock-details="deferred">
@@ -1890,7 +1889,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       className="w-full justify-start"
                       data-builder-generate-file-plan=""
                       loading={previewingGeneratedFiles}
-                      disabled={previewingGeneratedFiles || applyingGeneratedFiles || Boolean(checkingTarget) || building || bundling || validatingWindow}
+                      disabled={previewingGeneratedFiles || applyingGeneratedFiles || building || bundling || validatingWindow}
                       onClick={() => enqueueProjectTask("generate-file-plan")}
                     >
                       <FileJson aria-hidden className="size-4" />
@@ -1902,7 +1901,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       className="w-full justify-start"
                       data-builder-audit-editor-experience=""
                       loading={runningProjectTask?.actionId === "audit-editor-experience"}
-                      disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
+                      disabled={building || bundling || validatingWindow}
                       onClick={() => enqueueProjectTask("audit-editor-experience")}
                     >
                       <Wand2 aria-hidden className="size-4" />
@@ -1919,7 +1918,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         <DropdownMenuLabel>构建前检查</DropdownMenuLabel>
                         <DropdownMenuItem
                           data-builder-build-backend-artifacts=""
-                          disabled={Boolean(buildingBackendArtifactId) || Boolean(checkingTarget) || building || bundling || validatingWindow}
+                          disabled={Boolean(buildingBackendArtifactId) || building || bundling || validatingWindow}
                           onSelect={() => enqueueProjectTask("build-backend-artifacts")}
                         >
                           <Terminal aria-hidden className="size-4" />
@@ -1927,7 +1926,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           data-builder-check-frontend=""
-                          disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
+                          disabled={building || bundling || validatingWindow}
                           onSelect={() => enqueueProjectTask("quick-check-frontend")}
                         >
                           <Monitor aria-hidden className="size-4" />
@@ -1935,7 +1934,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           data-builder-check-rust=""
-                          disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
+                          disabled={building || bundling || validatingWindow}
                           onSelect={() => enqueueProjectTask("quick-check-rust")}
                         >
                           <Braces aria-hidden className="size-4" />
@@ -1943,7 +1942,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           data-builder-check-all=""
-                          disabled={Boolean(checkingTarget) || building || bundling || validatingWindow}
+                          disabled={building || bundling || validatingWindow}
                           onSelect={() => enqueueProjectTask("quick-check-all")}
                         >
                           <CheckCircle2 aria-hidden className="size-4" />
