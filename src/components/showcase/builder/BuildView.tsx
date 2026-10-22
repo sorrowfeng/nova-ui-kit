@@ -1181,7 +1181,10 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           </div>
                         </div>
                         <span className="flex shrink-0 items-center gap-1.5">
-                          {/* The Progress bar below already reads the score. */}
+                          {/* The Progress bar below carries the shape; this is the
+                              number it cannot say. The error/warning counts are
+                              not repeated here — the strip underneath already
+                              states them, in a form the reader can scan. */}
                           <span
                             className={cn(
                               "font-mono text-[0.72rem] tabular-nums",
@@ -1193,9 +1196,6 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             )}
                           >
                             {buildReadinessSummary.score}%
-                          </span>
-                          <span className="text-[0.66rem] text-on-surface-variant">
-                            {buildReadinessSummary.errorCount} 错 · {buildReadinessSummary.warningCount} 警
                           </span>
                         </span>
                       </div>
