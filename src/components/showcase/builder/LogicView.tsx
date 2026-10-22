@@ -9,6 +9,7 @@ import { BackendIntegrationKind, BackendIntegrationLanguage, BackendIntegrationT
 import { Badge } from "@/components/ui/badge";
 import { projectChangeScopeLabel } from "./change-impact";
 import { projectExplorerBadgeLabel } from "./monolith-module";
+import { simulatorTraceStatusLabel } from "./status-labels";
 import { CountReadout, StateBadge, StateLabel } from "./view-helpers";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_RUST_COMMAND_RESPONSE } from "./rust-commands";
@@ -1144,7 +1145,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           variant="outline"
                           label={missingRustSlotCount > 0 ? `${missingRustSlotCount} 个槽待生成` : "槽函数就绪"}
                         />
-                        {logicSearchNeedle ? <Badge variant="outline">筛选 {filteredRustLogicOutline.length}</Badge> : null}
+                        {logicSearchNeedle ? <CountReadout label={`筛选 ${filteredRustLogicOutline.length}`} count={filteredRustLogicOutline.length} /> : null}
                       </div>
                         <p className="mt-1 leading-5 text-on-surface-variant">
                           从生成的命令、手写函数、模块、类型和实现块建立大纲，点击即可定位源码。
@@ -1207,9 +1208,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <span className="min-w-0">
                               <span className="flex min-w-0 items-center gap-1.5">
                                 <span className="truncate font-mono text-xs text-on-surface">{entry.label}</span>
-                                <Badge variant={entry.kind === "slot" ? "secondary" : "outline"} className="shrink-0">
-                                  {rustOutlineKindLabel(entry.kind)}
-                                </Badge>
+                                <StateLabel className="shrink-0" label={rustOutlineKindLabel(entry.kind)} />
                               </span>
                               <span className="mt-0.5 block truncate text-[0.68rem]">
                                 {entry.line && entry.endLine && entry.endLine > entry.line ? `Ln ${entry.line}-${entry.endLine} · ` : ""}
@@ -1252,9 +1251,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <span className="block truncate font-medium text-on-surface">{node.label}</span>
                             <span className="mt-0.5 block truncate text-[0.68rem]">{node.detail}</span>
                           </span>
-                          <Badge variant={node.tone === "ready" ? "secondary" : "outline"} className="shrink-0">
-                            {node.badge}
-                          </Badge>
+                          <StateLabel showQuiet variant={node.tone === "ready" ? "secondary" : "outline"} className="shrink-0" label={node.badge} />
                         </button>
                       ))}
                     </div>
@@ -1286,9 +1283,16 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         把当前 UI 信号、Rust 光标、活跃 command 和运行证据合在一处，先给出上下文，再进入具体编辑面板。
                       </p>
                     </div>
-                    <Badge variant={buildDiagnostics.length > 0 ? "destructive" : latestSimulatorTrace?.status === "success" ? "secondary" : "outline"}>
-                      {buildDiagnostics.length > 0 ? `${buildDiagnostics.length} 诊断` : latestSimulatorTrace ? latestSimulatorTrace.status : "未运行"}
-                    </Badge>
+                    <StateBadge
+                      variant={buildDiagnostics.length > 0 ? "destructive" : "outline"}
+                      label={
+                        buildDiagnostics.length > 0
+                          ? `${buildDiagnostics.length} 诊断`
+                          : latestSimulatorTrace
+                            ? simulatorTraceStatusLabel(latestSimulatorTrace.status)
+                            : "未运行"
+                      }
+                    />
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-4" role="list" aria-label="逻辑上下文摘要">
                     {logicContextSummaryItems.map((item: any) => {
@@ -1322,9 +1326,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 <span className="mt-0.5 block truncate text-[0.62rem] text-on-surface-variant">{item.actionLabel}</span>
                               </span>
                             </span>
-                            <Badge variant={item.tone === "danger" || item.tone === "warning" ? "outline" : item.tone === "primary" || item.tone === "ready" ? "secondary" : "outline"} className="shrink-0">
-                              {item.badge}
-                            </Badge>
+                            <StateLabel showQuiet variant={item.tone === "danger" || item.tone === "warning" ? "outline" : item.tone === "primary" || item.tone === "ready" ? "secondary" : "outline"} className="shrink-0" label={item.badge} />
                           </span>
                           <span className="mt-2 line-clamp-2 leading-4 text-on-surface-variant">{item.detail}</span>
                           <span
@@ -1349,9 +1351,11 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-sm font-medium text-on-surface">逻辑工作台下一步</h3>
-                        <Badge variant={logicWorkbenchPrimaryAction?.tone === "warning" ? "outline" : "secondary"}>
-                          {logicWorkbenchPrimaryAction?.badge ?? "就绪"}
-                        </Badge>
+                        <StateLabel
+                          showQuiet
+                          variant={logicWorkbenchPrimaryAction?.tone === "warning" ? "outline" : "secondary"}
+                          label={logicWorkbenchPrimaryAction?.badge ?? "就绪"}
+                        />
                       </div>
                       <p className="mt-1 leading-5 text-on-surface-variant">
                         根据当前选中控件、信号/槽绑定、Rust 槽函数和运行证据，自动把最相关的操作放到最前面。
@@ -1407,9 +1411,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 <span className="mt-0.5 block truncate text-[0.62rem] text-on-surface-variant">#{index + 1} · {step.actionLabel}</span>
                               </span>
                             </span>
-                            <Badge variant={step.tone === "warning" ? "destructive" : step.tone === "primary" || step.tone === "ready" ? "secondary" : "outline"} className="shrink-0">
-                              {step.badge}
-                            </Badge>
+                            <StateLabel showQuiet variant={step.tone === "warning" ? "destructive" : step.tone === "primary" || step.tone === "ready" ? "secondary" : "outline"} className="shrink-0" label={step.badge} />
                           </span>
                           <span className="mt-2 line-clamp-2 leading-4 text-on-surface-variant">{step.detail}</span>
                           <span className="mt-2 inline-flex items-center gap-1 text-primary">
@@ -1538,9 +1540,12 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                               >
                                 <StepIcon aria-hidden className="size-4" />
                               </span>
-                              <Badge variant={step.tone === "danger" ? "destructive" : step.tone === "primary" || step.tone === "ready" ? "secondary" : "outline"} className="min-w-0">
-                                <span className="truncate">{step.badge}</span>
-                              </Badge>
+                              <StateLabel
+                                showQuiet
+                                variant={step.tone === "danger" ? "destructive" : "secondary"}
+                                className="min-w-0"
+                                label={step.badge}
+                              />
                             </div>
                             <div className="mt-2 min-w-0">
                               <p className="truncate font-medium text-on-surface">
@@ -1742,7 +1747,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           >
                             <div className="min-w-0">
                               <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                                <Badge variant="outline">信号</Badge>
+                                <StateLabel label="信号" />
                                 <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
                                 <span className="font-mono text-on-surface-variant">{row.eventName}</span>
                               </div>
@@ -1771,7 +1776,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             >
                               <div className="min-w-0">
                                 <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                                  <Badge variant="outline">槽函数</Badge>
+                                  <StateLabel label="槽函数" />
                                   <span className="truncate font-mono font-medium text-on-surface">{entry.label}</span>
                                   <span className="truncate text-on-surface-variant">{entry.bindingCount} 个绑定</span>
                                 </div>
@@ -1960,9 +1965,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <span className="truncate text-xs font-semibold text-on-surface">当前逻辑工作流</span>
-                            <Badge variant={logicWorkflowRow.command ? "secondary" : "outline"}>
-                              {logicWorkflowRow.command ? "已绑定" : "待绑定"}
-                            </Badge>
+                            <StateBadge label={logicWorkflowRow.command ? "已绑定" : "待绑定"} />
                           </div>
                           <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
                             {getItemSummary(logicWorkflowRow.item)}.{logicWorkflowRow.eventName}
@@ -2013,9 +2016,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 </span>
                                 <div className="flex min-w-0 items-center gap-1.5">
                                   {index < logicWorkflowNodes.length - 1 ? <ArrowRight aria-hidden className="size-3.5 shrink-0 text-on-surface-variant" /> : null}
-                                  <Badge variant={node.tone === "primary" || node.tone === "ready" ? "secondary" : "outline"} className="min-w-0">
-                                    <span className="truncate">{projectExplorerBadgeLabel(node.badge)}</span>
-                                  </Badge>
+                                  <StateLabel className="min-w-0" label={projectExplorerBadgeLabel(node.badge)} />
                                 </div>
                               </div>
                               <div className="mt-2 min-w-0">
@@ -2112,9 +2113,12 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 >
                                   {index + 1}
                                 </span>
-                                <Badge variant={step.tone === "warning" ? "outline" : step.tone === "primary" || step.tone === "ready" ? "secondary" : "outline"} className="min-w-0">
-                                  <span className="truncate">{step.badge}</span>
-                                </Badge>
+                                <StateLabel
+                                  showQuiet
+                                  variant={step.tone === "warning" ? "outline" : "secondary"}
+                                  className="min-w-0"
+                                  label={step.badge}
+                                />
                               </div>
                               <div className="mt-2 min-w-0">
                                 <div className="flex min-w-0 items-center gap-1.5">
@@ -2145,9 +2149,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={selectedLogicSignalSlotRow.command ? "secondary" : "outline"}>
-                            {selectedLogicSignalSlotRow.command ? "当前连接" : "当前信号"}
-                          </Badge>
+                          <StateLabel label={selectedLogicSignalSlotRow.command ? "当前连接" : "当前信号"} />
                           <span className="truncate font-medium text-on-surface">{getItemSummary(selectedLogicSignalSlotRow.item)}</span>
                           <span className="font-mono text-on-surface-variant">{selectedLogicSignalSlotRow.eventName}</span>
                           <ArrowRight aria-hidden className="size-3.5 text-on-surface-variant" />
@@ -2208,7 +2210,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <span className="flex min-w-0 flex-wrap items-center gap-1.5">
                               <span className="truncate font-medium text-on-surface">{getItemSummary(row.item)}</span>
                               <StateLabel label={row.item.type} />
-                              {row.selected ? <Badge variant="secondary">选中</Badge> : null}
+                              {row.selected ? <StateLabel label="选中" /> : null}
                             </span>
                             <span className="mt-1 block truncate text-[0.68rem] text-on-surface-variant">
                               {activeFile.name} · x {Math.round(row.item.x)} y {Math.round(row.item.y)}
@@ -2340,7 +2342,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     >
                       <AlertTriangle aria-hidden className="size-4" />
                       问题
-                      <Badge variant={builderIssueErrorCount > 0 ? "destructive" : "outline"}>{builderIssueCount}</Badge>
+                      <CountReadout label={String(builderIssueCount)} count={builderIssueCount} />
                     </Button>
                     <Button
                       size="sm"
@@ -2404,9 +2406,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       data-builder-rust-editor-replace=""
                       spellCheck={false}
                     />
-                    <Badge variant={rustReplaceQuery ? "secondary" : "outline"} className="shrink-0">
-                      {rustReplaceQuery ? "替换" : "可删除"}
-                    </Badge>
+                    <StateLabel className="shrink-0" label={rustReplaceQuery ? "替换" : "可删除"} />
                   </div>
                   <div className="flex min-w-0 flex-wrap items-center gap-2 lg:justify-end">
                     <Button

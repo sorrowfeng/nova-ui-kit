@@ -2035,9 +2035,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         </span>
                         <span className="mt-0.5 hidden max-w-full truncate text-[0.56rem] text-on-surface-variant lg:block">{tab.detail}</span>
                       </span>
-                      <Badge variant={active ? "secondary" : "outline"} className="ml-auto hidden h-5 shrink-0 px-1.5 text-[0.56rem] xl:inline-flex">
-                        {tab.badge}
-                      </Badge>
+                      <StateLabel showQuiet variant={active ? "secondary" : "outline"} className="ml-auto hidden h-5 shrink-0 px-1.5 text-[0.56rem] xl:inline-flex" label={tab.badge} />
                     </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
