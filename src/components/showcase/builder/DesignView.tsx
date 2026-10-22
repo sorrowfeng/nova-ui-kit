@@ -2790,13 +2790,15 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             {emptyCanvasQuickStarts.map((type: any) => {
                               const definition = getDefinition(type);
                               const Icon = definition.icon;
+                              // Icon-only inserts made the first design action
+                              // a guessing game; the label is the point.
                               return (
                                 <Button
                                   key={type}
                                   type="button"
-                                  size="icon"
+                                  size="sm"
                                   variant="secondary"
-                                  className="size-7 shrink-0 rounded-full"
+                                  className="h-7 shrink-0 gap-1 rounded-full px-2 text-[0.68rem]"
                                   aria-label={`插入${definition.title}`}
                                   title={`插入${definition.title}`}
                                   data-builder-empty-insert={type}
@@ -2806,6 +2808,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   }}
                                 >
                                   <Icon aria-hidden className="size-3.5" />
+                                  <span className="truncate">{definition.title}</span>
                                 </Button>
                               );
                             })}

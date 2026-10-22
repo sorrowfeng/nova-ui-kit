@@ -29,7 +29,7 @@ const STEPS: Step[] = [
     title: "1 · 新建或打开项目",
     body: "在 Project 模式创建本地项目，或点「打开示例」直接进入带控件与绑定的演示工程。",
     icon: Sparkles,
-    hint: "菜单 → 文件 → 新建项目 · 或命令面板 Ctrl+K",
+    hint: "点「打开示例项目」最快；也可以在下面选一个模板。",
   },
   {
     title: "2 · 在画布插入控件",
@@ -118,6 +118,43 @@ export function OnboardingGuide({
           {current.hint}
         </div>
 
+        {/* The fastest path to "something real is on screen" used to be
+            hidden behind a conditional that never fired, and behind Ctrl+K.
+            A beginner should meet it as the one obvious button. */}
+        {step === 0 ? (
+          <div className="mx-6 mt-4">
+            <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
+              立即开始
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {onOpenSample ? (
+                <Button
+                  size="sm"
+                  data-onboarding-template="sample"
+                  onClick={() => {
+                    finish();
+                    onOpenSample();
+                  }}
+                >
+                  <Sparkles aria-hidden className="size-4" />
+                  打开示例项目
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                variant="secondary"
+                data-onboarding-template="blank"
+                onClick={finish}
+              >
+                空白项目
+              </Button>
+              <p className="min-w-0 flex-1 truncate text-[0.68rem] text-on-surface-variant">
+                示例已放好控件和绑定，适合先跑通一遍。
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         {onOpenTemplate ? (
           <div className="mx-6 mt-4">
             <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
@@ -165,16 +202,6 @@ export function OnboardingGuide({
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
           <div className="flex gap-2">
-            {!onOpenTemplate && onOpenSample ? (
-              <Button size="sm" variant="secondary" data-onboarding-template="sample" onClick={() => { finish(); onOpenSample(); }}>
-                打开示例
-              </Button>
-            ) : null}
-            {!onOpenTemplate ? (
-              <Button size="sm" variant="ghost" data-onboarding-template="blank" onClick={finish}>
-                空白项目
-              </Button>
-            ) : null}
             {onShowShortcuts ? (
               <Button size="sm" variant="ghost" onClick={() => { finish(); onShowShortcuts(); }}>
                 <Keyboard aria-hidden className="size-4" />

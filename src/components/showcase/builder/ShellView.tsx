@@ -1517,14 +1517,13 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   ) : launchingExeId === "active-output" ? (
                     <LoaderCircle aria-hidden className="size-4 animate-spin" />
                   ) : (
-                    <Play aria-hidden className="size-4" />
+                    <Play aria-hidden className="size-3.5 shrink-0" />
                   )}
-                  <span className="sr-only">
-                    <span className="block truncate">{workflowPrimaryActionLabel}</span>
-                    <span className={cn("mt-0.5 block truncate text-[0.54rem] font-medium", workflowComplete && !workflowRuntimeActive ? "text-primary-foreground/80" : "opacity-75")}>
-                      {railNextStepLabel}
-                    </span>
-                  </span>
+                  {/* Run is the product's primary verb. An icon-only affordance
+                      loses it to the unlabeled rail, so it gets the one word a
+                      Qt Creator user looks for. */}
+                  <span className="min-w-0 truncate">{workflowRuntimeActive ? "停止" : "运行"}</span>
+                  <span className="sr-only">{workflowPrimaryActionLabel}</span>
                 </button>
                 <div className="sr-only">
                   <Progress className="h-1" value={workflowProgressValue} />
@@ -1662,27 +1661,35 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button
-                    size="icon-sm"
-                    variant="secondary"
-                    className="size-8"
-                    data-builder-preview-run=""
-                    aria-label="一键运行"
-                    title="一键运行（保存→生成→构建）"
-                    onClick={() => dispatchNovaEditorCommand("preview-run")}
-                  >
-                    <Play aria-hidden className="size-4" />
-                  </Button>
+                  {/* This button only runs the readiness checks. It used to be
+                      titled 一键运行（保存→生成→构建）, which promised a build
+                      it never performed — so it lost the Play icon and the
+                      Run wording, and the real Run stayed on the rail. */}
                   <Button
                     size="icon-sm"
                     variant="ghost"
-                    className="size-8"
+                    className="h-8 gap-1 px-2"
+                    data-builder-preview-run=""
+                    aria-label="就绪检查"
+                    title="就绪检查（校验生成计划与配置，不构建）"
+                    onClick={() => dispatchNovaEditorCommand("preview-run")}
+                  >
+                    <CheckCircle2 aria-hidden className="size-3.5" />
+                    <span className="truncate text-[0.62rem]">就绪检查</span>
+                  </Button>
+                  {/* The cheap way to see the designed screen running. Next to
+                      Run this is what a beginner should reach for first. */}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 gap-1 px-2"
                     data-builder-preview-web=""
-                    aria-label="网页预览"
-                    title="网页预览（只编译前端，更快）"
+                    aria-label="预览"
+                    title="网页预览（只编译前端，比构建 exe 快）"
                     onClick={() => void previewGeneratedWeb()}
                   >
-                    <Monitor aria-hidden className="size-4" />
+                    <Monitor aria-hidden className="size-3.5" />
+                    <span className="truncate text-[0.62rem]">预览</span>
                   </Button>
                   <Button
                     size="icon-sm"
