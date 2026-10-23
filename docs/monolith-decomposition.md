@@ -209,6 +209,8 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 3·3 | 空画布被报成 8 个能力缺口：19 条里 8 条标「复核」，其实一条缺口都没有——检查根本没跑（没选中、光标不在符号里、还没构建）。新增第四种严重度 `unverified`（待验证），49 处「前提不存在就报 warning」翻过来；聚合逻辑抽成 `worstAuditSeverity` 并钉测试。**待验证不是软 pass**：未知证据 id 仍算 warning，混着真失败仍是 fail | 对齐 **11 pass / 8 unverified / 0 warning / 0 fail** | — |
 | 3·4 | `check:dead-exports` 修掉三个会让它**误报活代码是孤儿**的盲区：消费者只扫导出目录（`App.tsx`/`OnboardingGuide.tsx` 在外面）、`@/` 别名解析不了（`ShowcasePage` 是这么 lazy 进来的）、字面量扫描漏了 `scripts/*.test.ts`（三个被测试钉住的类型差点被摘）。自检改成断言**最终孤儿集合**并且和真实扫描共用 `runScan`，三种注入各自点名会误删谁 | 存量 **198 → 194** | 上限 194 |
 | 3·5 | 清零死 export：194 个名字**摘掉 `export` 关键字**（不删声明——多数在自己模块里用着），`tsc` 当裁判，只剩 2 个连内部都没人读的真死代码（`workflowStepStatusClassName` 18 行、`DEFAULT_RUST_LOGIC`），已删。剥脚本自带 fixture；它的第一版用正则「修残留空格」，把 27 个文件里 1327 行缩进压平，fixture 就是为堵这个而生 | 死 export **0**，`monolith-module` **8613** | 死 export **0** |
+| 3·6 | 摘掉 264 个**白白扔掉推断**的 lambda 参数标注：`(event: any) => …` 打在 `onChange` 已经是 `ChangeEventHandler<HTMLInputElement>` 的 `<Input>` 上。剥 644、按 tsc 报错位置补回 378（源还是袋子 `any` 的那些，strict 不收隐式 any），净 264 | `any` 出现次数 **658 → 387** | — |
+| 3·7 | Phase 2 查值落地：`scripts/gen-scope-values.mjs` 从袋子构造现场读出 1089 个值的类型，914 个查到真类型、175 个退回 `any`；按键集切 5 片 + composer 全部低于 800 行。查值抓出 4 个真 bug（`Boolean()` 不收窄 ×2、`lastEvent.status` 可选、`badge: number` 喂给 `label: string`）；连带再剥 225 个标注（378 → 153），**合计 489 个 lambda 对着真类型检查**。`check:scope-values` 重新生成并比对，进了 build/experience | 源码里的 `any` **387 → 153**（另有 175 个在生成文件里，是查不出类型的那些键） | `check:scope-values` |
 
 **接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
 
@@ -296,9 +298,22 @@ npm run tauri:exe && npm run check:desktop-exe
 
 `editor-experience-audit.ts` 已经拆完，从这张表里划掉了。它是纯数据表，**是这张表里最安全的一刀，也是唯一已经验证过的一刀**：39 个派生 flag 全部只被一个域读，没有跨域依赖——先量出这条，再切。
 
-### 2. Phase 2 的另一半没做：查值
+### 2. ~~Phase 2 的另一半没做：查值~~ → **已做，914/1089**
 
-现在每个名字的**键**是查的，**值**还是 `any`。计划里写的就是「先分组，后收紧」，目前只做完了分组。收紧是 1087 个值的类型，是个长活，建议按域一个一个来（先 `project` 那 108 个），每收紧一片就跑一遍冒烟——**别把「收键」和「收值」混在一次提交里**，出问题会分不清是哪一半的锅。
+原计划是「1087 个值一个一个手写类型，按域来」。实测不需要手写：**类型从袋子字面量的构造现场读出来**，`scripts/gen-scope-values.mjs` 走一遍 `BuilderShowcase` 里那 1089 个键的对象字面量，取每个属性的类型写进生成文件。手写就会漂，生成的不会——前提是有人重新跑并比对，所以 `check:scope-values` 进了 `build` 和 `check:experience`，生成文件和袋子对不上就红。
+
+**914 个查到真类型，175 个还是 `any`**（React 组件那类，打印出来的名字在这里没法 import）。`scope-values*.ts` 按键集切成 5 片 + 1 个 composer（1089 个键塞一个文件是 1292 行，超 800 的房规；5 片是 125～371 行）。
+
+查值这一步直接抓出 4 个真 bug，全是以前 `any` 看不见的：
+
+1. `Boolean(x) && ...x.status` 不收窄——`Boolean()` 不是类型守卫，`x` 仍然是 `| null`。两处（`latestReleasePipeline`、`projectDependencyGraph`）。
+2. `projectDependencyGraph.lastEvent.status` 是 `string | undefined`（`status?`），喂给了要 `string` 的 `projectActivityStatusLabel`。
+3. `rustBackendTopology[].badge` 是计数（`number`），塞进 `StateLabel` 的 `label: string`。React 把数字当文本渲染所以看着正常，**契约是破的**。
+
+另外两个连带效应值得记：
+
+- **查值之后，之前补的 `: any` 标注反过来挡路了。** `(section: any) =>` 挡住了袋子新给的推断。重跑一遍剥标注，又放下 225 个（378 → 153），合计 **489 个 lambda 现在对着真类型检查**。两轮是复利的：先剥标注靠推断，查值给推断供料，再剥一轮。
+- **生成器自己有三个 bug，每一个都会产出「编译不过的文件」而不是「错的类型」**：import 解析停在本地绑定不跟别名（于是在 BuilderShowcase 外声明的类型全被说成来自 `../BuilderShowcase`）；`typeToString` 打印 React 的内部接口名而不是包导出的名字（`ReactKeyboardEvent` 实际导出叫 `KeyboardEvent`）；简写属性会把字面量联合加宽（`{ workflowRailBadgeVariant }` 被写成 `string`，而 `StateBadge.variant` 要的正是那个联合）。现在每个名字都要**验证它确实是那个模块的导出**才写 import，写不出来的键退回 `any`。
 
 ### 3. ~~`check_editor_project` 还是没有 UI 入口~~ → **记错了，真问题在别处**
 
