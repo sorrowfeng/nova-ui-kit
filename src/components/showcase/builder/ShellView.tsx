@@ -396,7 +396,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
               <span className="mx-auto mb-1 flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-m3-1">
                 <activeModeItem.icon aria-hidden className="size-4" />
               </span>
-              {modeBarItems.map((item: any) => (
+              {modeBarItems.map((item) => (
                 <button
                   key={item.mode}
                   type="button"
@@ -467,7 +467,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="start" className="w-72">
-                      {allProjectActionPresets.map((preset: any) => (
+                      {allProjectActionPresets.map((preset) => (
                         <SelectItem key={preset.id} value={preset.id}>
                           {preset.title} · {preset.badge}
                         </SelectItem>
@@ -479,7 +479,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     data-builder-rail-kit-step-preview=""
                     data-builder-rail-kit-step-count={selectedRailKitStepRows.length}
                   >
-                    {selectedRailKitStepRows.slice(0, 3).map((step: any) => (
+                    {selectedRailKitStepRows.slice(0, 3).map((step) => (
                       <button
                         key={step.id}
                         type="button"
@@ -995,7 +995,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     </button>
                   </div>
                   {leftRunTaskTimelineRows.length > 0 ? (
-                    leftRunTaskTimelineRows.map((task: any) => (
+                    leftRunTaskTimelineRows.map((task) => (
                       <button
                         key={task.id}
                         type="button"
@@ -1156,12 +1156,12 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
             data-builder-editor-tabs-replaced-by="project-open-files"
           >
             <div className="subtle-scrollbar flex min-w-0 flex-1 items-end gap-1 overflow-x-auto" role="tablist" aria-label="打开的编辑器标签">
-              {openEditorTabs.map((tab: any) => {
+              {openEditorTabs.map((tab) => {
                 const active = tab.id === activeEditorTabId;
                 const TabIcon = tab.icon;
                 const uiTabIndex = tab.fileId ? openEditorFileIds.indexOf(tab.fileId) : -1;
                 const hasEditorTabsToRight = uiTabIndex >= 0 && uiTabIndex < openEditorFileIds.length - 1;
-                const cleanClosableTabCount = openEditorFileIds.filter((fileId: any) => fileId !== activeFile.id && !fileSaveStates.get(fileId)?.dirty).length;
+                const cleanClosableTabCount = openEditorFileIds.filter((fileId) => fileId !== activeFile.id && !fileSaveStates.get(fileId)?.dirty).length;
                 return (
                   <div
                     key={tab.id}
@@ -1415,7 +1415,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     data-builder-workflow-path-default="collapsed"
                   >
                     <DropdownMenuLabel>构建流程</DropdownMenuLabel>
-                    {editorWorkflowStepStates.map(({ step, status }: any, index: any) => {
+                    {editorWorkflowStepStates.map(({ step, status }, index) => {
                       const StepIcon = step.icon;
                       const suggested = suggestedWorkflowStepId === step.id;
                       return (
@@ -1630,7 +1630,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       data-builder-feedback-inline-panel={bottomDockTab}
                     >
                       <div className="flex min-w-0 items-center gap-2">
-                        <StateLabel label={bottomDockTabs.find((tab: any) => tab.value === bottomDockTab)?.label ?? bottomDockTab} />
+                        <StateLabel label={bottomDockTabs.find((tab) => tab.value === bottomDockTab)?.label ?? bottomDockTab} />
                         <span className="truncate text-on-surface-variant">
                           {bottomDockTab === "issues"
                             ? `${feedbackIssueCount} 个活跃问题`
@@ -1661,7 +1661,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                           </span>
                         ) : bottomDockTab === "tasks" ? (
                           <div className="flex min-w-0 flex-wrap gap-1.5">
-                            {visibleProjectTasks.slice(0, 3).map((task: any) => (
+                            {visibleProjectTasks.slice(0, 3).map((task) => (
                               <button
                                 key={task.id}
                                 type="button"
@@ -1873,7 +1873,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     <div className="grid h-full min-h-0 gap-3 text-xs xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                       <div className="subtle-scrollbar min-h-0 space-y-2 overflow-auto pr-1">
                         {builderIssues.length > 0 ? (
-                          builderIssues.slice(0, 24).map((issue: any) => {
+                          builderIssues.slice(0, 24).map((issue) => {
                             const isSelected = issue.id === selectedBuilderIssue?.id;
                             return (
                               <button
@@ -2026,7 +2026,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   ) : (
                     <div className="grid gap-2 text-xs xl:grid-cols-2">
                       {builderIssues.length > 0 ? (
-                        builderIssues.slice(0, 4).map((issue: any) => (
+                        builderIssues.slice(0, 4).map((issue) => (
                           <button
                             key={issue.id}
                             type="button"
@@ -2195,7 +2195,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   bottomDockExpanded ? (
                     <div className="grid h-full min-h-0 gap-3 text-xs xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                       <div className="subtle-scrollbar min-h-0 space-y-2 overflow-auto pr-1">
-                        {visibleProjectTasks.slice(0, 8).map((task: any) => (
+                        {visibleProjectTasks.slice(0, 8).map((task) => (
                           <button
                             key={task.id}
                             type="button"
@@ -2307,7 +2307,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                                 data-builder-task-log-full-preview=""
                                 data-builder-task-log-line-count={selectedProjectTaskLogLines.length}
                               >
-                                {selectedProjectTaskLogLines.map((line: any) => (
+                                {selectedProjectTaskLogLines.map((line) => (
                                   <div
                                     key={line.id}
                                     className={cn(
@@ -2335,7 +2335,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     </div>
                   ) : (
                     <div className="grid gap-2 text-xs xl:grid-cols-4">
-                      {visibleProjectTasks.slice(0, 4).map((task: any) => (
+                      {visibleProjectTasks.slice(0, 4).map((task) => (
                         <button
                           key={task.id}
                           type="button"
@@ -2437,7 +2437,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       data-builder-output-log-line-reader=""
                     >
                       {bottomDockLogLines.length ? (
-                        bottomDockLogLines.map((line: any) => (
+                        bottomDockLogLines.map((line) => (
                           <div
                             key={line.id}
                             className={cn(
@@ -2671,7 +2671,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                       {canvasContextInsertSearchResults.length === 0 ? (
                         <p className="px-2 py-1 text-[0.68rem] text-on-surface-variant">没有匹配控件</p>
                       ) : (
-                        canvasContextInsertSearchResults.map((definition: any, index: any) => {
+                        canvasContextInsertSearchResults.map((definition, index) => {
                           const Icon = definition.icon;
                           return (
                             <button
@@ -2761,7 +2761,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         <div className="px-2 pb-1 pt-1 text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
                           快速编辑
                         </div>
-                        {canvasContextMenuTextProps.map((prop: any) => (
+                        {canvasContextMenuTextProps.map((prop) => (
                           <button
                             key={prop}
                             type="button"
@@ -2956,7 +2956,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   type="button"
                   role="menuitem"
                   className="focus-ring flex h-8 w-full items-center gap-2 rounded-xl px-2 text-left hover:bg-surface-container-high disabled:pointer-events-none disabled:opacity-40"
-                  disabled={!selectedItems.some((item: any) => item.type === "frame")}
+                  disabled={!selectedItems.some((item) => item.type === "frame")}
                   data-builder-canvas-context-ungroup=""
                   onClick={() => runCanvasContextAction("ungroup")}
                 >

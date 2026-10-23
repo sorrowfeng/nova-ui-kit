@@ -587,8 +587,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <PathRow label="应用标识" value={activeProject.releaseConfig.bundleIdentifier} />
                       <PathRow
                         label="窗口"
-                        value={`${releaseWindowKinds.find((kind: any) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
-                          releaseTitlebarStyles.find((style: any) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
+                        value={`${releaseWindowKinds.find((kind) => kind.value === activeProject.releaseConfig.windowKind)?.label ?? activeProject.releaseConfig.windowKind} / ${
+                          releaseTitlebarStyles.find((style) => style.value === activeProject.releaseConfig.titlebarStyle)?.label ?? activeProject.releaseConfig.titlebarStyle
                         }`}
                       />
                       <PathRow label="目标" value={releaseBundleTargets.find((target: any) => target.value === activeProject.releaseConfig.bundleTargets)?.label ?? activeProject.releaseConfig.bundleTargets} />
@@ -829,7 +829,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               </div>
                               {certificateInspection.entries.length > 0 ? (
                                 <div className="mt-2 space-y-2">
-                                  {certificateInspection.entries.slice(0, 3).map((entry: any) => (
+                                  {certificateInspection.entries.slice(0, 3).map((entry) => (
                                     <div key={`${entry.store}-${entry.thumbprint}`} className="rounded-lg bg-surface-container px-2 py-2">
                                       <div className="flex flex-wrap items-center gap-2">
                                         <span className="font-medium">{entry.store}</span>
@@ -911,7 +911,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {releaseDigestAlgorithms.map((algorithm: any) => (
+                                {releaseDigestAlgorithms.map((algorithm) => (
                                   <SelectItem key={algorithm} value={algorithm}>
                                     {algorithm}
                                   </SelectItem>
@@ -1300,7 +1300,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           </div>
                           {projectPropertyAutoFixSummary.targets.length > 0 ? (
                             <div className="space-y-1">
-                              {projectPropertyAutoFixSummary.targets.slice(0, 3).map((target: any) => (
+                              {projectPropertyAutoFixSummary.targets.slice(0, 3).map((target) => (
                                 <button
                                   key={`${target.fileId}-${target.itemId}`}
                                   type="button"
@@ -1386,7 +1386,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         data-builder-readiness-list=""
                         data-builder-readiness-list-density="thin-rows"
                       >
-                        {buildReadinessSummary.items.map((item: any) => {
+                        {buildReadinessSummary.items.map((item) => {
                           const isActionableReadinessItem = item.severity !== "ready" || Boolean(item.fileId);
                           const severityIcon =
                             item.severity === "ready" ? (
@@ -1506,7 +1506,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <p className="text-xs leading-5 text-on-surface-variant">暂无 Rust/Cargo 诊断。构建失败时会解析错误位置。</p>
                   ) : (
                     <div className="max-h-40 space-y-2 overflow-auto pr-1">
-                      {buildDiagnostics.map((diagnostic: any, index: any) => {
+                      {buildDiagnostics.map((diagnostic, index) => {
                         const canFocusDiagnostic = isEditableRustDiagnostic(diagnostic);
                         return (
                           <article key={`${diagnostic.message}-${index}`} className="rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-xs">
@@ -1645,7 +1645,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="max-h-80 space-y-2 overflow-auto pr-1" data-builder-qt-creator-parity-list="">
-                      {qtCreatorParityItems.map((item: any) => (
+                      {qtCreatorParityItems.map((item) => (
                         <article
                           key={item.requirement}
                           className="grid min-w-0 gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-2 text-xs md:grid-cols-[2.5rem_minmax(0,0.75fr)_minmax(0,1.25fr)]"
@@ -1683,8 +1683,8 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             >
                               查看
                             </Button>
-                            {item.evidenceIds.map((id: any) => {
-                              const evidence = editorExperienceAuditItems.find((auditItem: any) => auditItem.id === id);
+                            {item.evidenceIds.map((id) => {
+                              const evidence = editorExperienceAuditItems.find((auditItem) => auditItem.id === id);
                               return (
                                 <button
                                   type="button"
@@ -1754,7 +1754,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="grid max-h-96 grid-cols-1 gap-2 overflow-auto pr-1 xl:grid-cols-2" data-builder-experience-audit-filtered-list="">
-                      {filteredEditorExperienceAuditItems.map((item: any) => (
+                      {filteredEditorExperienceAuditItems.map((item) => (
                         <article
                           key={item.id}
                           className="flex min-w-0 items-start gap-2 rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs"
@@ -2140,7 +2140,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {projectActionOptionIds.map((actionId: any) => (
+                            {projectActionOptionIds.map((actionId) => (
                               <SelectItem key={actionId} value={actionId}>
                                 {projectTaskDefinitions[actionId].title}
                               </SelectItem>
@@ -2161,7 +2161,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       aria-label="自定义操作 preset 说明"
                     />
                     <div className="flex flex-wrap gap-1.5">
-                      {customPresetDraftActions.map((actionId: any, index: any) => (
+                      {customPresetDraftActions.map((actionId, index) => (
                         <span key={`${actionId}-${index}`} className="inline-flex items-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 py-1 text-[0.68rem] text-on-surface-variant">
                           {index + 1}. {projectTaskDefinitions[actionId].title}
                           <button
@@ -2204,7 +2204,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     </div>
                   </div>
                   <div className="mb-3 grid gap-2 sm:grid-cols-2" data-builder-action-presets="">
-                    {allProjectActionPresets.map((preset: any) => (
+                    {allProjectActionPresets.map((preset) => (
                       <article
                         key={preset.id}
                         className="focus-ring rounded-2xl border border-outline-variant bg-surface-container-high p-3 text-left text-xs transition-colors hover:border-outline hover:bg-surface-container-highest"
@@ -2218,7 +2218,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <span className="text-[0.66rem] text-on-surface-variant">{preset.badge}</span>
                         </div>
                         <p className="mt-2 truncate font-mono text-[0.68rem] text-on-surface-variant">
-                          {preset.actions.map((actionId: any) => projectTaskDefinitions[actionId].title).join(" -> ")}
+                          {preset.actions.map((actionId) => projectTaskDefinitions[actionId].title).join(" -> ")}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Button size="sm" variant="secondary" data-builder-run-action-preset={preset.id} onClick={() => runProjectActionPreset(preset)}>
@@ -2257,7 +2257,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {projectTaskStatusFilterOptions.map((option: any) => (
+                          {projectTaskStatusFilterOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
@@ -2269,7 +2269,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {projectTaskKindFilterOptions.map((option: any) => (
+                          {projectTaskKindFilterOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
@@ -2282,7 +2282,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <div className="grid gap-3 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
                       <div className="max-h-[22rem] space-y-2 overflow-auto pr-1" data-builder-task-list="">
                         {visibleProjectTasks.length ? (
-                          visibleProjectTasks.slice(0, 12).map((task: any) => {
+                          visibleProjectTasks.slice(0, 12).map((task) => {
                             const selected = selectedProjectTask?.id === task.id;
                             const queueIndex = queuedProjectTaskIndex(task.id);
                             return (
@@ -2485,7 +2485,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             {selectedProjectTask.logPreview ? (
                               <div className="mt-2 max-h-44 overflow-auto rounded-xl bg-surface-container-low py-2 font-mono text-[0.68rem] leading-4 text-on-surface-variant">
                                 {selectedProjectTaskLogLines.length ? (
-                                  selectedProjectTaskLogLines.map((line: any) => (
+                                  selectedProjectTaskLogLines.map((line) => (
                                     <div
                                       key={line.id}
                                       className={cn(
@@ -2561,7 +2561,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <h3 className="truncate text-xs font-medium text-on-surface">发布流水线</h3>
                           <StateBadge
                             label={latestReleasePipeline ? projectTaskStatusLabel(latestReleasePipeline.status) : "空"}
-                            signal={Boolean(latestReleasePipeline) && !isQuietStateLabel(projectTaskStatusLabel(latestReleasePipeline.status))}
+                            signal={latestReleasePipeline ? !isQuietStateLabel(projectTaskStatusLabel(latestReleasePipeline.status)) : false}
                             variant={latestReleasePipeline ? projectTaskStatusVariant(latestReleasePipeline.status as ProjectTaskStatus) : "outline"}
                           />
                         </div>
@@ -3413,9 +3413,9 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             ) : null}
                             <StateBadge
                               variant={projectDependencyGraph ? dependencyGraphEventStatusVariant(projectDependencyGraph.lastEvent.status) : "outline"}
-                              label={projectDependencyGraph ? projectActivityStatusLabel(projectDependencyGraph.lastEvent.status) : "空"}
+                              label={projectDependencyGraph ? projectActivityStatusLabel(projectDependencyGraph.lastEvent.status ?? "空") : "空"}
                               signal={
-                                Boolean(projectDependencyGraph) &&
+                                projectDependencyGraph !== null &&
                                 dependencyGraphEventStatusVariant(projectDependencyGraph.lastEvent.status) === "destructive"
                               }
                             />
@@ -3436,7 +3436,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           ) : null}
                           {projectDependencySources.length > 0 ? (
                             <div className="mt-2 flex flex-wrap gap-1.5" data-builder-dependency-sources="">
-                              {projectDependencySources.slice(0, 6).map((source: any) => (
+                              {projectDependencySources.slice(0, 6).map((source) => (
                                 <button
                                   key={source.id}
                                   type="button"
@@ -3524,7 +3524,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                       {reverseDependencySummaries.length > 0 ? (
                         <div className="mt-3 grid gap-2 lg:grid-cols-2 2xl:grid-cols-4">
-                          {reverseDependencySummaries.map((summary: any) =>
+                          {reverseDependencySummaries.map((summary) =>
                             summary.target ? (
                               <article
                                 key={`${summary.target.kind}-${summary.target.id}`}
@@ -3556,7 +3556,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   </Button>
                                 </div>
                                 <div className="mt-2 flex flex-wrap gap-1.5">
-                                  {summary.scopeIds.slice(0, 4).map((scopeId: any) => (
+                                  {summary.scopeIds.slice(0, 4).map((scopeId) => (
                                     <span key={scopeId} className="text-[0.66rem] text-on-surface-variant">
                                       {projectChangeScopeLabel(scopeId)}
                                     </span>
@@ -3569,7 +3569,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 </div>
                                 {summary.affectedPaths.length > 0 ? (
                                   <div className="mt-2 space-y-1">
-                                    {summary.affectedPaths.slice(0, 3).map((path: any) => (
+                                    {summary.affectedPaths.slice(0, 3).map((path) => (
                                       <p key={path} className="truncate font-mono text-[0.68rem] text-on-surface-variant" title={path}>
                                         {path}
                                       </p>
@@ -3586,7 +3586,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   >
                                     选择目标
                                   </Button>
-                                  {summary.plannedActions.slice(0, 1).map((actionId: any) => (
+                                  {summary.plannedActions.slice(0, 1).map((actionId) => (
                                     <Button
                                       key={actionId}
                                       size="sm"
@@ -3734,7 +3734,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       ) : null}
                       <div className="grid gap-3 xl:grid-cols-[340px_minmax(0,1fr)]">
                         <div className="max-h-[460px] space-y-2 overflow-auto pr-1">
-                          {generatedFilePreview.entries.map((entry: any) => (
+                          {generatedFilePreview.entries.map((entry) => (
                             <article
                               key={entry.relative_path}
                               data-builder-generated-file={entry.relative_path}
@@ -3873,7 +3873,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                     </div>
                     <div className="grid gap-2 md:grid-cols-3">
-                      {releaseReadinessSummary.items.map((item: any) => (
+                      {releaseReadinessSummary.items.map((item) => (
                         <article key={item.id} className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                           <div className="mb-2 flex items-start justify-between gap-2">
                             <div className="flex min-w-0 items-center gap-2">
@@ -3917,7 +3917,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     </div>
                     {releaseReadinessActionItems.length ? (
                       <div className="grid gap-2 md:grid-cols-3">
-                        {releaseReadinessActionItems.map((item: any) => (
+                        {releaseReadinessActionItems.map((item) => (
                           <div key={item.id} className="flex min-h-28 flex-col justify-between gap-3 rounded-xl bg-surface-container-high p-3">
                             <div className="min-w-0">
                               <div className="mb-1 flex items-center justify-between gap-2">
@@ -4031,7 +4031,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     </div>
                   ) : (
                     <div className="mt-3 grid max-h-72 gap-2 overflow-auto pr-1 md:grid-cols-2">
-                      {windowVisualAudit.issues.map((issue: any) => (
+                      {windowVisualAudit.issues.map((issue) => (
                         <article key={issue.id} className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                           <div className="mb-1 flex items-start justify-between gap-2">
                             <div className="flex min-w-0 items-center gap-2">
@@ -4194,7 +4194,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </div>
                       {breakpointIssues.length ? (
                         <div className="grid max-h-64 gap-2 overflow-auto pr-1 md:grid-cols-2">
-                          {breakpointIssues.map((issue: any) => (
+                          {breakpointIssues.map((issue) => (
                             <article key={issue.id} className="rounded-2xl border border-outline-variant bg-surface-container-high p-3">
                               <div className="mb-1 flex items-start justify-between gap-2">
                                 <div className="flex min-w-0 items-center gap-2">
@@ -4375,7 +4375,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                   <div className="hidden border-t border-outline-variant p-3 group-open:block" data-builder-activity-timeline-details="deferred">
                   {activityTimeline.length ? (
                     <div className="space-y-2">
-                      {activityTimeline.slice(0, 10).map((activity: any) => (
+                      {activityTimeline.slice(0, 10).map((activity) => (
                         <article key={activity.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                           <div className="mt-1 flex size-7 items-center justify-center rounded-full bg-surface-container-high text-[0.68rem] font-medium uppercase text-on-surface-variant">
                             {activity.kind.slice(0, 1)}

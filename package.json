@@ -15,9 +15,9 @@
   "homepage": "https://github.com/sorrowfeng/nova-ui-kit#readme",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && npm run check:builder-file-size && npm run check:command-reachability && npm run check:dead-usestate && npm run check:dead-exports && tsc && vite build && npm run check:bundle-size",
+    "build": "npm run check:components && npm run check:experience && npm run check:showcase-size && npm run check:builder-file-size && npm run check:command-reachability && npm run check:dead-usestate && npm run check:dead-exports && npm run check:scope-values && tsc && vite build && npm run check:bundle-size",
     "check:components": "node scripts/check-component-coverage.mjs",
-    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:command-reachability && npm run check:dead-usestate && npm run check:dead-exports && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:release-artifact-magic && npm run check:ts-tests && npm run check:english-prose-rules && npm run check:english-prose && npm run check:ui-density-rules && npm run check:ui-density && npm run check:builder-runtime",
+    "check:experience": "node scripts/check-editor-experience.mjs && npm run check:command-reachability && npm run check:dead-usestate && npm run check:dead-exports && npm run check:scope-values && npm run check:runtime-contract && npm run check:project-persistence && npm run check:goal && npm run version:check && npm run check:platform-bundle && npm run check:release-artifact-magic && npm run check:ts-tests && npm run check:english-prose-rules && npm run check:english-prose && npm run check:ui-density-rules && npm run check:ui-density && npm run check:builder-runtime",
     "check:goal": "node scripts/check-goal-coverage.mjs",
     "check:runtime-contract": "node scripts/check-generated-runtime-contract.mjs",
     "check:project-persistence": "node scripts/check-project-persistence-rust.mjs",
@@ -61,7 +61,8 @@
     "check:ui-density:report": "node scripts/check-ui-density.mjs --report",
     "check:ts-tests": "node scripts/check-ts-tests.mjs",
     "check:english-prose": "node scripts/check-english-prose.mjs",
-    "check:english-prose-rules": "node scripts/check-english-prose-rules.mjs"
+    "check:english-prose-rules": "node scripts/check-english-prose-rules.mjs",
+    "check:scope-values": "node scripts/gen-scope-values.mjs --check"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

@@ -374,7 +374,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <div className="flex min-w-0 items-center gap-2">
                     <p className="truncate text-xs font-semibold text-on-surface">逻辑资源</p>
                     <span className="shrink-0 text-[0.68rem] text-on-surface-variant">
-                      {logicResourceViewOptions.find((option: any) => option.value === logicResourceView)?.label ?? "连接"}
+                      {logicResourceViewOptions.find((option) => option.value === logicResourceView)?.label ?? "连接"}
                     </span>
                   </div>
                   <CountReadout label={`${filteredRustLogicOutline.length} 大纲`} count={filteredRustLogicOutline.length} />
@@ -430,7 +430,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </div>
                   <div className="subtle-scrollbar max-h-44 space-y-1 overflow-y-auto pr-1">
                     {visibleRustLogicOutline.length > 0 ? (
-                      visibleRustLogicOutline.slice(0, 18).map((entry: any) => (
+                      visibleRustLogicOutline.slice(0, 18).map((entry) => (
                         <button
                           key={`sidebar-outline-${entry.id}`}
                           type="button"
@@ -478,7 +478,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   ) : null}
                 </div>
                 <div className="subtle-scrollbar flex gap-0.5 overflow-x-auto rounded-lg border border-outline-variant/80 bg-surface-container p-0.5" role="radiogroup" aria-label="逻辑资源视图" data-builder-logic-resource-view="">
-                  {logicResourceViewOptions.map((option: any) => (
+                  {logicResourceViewOptions.map((option) => (
                     <button
                       key={option.value}
                       type="button"
@@ -524,7 +524,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="connections">
                   <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-outline-variant/80 bg-surface-container p-0.5" role="radiogroup" aria-label="连接绑定状态过滤" data-builder-logic-connection-filter="">
-                    {logicConnectionFilterOptions.map((option: any) => (
+                    {logicConnectionFilterOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
@@ -542,7 +542,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </button>
                     ))}
                   </div>
-                  {filteredLogicConnectionRows.map((row: any) => {
+                  {filteredLogicConnectionRows.map((row) => {
                     const rowNeedsSlot = logicSignalSlotRowNeedsSlot(row);
                     return (
                       <div
@@ -660,7 +660,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </span>
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="commands">
-                  {filteredRustCommands.map((command: any) => (
+                  {filteredRustCommands.map((command) => (
                     <button
                       key={command.id}
                       type="button"
@@ -717,7 +717,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="modules">
                   <div className="space-y-1">
-                    {filteredRustModules.map((module: any) => (
+                    {filteredRustModules.map((module) => (
                       <button
                         key={module.id}
                         type="button"
@@ -774,7 +774,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </span>
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="dependencies">
-                    {filteredCargoDependencies.map((dependency: any) => (
+                    {filteredCargoDependencies.map((dependency) => (
                       <button
                         key={dependency.id}
                         type="button"
@@ -833,7 +833,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </span>
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="integrations">
-                    {filteredBackendIntegrations.map((integration: any) => (
+                    {filteredBackendIntegrations.map((integration) => (
                       <button
                         key={integration.id}
                         type="button"
@@ -891,7 +891,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </span>
                   </summary>
                   <div className={logicResourceSectionContentClass} data-builder-logic-resource-section-content="state">
-                    {filteredStateVariables.map((state: any) => (
+                    {filteredStateVariables.map((state) => (
                       <button
                         key={state.id}
                         type="button"
@@ -1174,17 +1174,17 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </div>
                     <div className="flex flex-wrap items-center gap-1.5">
                         <CountReadout
-                          label={`${filteredRustLogicOutline.filter((entry: any) => entry.kind === "slot").length}/${rustLogicOutline.filter((entry: any) => entry.kind === "slot").length} 槽`}
-                          count={filteredRustLogicOutline.filter((entry: any) => entry.kind === "slot").length}
+                          label={`${filteredRustLogicOutline.filter((entry) => entry.kind === "slot").length}/${rustLogicOutline.filter((entry) => entry.kind === "slot").length} 槽`}
+                          count={filteredRustLogicOutline.filter((entry) => entry.kind === "slot").length}
                         />
                         <CountReadout
-                          label={`${filteredRustLogicOutline.filter((entry: any) => entry.kind === "function").length}/${rustLogicOutline.filter((entry: any) => entry.kind === "function").length} 函数`}
-                          count={filteredRustLogicOutline.filter((entry: any) => entry.kind === "function").length}
+                          label={`${filteredRustLogicOutline.filter((entry) => entry.kind === "function").length}/${rustLogicOutline.filter((entry) => entry.kind === "function").length} 函数`}
+                          count={filteredRustLogicOutline.filter((entry) => entry.kind === "function").length}
                         />
                         <CountReadout
                           data-builder-rust-outline-symbols=""
-                          label={`${filteredRustLogicOutline.filter((entry: any) => !["slot", "function"].includes(entry.kind)).length}/${rustStructureOutlineCount} 结构`}
-                          count={filteredRustLogicOutline.filter((entry: any) => !["slot", "function"].includes(entry.kind)).length}
+                          label={`${filteredRustLogicOutline.filter((entry) => !["slot", "function"].includes(entry.kind)).length}/${rustStructureOutlineCount} 结构`}
+                          count={filteredRustLogicOutline.filter((entry) => !["slot", "function"].includes(entry.kind)).length}
                         />
                         {missingRustSlotCount > 0 ? (
                           <Button
@@ -1202,7 +1202,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </div>
                     {visibleRustLogicOutline.length > 0 ? (
                       <div className="mt-3 grid gap-2 md:grid-cols-2">
-                        {visibleRustLogicOutline.map((entry: any) => (
+                        {visibleRustLogicOutline.map((entry) => (
                           <button
                             key={entry.id}
                             type="button"
@@ -1260,7 +1260,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <span className="text-[0.68rem] text-on-surface-variant">Rust 优先</span>
                     </div>
                     <div className="mt-3 grid gap-2">
-                      {rustBackendTopology.map((node: any) => (
+                      {rustBackendTopology.map((node) => (
                         <button
                           key={node.id}
                           type="button"
@@ -1272,7 +1272,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <span className="block truncate font-medium text-on-surface">{node.label}</span>
                             <span className="mt-0.5 block truncate text-[0.68rem]">{node.detail}</span>
                           </span>
-                          <StateLabel showQuiet variant={node.tone === "ready" ? "secondary" : "outline"} className="shrink-0" label={node.badge} />
+                          <StateLabel showQuiet variant={node.tone === "ready" ? "secondary" : "outline"} className="shrink-0" label={String(node.badge)} />
                         </button>
                       ))}
                     </div>
@@ -1315,7 +1315,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     />
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-4" role="list" aria-label="逻辑上下文摘要">
-                    {logicContextSummaryItems.map((item: any) => {
+                    {logicContextSummaryItems.map((item) => {
                       const ItemIcon = item.icon;
                       return (
                         <button
@@ -1401,7 +1401,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       : null}
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-4" role="list" aria-label="逻辑工作台推荐操作">
-                    {logicWorkbenchNextActions.map((step: any, index: any) => {
+                    {logicWorkbenchNextActions.map((step, index) => {
                       const StepIcon = step.icon;
                       return (
                         <button
@@ -1527,7 +1527,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </div>
                   {logicSlotAssistantRoute.length > 0 ? (
                     <div className="mt-3 grid gap-2 lg:grid-cols-5" role="list" aria-label="槽函数路径">
-                      {logicSlotAssistantRoute.map((step: any, index: any) => {
+                      {logicSlotAssistantRoute.map((step, index) => {
                         const StepIcon = step.icon;
                         return (
                           <article
@@ -1595,7 +1595,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <CountReadout label={`${recentSlotNavigationEntries.length} 条`} count={recentSlotNavigationEntries.length} />
                       </div>
                       <div className="grid gap-2 md:grid-cols-2">
-                        {recentSlotNavigationEntries.slice(0, 4).map((entry: any) => (
+                        {recentSlotNavigationEntries.slice(0, 4).map((entry) => (
                           <button
                             key={`slot-assistant-history-${entry.id}`}
                             type="button"
@@ -1755,7 +1755,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         ) : null}
                       </div>
                       <div className="mt-2 grid gap-2 lg:grid-cols-2">
-                        {unboundLogicSignalSlotRows.slice(0, 4).map((row: any) => (
+                        {unboundLogicSignalSlotRows.slice(0, 4).map((row) => (
                           <article
                             key={`unbound-${row.id}`}
                             className="grid min-w-0 gap-2 rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2 text-xs sm:grid-cols-[minmax(0,1fr)_auto]"
@@ -1782,7 +1782,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             </div>
                           </article>
                         ))}
-                        {missingRustSlotEntries.slice(0, 4).map((entry: any) => {
+                        {missingRustSlotEntries.slice(0, 4).map((entry) => {
                           const command = activeProject.rustCommands.find((candidate: any) => candidate.id === entry.commandId);
                           return (
                             <article
@@ -1843,10 +1843,10 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <span className="text-right">操作</span>
                       </div>
                       <div className="subtle-scrollbar max-h-[310px] overflow-auto">
-                        {filteredLogicConnectionRows.map((row: any) => {
+                        {filteredLogicConnectionRows.map((row) => {
                           const rowCommandSchema = row.command ? commandResultSchema(row.command) : null;
                           const rowSlotEntry = row.command
-                            ? rustLogicOutline.find((entry: any) => entry.kind === "slot" && entry.commandId === row.command?.id) ?? null
+                            ? rustLogicOutline.find((entry) => entry.kind === "slot" && entry.commandId === row.command?.id) ?? null
                             : null;
                           const rowSlotState = row.command ? (rowSlotEntry?.line ? "located" : "missing") : "unbound";
                           const rowResultState = row.command
@@ -1990,8 +1990,8 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         </div>
                         <CountReadout
                           className="shrink-0"
-                          label={`${logicWorkflowSteps.filter((step: any) => !step.disabled && step.tone !== "muted").length}/${logicWorkflowSteps.length}`}
-                          count={logicWorkflowSteps.filter((step: any) => !step.disabled && step.tone !== "muted").length}
+                          label={`${logicWorkflowSteps.filter((step) => !step.disabled && step.tone !== "muted").length}/${logicWorkflowSteps.length}`}
+                          count={logicWorkflowSteps.filter((step) => !step.disabled && step.tone !== "muted").length}
                         />
                       </div>
                       <div className="grid gap-2 lg:grid-cols-4" data-builder-logic-flow-nodes="" role="list" aria-label="当前逻辑链路">
@@ -2104,7 +2104,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         </Button>
                       </div>
                       <div className="mt-2 grid gap-2 md:grid-cols-5" role="list" aria-label="当前逻辑工作流步骤">
-                        {logicWorkflowSteps.map((step: any, index: any) => {
+                        {logicWorkflowSteps.map((step, index) => {
                           const StepIcon = step.icon;
                           return (
                             <article
@@ -2211,7 +2211,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </div>
                   ) : logicSignalSlotRows.length > 0 ? (
                     <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-low">
-                      {filteredLogicSignalSlotRows.map((row: any) => (
+                      {filteredLogicSignalSlotRows.map((row) => (
                         <div
                           key={row.id}
                           className={cn(
@@ -3116,7 +3116,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </div>
                   {activeRustCommandCodeLensRows.length > 0 ? (
                     <div className="grid gap-1.5 lg:grid-cols-2" data-builder-rust-codelens-rows="">
-                      {activeRustCommandCodeLensRows.map((row: any) => (
+                      {activeRustCommandCodeLensRows.map((row) => (
                         <article
                           key={`rust-codelens-${row.id}`}
                           className={cn(
@@ -3278,7 +3278,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         data-builder-rust-hover-focus-control=""
                         onClick={() => {
                           const row = logicSignalSlotRows.find(
-                            (candidate: any) =>
+                            (candidate) =>
                               candidate.item.id === rustEditorHoverDoc.controlItemId &&
                               candidate.eventName === rustEditorHoverDoc.controlEventName,
                           );
@@ -3325,7 +3325,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   {rustCurrentIdentifier ? (
                     <>
                       <div className="grid gap-1.5 md:grid-cols-2 xl:grid-cols-3" data-builder-rust-editor-reference-list="">
-                        {rustVisibleIdentifierReferences.map((reference: any) => (
+                        {rustVisibleIdentifierReferences.map((reference) => (
                           <button
                             key={reference.id}
                             type="button"
@@ -3389,7 +3389,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </span>
                   </div>
                   <div className="grid gap-2 lg:grid-cols-2 2xl:grid-cols-4">
-                    {rustEditorQuickFixes.map((fix: any) => (
+                    {rustEditorQuickFixes.map((fix) => (
                       <button
                         key={fix.id}
                         type="button"
@@ -3452,7 +3452,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </div>
                       <div className="mt-2 flex min-w-0 gap-1.5 overflow-x-auto pb-0.5">
                         {rustSignatureHelp.parameters.length > 0 ? (
-                          rustSignatureHelp.parameters.map((parameter: any, index: any) => {
+                          rustSignatureHelp.parameters.map((parameter, index) => {
                             const active = rustSignatureHelp.activeParameterIndex === index;
                             return (
                               <span
@@ -3506,7 +3506,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <StateLabel className="shrink-0" label={rustSyntaxHighlightVisible ? "开启" : "纯文本"} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-                    {rustSyntaxLegendItems.map((item: any) => (
+                    {rustSyntaxLegendItems.map((item) => (
                       <span
                         key={item.id}
                         className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-2 py-1"
@@ -3541,11 +3541,11 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <div className="grid h-full min-h-0 grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]">
                     <div className="relative overflow-hidden border-r border-outline-variant bg-surface-container-high" data-builder-rust-diagnostic-gutter="">
                       <div className="py-3 transition-transform duration-75" style={{ transform: `translateY(-${rustEditorScrollTop}px)` }}>
-                        {rustEditorLines.map((_: any, index: any) => {
+                        {rustEditorLines.map((_, index) => {
                           const lineNumber = index + 1;
                           const lineDiagnostics = rustDiagnosticsBySourceLine.get(lineNumber) ?? [];
-                          const hasError = lineDiagnostics.some((entry: any) => entry.diagnostic.severity === "error");
-                          const hasWarning = lineDiagnostics.some((entry: any) => entry.diagnostic.severity === "warning");
+                          const hasError = lineDiagnostics.some((entry) => entry.diagnostic.severity === "error");
+                          const hasWarning = lineDiagnostics.some((entry) => entry.diagnostic.severity === "warning");
                           const isActiveDiagnosticLine = rustDiagnosticTarget?.sourceLine === lineNumber;
                           const isCursorLine = rustEditorSelection.line === lineNumber;
                           const hasFindMatch = rustFindLineSet.has(lineNumber);
@@ -3590,7 +3590,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="relative min-w-0">
                       <div className="pointer-events-none absolute inset-0 overflow-hidden">
                         <div className="py-3 transition-transform duration-75" style={{ transform: `translateY(-${rustEditorScrollTop}px)` }}>
-                          {rustEditorLines.map((_: any, index: any) => {
+                          {rustEditorLines.map((_, index) => {
                             const lineNumber = index + 1;
                             const lineDiagnostics = rustDiagnosticsBySourceLine.get(lineNumber) ?? [];
                             const isActiveDiagnosticLine = rustDiagnosticTarget?.sourceLine === lineNumber;
@@ -3633,7 +3633,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             )}
                             style={{ transform: `translate(${rustEditorWordWrap ? 0 : -rustEditorScrollLeft}px, -${rustEditorScrollTop}px)` }}
                           >
-                            {rustEditorLines.map((line: any, index: any) => (
+                            {rustEditorLines.map((line, index) => (
                               <div
                                 key={`rust-highlight-${index}`}
                                 className={cn("min-h-5", rustEditorWordWrap ? "whitespace-pre-wrap break-words" : "h-5 whitespace-pre")}
@@ -3697,7 +3697,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             <span className="font-mono">Tab / Enter</span>
                           </div>
                           <div className="max-h-64 overflow-auto">
-                            {rustCompletionItems.map((completion: any, index: any) => {
+                            {rustCompletionItems.map((completion, index) => {
                               const active = index === (rustCompletionTrigger.activeIndex % rustCompletionItems.length);
                               return (
                                 <button
@@ -3791,7 +3791,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             height: `${rustEditorMinimapViewport.height}%`,
                           }}
                         />
-                        {rustEditorMinimapMarkers.map((marker: any) => {
+                        {rustEditorMinimapMarkers.map((marker) => {
                           const top = ((marker.line - 1) / Math.max(1, rustEditorMinimapTotalLines - 1)) * 100;
                           const markerClassName =
                             marker.kind === "diagnostic"
@@ -3937,7 +3937,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     />
                   </div>
                   <div className="subtle-scrollbar flex gap-1 overflow-x-auto border-b border-outline-variant bg-surface-container px-2 py-2" data-builder-rust-debug-tabs="">
-                    {rustDebuggerTabs.map((tab: any) => (
+                    {rustDebuggerTabs.map((tab) => (
                       <button
                         key={tab.id}
                         type="button"
@@ -3966,7 +3966,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="max-h-72 overflow-y-auto p-2" data-builder-rust-debug-problems="" data-builder-rust-debug-problem-count={rustDebuggerProblemRows.length}>
                       {rustDebuggerProblemRows.length > 0 ? (
                         <div className="space-y-1.5">
-                          {rustDebuggerProblemRows.map((row: any) => (
+                          {rustDebuggerProblemRows.map((row) => (
                             <button
                               key={row.id}
                               type="button"
@@ -4007,7 +4007,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <div className="max-h-72 overflow-y-auto p-2" data-builder-rust-debug-breakpoints="" data-builder-rust-debug-breakpoint-count={rustDebuggerBreakpointRows.length}>
                       {rustDebuggerBreakpointRows.length > 0 ? (
                         <div className="space-y-1.5">
-                          {rustDebuggerBreakpointRows.map((row: any) => (
+                          {rustDebuggerBreakpointRows.map((row) => (
                             <div
                               key={row.id}
                               className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-outline-variant bg-surface-container-low p-1.5"
@@ -4056,7 +4056,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   {rustDebuggerPanel === "watch" ? (
                     <div className="max-h-72 overflow-y-auto p-2" data-builder-rust-debug-watch="" data-builder-rust-debug-watch-count={rustDebuggerWatchRows.length}>
                       <div className="space-y-1.5">
-                        {rustDebuggerWatchRows.map((row: any) => (
+                        {rustDebuggerWatchRows.map((row) => (
                           <div
                             key={row.id}
                             className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.75fr)] items-center gap-2 rounded-2xl border border-outline-variant bg-surface-container-low px-2.5 py-2"
@@ -4092,7 +4092,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   {rustDebuggerPanel === "call-stack" ? (
                     <div className="max-h-72 overflow-y-auto p-2" data-builder-rust-debug-call-stack="" data-builder-rust-debug-call-stack-count={rustDebuggerCallStackRows.length}>
                       <div className="space-y-1.5">
-                        {rustDebuggerCallStackRows.map((row: any) => (
+                        {rustDebuggerCallStackRows.map((row) => (
                           <button
                             key={row.id}
                             type="button"
@@ -4275,7 +4275,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </div>
                     {recentSlotNavigationEntries.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {recentSlotNavigationEntries.map((entry: any) => (
+                        {recentSlotNavigationEntries.map((entry) => (
                           <button
                             key={entry.id}
                             type="button"
@@ -4470,7 +4470,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {activeRustCommandParameters.length > 0 ? (
-                        activeRustCommandParameters.slice(0, 5).map((parameter: any) => (
+                        activeRustCommandParameters.slice(0, 5).map((parameter) => (
                           <span
                             key={parameter.id}
                             className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-low px-2 py-1 font-mono text-[0.66rem] text-on-surface"
@@ -4496,7 +4496,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <div className="space-y-2" data-builder-logic-command-impact-results="">
                     <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">输出回写</p>
                     <div className="grid gap-2">
-                      {activeRustCommandResultImpacts.slice(0, 5).map((impact: any) => (
+                      {activeRustCommandResultImpacts.slice(0, 5).map((impact) => (
                         <div
                           key={impact.id}
                           className={cn(
@@ -4522,7 +4522,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <p className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">UI 调用者</p>
                     {activeRustCommandBindingRows.length > 0 ? (
                       <div className="space-y-2">
-                        {activeRustCommandBindingRows.slice(0, 3).map((row: any) => (
+                        {activeRustCommandBindingRows.slice(0, 3).map((row) => (
                           <article
                             key={`active-command-impact-caller-${row.id}`}
                             className="rounded-2xl border border-outline-variant bg-surface-container-low p-2.5"
@@ -4610,7 +4610,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </div>
                   {activeRustCommandBindingRows.length > 0 ? (
                     <div className="space-y-2">
-                      {activeRustCommandBindingRows.slice(0, 5).map((row: any) => (
+                      {activeRustCommandBindingRows.slice(0, 5).map((row) => (
                         <article
                           key={`active-command-binding-${row.id}`}
                           className="rounded-2xl border border-outline-variant bg-surface-container-low p-2.5"
@@ -4692,7 +4692,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <p className="rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-2 leading-5 text-on-surface-variant">
                         这个命令还没有 UI 入口。可以把下面的未绑定信号直接接到当前命令。
                       </p>
-                      {activeRustCommandCandidateRows.map((row: any) => (
+                      {activeRustCommandCandidateRows.map((row) => (
                         <article key={`active-command-candidate-${row.id}`} className="grid gap-2 rounded-2xl border border-outline-variant bg-surface-container-low p-2.5 sm:grid-cols-[minmax(0,1fr)_auto]">
                           <div className="min-w-0">
                             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -4744,7 +4744,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {activeRustCommandReverseDependency.scopeIds.slice(0, 4).map((scopeId: any) => (
+                      {activeRustCommandReverseDependency.scopeIds.slice(0, 4).map((scopeId) => (
                         <span key={scopeId} className="text-[0.66rem] text-on-surface-variant">
                           {projectChangeScopeLabel(scopeId)}
                         </span>
@@ -4752,7 +4752,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     </div>
                     {activeRustCommandReverseDependency.plannedActions.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {activeRustCommandReverseDependency.plannedActions.slice(0, 2).map((actionId: any) => (
+                        {activeRustCommandReverseDependency.plannedActions.slice(0, 2).map((actionId) => (
                           <Button
                             key={actionId}
                             size="sm"
@@ -4817,7 +4817,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      {rustCommandParameters(activeRustCommand).map((parameter: any) => (
+                      {rustCommandParameters(activeRustCommand).map((parameter) => (
                         <div key={parameter.id} className="space-y-2 rounded-xl border border-outline-variant bg-surface-container p-2">
                           <div className="flex items-center gap-2">
                             <Input
@@ -5390,7 +5390,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         </div>
                         {activeBackendMethodFields.length ? (
                           <div className="grid gap-2">
-                            {activeBackendMethodFields.map((field: any) => {
+                            {activeBackendMethodFields.map((field) => {
                               const fieldIssues = backendSchemaFieldIssues(field, activeBackendRequestValidationIssues);
                               const fieldPath = field.path.join(".");
                               return (
@@ -5425,7 +5425,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {field.enumValues.map((value: any) => (
+                                        {field.enumValues.map((value) => (
                                           <SelectItem key={value} value={value}>
                                             {value}
                                           </SelectItem>
@@ -5555,7 +5555,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                 {(activeBackendIntegrationMethod.lastTest.validationIssues?.length
                                   ? activeBackendIntegrationMethod.lastTest.validationIssues
                                   : activeBackendResponseValidationIssues
-                                ).slice(0, 4).map((issue: any) => (
+                                ).slice(0, 4).map((issue) => (
                                   <p key={issue}>{issue}</p>
                                 ))}
                               </div>

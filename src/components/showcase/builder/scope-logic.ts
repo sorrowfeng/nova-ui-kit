@@ -8,6 +8,7 @@
 // misspelled key is a compile error instead of a blank panel); typing the
 // values is a separate pass. See docs/monolith-decomposition.md.
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { BuilderScopeValues } from "./scope-values";
 
 type LogicViewScopeKey =
   | "Field"
@@ -322,4 +323,4 @@ type LogicViewScopeKey =
   | "visibleRustLogicOutline"
   ;
 
-export type LogicViewScope = { [K in LogicViewScopeKey]: any };
+export type LogicViewScope = Pick<BuilderScopeValues, LogicViewScopeKey>;

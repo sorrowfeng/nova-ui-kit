@@ -18,6 +18,7 @@ import type { ProjectViewScope } from "./scope-project";
 import type { DesignViewScope } from "./scope-design";
 import type { LogicViewScope } from "./scope-logic";
 import type { BuildViewScope } from "./scope-build";
+import type { BuilderScopeValues } from "./scope-values";
 
 /** Names only ShellView reads; the four mode views never see these. */
 export type ShellViewOwnKey =
@@ -165,7 +166,7 @@ export type ShellViewOwnKey =
   | "workflowStepStatusLabel"
   ;
 
-type ShellViewOwnScope = { [K in ShellViewOwnKey]: any }
+type ShellViewOwnScope = Pick<BuilderScopeValues, ShellViewOwnKey>
   & {
     ProjectView: ComponentType<{ scope: ProjectViewScope }>;
     DesignView: ComponentType<{ scope: DesignViewScope }>;

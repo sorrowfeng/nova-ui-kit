@@ -282,7 +282,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2 lg:grid-cols-3 2xl:grid-cols-6">
-                    {projectTopologyNodes.map((node: any, index: any) => {
+                    {projectTopologyNodes.map((node, index) => {
                       const NodeIcon = node.icon;
                       return (
                         <button
@@ -377,16 +377,16 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       {/* Tallies are readouts — visible when non-zero, not painted
                           as pills and not hidden while they still mean something. */}
                       <CountReadout
-                        label={`${projectSourceOverviewRows.filter((row: any) => row.scope === "source").length} 源码`}
-                        count={projectSourceOverviewRows.filter((row: any) => row.scope === "source").length}
+                        label={`${projectSourceOverviewRows.filter((row) => row.scope === "source").length} 源码`}
+                        count={projectSourceOverviewRows.filter((row) => row.scope === "source").length}
                       />
                       <CountReadout
-                        label={`${projectSourceOverviewRows.filter((row: any) => row.scope === "metadata").length} .nova`}
-                        count={projectSourceOverviewRows.filter((row: any) => row.scope === "metadata").length}
+                        label={`${projectSourceOverviewRows.filter((row) => row.scope === "metadata").length} .nova`}
+                        count={projectSourceOverviewRows.filter((row) => row.scope === "metadata").length}
                       />
                       <StateBadge
-                        label={`${projectSourceOverviewRows.filter((row: any) => row.status === "dirty").length} 未保存`}
-                        signal={projectSourceOverviewRows.some((row: any) => row.status === "dirty")}
+                        label={`${projectSourceOverviewRows.filter((row) => row.status === "dirty").length} 未保存`}
+                        signal={projectSourceOverviewRows.some((row) => row.status === "dirty")}
                         variant="secondary"
                       />
                       <StateBadge
@@ -409,7 +409,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       <span className="text-right">动作</span>
                     </div>
                     <div className="divide-y divide-outline-variant">
-                      {projectSourceOverviewRows.map((row: any) => {
+                      {projectSourceOverviewRows.map((row) => {
                         const RowIcon = row.icon;
                         return (
                           <article
@@ -548,7 +548,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       <span>路径</span>
                       <span className="text-right">打开</span>
                     </div>
-                    {projectFolderHealthItems.map((item: any) => {
+                    {projectFolderHealthItems.map((item) => {
                       const ItemIcon = item.icon;
                       return (
                         <article
@@ -649,7 +649,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-2" data-builder-project-action-center-list="">
-                    {projectActionCenterItems.map((item: any, index: any) => {
+                    {projectActionCenterItems.map((item, index) => {
                       const ItemIcon = item.icon;
                       const isRunKitItem = item.id === "run-kit-next-step";
                       return (
@@ -743,7 +743,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2 xl:grid-cols-2" data-builder-project-working-set-list="">
-                    {projectWorkingSetItems.map((item: any) => {
+                    {projectWorkingSetItems.map((item) => {
                       const ItemIcon = item.icon;
                       return (
                         <article
@@ -856,7 +856,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       <span className="text-right">动作</span>
                     </div>
                     <div className="divide-y divide-outline-variant">
-                      {projectOwnershipMatrixItems.map((item: any) => {
+                      {projectOwnershipMatrixItems.map((item) => {
                         const ItemIcon = item.icon;
                         return (
                           <article
@@ -1018,7 +1018,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         data-builder-project-workspace-filter=""
                         data-builder-project-workspace-filter-density="toolbar-segmented"
                       >
-                        {projectExplorerFilterOptions.map((option: any) => {
+                        {projectExplorerFilterOptions.map((option) => {
                           const active = option.id === projectExplorerFilter;
                           return (
                             <button
@@ -1058,7 +1058,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           </span>
                         </div>
                         <div className="max-h-52 overflow-auto p-1.5" data-builder-project-locator-results="">
-                          {projectExplorerLocatorResults.map((node: any) => {
+                          {projectExplorerLocatorResults.map((node) => {
                             const NodeIcon = node.icon;
                             const group = projectExplorerGroupMeta(projectExplorerNodeGroupId(node));
                             const status = projectExplorerNodeStatus(node);
@@ -1134,7 +1134,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       aria-activedescendant={selectedProjectExplorerNode ? `project-explorer-node-${selectedProjectExplorerNode.id}` : undefined}
                       onKeyDown={handleProjectExplorerTreeKeyDown}
                     >
-                      {visibleProjectExplorerRows.map((row: any) => {
+                      {visibleProjectExplorerRows.map((row) => {
                         if (row.kind === "group") {
                           return (
                             <div
@@ -1280,7 +1280,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           data-builder-project-tree-breadcrumb-density="inline-row"
                           data-builder-project-tree-breadcrumb-chrome="flat-row"
                         >
-                          {selectedProjectExplorerPathNodes.map((node: any, index: any) => {
+                          {selectedProjectExplorerPathNodes.map((node, index) => {
                             const current = node.id === selectedProjectExplorerNode.id;
                             return (
                               <span key={node.id} className="flex min-w-0 items-center gap-1.5">
@@ -1463,7 +1463,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             <span className="shrink-0 font-medium text-on-surface">子节点</span>
                             <span className="truncate text-on-surface-variant">
                               {selectedProjectExplorerChildNodes.length > 0
-                                ? selectedProjectExplorerChildNodes.slice(0, 3).map((node: any) => node.label).join(" / ")
+                                ? selectedProjectExplorerChildNodes.slice(0, 3).map((node) => node.label).join(" / ")
                                 : "没有子节点"}
                             </span>
                           </div>
@@ -1524,7 +1524,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 data-builder-project-node-dossier-tasks=""
                                 data-builder-project-node-dossier-task-strip="icon-strip"
                               >
-                                {selectedProjectExplorerDossier.taskIds.map((taskId: any) => (
+                                {selectedProjectExplorerDossier.taskIds.map((taskId) => (
                                   <button
                                     key={taskId}
                                     type="button"
@@ -1574,7 +1574,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             </summary>
                             <div className="mt-2 hidden border-t border-outline-variant pt-2 group-open:block" data-builder-project-node-impact-details="deferred">
                               <div className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-container" data-builder-project-node-impact-list="" data-builder-project-node-impact-list-density="single-column-property-rows">
-                              {selectedProjectExplorerImpactItems.map((item: any) => {
+                              {selectedProjectExplorerImpactItems.map((item) => {
                                 const ImpactIcon = item.icon;
                                 return (
                                   <button
@@ -1812,7 +1812,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         </div>
                       </div>
                       <div className="mt-3 divide-y divide-outline-variant overflow-hidden rounded-[18px] border border-outline-variant bg-surface-container-low" data-builder-project-open-files-list="">
-                        {openEditorTabs.map((tab: any) => {
+                        {openEditorTabs.map((tab) => {
                           const TabIcon = tab.icon;
                           const active = tab.id === activeEditorTabId;
                           return (
@@ -1990,7 +1990,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                       <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-2">
                           <h3 className="truncate text-xs font-semibold text-on-surface">项目文件路由</h3>
-                          <CountReadout label={`${projectFileRouteGroups.reduce((total: any, group: any) => total + group.routes.length, 0)} 路径`} count={projectFileRouteGroups.reduce((total: any, group: any) => total + group.routes.length, 0)} />
+                          <CountReadout label={`${projectFileRouteGroups.reduce((total, group) => total + group.routes.length, 0)} 路径`} count={projectFileRouteGroups.reduce((total, group) => total + group.routes.length, 0)} />
                           <span className="hidden min-w-0 truncate text-[0.68rem] text-on-surface-variant lg:block">
                             源码、生成目标和 `.nova` 本地状态按项目文件夹分层保存
                           </span>
@@ -2014,7 +2014,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           <span>路径</span>
                           <span className="text-right">打开</span>
                         </div>
-                        {projectFileRouteGroups.map((group: any) => {
+                        {projectFileRouteGroups.map((group) => {
                           const GroupIcon = group.icon;
                           return (
                             <details
@@ -2045,7 +2045,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 </span>
                               </summary>
                               <div className="divide-y divide-outline-variant border-t border-outline-variant/70" data-builder-project-file-route-details="deferred">
-                                {group.routes.map((route: any) => {
+                                {group.routes.map((route) => {
                                   const RouteIcon = route.icon;
                                   return (
                                     <button
@@ -2136,9 +2136,9 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         data-builder-project-save-manifest-summary-density="inline-chips"
                       >
                         {[
-                          { scope: "source" as const, label: "源码", count: projectSaveManifestItems.filter((item: any) => item.scope === "source").length },
-                          { scope: "generated" as const, label: "生成", count: projectSaveManifestItems.filter((item: any) => item.scope === "generated").length },
-                          { scope: "metadata" as const, label: ".nova", count: projectSaveManifestItems.filter((item: any) => item.scope === "metadata").length },
+                          { scope: "source" as const, label: "源码", count: projectSaveManifestItems.filter((item) => item.scope === "source").length },
+                          { scope: "generated" as const, label: "生成", count: projectSaveManifestItems.filter((item) => item.scope === "generated").length },
+                          { scope: "metadata" as const, label: ".nova", count: projectSaveManifestItems.filter((item) => item.scope === "metadata").length },
                         ].map((group) => (
                           <button
                             key={group.scope}
@@ -2162,7 +2162,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                         data-builder-project-save-plan=""
                         data-builder-project-save-plan-density="compact-table"
                         data-builder-project-save-plan-count={projectSavePlanSteps.length}
-                        data-builder-project-save-plan-pending-count={projectSavePlanSteps.reduce((total: any, step: any) => total + step.pendingCount, 0)}
+                        data-builder-project-save-plan-pending-count={projectSavePlanSteps.reduce((total, step) => total + step.pendingCount, 0)}
                       >
                         <div className="grid min-h-8 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-outline-variant px-2.5 py-1.5">
                           <div className="flex min-w-0 items-center gap-2">
@@ -2193,7 +2193,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           </span>
                         </div>
                         <div className="divide-y divide-outline-variant" data-builder-project-save-plan-list="" data-builder-project-save-plan-list-density="row-table">
-                          {projectSavePlanSteps.map((step: any, index: any) => {
+                          {projectSavePlanSteps.map((step, index) => {
                             const StepIcon = step.icon;
                             const ready = step.status === "ready";
                             return (
@@ -2258,7 +2258,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           <span className="truncate text-[0.66rem] text-on-surface-variant">展开查看每个路径</span>
                         </summary>
                         <div className="divide-y divide-outline-variant border-t border-outline-variant bg-surface-container-lowest" data-builder-project-save-manifest-item-list="">
-                          {projectSaveManifestItems.map((item: any) => {
+                          {projectSaveManifestItems.map((item) => {
                             const ItemIcon = item.icon;
                             return (
                               <button

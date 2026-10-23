@@ -541,7 +541,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <p className="mt-1 break-all font-mono text-[0.66rem] leading-4 text-on-surface-variant">{projectExplorerModel.metadataPath}</p>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5" data-builder-project-tree-filter="">
-                      {projectExplorerFilterOptions.map((option: any) => {
+                      {projectExplorerFilterOptions.map((option) => {
                         const active = option.id === projectExplorerFilter;
                         return (
                           <button
@@ -597,7 +597,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     </div>
                     <div className="flex items-center justify-between gap-2 rounded-xl bg-surface-container-low px-3 py-2 text-[0.68rem] text-on-surface-variant">
                       <span className="truncate">
-                        {projectExplorerFilterOptions.find((option: any) => option.id === projectExplorerFilter)?.label ?? "全部"} · {visibleProjectExplorerNodes.length} 个节点
+                        {projectExplorerFilterOptions.find((option) => option.id === projectExplorerFilter)?.label ?? "全部"} · {visibleProjectExplorerNodes.length} 个节点
                       </span>
                       {projectExplorerQuery ? <span className="max-w-[9rem] truncate font-mono">{projectExplorerQuery}</span> : <span>本地工程视图</span>}
                     </div>
@@ -620,7 +620,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           aria-label="侧栏当前项目节点路径"
                           data-builder-project-sidebar-node-breadcrumb=""
                         >
-                          {selectedProjectExplorerPathNodes.map((node: any, index: any) => {
+                          {selectedProjectExplorerPathNodes.map((node, index) => {
                             const current = node.id === selectedProjectExplorerNode.id;
                             return (
                               <span key={node.id} className="flex min-w-0 items-center gap-1">
@@ -782,7 +782,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </div>
                       </div>
                       <div className="mt-2 space-y-1">
-                        {openEditorTabs.slice(0, 5).map((tab: any) => {
+                        {openEditorTabs.slice(0, 5).map((tab) => {
                           const TabIcon = tab.icon;
                           const active = tab.id === activeEditorTabId;
                           return (
@@ -863,7 +863,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       aria-activedescendant={selectedProjectExplorerNode ? `project-explorer-sidebar-node-${selectedProjectExplorerNode.id}` : undefined}
                       onKeyDown={handleProjectExplorerTreeKeyDown}
                     >
-                      {visibleProjectExplorerRows.map((row: any) => {
+                      {visibleProjectExplorerRows.map((row) => {
                         if (row.kind === "group") {
                           return (
                             <div
@@ -990,7 +990,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {workspace.projects.map((project: any) => (
+                        {workspace.projects.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}
                           </SelectItem>
@@ -1126,7 +1126,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       </Button>
                       <div className="max-h-40 space-y-2 overflow-auto pr-1">
                         {diskCheckpoints.length > 0 ? (
-                          diskCheckpoints.slice(0, 5).map((checkpoint: any) => (
+                          diskCheckpoints.slice(0, 5).map((checkpoint) => (
                             <div key={checkpoint.id} className="rounded-xl border border-outline-variant bg-surface-container-low p-2">
                               <div className="min-w-0">
                                 <div className="min-w-0">
@@ -1191,7 +1191,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             ))}
                           </div>
                           <div className="mt-3 space-y-1">
-                            {checkpointDiffDetails(checkpointDiff).slice(0, 4).map((detail: any) => (
+                            {checkpointDiffDetails(checkpointDiff).slice(0, 4).map((detail) => (
                               <p key={detail} className="text-[0.68rem] leading-4 text-on-surface-variant">
                                 {detail}
                               </p>
@@ -1208,7 +1208,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {managedProjects.map((project: any) => (
+                          {managedProjects.map((project) => (
                             <SelectItem key={project.root_path} value={project.root_path}>
                               {project.name}
                             </SelectItem>
@@ -1299,7 +1299,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {releaseWindowKinds.map((kind: any) => (
+                            {releaseWindowKinds.map((kind) => (
                               <SelectItem key={kind.value} value={kind.value}>
                                 {kind.label} · {kind.description}
                               </SelectItem>
@@ -1317,7 +1317,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {releaseTitlebarStyles.map((style: any) => (
+                            {releaseTitlebarStyles.map((style) => (
                               <SelectItem key={style.value} value={style.value}>
                                 {style.label} · {style.description}
                               </SelectItem>
@@ -1506,7 +1506,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         onClick={toggleSelectedLock}
                         disabled={selectedIds.length === 0}
                       >
-                        {selectedItems.some((item: any) => item.locked) ? <LockOpen aria-hidden /> : <Lock aria-hidden />}
+                        {selectedItems.some((item) => item.locked) ? <LockOpen aria-hidden /> : <Lock aria-hidden />}
                       </Button>
                       <Button
                         size="icon-sm"
@@ -1517,7 +1517,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         onClick={toggleSelectedRuntimeVisibility}
                         disabled={selectedIds.length === 0}
                       >
-                        {selectedItems.some((item: any) => item.props.visible === false) ? <Eye aria-hidden /> : <EyeOff aria-hidden />}
+                        {selectedItems.some((item) => item.props.visible === false) ? <Eye aria-hidden /> : <EyeOff aria-hidden />}
                       </Button>
                       <Button
                         size="icon-sm"
@@ -1557,7 +1557,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       </div>
                     ) : (
                       <div className="max-h-72 space-y-1 overflow-auto pr-1">
-                        {visibleNavigatorTreeRows.map(({ item, depth }: any) => {
+                        {visibleNavigatorTreeRows.map(({ item, depth }) => {
                           const Icon = getDefinition(item.type).icon;
                           const selected = selectedIds.includes(item.id);
                           const canMoveUp = canMoveLayerWithinGroup(items, item, 1);
@@ -1745,7 +1745,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   </div>
 
                   <div className="grid grid-cols-5 gap-1" aria-label="控件分类" data-builder-component-category-strip="compact-grid">
-                    {componentPaletteCategoryOptions.map((category: any) => {
+                    {componentPaletteCategoryOptions.map((category) => {
                       const active = category.id === componentPaletteCategory;
                       return (
                         <button
@@ -1779,7 +1779,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     data-builder-component-list-open-groups={visibleComponentPaletteDefaultOpenGroupCount}
                   >
                     {visibleComponentPaletteGroups.length > 0 ? (
-                      visibleComponentPaletteGroups.map((group: any) => (
+                      visibleComponentPaletteGroups.map((group) => (
                         <details
                           key={group.id}
                           className="group/palette rounded-lg border border-outline-variant/80 bg-surface-container-low p-1"
@@ -1801,7 +1801,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             />
                           </summary>
                           <div className="subtle-scrollbar mt-1 max-h-[260px] space-y-0.5 overflow-y-auto border-t border-outline-variant/70 pt-1" data-builder-component-group-details={group.id}>
-                            {group.definitions.map((definition: any) => {
+                            {group.definitions.map((definition) => {
                               const Icon = definition.icon;
                               const category = componentPaletteCategoryForType(definition.type);
                               const favorite = componentPaletteFavoriteTypes.includes(definition.type);
@@ -1901,7 +1901,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         aria-label="常用控件快速插入"
                         data-builder-component-quick-insert-strip="single-row"
                       >
-                        {componentPaletteQuickInsertDefinitions.map((definition: any) => {
+                        {componentPaletteQuickInsertDefinitions.map((definition) => {
                           const Icon = definition.icon;
                           return (
                             <button
@@ -2104,7 +2104,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </summary>
                         <div className="mt-1 space-y-1 border-t border-outline-variant/70 pt-1" data-builder-component-collections-detail-list="">
                           <div className="grid grid-cols-2 gap-1" data-builder-component-favorites="">
-                            {componentPaletteFavoriteDefinitions.map((definition: any) => {
+                            {componentPaletteFavoriteDefinitions.map((definition) => {
                               const Icon = definition.icon;
                               return (
                                 <div key={`favorite-${definition.type}`} className="grid min-w-0 grid-cols-[minmax(0,1fr)_1.75rem] overflow-hidden rounded-md bg-surface-container">
@@ -2133,7 +2133,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                           <div className="border-t border-outline-variant/70 pt-1" data-builder-component-recents="">
                             <div className="flex flex-wrap gap-1">
-                              {componentPaletteRecentDefinitions.map((definition: any) => {
+                              {componentPaletteRecentDefinitions.map((definition) => {
                                 const Icon = definition.icon;
                                 return (
                                   <button
@@ -2195,7 +2195,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {releaseWindowKinds.map((kind: any) => (
+                            {releaseWindowKinds.map((kind) => (
                               <SelectItem key={kind.value} value={kind.value}>
                                 {kind.label} · {kind.description}
                               </SelectItem>
@@ -2217,7 +2217,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {releaseTitlebarStyles.map((style: any) => (
+                            {releaseTitlebarStyles.map((style) => (
                               <SelectItem key={style.value} value={style.value}>
                                 {style.label} · {style.description}
                               </SelectItem>
@@ -2314,7 +2314,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {canvasPresets.map((preset: any) => (
+                        {canvasPresets.map((preset) => (
                           <SelectItem key={preset.id} value={preset.id}>
                             {preset.title} · {preset.description}
                           </SelectItem>
@@ -2351,7 +2351,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {canvasZoomLevels.map((zoom: any) => (
+                        {canvasZoomLevels.map((zoom) => (
                           <SelectItem key={zoom} value={String(zoom)}>
                             {Math.round(zoom * 100)}%
                           </SelectItem>
@@ -2431,7 +2431,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   onBatchLabel={() => {
                     const next = window.prompt("批量设置标签文案", selectedItems[0]?.props.label ?? "");
                     if (next != null) {
-                      selectedItems.forEach((item: any) => updateItemPropsById(item.id, { label: next }));
+                      selectedItems.forEach((item) => updateItemPropsById(item.id, { label: next }));
                       showProjectJumpFeedback("success", "批量标签已更新", String(selectedItems.length) + " 个控件标签已更新。");
                     }
                   }}
@@ -2443,7 +2443,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   onQueryChange={(value) => {
                     setCanvasFindQuery(value);
                     const q = value.trim().toLowerCase();
-                    const match = items.find((item: any) => {
+                    const match = items.find((item) => {
                       if (!q) return false;
                       return (
                         item.name.toLowerCase().includes(q) ||
@@ -2463,7 +2463,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   onCommit={() => {
                     const q = canvasFindQuery.trim().toLowerCase();
                     const match = items.find(
-                      (item: any) =>
+                      (item) =>
                         item.name.toLowerCase().includes(q) ||
                         item.type.toLowerCase().includes(q) ||
                         getItemSummary(item).toLowerCase().includes(q),
@@ -2814,7 +2814,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <span className="hidden max-w-[170px] truncate text-[0.68rem] text-on-surface-variant sm:inline">
                               插入控件开始设计
                             </span>
-                            {emptyCanvasQuickStarts.map((type: any) => {
+                            {emptyCanvasQuickStarts.map((type) => {
                               const definition = getDefinition(type);
                               const Icon = definition.icon;
                               // Icon-only inserts made the first design action
@@ -2875,7 +2875,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       {mode === "design" && smartGuides.length > 0 ? (
                         <div className="pointer-events-none absolute inset-0 z-[9997]" data-builder-smart-guides="" data-builder-smart-guide-count={smartGuides.length}>
-                          {smartGuides.map((guide: any) =>
+                          {smartGuides.map((guide) =>
                             guide.axis === "x" ? (
                               <div
                                 key={guide.id}
@@ -2966,7 +2966,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           data-builder-tab-order-overlay=""
                           data-builder-tab-order-count={focusableTabOrderItems.length}
                         >
-                          {focusableTabOrderItems.map((entry: any, index: any) => {
+                          {focusableTabOrderItems.map((entry, index) => {
                             const position = getAbsolutePosition(entry.item, items);
                             return (
                               <button
@@ -3030,13 +3030,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             const rect = getSelectionMarqueeRect(selectionMarquee);
                             const marqueeSelectedCount = getItemIdsInsideMarquee(
                               selectionMarquee,
-                              (itemId: any) => {
-                                const item = items.find((candidate: any) => candidate.id === itemId);
+                              (itemId) => {
+                                const item = items.find((candidate) => candidate.id === itemId);
                                 if (!item) return null;
                                 const position = getAbsolutePosition(item, items);
                                 return { x: position.x, y: position.y, width: item.width, height: item.height };
                               },
-                              items.map((item: any) => item.id),
+                              items.map((item) => item.id),
                             ).length;
                             const marqueeModeLabel =
                               selectionMarquee.mode === "subtract"
@@ -3118,16 +3118,16 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <span className="rounded-full bg-primary/10 px-1.5 py-0.5 font-mono">
                               {Math.round(selectedCanvasBounds.width)} x {Math.round(selectedCanvasBounds.height)}
                             </span>
-                            {selectedItems.some((item: any) => item.locked) ? (
+                            {selectedItems.some((item) => item.locked) ? (
                               <span className="rounded-full bg-surface-container-high px-1.5 py-0.5 text-on-surface-variant">
-                                {selectedItems.filter((item: any) => item.locked).length} 锁定
+                                {selectedItems.filter((item) => item.locked).length} 锁定
                               </span>
                             ) : null}
                           </div>
                         </>
                       ) : null}
 
-                      {topLevelItems.map((item: any) => renderCanvasNode(item))}
+                      {topLevelItems.map((item) => renderCanvasNode(item))}
                     </div>
                     </div>
                   </div>
@@ -3168,7 +3168,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </h2>
                           <p className="mt-0.5 truncate text-[0.68rem] text-on-surface-variant">
                             {selectedItems.length > 1
-                              ? `${selectedItems.filter((item: any) => item.locked).length} 个已锁定 · ${activeFile.name}`
+                              ? `${selectedItems.filter((item) => item.locked).length} 个已锁定 · ${activeFile.name}`
                               : selectedItem
                                 ? `${selectedItem.type} · x ${Math.round(selectedItem.x)} y ${Math.round(selectedItem.y)} · ${Math.round(selectedItem.width)} x ${Math.round(selectedItem.height)}`
                                 : `${activeFile.items.length} 个控件 · ${page.width} x ${page.height}`}
@@ -3208,7 +3208,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <StateLabel showQuiet label={inspectorWorkflowBadge} />
                     </div>
                     <div className="space-y-1.5">
-                      {inspectorWorkflowSteps.map((step: any, index: any) => {
+                      {inspectorWorkflowSteps.map((step, index) => {
                         const StepIcon = step.icon;
                         return (
                           <button
@@ -3289,7 +3289,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <span className="text-[0.68rem] text-on-surface-variant">{rightDockTab}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
-                    {rightDockTabs.map((tab: any) => {
+                    {rightDockTabs.map((tab) => {
                       const TabIcon = tab.icon;
                       return (
                         <button
@@ -3510,7 +3510,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {inspectorWorkflowSteps.map((step: any, index: any) => {
+                          {inspectorWorkflowSteps.map((step, index) => {
                             const StepIcon = step.icon;
                             return (
                               <button
@@ -3613,7 +3613,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         {inspectorPropertyQueryActive ? (
                           selectedFilteredPropertySchema.length > 0 ? (
                             <div className="mt-2 flex flex-wrap gap-1.5" data-builder-property-filtered-fields="">
-                              {selectedFilteredPropertySchema.slice(0, 10).map((field: any) => {
+                              {selectedFilteredPropertySchema.slice(0, 10).map((field) => {
                                 const sectionId = propertySectionForProp(field.prop);
                                 const hasIssue = selectedPropertyIssueProps.has(field.prop);
                                 return (
@@ -3652,7 +3652,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       </div>
 
                       <div className="grid grid-cols-5 gap-1.5" aria-label="属性分组" data-builder-property-section-filter="">
-                        {builderPropertySectionOptions.map((section: any) => (
+                        {builderPropertySectionOptions.map((section) => (
                           <Button
                             key={section.id}
                             type="button"
@@ -3726,7 +3726,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="__canvas">画布</SelectItem>
-                              {availableParentFrames.map((frame: any) => (
+                              {availableParentFrames.map((frame) => (
                                 <SelectItem key={frame.id} value={frame.id}>
                                   {getItemSummary(frame)}
                                 </SelectItem>
@@ -3903,7 +3903,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       >
                         {selectedBindableProps.length > 0 ? (
                           <div className="grid grid-cols-1 gap-2">
-                            {selectedBindableProps.map((prop: any) => (
+                            {selectedBindableProps.map((prop) => (
                               <Field key={prop.value} label={prop.label}>
                                 <Select
                                   value={selectedItem.props.stateBindings?.[prop.value] || "__none"}
@@ -3935,7 +3935,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         ) : null}
                         {selectedPropertyIssues.length > 0 ? (
                           <div className="space-y-2">
-                            {selectedPropertyIssues.slice(0, 2).map((issue: any) => (
+                            {selectedPropertyIssues.slice(0, 2).map((issue) => (
                               <div key={issue.id} className="flex min-w-0 items-start gap-2 rounded-xl bg-surface-container-low p-2 text-xs">
                                 <AlertTriangle
                                   aria-hidden
@@ -4109,7 +4109,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                         </div>
                         <div className="mt-3 grid gap-2 sm:grid-cols-2" data-builder-page-window-shell-preset-list="">
-                          {pageWindowShellPresets.map((preset: any) => {
+                          {pageWindowShellPresets.map((preset) => {
                             const active =
                               page.windowKind === preset.windowKind &&
                               page.titlebarStyle === normalizeReleaseTitlebarStyle(preset.titlebarStyle, preset.windowKind);
@@ -4149,7 +4149,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {releaseWindowKinds.map((kind: any) => (
+                              {releaseWindowKinds.map((kind) => (
                                 <SelectItem key={kind.value} value={kind.value}>
                                   {kind.label} · {kind.description}
                                 </SelectItem>
@@ -4167,7 +4167,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {releaseTitlebarStyles.map((style: any) => (
+                              {releaseTitlebarStyles.map((style) => (
                                 <SelectItem key={style.value} value={style.value}>
                                   {style.label} · {style.description}
                                 </SelectItem>
@@ -4285,7 +4285,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       </div>
                       <div className="space-y-2">
                         {simulatorTrace.length > 0 ? (
-                          simulatorTrace.map((entry: any) => (
+                          simulatorTrace.map((entry) => (
                             <article key={entry.id} className="rounded-2xl border border-outline-variant bg-surface-container p-3 text-xs">
                               <div className="mb-2 flex items-start justify-between gap-2">
                                 <div className="min-w-0">
@@ -4334,7 +4334,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       </div>
                     ) : (
                       <div className="max-h-52 space-y-1 overflow-auto pr-1">
-                        {treeRows.map(({ item, depth }: any) => {
+                        {treeRows.map(({ item, depth }) => {
                           const canMoveUp = canMoveLayerWithinGroup(items, item, 1);
                           const canMoveDown = canMoveLayerWithinGroup(items, item, -1);
                           const runtimeState = builderItemRuntimeState(item);
@@ -4417,7 +4417,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <h3 className="truncate text-sm font-medium">批量选择</h3>
                           <p className="mt-1 truncate text-xs text-on-surface-variant">{selectedItems.length} 个控件已选中</p>
                         </div>
-                        <CountReadout label={`${selectedItems.filter((item: any) => item.locked).length} 个已锁定`} count={selectedItems.filter((item: any) => item.locked).length} />
+                        <CountReadout label={`${selectedItems.filter((item) => item.locked).length} 个已锁定`} count={selectedItems.filter((item) => item.locked).length} />
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 text-center text-[0.68rem]">
@@ -4682,14 +4682,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <StateLabel
                               showQuiet
                               variant={
-                                selectedPropertyIssues.some((issue: any) => issue.severity === "error")
+                                selectedPropertyIssues.some((issue) => issue.severity === "error")
                                   ? "destructive"
                                   : selectedPropertyIssues.length > 0
                                     ? "outline"
                                     : "secondary"
                               }
                               label={
-                                selectedPropertyIssues.some((issue: any) => issue.severity === "error")
+                                selectedPropertyIssues.some((issue) => issue.severity === "error")
                                   ? "错误"
                                   : selectedPropertyIssues.length > 0
                                     ? "警告"
@@ -4699,7 +4699,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
-                          {selectedPropertySchema.slice(0, 8).map((field: any) => (
+                          {selectedPropertySchema.slice(0, 8).map((field) => (
                             <span
                               key={`${String(field.prop)}-${field.label}`}
                               className="max-w-full truncate rounded-full border border-outline bg-surface-container-low px-2 py-1 text-[0.68rem] text-on-surface-variant"
@@ -4717,7 +4717,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </div>
                         {selectedPropertyIssues.length > 0 ? (
                           <div className="space-y-2">
-                            {selectedPropertyIssues.slice(0, 4).map((issue: any) => (
+                            {selectedPropertyIssues.slice(0, 4).map((issue) => (
                               <div key={issue.id} className="flex min-w-0 items-start gap-2 rounded-xl bg-surface-container-low p-2 text-xs">
                                 <AlertTriangle
                                   aria-hidden
@@ -4765,7 +4765,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </Button>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId: any) => (
+                            {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId) => (
                               <span key={scopeId} className="rounded-full bg-surface-container-low px-2 py-1 text-[0.68rem] text-on-surface-variant">
                                 {scopeId}
                               </span>
@@ -4773,7 +4773,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                           {selectedControlReverseDependency.affectedPaths.length > 0 ? (
                             <div className="space-y-1">
-                              {selectedControlReverseDependency.affectedPaths.slice(0, 2).map((path: any) => (
+                              {selectedControlReverseDependency.affectedPaths.slice(0, 2).map((path) => (
                                 <p key={path} className="truncate font-mono text-[0.68rem] text-on-surface-variant" title={path}>
                                   {path}
                                 </p>
@@ -4825,7 +4825,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__canvas">画布</SelectItem>
-                            {availableParentFrames.map((frame: any) => (
+                            {availableParentFrames.map((frame) => (
                               <SelectItem key={frame.id} value={frame.id}>
                                 {getItemSummary(frame)}
                               </SelectItem>
@@ -5060,7 +5060,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <CountReadout label={`${activeProject.stateVariables.length} 个状态`} count={activeProject.stateVariables.length} />
                           </div>
                           <div className="grid grid-cols-1 gap-2">
-                            {selectedBindableProps.map((prop: any) => (
+                            {selectedBindableProps.map((prop) => (
                               <Field key={prop.value} label={prop.label}>
                                 <Select
                                   value={selectedItem.props.stateBindings?.[prop.value] || "__none"}
@@ -5224,7 +5224,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="__none">无</SelectItem>
-                                  {eventResultTargets.map((item: any) => (
+                                  {eventResultTargets.map((item) => (
                                     <SelectItem key={item.id} value={item.id}>
                                       {getItemSummary(item)}
                                     </SelectItem>
@@ -5247,7 +5247,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="__none">无</SelectItem>
-                                  {eventResultTargetProps.map((prop: any) => (
+                                  {eventResultTargetProps.map((prop) => (
                                     <SelectItem key={prop.value} value={prop.value}>
                                       {prop.label}
                                     </SelectItem>
@@ -5435,7 +5435,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                           {selectedEventCommandArgs.length > 0 ? (
                             <div className="space-y-1.5">
-                              {selectedEventCommandArgs.map((arg: any) => (
+                              {selectedEventCommandArgs.map((arg) => (
                                 <div key={arg.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-xl bg-surface-container-high px-3 py-2 text-xs">
                                   <div className="min-w-0">
                                     <p className="truncate font-mono text-on-surface">{arg.name}</p>
@@ -5545,7 +5545,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="__none">无</SelectItem>
-                                  {eventResultTargets.map((item: any) => (
+                                  {eventResultTargets.map((item) => (
                                     <SelectItem key={item.id} value={item.id}>
                                       {getItemSummary(item)}
                                     </SelectItem>
@@ -5568,7 +5568,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="__none">无</SelectItem>
-                                  {eventResultTargetProps.map((prop: any) => (
+                                  {eventResultTargetProps.map((prop) => (
                                     <SelectItem key={prop.value} value={prop.value}>
                                       {prop.label}
                                     </SelectItem>
@@ -5735,7 +5735,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             />
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
-                            {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId: any) => (
+                            {selectedControlReverseDependency.scopeIds.slice(0, 4).map((scopeId) => (
                               <StateLabel key={scopeId} label={String(scopeId)} />
                             ))}
                           </div>
