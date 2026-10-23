@@ -389,7 +389,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       aria-label="搜索 Rust 逻辑资源"
                       value={logicSearchQuery}
-                      onChange={(event: any) => setLogicSearchQuery(event.target.value)}
+                      onChange={(event) => setLogicSearchQuery(event.target.value)}
                       placeholder="搜索命令、槽函数、状态、模块..."
                       className="h-7 min-w-0 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:border-transparent"
                       spellCheck={false}
@@ -1062,7 +1062,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         ref={rustFindInputRef}
                         aria-label="查找 Rust 源码"
                         value={rustFindQuery}
-                        onChange={(event: any) => {
+                        onChange={(event) => {
                           setRustFindQuery(event.target.value);
                           setRustFindActiveIndex(0);
                         }}
@@ -1102,7 +1102,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Input
                         aria-label="替换 Rust 源码"
                         value={rustReplaceQuery}
-                        onChange={(event: any) => setRustReplaceQuery(event.target.value)}
+                        onChange={(event) => setRustReplaceQuery(event.target.value)}
                         onKeyDown={handleRustReplaceInputKeyDown}
                         placeholder="替换"
                         className="h-6 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
@@ -1120,7 +1120,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         ref={rustRenameInputRef}
                         aria-label="重命名 Rust 当前符号"
                         value={rustRenameQuery}
-                        onChange={(event: any) => setRustRenameQuery(event.target.value)}
+                        onChange={(event) => setRustRenameQuery(event.target.value)}
                         onFocus={() => {
                           if (!rustRenameQuery && rustCurrentIdentifier) {
                             setRustRenameQuery(rustCurrentIdentifier.name);
@@ -1143,7 +1143,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         ref={rustGoToLineInputRef}
                         aria-label="跳转 Rust 行列"
                         value={rustGoToLineQuery}
-                        onChange={(event: any) => setRustGoToLineQuery(event.target.value)}
+                        onChange={(event) => setRustGoToLineQuery(event.target.value)}
                         onKeyDown={handleRustGoToLineInputKeyDown}
                         placeholder="行:列"
                         className="h-6 w-14 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
@@ -1686,7 +1686,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         detail: "可从大纲定位",
                         attention: false,
                       },
-                    ].map((metric: any) => (
+                    ].map((metric) => (
                       <article
                         key={metric.id}
                         className={cn(
@@ -1896,7 +1896,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                               <div className="min-w-0">
                                 <Select
                                   value={row.command?.id ?? "__none"}
-                                  onValueChange={(value: any) => updateEventCommandForItem(row.item, row.eventName, value === "__none" ? "" : value, { keepConnectionView: true })}
+                                  onValueChange={(value) => updateEventCommandForItem(row.item, row.eventName, value === "__none" ? "" : value, { keepConnectionView: true })}
                                 >
                                   <SelectTrigger
                                     aria-label={`${getItemSummary(row.item)} ${row.eventName} 矩阵绑定命令`}
@@ -2252,7 +2252,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <div className="min-w-0">
                             <Select
                               value={row.command?.id ?? "__none"}
-                              onValueChange={(value: any) => updateEventCommandForItem(row.item, row.eventName, value === "__none" ? "" : value)}
+                              onValueChange={(value) => updateEventCommandForItem(row.item, row.eventName, value === "__none" ? "" : value)}
                             >
                               <SelectTrigger
                                 aria-label={`${getItemSummary(row.item)} ${row.eventName} 绑定命令`}
@@ -2395,7 +2395,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       aria-label="查找 Rust 源码"
                       value={rustFindQuery}
-                      onChange={(event: any) => {
+                      onChange={(event) => {
                         setRustFindQuery(event.target.value);
                         setRustFindActiveIndex(0);
                       }}
@@ -2420,7 +2420,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       aria-label="替换 Rust 源码"
                       value={rustReplaceQuery}
-                      onChange={(event: any) => setRustReplaceQuery(event.target.value)}
+                      onChange={(event) => setRustReplaceQuery(event.target.value)}
                       onKeyDown={handleRustReplaceInputKeyDown}
                       placeholder="替换为... Ctrl+Enter 替换"
                       className="h-8 min-w-0 border-0 bg-transparent px-0 font-mono text-xs shadow-none focus-visible:border-transparent"
@@ -2602,7 +2602,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Input
                         aria-label="重命名 Rust 当前符号"
                         value={rustRenameQuery}
-                        onChange={(event: any) => setRustRenameQuery(event.target.value)}
+                        onChange={(event) => setRustRenameQuery(event.target.value)}
                         onFocus={() => {
                           if (!rustRenameQuery && rustCurrentIdentifier) {
                             setRustRenameQuery(rustCurrentIdentifier.name);
@@ -2634,7 +2634,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Input
                         aria-label="跳转 Rust 行列"
                         value={rustGoToLineQuery}
-                        onChange={(event: any) => setRustGoToLineQuery(event.target.value)}
+                        onChange={(event) => setRustGoToLineQuery(event.target.value)}
                         onKeyDown={handleRustGoToLineInputKeyDown}
                         placeholder="行:列"
                         className="h-7 w-16 min-w-0 border-0 bg-transparent px-0 font-mono text-[0.68rem] shadow-none focus-visible:border-transparent"
@@ -3655,23 +3655,23 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         data-builder-rust-logic=""
                         aria-label="Rust 逻辑编辑器"
                         value={activeProject.rustLogic}
-                        onChange={(event: any) => {
+                        onChange={(event) => {
                           setRustCompletionCommit(null);
                           updateRustLogic(event.currentTarget.value);
                           updateRustEditorSelectionFromEditor(event.currentTarget);
                           updateRustCompletionFromEditor(event.currentTarget);
                         }}
                         onKeyDown={handleRustEditorKeyDown}
-                        onKeyUp={(event: any) => updateRustEditorSelectionFromEditor(event.currentTarget)}
-                        onClick={(event: any) => updateRustEditorSelectionFromEditor(event.currentTarget)}
-                        onSelect={(event: any) => {
+                        onKeyUp={(event) => updateRustEditorSelectionFromEditor(event.currentTarget)}
+                        onClick={(event) => updateRustEditorSelectionFromEditor(event.currentTarget)}
+                        onSelect={(event) => {
                           updateRustEditorSelectionFromEditor(event.currentTarget);
                           if (rustCompletionTrigger) {
                             updateRustCompletionFromEditor(event.currentTarget, rustCompletionTrigger.forced);
                           }
                         }}
                         onBlur={() => window.setTimeout(() => setRustCompletionTrigger(null), 120)}
-                        onScroll={(event: any) => {
+                        onScroll={(event) => {
                           setRustEditorScrollTop(event.currentTarget.scrollTop);
                           setRustEditorScrollLeft(rustEditorWordWrap ? 0 : event.currentTarget.scrollLeft);
                         }}
@@ -3711,7 +3711,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                   data-builder-rust-completion-label={completion.label}
                                   data-builder-rust-completion-active={active ? "true" : "false"}
                                   aria-selected={active}
-                                  onMouseDown={(event: any) => event.preventDefault()}
+                                  onMouseDown={(event) => event.preventDefault()}
                                   onMouseEnter={() => setRustCompletionTrigger((current: any) => (current ? { ...current, activeIndex: index } : current))}
                                   onClick={() => applyRustCompletion(completion)}
                                 >
@@ -3747,7 +3747,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                       type="button"
                                       className="focus-ring rounded-lg px-1.5 py-0.5 font-mono text-[0.62rem] text-primary transition hover:bg-primary/10"
                                       data-builder-rust-completion-jump-source=""
-                                      onMouseDown={(event: any) => event.preventDefault()}
+                                      onMouseDown={(event) => event.preventDefault()}
                                       onClick={() => focusRustLine(activeRustCompletion.targetLine ?? 1, `补全来源 · ${activeRustCompletion.label}`)}
                                     >
                                       Ln {activeRustCompletion.targetLine}
@@ -3758,7 +3758,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                     className="focus-ring rounded-lg bg-primary/10 px-2 py-0.5 text-[0.62rem] font-medium text-primary transition hover:bg-primary/20"
                                     data-builder-rust-completion-accept=""
                                     data-builder-rust-completion-accept-label={activeRustCompletion.label}
-                                    onMouseDown={(event: any) => event.preventDefault()}
+                                    onMouseDown={(event) => event.preventDefault()}
                                     onClick={() => applyRustCompletion(activeRustCompletion)}
                                   >
                                     插入
@@ -4775,7 +4775,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <Input
                     data-builder-command-name=""
                     value={activeRustCommand.name}
-                    onChange={(event: any) => updateRustCommand(activeRustCommand.id, { name: event.target.value })}
+                    onChange={(event) => updateRustCommand(activeRustCommand.id, { name: event.target.value })}
                     spellCheck={false}
                     className="font-mono text-xs"
                   />
@@ -4784,7 +4784,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <Textarea
                     data-builder-command-response=""
                     value={activeRustCommand.response}
-                    onChange={(event: any) => updateRustCommand(activeRustCommand.id, { response: event.target.value })}
+                    onChange={(event) => updateRustCommand(activeRustCommand.id, { response: event.target.value })}
                     className="min-h-[120px] resize-none text-xs leading-5"
                   />
                 </Field>
@@ -4801,7 +4801,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   </div>
                   <Switch
                     checked={rustCommandAcceptsArgs(activeRustCommand)}
-                    onCheckedChange={(acceptsValue: any) => setRustCommandAcceptsArgs(activeRustCommand.id, acceptsValue)}
+                    onCheckedChange={(acceptsValue) => setRustCommandAcceptsArgs(activeRustCommand.id, acceptsValue)}
                   />
                 </div>
                 {rustCommandAcceptsArgs(activeRustCommand) ? (
@@ -4822,7 +4822,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <div className="flex items-center gap-2">
                             <Input
                               value={parameter.name}
-                              onChange={(event: any) => updateRustCommandParameter(parameter.id, { name: event.target.value })}
+                              onChange={(event) => updateRustCommandParameter(parameter.id, { name: event.target.value })}
                               className="h-8 font-mono text-xs"
                               spellCheck={false}
                             />
@@ -4838,7 +4838,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <div className="grid grid-cols-2 gap-2">
                             <Select
                               value={parameter.source}
-                              onValueChange={(source: any) =>
+                              onValueChange={(source) =>
                                 updateRustCommandParameter(parameter.id, {
                                   source: source as RustCommandParameterSource,
                                   type:
@@ -4863,7 +4863,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                             </Select>
                             <Select
                               value={parameter.type}
-                              onValueChange={(type: any) => updateRustCommandParameter(parameter.id, { type: type as RustCommandParameterType })}
+                              onValueChange={(type) => updateRustCommandParameter(parameter.id, { type: type as RustCommandParameterType })}
                             >
                               <SelectTrigger className="h-8 text-xs">
                                 <SelectValue />
@@ -4888,7 +4888,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <p className="mt-1 text-xs leading-5 text-on-surface-variant">定义 Rust 返回值如何变成消息、错误和 state patch。</p>
                   </div>
                   <Field label="结果格式">
-                    <Select value={commandResultSchema(activeRustCommand).mode} onValueChange={(mode: any) => setRustCommandResultMode(mode as RustCommandResultSchema["mode"])}>
+                    <Select value={commandResultSchema(activeRustCommand).mode} onValueChange={(mode) => setRustCommandResultMode(mode as RustCommandResultSchema["mode"])}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
@@ -4903,7 +4903,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Field label="消息路径">
                         <Input
                           value={commandResultSchema(activeRustCommand).messagePath ?? "message"}
-                          onChange={(event: any) => updateRustCommandResult({ mode: "json", messagePath: event.target.value })}
+                          onChange={(event) => updateRustCommandResult({ mode: "json", messagePath: event.target.value })}
                           className="h-8 font-mono text-xs"
                           spellCheck={false}
                         />
@@ -4911,7 +4911,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Field label="Patch 路径">
                         <Input
                           value={commandResultSchema(activeRustCommand).statePatchPath ?? "patch"}
-                          onChange={(event: any) => updateRustCommandResult({ mode: "json", statePatchPath: event.target.value })}
+                          onChange={(event) => updateRustCommandResult({ mode: "json", statePatchPath: event.target.value })}
                           className="h-8 font-mono text-xs"
                           spellCheck={false}
                         />
@@ -4919,7 +4919,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Field label="成功路径">
                         <Input
                           value={commandResultSchema(activeRustCommand).successPath ?? "success"}
-                          onChange={(event: any) => updateRustCommandResult({ mode: "json", successPath: event.target.value })}
+                          onChange={(event) => updateRustCommandResult({ mode: "json", successPath: event.target.value })}
                           className="h-8 font-mono text-xs"
                           spellCheck={false}
                         />
@@ -4927,7 +4927,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Field label="错误路径">
                         <Input
                           value={commandResultSchema(activeRustCommand).errorPath ?? "error"}
-                          onChange={(event: any) => updateRustCommandResult({ mode: "json", errorPath: event.target.value })}
+                          onChange={(event) => updateRustCommandResult({ mode: "json", errorPath: event.target.value })}
                           className="h-8 font-mono text-xs"
                           spellCheck={false}
                         />
@@ -4964,14 +4964,14 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Switch
                       checked={activeRustModule.enabled}
                       aria-label="启用 Rust 模块"
-                      onCheckedChange={(enabled: any) => updateRustModule(activeRustModule.id, { enabled })}
+                      onCheckedChange={(enabled) => updateRustModule(activeRustModule.id, { enabled })}
                     />
                   </div>
                   <Field label="模块名">
                     <Input
                       data-builder-rust-module-name=""
                       value={activeRustModule.name}
-                      onChange={(event: any) => updateRustModule(activeRustModule.id, { name: event.target.value })}
+                      onChange={(event) => updateRustModule(activeRustModule.id, { name: event.target.value })}
                       spellCheck={false}
                       className="font-mono text-xs"
                     />
@@ -4980,7 +4980,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Textarea
                       data-builder-rust-module-source=""
                       value={activeRustModule.source}
-                      onChange={(event: any) => updateRustModule(activeRustModule.id, { source: event.target.value })}
+                      onChange={(event) => updateRustModule(activeRustModule.id, { source: event.target.value })}
                       className="min-h-[160px] resize-y font-mono text-xs leading-5"
                       spellCheck={false}
                       wrap="off"
@@ -5000,7 +5000,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Switch
                       checked={activeCargoDependency.enabled}
                       aria-label="启用 Cargo 依赖"
-                      onCheckedChange={(enabled: any) => updateCargoDependency(activeCargoDependency.id, { enabled })}
+                      onCheckedChange={(enabled) => updateCargoDependency(activeCargoDependency.id, { enabled })}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -5008,7 +5008,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Input
                         data-builder-cargo-dependency-name=""
                         value={activeCargoDependency.name}
-                        onChange={(event: any) => updateCargoDependency(activeCargoDependency.id, { name: event.target.value })}
+                        onChange={(event) => updateCargoDependency(activeCargoDependency.id, { name: event.target.value })}
                         spellCheck={false}
                         className="font-mono text-xs"
                       />
@@ -5017,7 +5017,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                       <Input
                         data-builder-cargo-dependency-version=""
                         value={activeCargoDependency.version}
-                        onChange={(event: any) => updateCargoDependency(activeCargoDependency.id, { version: event.target.value })}
+                        onChange={(event) => updateCargoDependency(activeCargoDependency.id, { version: event.target.value })}
                         spellCheck={false}
                         className="font-mono text-xs"
                       />
@@ -5027,7 +5027,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-cargo-dependency-features=""
                       value={activeCargoDependency.features}
-                      onChange={(event: any) => updateCargoDependency(activeCargoDependency.id, { features: event.target.value })}
+                      onChange={(event) => updateCargoDependency(activeCargoDependency.id, { features: event.target.value })}
                       spellCheck={false}
                       className="font-mono text-xs"
                       placeholder="derive, rc"
@@ -5047,14 +5047,14 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Switch
                       checked={activeBackendIntegration.enabled}
                       aria-label="启用后端集成"
-                      onCheckedChange={(enabled: any) => updateBackendIntegration(activeBackendIntegration.id, { enabled })}
+                      onCheckedChange={(enabled) => updateBackendIntegration(activeBackendIntegration.id, { enabled })}
                     />
                   </div>
                   <Field label="名称">
                     <Input
                       data-builder-backend-integration-name=""
                       value={activeBackendIntegration.name}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { name: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { name: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                     />
@@ -5063,7 +5063,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Field label="类型">
                       <Select
                         value={activeBackendIntegration.kind}
-                        onValueChange={(kind: any) => {
+                        onValueChange={(kind) => {
                           const nextKind = kind as BackendIntegrationKind;
                           const nextLanguage =
                             nextKind === "cpp-ffi"
@@ -5097,7 +5097,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Field label="语言">
                       <Select
                         value={activeBackendIntegration.language}
-                        onValueChange={(language: any) => {
+                        onValueChange={(language) => {
                           const nextLanguage = language as BackendIntegrationLanguage;
                           const nextKind =
                             nextLanguage === "rust"
@@ -5132,7 +5132,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                   <Field label="通道">
                     <Select
                       value={activeBackendIntegration.transport}
-                      onValueChange={(transport: any) => updateBackendIntegration(activeBackendIntegration.id, { transport: transport as BackendIntegrationTransport })}
+                      onValueChange={(transport) => updateBackendIntegration(activeBackendIntegration.id, { transport: transport as BackendIntegrationTransport })}
                     >
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
@@ -5150,7 +5150,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-backend-integration-entry=""
                       value={activeBackendIntegration.entryPath}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { entryPath: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { entryPath: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                       placeholder="backend/native/libengine.a"
@@ -5164,14 +5164,14 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Switch
                       checked={activeBackendIntegration.bundleResource}
                       aria-label="打包后端集成产物"
-                      onCheckedChange={(bundleResource: any) => updateBackendIntegration(activeBackendIntegration.id, { bundleResource })}
+                      onCheckedChange={(bundleResource) => updateBackendIntegration(activeBackendIntegration.id, { bundleResource })}
                     />
                   </div>
                   <Field label="产物路径">
                     <Input
                       data-builder-backend-integration-artifact=""
                       value={activeBackendIntegration.artifactPath}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { artifactPath: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { artifactPath: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                       placeholder="backend/service/backend-service.exe"
@@ -5181,7 +5181,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-backend-integration-resource=""
                       value={activeBackendIntegration.resourcePath}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { resourcePath: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { resourcePath: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                       placeholder="resources/backend/service/backend-service.exe"
@@ -5268,7 +5268,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-backend-integration-command=""
                       value={activeBackendIntegration.command}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { command: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { command: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                       placeholder="engine --stdio"
@@ -5320,7 +5320,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <Input
                           data-builder-backend-method-name=""
                           value={activeBackendIntegrationMethod.name}
-                          onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { name: event.target.value })}
+                          onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { name: event.target.value })}
                           className="font-mono text-xs"
                           spellCheck={false}
                         />
@@ -5330,7 +5330,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <Input
                             data-builder-backend-method-operation=""
                             value={activeBackendIntegrationMethod.operation}
-                            onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { operation: event.target.value })}
+                            onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { operation: event.target.value })}
                             className="font-mono text-xs"
                             spellCheck={false}
                             placeholder="classify_image"
@@ -5340,7 +5340,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <Input
                             data-builder-backend-method-path=""
                             value={activeBackendIntegrationMethod.path}
-                            onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { path: event.target.value })}
+                            onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { path: event.target.value })}
                             className="font-mono text-xs"
                             spellCheck={false}
                             placeholder="/classify"
@@ -5351,7 +5351,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <Textarea
                           data-builder-backend-method-description=""
                           value={activeBackendIntegrationMethod.description}
-                          onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { description: event.target.value })}
+                          onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { description: event.target.value })}
                           className="min-h-[68px] resize-y text-xs leading-5"
                         />
                       </Field>
@@ -5360,7 +5360,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <Textarea
                             data-builder-backend-method-request-schema=""
                             value={activeBackendIntegrationMethod.requestSchema}
-                            onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { requestSchema: event.target.value })}
+                            onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { requestSchema: event.target.value })}
                             className="min-h-[116px] resize-y font-mono text-xs leading-5"
                             spellCheck={false}
                           />
@@ -5369,7 +5369,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                           <Textarea
                             data-builder-backend-method-response-schema=""
                             value={activeBackendIntegrationMethod.responseSchema}
-                            onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { responseSchema: event.target.value })}
+                            onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { responseSchema: event.target.value })}
                             className="min-h-[116px] resize-y font-mono text-xs leading-5"
                             spellCheck={false}
                           />
@@ -5420,7 +5420,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                     </div>
                                   </div>
                                   {field.enumValues?.length ? (
-                                    <Select value={field.inputValue || field.enumValues[0]} onValueChange={(value: any) => updateActiveBackendMethodSampleField(field, value)}>
+                                    <Select value={field.inputValue || field.enumValues[0]} onValueChange={(value) => updateActiveBackendMethodSampleField(field, value)}>
                                       <SelectTrigger className="h-8 text-xs" data-builder-backend-schema-field={fieldPath}>
                                         <SelectValue />
                                       </SelectTrigger>
@@ -5433,7 +5433,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                       </SelectContent>
                                     </Select>
                                   ) : field.type === "boolean" ? (
-                                    <Select value={field.inputValue || "false"} onValueChange={(value: any) => updateActiveBackendMethodSampleField(field, value)}>
+                                    <Select value={field.inputValue || "false"} onValueChange={(value) => updateActiveBackendMethodSampleField(field, value)}>
                                       <SelectTrigger className="h-8 text-xs" data-builder-backend-schema-field={fieldPath}>
                                         <SelectValue />
                                       </SelectTrigger>
@@ -5446,7 +5446,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                     <Textarea
                                       data-builder-backend-schema-field={fieldPath}
                                       value={field.inputValue}
-                                      onChange={(event: any) => updateActiveBackendMethodSampleField(field, event.target.value)}
+                                      onChange={(event) => updateActiveBackendMethodSampleField(field, event.target.value)}
                                       className="min-h-[72px] resize-y font-mono text-xs leading-5"
                                       spellCheck={false}
                                     />
@@ -5455,7 +5455,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                                       data-builder-backend-schema-field={fieldPath}
                                       value={field.inputValue}
                                       type={field.type === "number" ? "number" : "text"}
-                                      onChange={(event: any) => updateActiveBackendMethodSampleField(field, event.target.value)}
+                                      onChange={(event) => updateActiveBackendMethodSampleField(field, event.target.value)}
                                       className="font-mono text-xs"
                                       spellCheck={false}
                                     />
@@ -5488,7 +5488,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <Textarea
                           data-builder-backend-method-sample-payload=""
                           value={activeBackendIntegrationMethod.samplePayload}
-                          onChange={(event: any) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { samplePayload: event.target.value })}
+                          onChange={(event) => updateBackendIntegrationMethod(activeBackendIntegrationMethod.id, { samplePayload: event.target.value })}
                           className="min-h-[116px] resize-y font-mono text-xs leading-5"
                           spellCheck={false}
                         />
@@ -5585,7 +5585,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-backend-integration-health-command=""
                       value={activeBackendIntegration.healthCheckCommand}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { healthCheckCommand: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { healthCheckCommand: event.target.value })}
                       className="font-mono text-xs"
                       spellCheck={false}
                       placeholder="{resource} --health"
@@ -5597,7 +5597,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         data-builder-backend-integration-timeout=""
                         type="number"
                         value={activeBackendIntegration.startupTimeoutMs}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                           updateBackendIntegration(activeBackendIntegration.id, {
                             startupTimeoutMs: numberFromInput(event.target.value, activeBackendIntegration.startupTimeoutMs, 250, 60000),
                           })
@@ -5611,7 +5611,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                         <Switch
                           className="h-5 w-9 border"
                           checked={activeBackendIntegration.captureOutput}
-                          onCheckedChange={(captureOutput: any) => updateBackendIntegration(activeBackendIntegration.id, { captureOutput })}
+                          onCheckedChange={(captureOutput) => updateBackendIntegration(activeBackendIntegration.id, { captureOutput })}
                         />
                       </label>
                     </div>
@@ -5620,7 +5620,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Textarea
                       data-builder-backend-integration-notes=""
                       value={activeBackendIntegration.notes}
-                      onChange={(event: any) => updateBackendIntegration(activeBackendIntegration.id, { notes: event.target.value })}
+                      onChange={(event) => updateBackendIntegration(activeBackendIntegration.id, { notes: event.target.value })}
                       className="min-h-[96px] resize-y text-xs leading-5"
                     />
                   </Field>
@@ -5688,7 +5688,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-state-name=""
                       value={activeStateVariable.name}
-                      onChange={(event: any) => updateStateVariable(activeStateVariable.id, { name: event.target.value })}
+                      onChange={(event) => updateStateVariable(activeStateVariable.id, { name: event.target.value })}
                       spellCheck={false}
                       className="font-mono text-xs"
                     />
@@ -5697,7 +5697,7 @@ export function LogicView(props: { scope: LogicViewScope }): ReactNode {
                     <Input
                       data-builder-state-initial-value=""
                       value={activeStateVariable.initialValue}
-                      onChange={(event: any) => updateStateVariable(activeStateVariable.id, { initialValue: event.target.value })}
+                      onChange={(event) => updateStateVariable(activeStateVariable.id, { initialValue: event.target.value })}
                     />
                   </Field>
                   <Button variant="ghost" className="w-full" data-builder-delete-state="" onClick={deleteActiveStateVariable}>

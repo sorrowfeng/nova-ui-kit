@@ -574,8 +574,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         aria-label="搜索项目文件树"
                         placeholder="搜索文件、路径、类型..."
                         className="h-8 rounded-xl bg-surface-container-low pl-8 pr-16 text-xs"
-                        onChange={(event: any) => setProjectExplorerQuery(event.target.value)}
-                        onKeyDown={(event: any) => {
+                        onChange={(event) => setProjectExplorerQuery(event.target.value)}
+                        onKeyDown={(event) => {
                           if (event.key === "Enter" && visibleProjectExplorerNodes[0]) {
                             event.preventDefault();
                             handleProjectExplorerNode(visibleProjectExplorerNodes[0]);
@@ -677,7 +677,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               inputSize="sm"
                               aria-label="重命名项目树 UI 文件"
                               value={selectedProjectExplorerFile.name}
-                              onChange={(event: any) => renameFileById(selectedProjectExplorerFile.id, event.target.value)}
+                              onChange={(event) => renameFileById(selectedProjectExplorerFile.id, event.target.value)}
                             />
                             <div
                               className={cn(
@@ -904,7 +904,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             )}
                             style={{ paddingLeft: node.depth * 14 + 8 }}
                             title={node.path || node.detail}
-                            onContextMenu={(event: any) => openProjectExplorerContextMenu(event, node)}
+                            onContextMenu={(event) => openProjectExplorerContextMenu(event, node)}
                           >
                             <button
                               type="button"
@@ -1110,7 +1110,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         data-builder-checkpoint-label=""
                         value={checkpointLabel}
                         placeholder="例如：布局初版"
-                        onChange={(event: any) => setCheckpointLabel(event.target.value)}
+                        onChange={(event) => setCheckpointLabel(event.target.value)}
                       />
                       <Button
                         size="sm"
@@ -1203,7 +1203,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   </Field>
                   <Field label="磁盘项目">
                     {managedProjects.length > 0 ? (
-                      <Select value={activeProject.rootPath ?? managedProjects[0].root_path} onValueChange={(rootPath: any) => void openProjectRoot(rootPath)}>
+                      <Select value={activeProject.rootPath ?? managedProjects[0].root_path} onValueChange={(rootPath) => void openProjectRoot(rootPath)}>
                         <SelectTrigger data-builder-managed-project-select="">
                           <SelectValue />
                         </SelectTrigger>
@@ -1223,14 +1223,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     )}
                   </Field>
                   <Field label="项目名称">
-                    <Input data-builder-project-name="" value={activeProject.name} onChange={(event: any) => renameActiveProject(event.target.value)} />
+                    <Input data-builder-project-name="" value={activeProject.name} onChange={(event) => renameActiveProject(event.target.value)} />
                   </Field>
                   <Field label="项目目录">
                     <Input
                       data-builder-project-root=""
                       value={activeProject.rootPath ?? ""}
                       placeholder="保存后生成，或粘贴已有项目目录"
-                      onChange={(event: any) => updateProjectRootPath(event.target.value)}
+                      onChange={(event) => updateProjectRootPath(event.target.value)}
                     />
                   </Field>
                   <section className="space-y-3 rounded-2xl border border-outline-variant bg-surface-container-high p-3" data-builder-project-release-settings="">
@@ -1246,7 +1246,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         inputSize="sm"
                         data-builder-project-release-app-name=""
                         value={activeProject.releaseConfig.appName}
-                        onChange={(event: any) => updateReleaseConfig({ appName: event.target.value })}
+                        onChange={(event) => updateReleaseConfig({ appName: event.target.value })}
                       />
                     </Field>
                     <Field label="安装包 标识符">
@@ -1256,7 +1256,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         value={activeProject.releaseConfig.bundleIdentifier}
                         spellCheck={false}
                         className="font-mono text-xs"
-                        onChange={(event: any) => updateReleaseConfig({ bundleIdentifier: event.target.value })}
+                        onChange={(event) => updateReleaseConfig({ bundleIdentifier: event.target.value })}
                       />
                     </Field>
                     <div className="grid grid-cols-2 gap-2">
@@ -1267,7 +1267,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           value={activeProject.releaseConfig.version}
                           spellCheck={false}
                           className="font-mono text-xs"
-                          onChange={(event: any) => updateReleaseConfig({ version: event.target.value })}
+                          onChange={(event) => updateReleaseConfig({ version: event.target.value })}
                         />
                       </Field>
                       <Field label="窗口标题">
@@ -1275,7 +1275,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           inputSize="sm"
                           data-builder-project-release-window-title=""
                           value={activeProject.releaseConfig.windowTitle}
-                          onChange={(event: any) => updateReleaseConfig({ windowTitle: event.target.value })}
+                          onChange={(event) => updateReleaseConfig({ windowTitle: event.target.value })}
                         />
                       </Field>
                     </div>
@@ -1283,7 +1283,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <Field label="窗体类型">
                         <Select
                           value={activeProject.releaseConfig.windowKind}
-                          onValueChange={(windowKind: any) =>
+                          onValueChange={(windowKind) =>
                             updateReleaseConfig({
                               windowKind: windowKind as ReleaseWindowKind,
                               titlebarStyle:
@@ -1310,7 +1310,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <Field label="标题栏">
                         <Select
                           value={activeProject.releaseConfig.titlebarStyle}
-                          onValueChange={(titlebarStyle: any) => updateReleaseConfig({ titlebarStyle: titlebarStyle as ReleaseTitlebarStyle })}
+                          onValueChange={(titlebarStyle) => updateReleaseConfig({ titlebarStyle: titlebarStyle as ReleaseTitlebarStyle })}
                           disabled={activeProject.releaseConfig.windowKind === "frameless"}
                         >
                           <SelectTrigger inputSize="sm" data-builder-project-release-titlebar-style="">
@@ -1332,14 +1332,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         data-builder-project-release-titlebar-subtitle=""
                         value={activeProject.releaseConfig.titlebarSubtitle}
                         placeholder="例如：设置、工具窗口、后台任务"
-                        onChange={(event: any) => updateReleaseConfig({ titlebarSubtitle: event.target.value })}
+                        onChange={(event) => updateReleaseConfig({ titlebarSubtitle: event.target.value })}
                       />
                     </Field>
                     <div className="grid grid-cols-2 gap-2">
                       <Field label="安装包目标">
                         <Select
                           value={activeProject.releaseConfig.bundleTargets}
-                          onValueChange={(bundleTargets: any) => updateReleaseConfig({ bundleTargets: bundleTargets as ReleaseBundleTarget })}
+                          onValueChange={(bundleTargets) => updateReleaseConfig({ bundleTargets: bundleTargets as ReleaseBundleTarget })}
                         >
                           <SelectTrigger inputSize="sm" data-builder-project-release-targets="">
                             <SelectValue />
@@ -1356,7 +1356,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <div className="flex items-end">
                         <label className="flex h-[var(--control-sm)] w-full items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 text-xs">
                           允许缩放
-                          <Switch checked={activeProject.releaseConfig.resizable} onCheckedChange={(resizable: any) => updateReleaseConfig({ resizable })} />
+                          <Switch checked={activeProject.releaseConfig.resizable} onCheckedChange={(resizable) => updateReleaseConfig({ resizable })} />
                         </label>
                       </div>
                     </div>
@@ -1396,7 +1396,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <CountReadout label={`${activeFile.items.length} 控件`} count={activeFile.items.length} />
                     </div>
                     <Field label="当前文件">
-                      <Input data-builder-file-name="" inputSize="sm" value={activeFile.name} onChange={(event: any) => renameActiveFile(event.target.value)} />
+                      <Input data-builder-file-name="" inputSize="sm" value={activeFile.name} onChange={(event) => renameActiveFile(event.target.value)} />
                     </Field>
                     <div className="max-h-32 space-y-1 overflow-auto pr-1">
                       {activeProject.files.map((file: any) => (
@@ -1456,7 +1456,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         placeholder="搜索图层..."
                         value={navigatorQuery}
                         className="h-9 rounded-2xl pl-9 text-xs"
-                        onChange={(event: any) => {
+                        onChange={(event) => {
                           setNavigatorQuery(event.target.value);
                           setNavigatorLayerMessage("");
                         }}
@@ -1579,7 +1579,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <button
                                 type="button"
                                 className="focus-ring grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl px-2 py-2 text-left"
-                                onClick={(event: any) => selectItem(item.id, event)}
+                                onClick={(event) => selectItem(item.id, event)}
                               >
                                 <span className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-surface-container-highest text-primary">
                                   <Icon aria-hidden className="size-3.5" />
@@ -1603,7 +1603,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 data-builder-navigator-row-visibility-toggle={item.id}
                                 aria-label={runtimeState.visible ? "运行态隐藏控件" : "运行态显示控件"}
                                 title={runtimeState.visible ? "运行态隐藏控件" : "运行态显示控件"}
-                                onClick={(event: any) => {
+                                onClick={(event) => {
                                   event.stopPropagation();
                                   toggleItemRuntimeVisibility(item.id);
                                 }}
@@ -1616,7 +1616,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 data-builder-navigator-row-lock-toggle={item.id}
                                 aria-label={item.locked ? "解锁控件" : "锁定控件"}
                                 title={item.locked ? "解锁控件" : "锁定控件"}
-                                onClick={(event: any) => {
+                                onClick={(event) => {
                                   event.stopPropagation();
                                   toggleItemLockFromNavigator(item.id);
                                 }}
@@ -1676,7 +1676,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             draggable
                             data-builder-asset-drag={asset.name}
                             title="拖到画布即可创建图片控件"
-                            onDragStart={(event: any) => handleAssetDragStart(event, asset)}
+                            onDragStart={(event) => handleAssetDragStart(event, asset)}
                           >
                             <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                               <FileImage aria-hidden className="size-4" />
@@ -1737,7 +1737,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       placeholder="搜索控件..."
                       value={componentPaletteQuery}
                       className="h-7 rounded-lg pl-8 text-xs"
-                      onChange={(event: any) => {
+                      onChange={(event) => {
                         setComponentPaletteQuery(event.target.value);
                         setActiveComponentPaletteKitId("");
                       }}
@@ -1817,7 +1817,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   <button
                                     type="button"
                                     draggable={false}
-                                    onMouseDown={(event: any) => handlePaletteMouseDown(event, definition)}
+                                    onMouseDown={(event) => handlePaletteMouseDown(event, definition)}
                                     onClick={() => {
                                       if (suppressPaletteClickRef.current) {
                                         return;
@@ -2185,7 +2185,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         title={`当前窗体：${pageWindowKindMeta?.label ?? page.windowKind} / ${pageTitlebarStyleMeta?.label ?? page.titlebarStyle}`}
                       >
                         <Monitor aria-hidden className="ml-1 size-3.5 shrink-0 text-primary" />
-                        <Select value={page.windowKind} onValueChange={(windowKind: any) => updatePageWindowKind(windowKind as ReleaseWindowKind)}>
+                        <Select value={page.windowKind} onValueChange={(windowKind) => updatePageWindowKind(windowKind as ReleaseWindowKind)}>
                           <SelectTrigger
                             data-builder-canvas-window-kind=""
                             inputSize="sm"
@@ -2205,7 +2205,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <span className="h-4 w-px bg-outline-variant" aria-hidden />
                         <Select
                           value={page.titlebarStyle}
-                          onValueChange={(titlebarStyle: any) => updatePageTitlebarStyle(titlebarStyle as ReleaseTitlebarStyle)}
+                          onValueChange={(titlebarStyle) => updatePageTitlebarStyle(titlebarStyle as ReleaseTitlebarStyle)}
                           disabled={page.windowKind === "frameless"}
                         >
                           <SelectTrigger
@@ -2309,7 +2309,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   {canvasControlsExpanded ? (
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Select value={page.preset} onValueChange={(value: any) => applyCanvasPreset(value as CanvasPresetId)}>
+                    <Select value={page.preset} onValueChange={(value) => applyCanvasPreset(value as CanvasPresetId)}>
                       <SelectTrigger data-builder-canvas-preset="" className="w-[170px]" inputSize="sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -2325,7 +2325,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     <SegmentedControl
                       aria-label="响应式断点"
                       value={activeBreakpoint}
-                      onValueChange={(value: any) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
+                      onValueChange={(value) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                       options={[
                         { value: "desktop", label: "桌面" },
                         { value: "tablet", label: "平板" },
@@ -2337,16 +2337,16 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       value={page.width}
                       dataAttr="data-builder-canvas-width"
                       disabled={activeBreakpoint !== "desktop"}
-                      onChange={(value: any) => updatePage({ preset: "custom", width: numberFromInput(value, page.width, 320, 2400) })}
+                      onChange={(value) => updatePage({ preset: "custom", width: numberFromInput(value, page.width, 320, 2400) })}
                     />
                     <NumberBox
                       label="H"
                       value={page.height}
                       dataAttr="data-builder-canvas-height"
                       disabled={activeBreakpoint !== "desktop"}
-                      onChange={(value: any) => updatePage({ preset: "custom", height: numberFromInput(value, page.height, 240, 1800) })}
+                      onChange={(value) => updatePage({ preset: "custom", height: numberFromInput(value, page.height, 240, 1800) })}
                     />
-                    <Select value={String(page.zoom)} onValueChange={(value: any) => chooseCanvasZoom(Number(value))}>
+                    <Select value={String(page.zoom)} onValueChange={(value) => chooseCanvasZoom(Number(value))}>
                       <SelectTrigger className="w-[104px]" inputSize="sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -2401,7 +2401,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     <label className="flex h-[var(--control-sm)] items-center gap-2 rounded-full border border-outline bg-surface-container-high px-3 text-xs">
                       <Grid3x3 aria-hidden className="size-3.5 text-primary" />
                       网格
-                      <Switch className="h-5 w-9 border" checked={page.showGrid} onCheckedChange={(showGrid: any) => updatePage({ showGrid })} />
+                      <Switch className="h-5 w-9 border" checked={page.showGrid} onCheckedChange={(showGrid) => updatePage({ showGrid })} />
                     </label>
                     <label
                       className="flex h-[var(--control-sm)] items-center gap-2 rounded-full border border-outline bg-surface-container-high px-3 text-xs"
@@ -2409,12 +2409,12 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                     >
                       <Ruler aria-hidden className="size-3.5 text-primary" />
                       标尺
-                      <Switch className="h-5 w-9 border" checked={page.showRulers} onCheckedChange={(showRulers: any) => updatePage({ showRulers })} />
+                      <Switch className="h-5 w-9 border" checked={page.showRulers} onCheckedChange={(showRulers) => updatePage({ showRulers })} />
                     </label>
                     <label className="flex h-[var(--control-sm)] items-center gap-2 rounded-full border border-outline bg-surface-container-high px-3 text-xs">
                       <Move aria-hidden className="size-3.5 text-primary" />
                       吸附
-                      <Switch className="h-5 w-9 border" checked={page.snapToGrid} onCheckedChange={(snapToGrid: any) => updatePage({ snapToGrid })} />
+                      <Switch className="h-5 w-9 border" checked={page.snapToGrid} onCheckedChange={(snapToGrid) => updatePage({ snapToGrid })} />
                     </label>
                     <CountReadout label={`${items.length} 个节点`} count={items.length} />
                     <CountReadout label={`${selectedIds.length} 个已选`} count={selectedIds.length} />
@@ -2440,7 +2440,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   open={canvasFindOpen && mode === "design"}
                   query={canvasFindQuery}
                   inputRef={canvasFindInputRef}
-                  onQueryChange={(value: any) => {
+                  onQueryChange={(value) => {
                     setCanvasFindQuery(value);
                     const q = value.trim().toLowerCase();
                     const match = items.find((item: any) => {
@@ -2480,7 +2480,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   <ConflictMergeEditor
                     file={conflictFile}
                     onClose={() => setConflictFile(null)}
-                    onResolve={(resolutions: any) => {
+                    onResolve={(resolutions) => {
                       void invokeIfAvailable("resolve_git_conflict", {
                         rootPath: activeProject.rootPath ?? "",
                         filePath: conflictFile.path,
@@ -2506,7 +2506,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   selectedItems={selectedItems}
                   selectedItem={selectedItem}
                   getItemSummary={getItemSummary}
-                  getItemIcon={(type: any) => getDefinition(type).icon}
+                  getItemIcon={(type) => getDefinition(type).icon}
                   selectedItemHierarchy={selectedItemHierarchy}
                   selectHierarchyBreadcrumbNode={selectHierarchyBreadcrumbNode}
                   activeFileName={activeFile.name}
@@ -2537,8 +2537,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   canFitSelectedCanvas={Boolean(selectedCanvasFitBounds)}
                   fitSelectedCanvasToViewport={fitSelectedCanvasToViewport}
                   selectedQuickTextProps={selectedQuickTextProps}
-                  startInlineTextEdit={(item: any, prop: any, source: any) => startInlineTextEdit(item, prop as any, source as any)}
-                  quickTextPropLabel={(prop: any) => quickTextPropLabel(prop as any)}
+                  startInlineTextEdit={(item, prop, source) => startInlineTextEdit(item, prop as any, source as any)}
+                  quickTextPropLabel={(prop) => quickTextPropLabel(prop as any)}
                   textPropertyValue={textPropertyValue}
                   tabOrderOverlayVisible={tabOrderOverlayVisible}
                   setTabOrderOverlayVisible={setTabOrderOverlayVisible}
@@ -2548,7 +2548,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                   matchSelectedSize={matchSelectedSize}
                   groupSelectedIntoFrame={groupSelectedIntoFrame}
                   ungroupSelectedFrames={ungroupSelectedFrames}
-                  moveSelectedLayerStep={(delta: any) => moveSelectedLayerStep(delta as 1 | -1)}
+                  moveSelectedLayerStep={(delta) => moveSelectedLayerStep(delta as 1 | -1)}
                   sendToBack={sendToBack}
                   bringToFront={bringToFront}
                   copySelectionToClipboard={copySelectionToClipboard}
@@ -2776,13 +2776,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         }
                         clearSelection({ feedback: true });
                       }}
-                      onContextMenu={(event: any) => openCanvasContextMenu(event)}
-                      onDragOver={(event: any) => {
+                      onContextMenu={(event) => openCanvasContextMenu(event)}
+                      onDragOver={(event) => {
                         event.preventDefault();
                         event.dataTransfer.dropEffect = "copy";
                         setDropIntent(getFrameDropIntentFromClientPoint(event.clientX, event.clientY));
                       }}
-                      onDragLeave={(event: any) => {
+                      onDragLeave={(event) => {
                         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
                           setDropIntent(null);
                         }
@@ -2804,8 +2804,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               transform: `scale(${Math.min(2.4, 1 / Math.max(page.zoom, 0.42))})`,
                               transformOrigin: "top center",
                             }}
-                            onClick={(event: any) => event.stopPropagation()}
-                            onPointerDown={(event: any) => event.stopPropagation()}
+                            onClick={(event) => event.stopPropagation()}
+                            onPointerDown={(event) => event.stopPropagation()}
                           >
                             <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-xs font-medium text-on-surface">
                               <MousePointer2 aria-hidden className="size-3.5 text-primary" />
@@ -2829,7 +2829,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   aria-label={`插入${definition.title}`}
                                   title={`插入${definition.title}`}
                                   data-builder-empty-insert={type}
-                                  onClick={(event: any) => {
+                                  onClick={(event) => {
                                     event.stopPropagation();
                                     insertComponentFromShortcut(type, { centered: true });
                                   }}
@@ -2845,7 +2845,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               variant="ghost"
                               className="h-7 min-w-0 rounded-full px-2.5 text-[0.68rem]"
                               data-builder-empty-open-components=""
-                              onClick={(event: any) => {
+                              onClick={(event) => {
                                 event.stopPropagation();
                                 setLeftDockTab("components");
                               }}
@@ -2985,8 +2985,8 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   left: clamp(position.x + 6, 6, Math.max(6, page.width - 180)),
                                   top: clamp(position.y + 6, 6, Math.max(6, page.height - 28)),
                                 }}
-                                onPointerDown={(event: any) => event.stopPropagation()}
-                                onClick={(event: any) => {
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
                                   event.stopPropagation();
                                   setSelectedId(entry.item.id);
                                   setRightDockTab("properties");
@@ -3274,7 +3274,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         { label: "内容", value: "text" in selectedItem.props ? String(selectedItem.props.text) : selectedItem.props.label ?? selectedItem.props.title ?? selectedItem.type },
                         { label: "状态", value: selectedBindableProps.length > 0 ? `${selectedBindableProps.length} 个绑定` : "静态" },
                         { label: "动作", value: selectedEventCommand ? "已绑定" : selectedEventName ? "就绪" : "无" },
-                      ].map((group: any) => (
+                      ].map((group) => (
                         <div key={group.label} className="min-w-0 rounded-xl border border-outline-variant bg-surface-container-high px-2 py-2">
                           <p className="truncate text-[0.64rem] font-medium uppercase tracking-[0.08em] text-on-surface-variant">{group.label}</p>
                           <p className="mt-1 truncate text-[0.68rem] text-on-surface">{group.value}</p>
@@ -3361,7 +3361,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           data-builder-selected-object-name=""
                           value={selectedItem.name}
                           placeholder={`${selectedItem.type}-${selectedItem.id.slice(-4)}`}
-                          onChange={(event: any) => updateSelectedObjectName(event.target.value)}
+                          onChange={(event) => updateSelectedObjectName(event.target.value)}
                           onBlur={() => {
                             if (selectedItem.name.trim()) {
                               return;
@@ -3402,14 +3402,14 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <span className="block truncate font-medium">运行态可见</span>
                               <span className="block truncate text-[0.64rem] text-on-surface-variant">关闭后 exe 中隐藏，设计器仍可选中。</span>
                             </span>
-                            <Switch checked={selectedRuntimeState?.visible ?? true} onCheckedChange={(visible: any) => updateSelectedProps({ visible })} />
+                            <Switch checked={selectedRuntimeState?.visible ?? true} onCheckedChange={(visible) => updateSelectedProps({ visible })} />
                           </label>
                           <label className="flex min-h-9 items-center justify-between gap-3 rounded-xl bg-surface-container-high px-3 py-2 text-xs" data-builder-runtime-state-enabled="">
                             <span className="min-w-0">
                               <span className="block truncate font-medium">启用交互</span>
                               <span className="block truncate text-[0.64rem] text-on-surface-variant">关闭后按钮、输入、选择等控件会禁用。</span>
                             </span>
-                            <Switch checked={selectedRuntimeState?.enabled ?? true} onCheckedChange={(enabled: any) => updateSelectedProps({ enabled })} />
+                            <Switch checked={selectedRuntimeState?.enabled ?? true} onCheckedChange={(enabled) => updateSelectedProps({ enabled })} />
                           </label>
                           <label className="flex min-h-9 items-center justify-between gap-3 rounded-xl bg-surface-container-high px-3 py-2 text-xs" data-builder-runtime-state-read-only="">
                             <span className="min-w-0">
@@ -3421,7 +3421,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Switch
                               checked={selectedRuntimeState?.readOnly ?? false}
                               disabled={!selectedCanUseReadOnly}
-                              onCheckedChange={(readOnly: any) => updateSelectedProps({ readOnly })}
+                              onCheckedChange={(readOnly) => updateSelectedProps({ readOnly })}
                             />
                           </label>
                         </div>
@@ -3454,7 +3454,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             data-builder-selected-tab-index=""
                             value={selectedItem.props.tabIndex ?? selectedTabOrderEntry?.tabIndex ?? ""}
                             placeholder={selectedCanUseTabOrder ? String(selectedTabOrderPosition || focusableTabOrderItems.length + 1) : "n/a"}
-                            onChange={(event: any) => updateSelectedTabIndex(event.target.value)}
+                            onChange={(event) => updateSelectedTabIndex(event.target.value)}
                           />
                           <Button
                             size="icon-sm"
@@ -3575,7 +3575,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             value={inspectorPropertyQuery}
                             placeholder="搜索属性、字段名或当前值..."
                             className="pl-8 pr-8"
-                            onChange={(event: any) => setInspectorPropertyQuery(event.target.value)}
+                            onChange={(event) => setInspectorPropertyQuery(event.target.value)}
                           />
                           {inspectorPropertyQuery ? (
                             <button
@@ -3691,7 +3691,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               type="number"
                               inputSize="sm"
                               value={selectedItem.x}
-                              onChange={(event: any) => updateSelectedLayout({ x: numberFromInput(event.target.value, selectedItem.x, 0, page.width) })}
+                              onChange={(event) => updateSelectedLayout({ x: numberFromInput(event.target.value, selectedItem.x, 0, page.width) })}
                             />
                           </Field>
                           <Field label="Y">
@@ -3699,7 +3699,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               type="number"
                               inputSize="sm"
                               value={selectedItem.y}
-                              onChange={(event: any) => updateSelectedLayout({ y: numberFromInput(event.target.value, selectedItem.y, 0, page.height) })}
+                              onChange={(event) => updateSelectedLayout({ y: numberFromInput(event.target.value, selectedItem.y, 0, page.height) })}
                             />
                           </Field>
                           <Field label="宽度">
@@ -3707,7 +3707,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               type="number"
                               inputSize="sm"
                               value={selectedItem.width}
-                              onChange={(event: any) => updateSelectedLayout({ width: numberFromInput(event.target.value, selectedItem.width, MIN_ITEM_WIDTH, page.width) })}
+                              onChange={(event) => updateSelectedLayout({ width: numberFromInput(event.target.value, selectedItem.width, MIN_ITEM_WIDTH, page.width) })}
                             />
                           </Field>
                           <Field label="高度">
@@ -3715,7 +3715,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               type="number"
                               inputSize="sm"
                               value={selectedItem.height}
-                              onChange={(event: any) => updateSelectedLayout({ height: numberFromInput(event.target.value, selectedItem.height, MIN_ITEM_HEIGHT, page.height) })}
+                              onChange={(event) => updateSelectedLayout({ height: numberFromInput(event.target.value, selectedItem.height, MIN_ITEM_HEIGHT, page.height) })}
                             />
                           </Field>
                         </div>
@@ -3767,7 +3767,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <SegmentedControl
                                 aria-label="Frame 布局模式"
                                 value={frameLayoutMode(selectedItem)}
-                                onValueChange={(value: any) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
+                                onValueChange={(value) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
                                 options={[
                                   { value: "free", label: "自由" },
                                   { value: "row", label: "行" },
@@ -3782,7 +3782,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   type="number"
                                   inputSize="sm"
                                   value={frameLayoutMetrics(selectedItem).gap}
-                                  onChange={(event: any) => updateSelectedProps({ layoutGap: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).gap, 0, 80) })}
+                                  onChange={(event) => updateSelectedProps({ layoutGap: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).gap, 0, 80) })}
                                 />
                               </Field>
                               <Field label="内边距">
@@ -3790,7 +3790,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   type="number"
                                   inputSize="sm"
                                   value={frameLayoutMetrics(selectedItem).padding}
-                                  onChange={(event: any) => updateSelectedProps({ layoutPadding: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).padding, 0, 80) })}
+                                  onChange={(event) => updateSelectedProps({ layoutPadding: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).padding, 0, 80) })}
                                 />
                               </Field>
                             </div>
@@ -3810,7 +3810,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Field label="绑定资源">
                               <Select
                                 value={selectedItem.props.assetId || "__none"}
-                                onValueChange={(value: any) => {
+                                onValueChange={(value) => {
                                   if (value === "__none") {
                                     updateSelectedProps({ assetId: "", assetPath: "", label: "Image" });
                                     return;
@@ -3832,7 +3832,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               </Select>
                             </Field>
                             <Field label="图片适配">
-                              <Select value={selectedItem.props.objectFit ?? "cover"} onValueChange={(value: any) => updateSelectedProps({ objectFit: value as ImageFit })}>
+                              <Select value={selectedItem.props.objectFit ?? "cover"} onValueChange={(value) => updateSelectedProps({ objectFit: value as ImageFit })}>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -3844,51 +3844,51 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               </Select>
                             </Field>
                             <Field label="替代文本">
-                              <Input value={selectedItem.props.alt ?? ""} onChange={(event: any) => updateSelectedProps({ alt: event.target.value })} />
+                              <Input value={selectedItem.props.alt ?? ""} onChange={(event) => updateSelectedProps({ alt: event.target.value })} />
                             </Field>
                           </>
                         ) : null}
                         {"title" in selectedItem.props ? (
                           <Field label="标题">
-                            <Input value={selectedItem.props.title ?? ""} onChange={(event: any) => updateSelectedProps({ title: event.target.value })} />
+                            <Input value={selectedItem.props.title ?? ""} onChange={(event) => updateSelectedProps({ title: event.target.value })} />
                           </Field>
                         ) : null}
                         {"label" in selectedItem.props ? (
                           <Field label="标签">
-                            <Input data-builder-selected-label-input="" value={selectedItem.props.label ?? ""} onChange={(event: any) => updateSelectedProps({ label: event.target.value })} />
+                            <Input data-builder-selected-label-input="" value={selectedItem.props.label ?? ""} onChange={(event) => updateSelectedProps({ label: event.target.value })} />
                           </Field>
                         ) : null}
                         {"value" in selectedItem.props ? (
                           <Field label="值">
-                            <Input value={selectedItem.props.value ?? ""} onChange={(event: any) => updateSelectedProps({ value: event.target.value })} />
+                            <Input value={selectedItem.props.value ?? ""} onChange={(event) => updateSelectedProps({ value: event.target.value })} />
                           </Field>
                         ) : null}
                         {itemUsesOptions(selectedItem) ? (
                           <div className="grid grid-cols-1 gap-2">
                             <Field label="选项 A">
-                              <Input value={selectedItem.props.optionA ?? ""} onChange={(event: any) => updateSelectedProps({ optionA: event.target.value })} />
+                              <Input value={selectedItem.props.optionA ?? ""} onChange={(event) => updateSelectedProps({ optionA: event.target.value })} />
                             </Field>
                             <Field label="选项 B">
-                              <Input value={selectedItem.props.optionB ?? ""} onChange={(event: any) => updateSelectedProps({ optionB: event.target.value })} />
+                              <Input value={selectedItem.props.optionB ?? ""} onChange={(event) => updateSelectedProps({ optionB: event.target.value })} />
                             </Field>
                             <Field label="选项 C">
-                              <Input value={selectedItem.props.optionC ?? ""} onChange={(event: any) => updateSelectedProps({ optionC: event.target.value })} />
+                              <Input value={selectedItem.props.optionC ?? ""} onChange={(event) => updateSelectedProps({ optionC: event.target.value })} />
                             </Field>
                           </div>
                         ) : null}
                         {"description" in selectedItem.props ? (
                           <Field label="说明">
-                            <Textarea value={selectedItem.props.description ?? ""} onChange={(event: any) => updateSelectedProps({ description: event.target.value })} />
+                            <Textarea value={selectedItem.props.description ?? ""} onChange={(event) => updateSelectedProps({ description: event.target.value })} />
                           </Field>
                         ) : null}
                         {"placeholder" in selectedItem.props ? (
                           <Field label="占位文本">
-                            <Input value={selectedItem.props.placeholder ?? ""} onChange={(event: any) => updateSelectedProps({ placeholder: event.target.value })} />
+                            <Input value={selectedItem.props.placeholder ?? ""} onChange={(event) => updateSelectedProps({ placeholder: event.target.value })} />
                           </Field>
                         ) : null}
                         {"helper" in selectedItem.props ? (
                           <Field label="辅助说明">
-                            <Input value={selectedItem.props.helper ?? ""} onChange={(event: any) => updateSelectedProps({ helper: event.target.value })} />
+                            <Input value={selectedItem.props.helper ?? ""} onChange={(event) => updateSelectedProps({ helper: event.target.value })} />
                           </Field>
                         ) : null}
                       </PropertySection>
@@ -3907,7 +3907,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <Field key={prop.value} label={prop.label}>
                                 <Select
                                   value={selectedItem.props.stateBindings?.[prop.value] || "__none"}
-                                  onValueChange={(value: any) => updateSelectedStateBinding(prop.value, value === "__none" ? "" : value)}
+                                  onValueChange={(value) => updateSelectedStateBinding(prop.value, value === "__none" ? "" : value)}
                                 >
                                   <SelectTrigger>
                                     <SelectValue />
@@ -3930,7 +3930,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         {selectedItem.type === "switch" || selectedItem.type === "checkbox" || selectedItem.type === "radio" ? (
                           <div className="flex items-center justify-between rounded-xl bg-surface-container-low p-3">
                             <Label>默认选中</Label>
-                            <Switch checked={Boolean(selectedItem.props.checked)} onCheckedChange={(checked: any) => updateSelectedProps({ checked })} />
+                            <Switch checked={Boolean(selectedItem.props.checked)} onCheckedChange={(checked) => updateSelectedProps({ checked })} />
                           </div>
                         ) : null}
                         {selectedPropertyIssues.length > 0 ? (
@@ -3966,7 +3966,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       >
                         {selectedItem.type === "button" || selectedItem.type === "badge" || selectedItem.type === "dialog" || selectedItem.type === "progress" ? (
                           <Field label="样式">
-                            <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value: any) => updateSelectedProps({ variant: value as ButtonVariant })}>
+                            <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value) => updateSelectedProps({ variant: value as ButtonVariant })}>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -3982,7 +3982,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         ) : null}
                         {selectedItem.type === "button" ? (
                           <Field label="按钮尺寸">
-                            <Select value={selectedItem.props.size ?? "md"} onValueChange={(value: any) => updateSelectedProps({ size: value as ControlSize })}>
+                            <Select value={selectedItem.props.size ?? "md"} onValueChange={(value) => updateSelectedProps({ size: value as ControlSize })}>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -4015,7 +4015,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   ? selectedEventCommandId
                                   : "__none"
                               }
-                              onValueChange={(value: any) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
+                              onValueChange={(value) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -4137,13 +4137,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         </div>
                       </div>
                       <Field label="页面名称">
-                        <Input value={page.title} onChange={(event: any) => updatePage({ title: event.target.value })} />
+                        <Input value={page.title} onChange={(event) => updatePage({ title: event.target.value })} />
                       </Field>
                       <div className="grid grid-cols-2 gap-2">
                         <Field label="窗体类型">
                           <Select
                             value={page.windowKind}
-                            onValueChange={(windowKind: any) => updatePageWindowKind(windowKind as ReleaseWindowKind)}
+                            onValueChange={(windowKind) => updatePageWindowKind(windowKind as ReleaseWindowKind)}
                           >
                             <SelectTrigger data-builder-page-window-kind="" inputSize="sm">
                               <SelectValue />
@@ -4160,7 +4160,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                         <Field label="标题栏">
                           <Select
                             value={page.titlebarStyle}
-                            onValueChange={(titlebarStyle: any) => updatePageTitlebarStyle(titlebarStyle as ReleaseTitlebarStyle)}
+                            onValueChange={(titlebarStyle) => updatePageTitlebarStyle(titlebarStyle as ReleaseTitlebarStyle)}
                             disabled={page.windowKind === "frameless"}
                           >
                             <SelectTrigger data-builder-page-titlebar-style="" inputSize="sm">
@@ -4182,11 +4182,11 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           data-builder-page-titlebar-subtitle=""
                           value={page.titlebarSubtitle}
                           placeholder="例如：设置、工具窗口、对话框"
-                          onChange={(event: any) => updatePage({ titlebarSubtitle: event.target.value })}
+                          onChange={(event) => updatePage({ titlebarSubtitle: event.target.value })}
                         />
                       </Field>
                       <Field label="背景">
-                        <Select value={page.background} onValueChange={(value: any) => updatePage({ background: value as CanvasBackground })}>
+                        <Select value={page.background} onValueChange={(value) => updatePage({ background: value as CanvasBackground })}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -4203,27 +4203,27 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             type="number"
                             inputSize="sm"
                             value={page.gridSize}
-                            onChange={(event: any) => updatePage({ gridSize: numberFromInput(event.target.value, page.gridSize, 4, 32) })}
+                            onChange={(event) => updatePage({ gridSize: numberFromInput(event.target.value, page.gridSize, 4, 32) })}
                           />
                         </Field>
                         <div className="flex items-end">
                           <label className="flex h-[var(--control-sm)] w-full items-center justify-between rounded-xl bg-surface-container-high px-3 text-xs">
                             自动保存
-                            <Switch className="h-5 w-9 border" checked={page.autoSave} onCheckedChange={(autoSave: any) => updatePage({ autoSave })} />
+                            <Switch className="h-5 w-9 border" checked={page.autoSave} onCheckedChange={(autoSave) => updatePage({ autoSave })} />
                           </label>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <label className="flex h-[var(--control-sm)] items-center justify-between rounded-xl bg-surface-container-high px-3 text-xs">
                           显示网格
-                          <Switch className="h-5 w-9 border" checked={page.showGrid} onCheckedChange={(showGrid: any) => updatePage({ showGrid })} />
+                          <Switch className="h-5 w-9 border" checked={page.showGrid} onCheckedChange={(showGrid) => updatePage({ showGrid })} />
                         </label>
                         <label
                           className="flex h-[var(--control-sm)] items-center justify-between rounded-xl bg-surface-container-high px-3 text-xs"
                           data-builder-canvas-show-rulers="page-settings"
                         >
                           显示标尺
-                          <Switch className="h-5 w-9 border" checked={page.showRulers} onCheckedChange={(showRulers: any) => updatePage({ showRulers })} />
+                          <Switch className="h-5 w-9 border" checked={page.showRulers} onCheckedChange={(showRulers) => updatePage({ showRulers })} />
                         </label>
                       </div>
                     </div>
@@ -4354,7 +4354,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <button
                                 type="button"
                                 className="focus-ring min-w-0 flex-1 rounded-xl px-2 py-2 text-left"
-                                onClick={(event: any) => selectItem(item.id, event)}
+                                onClick={(event) => selectItem(item.id, event)}
                               >
                                 <span className="block truncate text-xs font-medium">{getItemSummary(item)}</span>
                                 <span className="block truncate text-[0.68rem] opacity-70">
@@ -4524,7 +4524,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               data-builder-multi-select-width=""
                               value={selectedBatchCommonWidth ?? ""}
                               placeholder={selectedCanvasBounds ? `混合 / ${Math.round(selectedCanvasBounds.width)}` : "混合"}
-                              onChange={(event: any) => updateSelectedBatchSize("width", event.target.value)}
+                              onChange={(event) => updateSelectedBatchSize("width", event.target.value)}
                             />
                           </Field>
                           <Field label="高">
@@ -4533,7 +4533,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               data-builder-multi-select-height=""
                               value={selectedBatchCommonHeight ?? ""}
                               placeholder={selectedCanvasBounds ? `混合 / ${Math.round(selectedCanvasBounds.height)}` : "混合"}
-                              onChange={(event: any) => updateSelectedBatchSize("height", event.target.value)}
+                              onChange={(event) => updateSelectedBatchSize("height", event.target.value)}
                             />
                           </Field>
                         </div>
@@ -4579,7 +4579,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </span>
                             <Switch
                               checked={selectedBatchRuntimeSummary.visibleCount === selectedItems.length}
-                              onCheckedChange={(visible: any) => setSelectedRuntimeState({ visible })}
+                              onCheckedChange={(visible) => setSelectedRuntimeState({ visible })}
                             />
                           </label>
                           <label className="flex min-h-9 items-center justify-between gap-3 rounded-xl bg-surface-container-high px-3 py-2 text-xs" data-builder-multi-select-enabled="">
@@ -4592,7 +4592,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Switch
                               checked={selectedBatchRuntimeSummary.focusableCount > 0 && selectedBatchRuntimeSummary.enabledCount === selectedBatchRuntimeSummary.focusableCount}
                               disabled={selectedBatchRuntimeSummary.focusableCount === 0}
-                              onCheckedChange={(enabled: any) => setSelectedRuntimeState({ enabled })}
+                              onCheckedChange={(enabled) => setSelectedRuntimeState({ enabled })}
                             />
                           </label>
                           <label className="flex min-h-9 items-center justify-between gap-3 rounded-xl bg-surface-container-high px-3 py-2 text-xs" data-builder-multi-select-read-only="">
@@ -4608,7 +4608,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 selectedBatchRuntimeSummary.readOnlyCount === selectedBatchRuntimeSummary.readOnlyCapableCount
                               }
                               disabled={selectedBatchRuntimeSummary.readOnlyCapableCount === 0}
-                              onCheckedChange={(readOnly: any) => setSelectedRuntimeState({ readOnly })}
+                              onCheckedChange={(readOnly) => setSelectedRuntimeState({ readOnly })}
                             />
                           </label>
                         </div>
@@ -4789,7 +4789,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             type="number"
                             inputSize="sm"
                             value={selectedItem.x}
-                            onChange={(event: any) => updateSelectedLayout({ x: numberFromInput(event.target.value, selectedItem.x, 0, page.width) })}
+                            onChange={(event) => updateSelectedLayout({ x: numberFromInput(event.target.value, selectedItem.x, 0, page.width) })}
                           />
                         </Field>
                         <Field label="Y">
@@ -4797,7 +4797,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             type="number"
                             inputSize="sm"
                             value={selectedItem.y}
-                            onChange={(event: any) => updateSelectedLayout({ y: numberFromInput(event.target.value, selectedItem.y, 0, page.height) })}
+                            onChange={(event) => updateSelectedLayout({ y: numberFromInput(event.target.value, selectedItem.y, 0, page.height) })}
                           />
                         </Field>
                         <Field label="宽度">
@@ -4805,7 +4805,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             type="number"
                             inputSize="sm"
                             value={selectedItem.width}
-                            onChange={(event: any) => updateSelectedLayout({ width: numberFromInput(event.target.value, selectedItem.width, MIN_ITEM_WIDTH, page.width) })}
+                            onChange={(event) => updateSelectedLayout({ width: numberFromInput(event.target.value, selectedItem.width, MIN_ITEM_WIDTH, page.width) })}
                           />
                         </Field>
                         <Field label="高度">
@@ -4813,7 +4813,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             type="number"
                             inputSize="sm"
                             value={selectedItem.height}
-                            onChange={(event: any) => updateSelectedLayout({ height: numberFromInput(event.target.value, selectedItem.height, MIN_ITEM_HEIGHT, page.height) })}
+                            onChange={(event) => updateSelectedLayout({ height: numberFromInput(event.target.value, selectedItem.height, MIN_ITEM_HEIGHT, page.height) })}
                           />
                         </Field>
                       </div>
@@ -4903,7 +4903,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <SegmentedControl
                               aria-label="Frame 布局模式"
                               value={frameLayoutMode(selectedItem)}
-                              onValueChange={(value: any) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
+                              onValueChange={(value) => updateSelectedProps({ layoutMode: value as FrameLayoutMode })}
                               options={[
                                   { value: "free", label: "自由" },
                                   { value: "row", label: "行" },
@@ -4918,7 +4918,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 type="number"
                                 inputSize="sm"
                                 value={frameLayoutMetrics(selectedItem).gap}
-                                onChange={(event: any) => updateSelectedProps({ layoutGap: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).gap, 0, 80) })}
+                                onChange={(event) => updateSelectedProps({ layoutGap: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).gap, 0, 80) })}
                               />
                             </Field>
                             <Field label="内边距">
@@ -4926,7 +4926,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 type="number"
                                 inputSize="sm"
                                 value={frameLayoutMetrics(selectedItem).padding}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                   updateSelectedProps({ layoutPadding: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).padding, 0, 80) })
                                 }
                               />
@@ -4938,7 +4938,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 type="number"
                                 inputSize="sm"
                                 value={frameLayoutMetrics(selectedItem).columns}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                   updateSelectedProps({ layoutColumns: numberFromInput(event.target.value, frameLayoutMetrics(selectedItem).columns, 1, 6) })
                                 }
                               />
@@ -4952,7 +4952,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <Field label="绑定资源">
                             <Select
                               value={selectedItem.props.assetId || "__none"}
-                              onValueChange={(value: any) => {
+                              onValueChange={(value) => {
                                 if (value === "__none") {
                                   updateSelectedProps({ assetId: "", assetPath: "", label: "Image" });
                                   return;
@@ -4974,7 +4974,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </Select>
                           </Field>
                           <Field label="图片适配">
-                            <Select value={selectedItem.props.objectFit ?? "cover"} onValueChange={(value: any) => updateSelectedProps({ objectFit: value as ImageFit })}>
+                            <Select value={selectedItem.props.objectFit ?? "cover"} onValueChange={(value) => updateSelectedProps({ objectFit: value as ImageFit })}>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -4986,26 +4986,26 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </Select>
                           </Field>
                           <Field label="替代文本">
-                            <Input value={selectedItem.props.alt ?? ""} onChange={(event: any) => updateSelectedProps({ alt: event.target.value })} />
+                            <Input value={selectedItem.props.alt ?? ""} onChange={(event) => updateSelectedProps({ alt: event.target.value })} />
                           </Field>
                         </>
                       ) : null}
 
                       {"title" in selectedItem.props ? (
                         <Field label="标题">
-                          <Input value={selectedItem.props.title ?? ""} onChange={(event: any) => updateSelectedProps({ title: event.target.value })} />
+                          <Input value={selectedItem.props.title ?? ""} onChange={(event) => updateSelectedProps({ title: event.target.value })} />
                         </Field>
                       ) : null}
 
                       {"label" in selectedItem.props ? (
                         <Field label="标签">
-                          <Input value={selectedItem.props.label ?? ""} onChange={(event: any) => updateSelectedProps({ label: event.target.value })} />
+                          <Input value={selectedItem.props.label ?? ""} onChange={(event) => updateSelectedProps({ label: event.target.value })} />
                         </Field>
                       ) : null}
 
                       {"value" in selectedItem.props ? (
                         <Field label="值">
-                          <Input value={selectedItem.props.value ?? ""} onChange={(event: any) => updateSelectedProps({ value: event.target.value })} />
+                          <Input value={selectedItem.props.value ?? ""} onChange={(event) => updateSelectedProps({ value: event.target.value })} />
                         </Field>
                       ) : null}
 
@@ -5020,13 +5020,13 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           </div>
                           <div className="grid grid-cols-1 gap-2">
                             <Field label="选项 A">
-                              <Input value={selectedItem.props.optionA ?? ""} onChange={(event: any) => updateSelectedProps({ optionA: event.target.value })} />
+                              <Input value={selectedItem.props.optionA ?? ""} onChange={(event) => updateSelectedProps({ optionA: event.target.value })} />
                             </Field>
                             <Field label="选项 B">
-                              <Input value={selectedItem.props.optionB ?? ""} onChange={(event: any) => updateSelectedProps({ optionB: event.target.value })} />
+                              <Input value={selectedItem.props.optionB ?? ""} onChange={(event) => updateSelectedProps({ optionB: event.target.value })} />
                             </Field>
                             <Field label="选项 C">
-                              <Input value={selectedItem.props.optionC ?? ""} onChange={(event: any) => updateSelectedProps({ optionC: event.target.value })} />
+                              <Input value={selectedItem.props.optionC ?? ""} onChange={(event) => updateSelectedProps({ optionC: event.target.value })} />
                             </Field>
                           </div>
                         </section>
@@ -5034,19 +5034,19 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       {"description" in selectedItem.props ? (
                         <Field label="说明">
-                          <Textarea value={selectedItem.props.description ?? ""} onChange={(event: any) => updateSelectedProps({ description: event.target.value })} />
+                          <Textarea value={selectedItem.props.description ?? ""} onChange={(event) => updateSelectedProps({ description: event.target.value })} />
                         </Field>
                       ) : null}
 
                       {"placeholder" in selectedItem.props ? (
                         <Field label="占位文本">
-                          <Input value={selectedItem.props.placeholder ?? ""} onChange={(event: any) => updateSelectedProps({ placeholder: event.target.value })} />
+                          <Input value={selectedItem.props.placeholder ?? ""} onChange={(event) => updateSelectedProps({ placeholder: event.target.value })} />
                         </Field>
                       ) : null}
 
                       {"helper" in selectedItem.props ? (
                         <Field label="辅助说明">
-                          <Input value={selectedItem.props.helper ?? ""} onChange={(event: any) => updateSelectedProps({ helper: event.target.value })} />
+                          <Input value={selectedItem.props.helper ?? ""} onChange={(event) => updateSelectedProps({ helper: event.target.value })} />
                         </Field>
                       ) : null}
 
@@ -5064,7 +5064,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <Field key={prop.value} label={prop.label}>
                                 <Select
                                   value={selectedItem.props.stateBindings?.[prop.value] || "__none"}
-                                  onValueChange={(value: any) => updateSelectedStateBinding(prop.value, value === "__none" ? "" : value)}
+                                  onValueChange={(value) => updateSelectedStateBinding(prop.value, value === "__none" ? "" : value)}
                                 >
                                   <SelectTrigger>
                                     <SelectValue />
@@ -5086,7 +5086,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       {selectedItem.type === "button" || selectedItem.type === "badge" || selectedItem.type === "dialog" || selectedItem.type === "progress" ? (
                         <Field label="样式">
-                          <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value: any) => updateSelectedProps({ variant: value as ButtonVariant })}>
+                          <Select value={selectedItem.props.variant ?? "default"} onValueChange={(value) => updateSelectedProps({ variant: value as ButtonVariant })}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -5103,7 +5103,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
 
                       {selectedItem.type === "button" ? (
                         <Field label="按钮尺寸">
-                          <Select value={selectedItem.props.size ?? "md"} onValueChange={(value: any) => updateSelectedProps({ size: value as ControlSize })}>
+                          <Select value={selectedItem.props.size ?? "md"} onValueChange={(value) => updateSelectedProps({ size: value as ControlSize })}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -5124,7 +5124,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 ? selectedEventCommandId
                                 : "__none"
                             }
-                            onValueChange={(value: any) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
+                            onValueChange={(value) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -5150,7 +5150,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Switch
                               checked={selectedEventCommandArgs.length > 0 || Boolean(selectedEventBinding?.passValue && selectedEventCommand?.acceptsValue)}
                               disabled={selectedEventCommandArgs.length > 0 || !selectedEventCommand?.acceptsValue}
-                              onCheckedChange={(passValue: any) => updateSelectedEventBinding(selectedEventName, { passValue })}
+                              onCheckedChange={(passValue) => updateSelectedEventBinding(selectedEventName, { passValue })}
                             />
                           </div>
                           {selectedEventCommand?.acceptsValue ? (
@@ -5159,7 +5159,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <Select
                                   value={selectedEventBinding?.payloadMode ?? "value"}
                                   disabled={!selectedEventBinding?.passValue || selectedEventCommandArgs.length > 0}
-                                  onValueChange={(payloadMode: any) =>
+                                  onValueChange={(payloadMode) =>
                                     updateSelectedEventBinding(selectedEventName, {
                                       payloadMode: payloadMode === "json" ? "json" : "value",
                                       payloadFields: payloadMode === "json" ? eventPayloadFieldSelection(selectedEventBinding) : undefined,
@@ -5185,7 +5185,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                       <Checkbox
                                         className="mt-0.5 size-4"
                                         checked={eventPayloadFieldSelection(selectedEventBinding).includes(field.value)}
-                                        onCheckedChange={(checked: any) =>
+                                        onCheckedChange={(checked) =>
                                           updateSelectedEventBinding(selectedEventName, {
                                             payloadMode: "json",
                                             payloadFields: payloadFieldsWithToggle(selectedEventBinding, field.value, Boolean(checked)),
@@ -5212,7 +5212,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Field label="结果目标">
                               <Select
                                 value={selectedEventBinding?.resultTargetItemId || "__none"}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                   updateSelectedEventBinding(selectedEventName, {
                                     resultTargetItemId: value === "__none" ? "" : value,
                                     resultTargetProp: value === "__none" ? undefined : selectedEventBinding?.resultTargetProp ?? "value",
@@ -5236,7 +5236,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <Select
                                 value={selectedEventBinding?.resultTargetProp || "__none"}
                                 disabled={!selectedEventBinding?.resultTargetItemId}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                   updateSelectedEventBinding(selectedEventName, {
                                     resultTargetProp: value === "__none" ? undefined : (value as BuilderResultTargetProp),
                                   })
@@ -5259,7 +5259,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <Field label="结果状态">
                             <Select
                               value={selectedEventBinding?.resultStateId || "__none"}
-                              onValueChange={(value: any) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
+                              onValueChange={(value) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -5281,7 +5281,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </div>
                             <Switch
                               checked={Boolean(selectedEventBinding?.applyJsonStatePatch)}
-                              onCheckedChange={(applyJsonStatePatch: any) => updateSelectedEventBinding(selectedEventName, { applyJsonStatePatch })}
+                              onCheckedChange={(applyJsonStatePatch) => updateSelectedEventBinding(selectedEventName, { applyJsonStatePatch })}
                             />
                           </div>
                           <p className="text-xs leading-5 text-on-surface-variant">
@@ -5293,7 +5293,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       {selectedItem.type === "switch" || selectedItem.type === "checkbox" || selectedItem.type === "radio" ? (
                         <div className="flex items-center justify-between rounded-xl bg-surface-container-high p-3">
                           <Label>默认选中</Label>
-                          <Switch checked={Boolean(selectedItem.props.checked)} onCheckedChange={(checked: any) => updateSelectedProps({ checked })} />
+                          <Switch checked={Boolean(selectedItem.props.checked)} onCheckedChange={(checked) => updateSelectedProps({ checked })} />
                         </div>
                       ) : null}
 
@@ -5341,7 +5341,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 ? selectedEventCommandId
                                 : "__none"
                             }
-                            onValueChange={(value: any) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
+                            onValueChange={(value) => updateSelectedEventCommand(selectedEventName, value === "__none" ? "" : value)}
                           >
                             <SelectTrigger data-builder-inspector-event-command="">
                               <SelectValue />
@@ -5461,7 +5461,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                 <Switch
                                   checked={Boolean(selectedEventBinding?.passValue && selectedEventCommand.acceptsValue)}
                                   disabled={!selectedEventCommand.acceptsValue}
-                                  onCheckedChange={(passValue: any) => updateSelectedEventBinding(selectedEventName, { passValue })}
+                                  onCheckedChange={(passValue) => updateSelectedEventBinding(selectedEventName, { passValue })}
                                 />
                               </div>
                               {selectedEventCommand.acceptsValue ? (
@@ -5469,7 +5469,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                   <Select
                                     value={selectedEventBinding?.payloadMode ?? "value"}
                                     disabled={!selectedEventBinding?.passValue}
-                                    onValueChange={(payloadMode: any) =>
+                                    onValueChange={(payloadMode) =>
                                       updateSelectedEventBinding(selectedEventName, {
                                         payloadMode: payloadMode === "json" ? "json" : "value",
                                         payloadFields: payloadMode === "json" ? eventPayloadFieldSelection(selectedEventBinding) : undefined,
@@ -5496,7 +5496,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                                       <Checkbox
                                         className="mt-0.5 size-4"
                                         checked={selectedConnectionPayloadFields.includes(field.value)}
-                                        onCheckedChange={(checked: any) =>
+                                        onCheckedChange={(checked) =>
                                           updateSelectedEventBinding(selectedEventName, {
                                             payloadMode: "json",
                                             payloadFields: payloadFieldsWithToggle(selectedEventBinding, field.value, Boolean(checked)),
@@ -5533,7 +5533,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             <Field label="目标">
                               <Select
                                 value={selectedEventBinding?.resultTargetItemId || "__none"}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                   updateSelectedEventBinding(selectedEventName, {
                                     resultTargetItemId: value === "__none" ? "" : value,
                                     resultTargetProp: value === "__none" ? undefined : selectedEventBinding?.resultTargetProp ?? "value",
@@ -5557,7 +5557,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                               <Select
                                 value={selectedEventBinding?.resultTargetProp || "__none"}
                                 disabled={!selectedEventBinding?.resultTargetItemId}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                   updateSelectedEventBinding(selectedEventName, {
                                     resultTargetProp: value === "__none" ? undefined : (value as BuilderResultTargetProp),
                                   })
@@ -5580,7 +5580,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                           <Field label="状态">
                             <Select
                               value={selectedEventBinding?.resultStateId || "__none"}
-                              onValueChange={(value: any) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
+                              onValueChange={(value) => updateSelectedEventBinding(selectedEventName, { resultStateId: value === "__none" ? "" : value })}
                             >
                               <SelectTrigger data-builder-connection-result-state="">
                                 <SelectValue />
@@ -5602,7 +5602,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                             </div>
                             <Switch
                               checked={Boolean(selectedEventBinding?.applyJsonStatePatch)}
-                              onCheckedChange={(applyJsonStatePatch: any) => updateSelectedEventBinding(selectedEventName, { applyJsonStatePatch })}
+                              onCheckedChange={(applyJsonStatePatch) => updateSelectedEventBinding(selectedEventName, { applyJsonStatePatch })}
                             />
                           </div>
                         </section>
@@ -5684,7 +5684,7 @@ export function DesignView(props: { scope: DesignViewScope }): ReactNode {
                       <SegmentedControl
                         aria-label="检查器响应式断点"
                         value={activeBreakpoint}
-                        onValueChange={(value: any) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
+                        onValueChange={(value) => setResponsiveBreakpoint(value as ResponsiveBreakpointId)}
                         options={[
                           { value: "desktop", label: "桌面" },
                           { value: "tablet", label: "平板" },

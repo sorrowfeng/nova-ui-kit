@@ -355,7 +355,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
 
   return (
       <div className="h-full min-h-0 overflow-hidden bg-surface-container-lowest">
-        <Dialog open={Boolean(destructiveAction)} onOpenChange={(open: any) => !open && setDestructiveAction(null)}>
+        <Dialog open={Boolean(destructiveAction)} onOpenChange={(open) => !open && setDestructiveAction(null)}>
           <DialogContent className="sm:max-w-[420px]" data-builder-destructive-dialog="">
             <DialogHeader>
               <DialogTitle data-builder-destructive-dialog-title="">{destructiveAction?.title ?? "确认操作"}</DialogTitle>
@@ -1182,18 +1182,18 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     data-builder-editor-tab-drop-target={tab.fileId && draggingEditorFileTabId && draggingEditorFileTabId !== tab.fileId ? "true" : "false"}
                     data-builder-editor-tab-target-mode={tab.targetMode}
                     data-builder-editor-tab-reveal-node={tab.revealNodeId}
-                    onDragStart={(event: any) => {
+                    onDragStart={(event) => {
                       if (tab.fileId) {
                         beginEditorFileTabDrag(event, tab.fileId);
                       }
                     }}
-                    onDragOver={(event: any) => {
+                    onDragOver={(event) => {
                       if (tab.fileId && draggingEditorFileTabId && draggingEditorFileTabId !== tab.fileId) {
                         event.preventDefault();
                         event.dataTransfer.dropEffect = "move";
                       }
                     }}
-                    onDrop={(event: any) => {
+                    onDrop={(event) => {
                       if (tab.fileId) {
                         dropEditorFileTab(event, tab.fileId);
                       }
@@ -1312,7 +1312,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                         aria-label={`关闭 ${tab.label} 标签`}
                         title={tab.closable ? "关闭标签，不删除项目文件" : "至少保留一个 UI 标签"}
                         disabled={!tab.closable || !tab.fileId}
-                        onClick={(event: any) => {
+                        onClick={(event) => {
                           event.stopPropagation();
                           if (tab.fileId) {
                             closeEditorFileTab(tab.fileId);
@@ -2467,7 +2467,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
               className="fixed inset-0 z-[9997]"
               data-builder-project-context-overlay=""
               onPointerDown={closeProjectExplorerContextMenu}
-              onContextMenu={(event: any) => {
+              onContextMenu={(event) => {
                 event.preventDefault();
                 closeProjectExplorerContextMenu();
               }}
@@ -2485,8 +2485,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   top: projectExplorerContextMenu.y,
                   transformOrigin: `${projectExplorerContextMenu.placementX === "left" ? "right" : "left"} ${projectExplorerContextMenu.placementY === "top" ? "bottom" : "top"}`,
                 }}
-                onPointerDown={(event: any) => event.stopPropagation()}
-                onContextMenu={(event: any) => event.preventDefault()}
+                onPointerDown={(event) => event.stopPropagation()}
+                onContextMenu={(event) => event.preventDefault()}
               >
                 <div className="px-2 py-1.5">
                   <p className="truncate font-medium">{projectExplorerContextNode.label}</p>
@@ -2615,7 +2615,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
               className="fixed inset-0 z-[9998]"
               data-builder-canvas-context-overlay=""
               onPointerDown={closeCanvasContextMenu}
-              onContextMenu={(event: any) => {
+              onContextMenu={(event) => {
                 event.preventDefault();
                 closeCanvasContextMenu();
               }}
@@ -2632,8 +2632,8 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   top: canvasContextMenu.y,
                   transformOrigin: `${canvasContextMenu.placementX === "left" ? "right" : "left"} ${canvasContextMenu.placementY === "top" ? "bottom" : "top"}`,
                 }}
-                onPointerDown={(event: any) => event.stopPropagation()}
-                onContextMenu={(event: any) => event.preventDefault()}
+                onPointerDown={(event) => event.stopPropagation()}
+                onContextMenu={(event) => event.preventDefault()}
               >
                 <div className="px-2 py-1.5">
                   <p className="truncate font-medium">{canvasContextMenuItem ? getItemSummary(canvasContextMenuItem) : activeFile.name}</p>
@@ -2660,7 +2660,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                     aria-label="搜索要插入的控件"
                     placeholder="搜索控件…"
                     className="focus-ring h-7 w-full rounded-lg border border-outline-variant bg-surface-container px-2 text-[0.7rem] text-on-surface"
-                    onChange={(event: any) => {
+                    onChange={(event) => {
                       setCanvasContextInsertQuery(event.target.value);
                       setCanvasContextInsertActiveIndex(0);
                     }}
@@ -2699,7 +2699,7 @@ export function ShellView(props: { scope: ShellViewScope }): ReactNode {
                   ) : null}
                 </div>
                 <div className="flex flex-wrap gap-1 px-1 pb-1" role="group" aria-label="常用控件快速插入">
-                  {["button", "input", "frame", "select", "search-bar", "table"].map((type: any) => {
+                  {["button", "input", "frame", "select", "search-bar", "table"].map((type) => {
                     const definition = getDefinition(type as BuilderComponentType);
                     const Icon = definition.icon;
                     return (

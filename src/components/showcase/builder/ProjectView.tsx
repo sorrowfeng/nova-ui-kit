@@ -989,8 +989,8 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           placeholder="搜索文件、路径、类型..."
                           className="h-7 rounded-lg border-transparent bg-surface-container-high pl-8 pr-8 text-[0.68rem] shadow-none"
                           data-builder-project-workspace-search-input=""
-                          onChange={(event: any) => setProjectExplorerQuery(event.target.value)}
-                          onKeyDown={(event: any) => {
+                          onChange={(event) => setProjectExplorerQuery(event.target.value)}
+                          onKeyDown={(event) => {
                             if (event.key === "Enter" && visibleProjectExplorerNodes[0]) {
                               event.preventDefault();
                               handleProjectExplorerNode(visibleProjectExplorerNodes[0]);
@@ -1177,7 +1177,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                             )}
                             style={{ paddingLeft: node.depth * 14 + 6 }}
                             title={node.path || node.detail}
-                            onContextMenu={(event: any) => openProjectExplorerContextMenu(event, node)}
+                            onContextMenu={(event) => openProjectExplorerContextMenu(event, node)}
                           >
                             <button
                               type="button"
@@ -1635,7 +1635,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                                 data-builder-project-file-rename-input=""
                                 inputSize="sm"
                                 value={selectedProjectExplorerFile.name}
-                                onChange={(event: any) => renameFileById(selectedProjectExplorerFile.id, event.target.value)}
+                                onChange={(event) => renameFileById(selectedProjectExplorerFile.id, event.target.value)}
                               />
                             </Field>
                             <div
@@ -1950,7 +1950,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           action: "打开构建",
                           onAction: () => switchEditorMode("build"),
                         },
-                      ].map((scope: any) => {
+                      ].map((scope) => {
                         const ScopeIcon = scope.icon;
                         return (
                           <article
@@ -2139,7 +2139,7 @@ export function ProjectView(props: { scope: ProjectViewScope }): ReactNode {
                           { scope: "source" as const, label: "源码", count: projectSaveManifestItems.filter((item: any) => item.scope === "source").length },
                           { scope: "generated" as const, label: "生成", count: projectSaveManifestItems.filter((item: any) => item.scope === "generated").length },
                           { scope: "metadata" as const, label: ".nova", count: projectSaveManifestItems.filter((item: any) => item.scope === "metadata").length },
-                        ].map((group: any) => (
+                        ].map((group) => (
                           <button
                             key={group.scope}
                             type="button"

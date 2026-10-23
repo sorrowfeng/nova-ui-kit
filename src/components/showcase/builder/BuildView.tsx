@@ -621,7 +621,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       inputSize="sm"
                       data-builder-release-app-name=""
                       value={activeProject.releaseConfig.appName}
-                      onChange={(event: any) => updateReleaseConfig({ appName: event.target.value })}
+                      onChange={(event) => updateReleaseConfig({ appName: event.target.value })}
                     />
                   </Field>
                   <Field label="安装包 标识符">
@@ -631,7 +631,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       value={activeProject.releaseConfig.bundleIdentifier}
                       spellCheck={false}
                       className="font-mono text-xs"
-                      onChange={(event: any) => updateReleaseConfig({ bundleIdentifier: event.target.value })}
+                      onChange={(event) => updateReleaseConfig({ bundleIdentifier: event.target.value })}
                     />
                   </Field>
                   <div className="grid grid-cols-2 gap-2">
@@ -642,7 +642,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         value={activeProject.releaseConfig.version}
                         spellCheck={false}
                         className="font-mono text-xs"
-                        onChange={(event: any) => updateReleaseConfig({ version: event.target.value })}
+                        onChange={(event) => updateReleaseConfig({ version: event.target.value })}
                       />
                     </Field>
                     <Field label="窗口标题">
@@ -650,7 +650,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         inputSize="sm"
                         data-builder-release-window-title=""
                         value={activeProject.releaseConfig.windowTitle}
-                        onChange={(event: any) => updateReleaseConfig({ windowTitle: event.target.value })}
+                        onChange={(event) => updateReleaseConfig({ windowTitle: event.target.value })}
                       />
                     </Field>
                   </div>
@@ -662,7 +662,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      {(["patch", "minor", "major"] as const).map((bump: any) => (
+                      {(["patch", "minor", "major"] as const).map((bump) => (
                         <Button
                           key={bump}
                           size="sm"
@@ -684,7 +684,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Textarea
                       data-builder-release-notes=""
                       value={activeProject.releaseConfig.releaseNotes}
-                      onChange={(event: any) => updateReleaseConfig({ releaseNotes: event.target.value })}
+                      onChange={(event) => updateReleaseConfig({ releaseNotes: event.target.value })}
                       className="min-h-[112px] resize-none font-mono text-xs leading-5"
                     />
                   </Field>
@@ -692,7 +692,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Field label="安装包目标">
                       <Select
                         value={activeProject.releaseConfig.bundleTargets}
-                        onValueChange={(bundleTargets: any) => updateReleaseConfig({ bundleTargets: bundleTargets as ReleaseBundleTarget })}
+                        onValueChange={(bundleTargets) => updateReleaseConfig({ bundleTargets: bundleTargets as ReleaseBundleTarget })}
                       >
                         <SelectTrigger inputSize="sm" data-builder-release-targets="">
                           <SelectValue />
@@ -709,7 +709,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Field label="发布图标">
                       <Select
                         value={activeProject.releaseConfig.iconAssetId || "__default"}
-                        onValueChange={(iconAssetId: any) => updateReleaseConfig({ iconAssetId: iconAssetId === "__default" ? "" : iconAssetId })}
+                        onValueChange={(iconAssetId) => updateReleaseConfig({ iconAssetId: iconAssetId === "__default" ? "" : iconAssetId })}
                       >
                         <SelectTrigger inputSize="sm" data-builder-release-icon="">
                           <SelectValue />
@@ -744,7 +744,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <Field label="签名模式">
                         <Select
                           value={activeProject.releaseConfig.signingMode}
-                          onValueChange={(signingMode: any) => updateReleaseConfig({ signingMode: signingMode as ReleaseSigningMode })}
+                          onValueChange={(signingMode) => updateReleaseConfig({ signingMode: signingMode as ReleaseSigningMode })}
                         >
                           <SelectTrigger inputSize="sm" data-builder-release-signing-mode="">
                             <SelectValue />
@@ -765,7 +765,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           min={0}
                           data-builder-release-smoke-size=""
                           value={activeProject.releaseConfig.minimumArtifactSizeKb}
-                          onChange={(event: any) =>
+                          onChange={(event) =>
                             updateReleaseConfig({ minimumArtifactSizeKb: normalizeMinimumArtifactSizeKb(event.target.value) })
                           }
                         />
@@ -780,7 +780,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             value={activeProject.releaseConfig.certificateThumbprint}
                             spellCheck={false}
                             className="font-mono text-xs"
-                            onChange={(event: any) => {
+                            onChange={(event) => {
                               setCertificateInspection(null);
                               updateReleaseConfig({ certificateThumbprint: event.target.value });
                             }}
@@ -873,7 +873,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             spellCheck={false}
                             className="font-mono text-xs"
                             placeholder="C:\\certs\\release-signing.pfx"
-                            onChange={(event: any) => updateReleaseConfig({ certificateSourcePath: event.target.value })}
+                            onChange={(event) => updateReleaseConfig({ certificateSourcePath: event.target.value })}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -884,7 +884,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                               value={activeProject.releaseConfig.certificatePasswordEnvVar}
                               spellCheck={false}
                               className="font-mono text-xs"
-                              onChange={(event: any) => updateReleaseConfig({ certificatePasswordEnvVar: event.target.value })}
+                              onChange={(event) => updateReleaseConfig({ certificatePasswordEnvVar: event.target.value })}
                             />
                           </Field>
                           <div className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 py-2">
@@ -894,7 +894,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             </div>
                             <Switch
                               checked={activeProject.releaseConfig.importCertificateBeforeBuild}
-                              onCheckedChange={(importCertificateBeforeBuild: any) => updateReleaseConfig({ importCertificateBeforeBuild })}
+                              onCheckedChange={(importCertificateBeforeBuild) => updateReleaseConfig({ importCertificateBeforeBuild })}
                             />
                           </div>
                         </div>
@@ -905,7 +905,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           <Field label="摘要算法">
                             <Select
                               value={activeProject.releaseConfig.digestAlgorithm}
-                              onValueChange={(digestAlgorithm: any) => updateReleaseConfig({ digestAlgorithm })}
+                              onValueChange={(digestAlgorithm) => updateReleaseConfig({ digestAlgorithm })}
                             >
                               <SelectTrigger inputSize="sm" data-builder-release-digest="">
                                 <SelectValue />
@@ -926,7 +926,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             </div>
                             <Switch
                               checked={activeProject.releaseConfig.timestampTsp}
-                              onCheckedChange={(timestampTsp: any) => updateReleaseConfig({ timestampTsp })}
+                              onCheckedChange={(timestampTsp) => updateReleaseConfig({ timestampTsp })}
                             />
                           </div>
                         </div>
@@ -937,7 +937,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             value={activeProject.releaseConfig.timestampUrl}
                             spellCheck={false}
                             className="font-mono text-xs"
-                            onChange={(event: any) => updateReleaseConfig({ timestampUrl: event.target.value })}
+                            onChange={(event) => updateReleaseConfig({ timestampUrl: event.target.value })}
                           />
                         </Field>
                       </div>
@@ -947,7 +947,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         <Textarea
                           data-builder-release-sign-command=""
                           value={activeProject.releaseConfig.signCommand}
-                          onChange={(event: any) => updateReleaseConfig({ signCommand: event.target.value })}
+                          onChange={(event) => updateReleaseConfig({ signCommand: event.target.value })}
                           placeholder="signtool sign /fd SHA256 /a /tr http://timestamp.digicert.com %1"
                           className="min-h-[72px] resize-none font-mono text-xs leading-5"
                         />
@@ -956,7 +956,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Field label="安装包 smoke">
                       <Select
                         value={activeProject.releaseConfig.installerSmokeMode}
-                        onValueChange={(installerSmokeMode: any) => updateReleaseConfig({ installerSmokeMode: installerSmokeMode as ReleaseInstallerSmokeMode })}
+                        onValueChange={(installerSmokeMode) => updateReleaseConfig({ installerSmokeMode: installerSmokeMode as ReleaseInstallerSmokeMode })}
                       >
                         <SelectTrigger inputSize="sm" data-builder-release-installer-smoke="">
                           <SelectValue />
@@ -973,7 +973,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Field label="Smoke 运行器">
                       <Select
                         value={activeProject.releaseConfig.installerSmokeRunnerMode}
-                        onValueChange={(installerSmokeRunnerMode: any) => updateReleaseConfig({ installerSmokeRunnerMode: installerSmokeRunnerMode as ReleaseInstallerSmokeRunnerMode })}
+                        onValueChange={(installerSmokeRunnerMode) => updateReleaseConfig({ installerSmokeRunnerMode: installerSmokeRunnerMode as ReleaseInstallerSmokeRunnerMode })}
                       >
                         <SelectTrigger inputSize="sm" data-builder-release-installer-smoke-runner="">
                           <SelectValue />
@@ -994,7 +994,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             inputSize="sm"
                             value={activeProject.releaseConfig.installerSmokeVmName}
                             data-builder-release-installer-smoke-vm-name=""
-                            onChange={(event: any) => updateReleaseConfig({ installerSmokeVmName: event.target.value })}
+                            onChange={(event) => updateReleaseConfig({ installerSmokeVmName: event.target.value })}
                           />
                         </Field>
                         <Field label="共享目录">
@@ -1004,7 +1004,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             data-builder-release-installer-smoke-vm-shared-folder=""
                             placeholder="C:\\NovaSmoke or \\\\vm\\NovaSmoke"
                             className="font-mono text-xs"
-                            onChange={(event: any) => updateReleaseConfig({ installerSmokeVmSharedFolder: event.target.value })}
+                            onChange={(event) => updateReleaseConfig({ installerSmokeVmSharedFolder: event.target.value })}
                           />
                         </Field>
                         <Field label="虚拟机备注" className="col-span-2">
@@ -1013,7 +1013,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                             data-builder-release-installer-smoke-vm-notes=""
                             placeholder="快照名、访客用户、runner 预期或结果返回约定。"
                             className="min-h-[70px] resize-none text-xs leading-5"
-                            onChange={(event: any) => updateReleaseConfig({ installerSmokeVmNotes: event.target.value })}
+                            onChange={(event) => updateReleaseConfig({ installerSmokeVmNotes: event.target.value })}
                           />
                         </Field>
                       </>
@@ -1026,7 +1026,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         type="number"
                         data-builder-release-window-width=""
                         value={activeProject.releaseConfig.windowWidth}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                           updateReleaseConfig({ windowWidth: numberFromInput(event.target.value, activeProject.releaseConfig.windowWidth, 320, 3840) })
                         }
                       />
@@ -1037,7 +1037,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         type="number"
                         data-builder-release-window-height=""
                         value={activeProject.releaseConfig.windowHeight}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                           updateReleaseConfig({ windowHeight: numberFromInput(event.target.value, activeProject.releaseConfig.windowHeight, 240, 2160) })
                         }
                       />
@@ -1048,7 +1048,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         type="number"
                         data-builder-release-min-width=""
                         value={activeProject.releaseConfig.minWindowWidth}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                           updateReleaseConfig({
                             minWindowWidth: numberFromInput(event.target.value, activeProject.releaseConfig.minWindowWidth, 240, activeProject.releaseConfig.windowWidth),
                           })
@@ -1061,7 +1061,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         type="number"
                         data-builder-release-min-height=""
                         value={activeProject.releaseConfig.minWindowHeight}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                           updateReleaseConfig({
                             minWindowHeight: numberFromInput(event.target.value, activeProject.releaseConfig.minWindowHeight, 180, activeProject.releaseConfig.windowHeight),
                           })
@@ -1074,7 +1074,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <Label className="text-xs font-medium">允许缩放窗口</Label>
                       <p className="mt-1 text-xs leading-5 text-on-surface-variant">关闭后目标 app 使用固定窗口尺寸。</p>
                     </div>
-                    <Switch checked={activeProject.releaseConfig.resizable} onCheckedChange={(resizable: any) => updateReleaseConfig({ resizable })} />
+                    <Switch checked={activeProject.releaseConfig.resizable} onCheckedChange={(resizable) => updateReleaseConfig({ resizable })} />
                   </div>
                 </section>
                 {buildError ? (
@@ -2130,12 +2130,12 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                       <Input
                         inputSize="sm"
                         value={customPresetTitle}
-                        onChange={(event: any) => setCustomPresetTitle(event.target.value)}
+                        onChange={(event) => setCustomPresetTitle(event.target.value)}
                         placeholder="Preset 标题"
                         aria-label="自定义操作 preset 标题"
                       />
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                        <Select value={customPresetDraftActionId} onValueChange={(value: any) => setCustomPresetDraftActionId(value as ProjectJumpActionId)}>
+                        <Select value={customPresetDraftActionId} onValueChange={(value) => setCustomPresetDraftActionId(value as ProjectJumpActionId)}>
                           <SelectTrigger inputSize="sm" aria-label="添加操作到自定义 preset">
                             <SelectValue />
                           </SelectTrigger>
@@ -2156,7 +2156,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                     <Textarea
                       className="min-h-16 text-xs"
                       value={customPresetDetail}
-                      onChange={(event: any) => setCustomPresetDetail(event.target.value)}
+                      onChange={(event) => setCustomPresetDetail(event.target.value)}
                       placeholder="Preset 说明"
                       aria-label="自定义操作 preset 说明"
                     />
@@ -2246,13 +2246,13 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         inputSize="sm"
                         className="pl-8"
                         value={projectTaskSearchQuery}
-                        onChange={(event: any) => setProjectTaskSearchQuery(event.target.value)}
+                        onChange={(event) => setProjectTaskSearchQuery(event.target.value)}
                         placeholder="搜索任务、路径、错误..."
                         aria-label="搜索项目任务"
                       />
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <Select value={projectTaskStatusFilter} onValueChange={(value: any) => setProjectTaskStatusFilter(value as ProjectTaskStatusFilter)}>
+                      <Select value={projectTaskStatusFilter} onValueChange={(value) => setProjectTaskStatusFilter(value as ProjectTaskStatusFilter)}>
                         <SelectTrigger inputSize="sm" aria-label="筛选任务状态">
                           <SelectValue />
                         </SelectTrigger>
@@ -2264,7 +2264,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Select value={projectTaskKindFilter} onValueChange={(value: any) => setProjectTaskKindFilter(value as ProjectTaskKindFilter)}>
+                      <Select value={projectTaskKindFilter} onValueChange={(value) => setProjectTaskKindFilter(value as ProjectTaskKindFilter)}>
                         <SelectTrigger inputSize="sm" aria-label="筛选任务类型">
                           <SelectValue />
                         </SelectTrigger>
@@ -2300,7 +2300,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                   setSelectedProjectTaskId(task.id);
                                   setProjectTaskLogSearchQuery("");
                                 }}
-                                onKeyDown={(event: any) => {
+                                onKeyDown={(event) => {
                                   if (event.key === "Enter" || event.key === " ") {
                                     event.preventDefault();
                                     setSelectedProjectTaskId(task.id);
@@ -2335,7 +2335,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                             aria-label={`将 ${task.title} 在队列中上移`}
                                             data-builder-move-task-up={task.id}
                                             disabled={!canMoveQueuedProjectTask(task.id, -1)}
-                                            onClick={(event: any) => {
+                                            onClick={(event) => {
                                               event.stopPropagation();
                                               moveQueuedProjectTask(task.id, -1);
                                             }}
@@ -2348,7 +2348,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                             aria-label={`将 ${task.title} 在队列中下移`}
                                             data-builder-move-task-down={task.id}
                                             disabled={!canMoveQueuedProjectTask(task.id, 1)}
-                                            onClick={(event: any) => {
+                                            onClick={(event) => {
                                               event.stopPropagation();
                                               moveQueuedProjectTask(task.id, 1);
                                             }}
@@ -2476,7 +2476,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 inputSize="sm"
                                 className="pl-8"
                                 value={projectTaskLogSearchQuery}
-                                onChange={(event: any) => setProjectTaskLogSearchQuery(event.target.value)}
+                                onChange={(event) => setProjectTaskLogSearchQuery(event.target.value)}
                                 placeholder="搜索这个日志..."
                                 aria-label="搜索选中任务日志"
                                 disabled={!selectedProjectTask.logPreview}
@@ -2946,7 +2946,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                           detail: `${railTaskCountLabel} 工作流步骤 · ${workflowProgressLabel}`,
                           icon: ClipboardCopy,
                         },
-                      ].map((item: any) => {
+                      ].map((item) => {
                         const ItemIcon = item.icon;
                         return (
                           <article
@@ -2974,7 +2974,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
 
                     <details
                       open={desktopRuntimeConsoleOpen}
-                      onToggle={(event: any) => setDesktopRuntimeConsoleOpen(event.currentTarget.open)}
+                      onToggle={(event) => setDesktopRuntimeConsoleOpen(event.currentTarget.open)}
                       className="group min-w-0 px-2 py-1 text-xs"
                       data-builder-desktop-runtime-console=""
                       data-builder-desktop-runtime-console-density="collapsed-summary"
@@ -3195,7 +3195,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         data-builder-generated-plan-primary=""
                         loading={previewingGeneratedFiles || applyingGeneratedFiles}
                         disabled={generatedPlanBusy}
-                        onClick={(event: any) => {
+                        onClick={(event) => {
                           event.stopPropagation();
                           enqueueProjectTask(generatedPlanPrimaryAction);
                         }}
@@ -3208,7 +3208,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                         variant="ghost"
                         className="h-7 px-2 text-[0.68rem]"
                         data-builder-generated-plan-tasks=""
-                        onClick={(event: any) => {
+                        onClick={(event) => {
                           event.stopPropagation();
                           openRelevantTaskDock();
                         }}
@@ -3750,7 +3750,7 @@ export function BuildView(props: { scope: BuildViewScope }): ReactNode {
                                 aria-label={`选择 ${entry.relative_path}`}
                                 data-builder-generated-file-selected={entry.relative_path}
                                 checked={selectedGeneratedPreviewPathSet.has(entry.relative_path)}
-                                onCheckedChange={(checked: any) => toggleGeneratedPreviewPath(entry.relative_path, Boolean(checked))}
+                                onCheckedChange={(checked) => toggleGeneratedPreviewPath(entry.relative_path, Boolean(checked))}
                               />
                               <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setActiveGeneratedPreviewPath(entry.relative_path)}>
                                 <div className="mb-2 flex items-start justify-between gap-2">
