@@ -81,7 +81,12 @@ function foreignNames(text) {
     "Generator", "Function", "this",
   ]);
   const found = new Set();
-  for (const match of text.matchAll(/(^|[^\w$.])((?:new\s+)?[A-Za-z_$][\w$]*)/g)) {
+  // Strip string literals first. A union like `"Rust" | "UI"` contains tokens
+  // that are not names at all — scanning the raw text reported
+  // `unresolved: Rust, UI` and `MD3, FAB, Sheet, Qt, Dock, MDI, Section, Watch`
+  // for keys that are perfectly writable.
+  const code = text.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, " ");
+  for (const match of code.matchAll(/(^|[^\w$.])((?:new\s+)?[A-Za-z_$][\w$]*)/g)) {
     const name = match[2];
     if (primitives.has(name)) continue;
     if (name[0] === name[0].toLowerCase() && name[0] !== "$") continue;

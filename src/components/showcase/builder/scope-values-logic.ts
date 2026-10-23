@@ -184,7 +184,7 @@ export type LogicScopeValues = {
   rustCompletionContext: { query: string; items: RustCompletionItem[]; };
   rustCompletionInsertPreview: (insertText: string) => string;
   rustCompletionItems: RustCompletionItem[];
-  rustCompletionKindLabel: any;
+  rustCompletionKindLabel: (kind: "symbol" | "state" | "module" | "snippet" | "command" | "parameter" | "dependency") => "模板片段" | "项目命令" | "命令参数" | "项目状态" | "Rust 模块" | "Cargo 依赖" | "源码符号";
   rustCompletionTrigger: RustCompletionTrigger | null;
   rustCurrentIdentifier: { name: string; start: number; end: number; } | null;
   rustCurrentIdentifierOccurrences: { index: number; end: number; }[];

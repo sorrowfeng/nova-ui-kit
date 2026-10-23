@@ -47,7 +47,7 @@ export type ShellOwnScopeValues = {
   canvasContextMenuSelectionReadOnly: boolean;
   canvasContextMenuSelectionVisible: boolean;
   canvasContextMenuTextProps: ("label" | "value" | "title" | "description" | "helper" | "placeholder" | "optionA" | "optionB" | "optionC" | "alt")[];
-  canvasContextQuickInsertGroups: any;
+  canvasContextQuickInsertGroups: readonly [{ readonly id: "inputs"; readonly label: "输入"; readonly types: readonly ["button", "input", "textarea", "select", "checkbox", "switch"]; }, { readonly id: "layout"; readonly label: "布局"; readonly types: readonly ["frame", "group-box", "split-view", "tabs", "toolbar", "top-app-bar"]; }, { readonly id: "data"; readonly label: "数据"; readonly types: readonly ["table", "tree-view", "outline-view", "signal-slot-editor", "node-graph", "property-browser"]; }, { readonly id: "md3"; readonly label: "MD3"; readonly types: readonly ["search-bar", "filter-bar", "navigation-suite", "supporting-pane", "card", "toast"]; }];
   canvasContextQuickInsertTypes: ("frame" | "group-box" | "button" | "input" | "textarea" | "search-bar" | "filter-bar" | "checkbox" | "switch" | "select" | "tabs" | "tree-view" | "outline-view" | "signal-slot-editor" | "node-graph" | "property-browser" | "top-app-bar" | "navigation-suite" | "toolbar" | "split-view" | "supporting-pane" | "card" | "toast" | "table")[];
   ChevronDown: any;
   clipboardRef: any;

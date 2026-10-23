@@ -17,7 +17,7 @@ export type BuilderScopeValues =
   & ShellOwnScopeValues
   ;
 
-// 175 key(s) still any because their type could not be written:
+// 169 key(s) still any because their type could not be written:
 //   ArrowRight  (unprintable)
 //   BuildView  (unprintable)
 //   BuildWorkspace  (unprintable)
@@ -43,7 +43,6 @@ export type BuilderScopeValues =
 //   activeBackendArtifactInspection  (unprintable)
 //   activeBackendIntegration  (unprintable)
 //   activeBackendPayloadMapping  (unprintable)
-//   activeComponentPaletteKit  (unresolved: MD3, FAB, Sheet, Qt, Dock, MDI, Section, Watch)
 //   activeEditorTab  (unprintable)
 //   activeGeneratedPreviewEntry  (unprintable)
 //   activeProject  (unprintable)
@@ -53,9 +52,7 @@ export type BuilderScopeValues =
 //   backendIntegrationKinds  (unprintable)
 //   backendIntegrationLanguages  (unprintable)
 //   backendIntegrationTransports  (unprintable)
-//   buildReadinessActionLabel  (unresolved: Logic)
 //   canvasContextInsertInputRef  (unprintable)
-//   canvasContextQuickInsertGroups  (unresolved: MD3)
 //   canvasFindInputRef  (unprintable)
 //   canvasHorizontalRulerMarks  (unprintable)
 //   canvasRef  (unprintable)
@@ -83,8 +80,6 @@ export type BuilderScopeValues =
 //   projectChangeImpactStatusLabel  (unprintable)
 //   projectChangeImpactStatusVariant  (unprintable)
 //   projectDependencyValidity  (unprintable)
-//   projectExplorerActionLabel  (unresolved: Rust, UI)
-//   projectExplorerPrimaryActionLabel  (unresolved: UI)
 //   projectExplorerRenameInputRef  (unprintable)
 //   projectLocatorControl  (unprintable)
 //   projectTaskDefinitions  (unprintable)
@@ -98,7 +93,6 @@ export type BuilderScopeValues =
 //   releaseSigningModes  (unprintable)
 //   runtimeWindowParityItems  (unprintable)
 //   rustBracketMatch  (unprintable)
-//   rustCompletionKindLabel  (unresolved: Rust, Cargo)
 //   rustCursorOutlineEntry  (unprintable)
 //   rustEditorHoverDoc  (unprintable)
 //   rustFindInputRef  (unprintable)

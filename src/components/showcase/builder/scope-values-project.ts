@@ -62,7 +62,7 @@ export type ProjectScopeValues = {
   projectActionCenterItems: ProjectActionCenterItem[];
   projectActionCenterToneClass: (tone: "running" | "success" | "warning" | "ready" | "muted" | "danger") => "border-primary/35 bg-secondary-container/70 text-secondary-container-foreground" | "border-primary/40 bg-primary-container/65 text-primary-container-foreground" | "border-outline bg-surface-container-high text-on-surface" | "border-destructive/35 bg-destructive/10 text-on-surface" | "border-outline-variant bg-surface-container-low text-on-surface-variant" | "border-outline-variant bg-surface-container-low text-on-surface hover:bg-surface-container-high";
   projectDiskPath: (rootPath: string | undefined, ...segments: string[]) => string;
-  projectExplorerActionLabel: any;
+  projectExplorerActionLabel: (action: "open-path" | "select-file" | "open-logic" | "open-assets" | "open-build" | "open-connections" | "open-checkpoints" | "open-settings" | "none") => "Rust 逻辑" | "UI 文件" | "资源" | "生成目标" | "后端" | "版本" | "设置" | "路径" | "目录";
   projectExplorerFilter: "build" | "assets" | "all" | "ui" | "rust" | "backend" | "meta";
   projectExplorerFilterCounts: Map<ProjectExplorerFilterId, number>;
   projectExplorerFilterOptions: { id: ProjectExplorerFilterId; label: string; description: string; }[];
@@ -73,7 +73,7 @@ export type ProjectScopeValues = {
   projectExplorerModel: { nodes: ProjectExplorerNode[]; controlCount: number; metadataPath: string; summary: string; };
   projectExplorerNodeGroupId: (node: ProjectExplorerNode) => "assets" | "ui" | "rust" | "backend" | "meta" | "app" | "root";
   projectExplorerNodeStatus: (node: ProjectExplorerNode) => { label: string; tone: "default" | "success" | "warning" | "muted"; signal: boolean; };
-  projectExplorerPrimaryActionLabel: any;
+  projectExplorerPrimaryActionLabel: (node: ProjectExplorerNode) => "打开连接" | "定位" | "打开 UI" | "打开逻辑" | "查看资源" | "打开产物" | "打开构建" | "查看版本" | "打开设置" | "打开路径";
   projectExplorerQuery: string;
   projectExplorerRenameInputRef: any;
   projectExplorerStatusClass: (tone: "default" | "success" | "warning" | "muted") => "border-outline-variant bg-surface-container-low text-on-surface-variant" | "border-primary/25 bg-primary/10 text-primary" | "border-destructive/25 bg-destructive/10 text-destructive" | "border-outline-variant bg-surface-container-high text-on-surface-variant";

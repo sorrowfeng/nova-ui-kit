@@ -32,7 +32,7 @@ export type BuildScopeValues = {
   building: boolean;
   buildLogLineCount: number;
   buildLogPreviewText: string;
-  buildReadinessActionLabel: any;
+  buildReadinessActionLabel: (item: BuildReadinessItem) => "后端" | "设置" | "连接" | "定位" | "文件" | "组件" | "输出" | "Logic" | "查看";
   buildReadinessSeverityLabel: (severity: "warning" | "ready" | "error") => string;
   buildReadinessSummary: { items: BuildReadinessItem[]; readyCount: number; warningCount: number; errorCount: number; score: number; };
   BuildWorkspace: any;
