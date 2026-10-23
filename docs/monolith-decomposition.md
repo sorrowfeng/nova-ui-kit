@@ -211,8 +211,9 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 | 3·5 | 清零死 export：194 个名字**摘掉 `export` 关键字**（不删声明——多数在自己模块里用着），`tsc` 当裁判，只剩 2 个连内部都没人读的真死代码（`workflowStepStatusClassName` 18 行、`DEFAULT_RUST_LOGIC`），已删。剥脚本自带 fixture；它的第一版用正则「修残留空格」，把 27 个文件里 1327 行缩进压平，fixture 就是为堵这个而生 | 死 export **0**，`monolith-module` **8613** | 死 export **0** |
 | 3·6 | 摘掉 264 个**白白扔掉推断**的 lambda 参数标注：`(event: any) => …` 打在 `onChange` 已经是 `ChangeEventHandler<HTMLInputElement>` 的 `<Input>` 上。剥 644、按 tsc 报错位置补回 378（源还是袋子 `any` 的那些，strict 不收隐式 any），净 264 | `any` 出现次数 **658 → 387** | — |
 | 3·7 | Phase 2 查值落地：`scripts/gen-scope-values.mjs` 从袋子构造现场读出 1089 个值的类型，914 个查到真类型、175 个退回 `any`；按键集切 5 片 + composer 全部低于 800 行。查值抓出 4 个真 bug（`Boolean()` 不收窄 ×2、`lastEvent.status` 可选、`badge: number` 喂给 `label: string`）；连带再剥 225 个标注（378 → 153），**合计 489 个 lambda 对着真类型检查**。`check:scope-values` 重新生成并比对，进了 build/experience | 源码里的 `any` **387 → 153**（另有 175 个在生成文件里，是查不出类型的那些键） | `check:scope-values` |
+| 3·8 | 结项：查值剩余的两处收拾完——生成器扫「类型文本里的名字」时连字符串字面量一起扫，`"Rust" \| "UI"` 被读成两个标识符，914 → **920**；exe 重构建，与源码同源。剩余的 11 个胖文件、169 个 `any` 和下一刀的位置写进「没做完的」 | 查值 **920 / 1089**；exe 2026-10-23 09:36，11981312 字节 | — |
 
-**接线债实测 4428 → 约 2400 行**，Phase 2 基本做完了（剩「查值」那一半，见「没做完的」）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
+**接线债实测 4428 → 约 2400 行**，Phase 2 做完了（查值 920/1089，剩下的 169 个卡在「类型没法在这里写出来」，见「没做完的」第 2 条）。`BuilderShowcase` 19938 → **18726**，`builder/` 51323 → **50326**。
 
 每完成一期在这里记一行：改了什么、实测降到多少、`MAX_LINES` 收到哪。
 
@@ -264,11 +265,25 @@ Phase 0 之后 `tsc` 一个未用符号都不放。再写一个没人调的函�
 
 按「现在不动手会怎样」排，不是按大小排。每条都写清楚**它卡在哪、动它之前要先拿到什么**，免得下次开工先花半小时重新摸一遍。
 
+**收尾时的状态（2026-10-23）：**
+
+| 项 | 现在 | 门禁 |
+|----|------|------|
+| 死导出 | **0**（194 → 0） | `check:dead-exports`，上限钉在 0 |
+| scope 袋的键 | 1089 个，闭合 | 类型层面，缺键/错拼即编译错 |
+| scope 袋的值 | **920 / 1089 有真类型**，169 仍是 `any` | `check:scope-values` 重新生成并比对 |
+| `src/` 里的 `any` | **163**（`grep -E '\bany\b' src/`，不含生成的 `scope-values*`） | 无门禁，只能靠棘轮往下压 |
+| 对着真类型检查的 lambda | **489** | — |
+| 超 800 行的文件 | **11 个**（见第 1 条） | `check:builder-file-size`，逐个钉住上限 |
+| 发布物 | `nova-ui-kit.exe`，2026-10-23 09:36，**与源码同源** | `check:desktop-exe` |
+
+全链绿：`tsc` 0 错、`check:ts-tests` 3 套、`check:experience` 0、`check:components` 170/170、`check:a11y` 116/116、`check:ui-density` 在预算内、`check:showcase-size` 18724/18760。
+
 ### 0. ~~发布物落后于代码~~ → **已重跑**
 
 **产品自己的 Qt Creator 对齐矩阵是 11 pass / 8 unverified / 0 warning / 0 fail**——19 条需求没有已知能力缺口，剩下 8 条只是空会话里跑不到前提（没选中、光标不在符号里、还没构建）。
 
-`src-tauri\target\release\nova-ui-kit.exe` 于 2026-10-23 07:16 重建（11980288 字节，Windows GUI 子系统，标题「Nova UI 编辑器」），`check:desktop-exe` 通过。**产物现在与源码同源**，包含这一轮的修复：exe 窗口跟设计画布对齐、构建/打包按钮的 busy 状态真的会亮。
+`src-tauri\target\release\nova-ui-kit.exe` 于 2026-10-23 09:36 重建（11981312 字节，Windows GUI 子系统，标题「Nova UI 编辑器」），`check:desktop-exe` 通过。**产物现在与源码同源**，包含这两轮的修复：exe 窗口跟设计画布对齐、构建/打包按钮的 busy 状态真的会亮，以及查值时抓出的那 4 个类型 bug（其中 `?? "空"` 那一处会改变边界情况下的显示，所以旧 exe 确实落后了）。
 
 用户可见的差距到此清零。剩下的都是代码健康，不影响使用：
 
@@ -298,11 +313,17 @@ npm run tauri:exe && npm run check:desktop-exe
 
 `editor-experience-audit.ts` 已经拆完，从这张表里划掉了。它是纯数据表，**是这张表里最安全的一刀，也是唯一已经验证过的一刀**：39 个派生 flag 全部只被一个域读，没有跨域依赖——先量出这条，再切。
 
-### 2. ~~Phase 2 的另一半没做：查值~~ → **已做，914/1089**
+**下一刀已经量过、还没动：`monolith-module.tsx` 里的 Rust 文本工具簇（约 341 行）。** 它只依赖 4 个已经 `export` 的声明（`LogicSignalSlotRow`、`RustLogicOutlineEntry`、`RustBracketMatch`、`rustLocationAtIndex`），没有反向依赖，整簇搬进 `builder/rust-text.ts` 之后源文件只需要一行 import 回去。选它的理由和 `editor-experience-audit.ts` 一样：**先量出「没有跨域依赖」，再切**，而不是先切再发现。
+
+搬的时候用 AST 定位，别用正则找行号——这个文件里中文文案、模板字符串和 `/* */` 注释都很多，行号会漂。`scripts/internal/` 里有一版通用的搬迁脚本（`phase3-extract.mjs`，这一批一次性脚本**刻意不入库**——它们没有 fixture、也不在构建链里，留下来的是思路不是代码），**写完从没跑过**，不要直接信它：它没有任何 fixture，而这一轮已经证明过「没 fixture 的批量改写脚本会把 1327 行缩进压平」。要么先给它补 fixture（必须包含「绝不能动」的行），要么手搬 341 行。
+
+### 2. ~~Phase 2 的另一半没做：查值~~ → **已做，920/1089**
 
 原计划是「1087 个值一个一个手写类型，按域来」。实测不需要手写：**类型从袋子字面量的构造现场读出来**，`scripts/gen-scope-values.mjs` 走一遍 `BuilderShowcase` 里那 1089 个键的对象字面量，取每个属性的类型写进生成文件。手写就会漂，生成的不会——前提是有人重新跑并比对，所以 `check:scope-values` 进了 `build` 和 `check:experience`，生成文件和袋子对不上就红。
 
-**914 个查到真类型，175 个还是 `any`**（React 组件那类，打印出来的名字在这里没法 import）。`scope-values*.ts` 按键集切成 5 片 + 1 个 composer（1089 个键塞一个文件是 1292 行，超 800 的房规；5 片是 125～371 行）。
+**920 个查到真类型，169 个还是 `any`**（React 组件那类，打印出来的名字在这里没法 import）。`scope-values*.ts` 按键集切成 5 片 + 1 个 composer（1089 个键塞一个文件是 1292 行，超 800 的房规；5 片是 125～371 行）。
+
+剩下 169 个不是「再多想想就能写出来」的：它们的类型打印成 `import("…").Foo` 这种在这里无法命名的形式，或者指向一个包没导出的内部名字。要把它们压下去，得先把那些类型搬到能 import 的地方——那是 Phase 3 的活，不是生成器的活。
 
 查值这一步直接抓出 4 个真 bug，全是以前 `any` 看不见的：
 
@@ -313,7 +334,7 @@ npm run tauri:exe && npm run check:desktop-exe
 另外两个连带效应值得记：
 
 - **查值之后，之前补的 `: any` 标注反过来挡路了。** `(section: any) =>` 挡住了袋子新给的推断。重跑一遍剥标注，又放下 225 个（378 → 153），合计 **489 个 lambda 现在对着真类型检查**。两轮是复利的：先剥标注靠推断，查值给推断供料，再剥一轮。
-- **生成器自己有三个 bug，每一个都会产出「编译不过的文件」而不是「错的类型」**：import 解析停在本地绑定不跟别名（于是在 BuilderShowcase 外声明的类型全被说成来自 `../BuilderShowcase`）；`typeToString` 打印 React 的内部接口名而不是包导出的名字（`ReactKeyboardEvent` 实际导出叫 `KeyboardEvent`）；简写属性会把字面量联合加宽（`{ workflowRailBadgeVariant }` 被写成 `string`，而 `StateBadge.variant` 要的正是那个联合）。现在每个名字都要**验证它确实是那个模块的导出**才写 import，写不出来的键退回 `any`。
+- **生成器自己有四个 bug，每一个都会产出「编译不过的文件」而不是「错的类型」**：import 解析停在本地绑定不跟别名（于是在 BuilderShowcase 外声明的类型全被说成来自 `../BuilderShowcase`）；`typeToString` 打印 React 的内部接口名而不是包导出的名字（`ReactKeyboardEvent` 实际导出叫 `KeyboardEvent`）；简写属性会把字面量联合加宽（`{ workflowRailBadgeVariant }` 被写成 `string`，而 `StateBadge.variant` 要的正是那个联合）；**扫「类型文本里出现了哪些名字」时连字符串字面量一起扫了**——`"Rust" | "UI"` 被读成两个标识符，`"MD3 · FAB · Sheet · Qt · Dock · MDI · Section · Watch"` 被读成七个，于是这些本来能写的键全被判成 `unresolved` 退回 `any`。把引号里的内容先抹掉之后，914 → 920 就是它。现在每个名字都要**验证它确实是那个模块的导出**才写 import，写不出来的键退回 `any`。**扫代码文本之前先把字符串和注释摘掉**，和「别自己写词法分析器」是同一条。
 
 ### 3. ~~`check_editor_project` 还是没有 UI 入口~~ → **记错了，真问题在别处**
 
